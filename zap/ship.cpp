@@ -270,6 +270,8 @@ void Ship::readControlState(BitStream *stream)
 
 U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
+   U32 retVal = 0;
+
    if(stream->writeFlag(updateMask & InitialMask))
    {
       stream->write(color.r);
@@ -288,10 +290,15 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
                stream->writeFlag(true);
                stream->writeInt(index, GhostConnection::GhostIdBitSize);
             }
+            else
+            {
+               retVal |= InitialMask;
+            }
          }
       }
       stream->writeFlag(false);
    }
+
    if(stream->writeFlag(updateMask & HealthMask))
       stream->writeFloat(mHealth, 6);
 
@@ -321,7 +328,7 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
          lastMove.pack(stream, NULL);
       }
    }
-   return 0;
+   return retVal;
 }
 
 void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
