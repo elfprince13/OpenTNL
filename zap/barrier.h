@@ -41,6 +41,7 @@ class Barrier : public GameObject
 public:
    Point start; ///< The start point of the barrier
    Point end; ///< The end point of the barrier 
+   F32 mWidth;
 
    enum {
       BarrierWidth = 50, ///< The width, in game units of the barrier.
@@ -52,17 +53,10 @@ public:
    Vector<Point> mRenderLineSegments; ///< The clipped line segments representing this barrier.
 
    /// Barrier constructor.
-   Barrier(Point st = Point(), Point e = Point());
+   Barrier(Point st = Point(), Point e = Point(), F32 width = BarrierWidth);
 
    /// Adds the server object to the net interface's scope always list
    void onAddedToGame(Game *theGame);
-
-   /// writes the Barrier state into the packet.  Since Barrier objects never change
-   /// network state, this will only be called for the initial update of a barrier.
-   U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
-
-   /// reads the Barrier state from a packet.
-   void unpackUpdate(GhostConnection *connection, BitStream *stream);
 
    /// renders this barrier by drawing the render line segments,
    void render(U32 layer);

@@ -48,6 +48,7 @@ GameType::GameType()
    mNetFlags.set(Ghostable);
    mGameOver = false;
    mTeamScoreLimit = DefaultTeamScoreLimit;
+   mBarrierWidth = Barrier::BarrierWidth;
 }
 
 void GameType::processArguments(S32 argc, const char **argv)
@@ -410,7 +411,7 @@ void GameType::onAddedToGame(Game *theGame)
    theGame->setGameType(this);
 }
 
-extern void constructBarriers(Game *theGame, const Vector<F32> &barrier);
+extern void constructBarriers(Game *theGame, const Vector<F32> &barrier, F32 width);
 
 bool GameType::processLevelItem(S32 argc, const char **argv)
 {
@@ -438,15 +439,18 @@ bool GameType::processLevelItem(S32 argc, const char **argv)
    }
    else if(!stricmp(argv[0], "BarrierMaker"))
    {
-      Vector<F32> barrier;
+      BarrierRec barrier;
       for(S32 i = 1; i < argc; i++)
-         barrier.push_back(atof(argv[i]) * getGame()->getGridSize());
-      if(barrier.size() > 3)
+         barrier.verts.push_back(atof(argv[i]) * getGame()->getGridSize());
+      if(barrier.verts.size() > 3)
       {
+         barrier.width = mBarrierWidth;
          mBarriers.push_back(barrier);
-         constructBarriers(getGame(), barrier);
+         constructBarriers(getGame(), barrier.verts, mBarrierWidth);
       }
    }
+   else if(!stricmp(argv[0], "BarrierWidth"))
+      mBarrierWidth = atof(argv[1]);
    else if(!stricmp(argv[0], "LevelName") && argc > 1)
       mLevelName.set(argv[1]);
    else if(!stricmp(argv[0], "LevelDescription") && argc > 1)
@@ -888,11 +892,11 @@ void GameType::onGhostAvailable(GhostConnection *theConnection)
 
    // an empty list clears the barriers
    Vector<F32> v;
-   s2cAddBarriers(v);
+   s2cAddBarriers(v, 0);
 
    for(S32 i = 0; i < mBarriers.size(); i++)
    {
-      s2cAddBarriers(mBarriers[i]);
+      s2cAddBarriers(mBarriers[i].verts, mBarriers[i].width);
    }
    s2cSetTimeRemaining(mGameTimer.getCurrent());
    s2cSetGameOver(mGameOver);
@@ -915,12 +919,12 @@ GAMETYPE_RPC_C2S(GameType, c2sSyncMessagesComplete, (U32 sequence))
    cl->readyForRegularGhosts = true;
 }
 
-GAMETYPE_RPC_S2C(GameType, s2cAddBarriers, (const Vector<F32> &barrier))
+GAMETYPE_RPC_S2C(GameType, s2cAddBarriers, (const Vector<F32> &barrier, F32 width))
 {
    if(!barrier.size())
       getGame()->deleteObjects(BarrierType);
    else
-      constructBarriers(getGame(), barrier);
+      constructBarriers(getGame(), barrier, width);
 }
 
 GAMETYPE_RPC_C2S(GameType, c2sSendChat, (bool global, const char *message))

@@ -76,7 +76,14 @@ public:
       RespawnDelay = 1500,
    };
 
-   Vector<Vector<F32> > mBarriers;
+   F32 mBarrierWidth;
+   struct BarrierRec
+   {
+      Vector<F32> verts;
+      F32 width;
+   };
+
+   Vector<BarrierRec> mBarriers;
    Vector<RefPtr<ClientRef> > mClientList;
 
    virtual ClientRef *allocClientRef() { return new ClientRef; }
@@ -181,7 +188,7 @@ public:
 
    void onGhostAvailable(GhostConnection *theConnection);
    TNL_DECLARE_RPC(s2cSetLevelInfo, (StringTableEntryRef levelName, StringTableEntryRef levelDesc));
-   TNL_DECLARE_RPC(s2cAddBarriers, (const Vector<F32> &barrier));
+   TNL_DECLARE_RPC(s2cAddBarriers, (const Vector<F32> &barrier, F32 width));
    TNL_DECLARE_RPC(s2cAddTeam, (StringTableEntryRef teamName, F32 r, F32 g, F32 b));
    TNL_DECLARE_RPC(s2cAddClient, (StringTableEntryRef clientName, bool isMyClient));
    TNL_DECLARE_RPC(s2cClientJoinedTeam, (StringTableEntryRef clientName, U32 teamIndex));

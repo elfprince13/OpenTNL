@@ -40,7 +40,7 @@ TNL_IMPLEMENT_NETOBJECT(Barrier);
 
 U32 Barrier::mBarrierChangeIndex = 1;
 
-void constructBarriers(Game *theGame, const Vector<F32> &barrier)
+void constructBarriers(Game *theGame, const Vector<F32> &barrier, F32 width)
 {
    Vector<Point> vec;
    bool loop;
@@ -73,7 +73,7 @@ void constructBarriers(Game *theGame, const Vector<F32> &barrier)
       
       if(cosTheta >= 0)
       {
-         F32 extendAmt = Barrier::BarrierWidth * 0.5 * tan( acos(cosTheta) / 2 );
+         F32 extendAmt = width * 0.5 * tan( acos(cosTheta) / 2 );
          if(extendAmt > 0.01)
             extendAmt -= 0.01;
          extend.push_back(extendAmt);
@@ -96,18 +96,19 @@ void constructBarriers(Game *theGame, const Vector<F32> &barrier)
 
       Point start = vec[i] - edgeVector[i] * extendBack;
       Point end = vec[i+1] + edgeVector[i] * extendForward;
-      Barrier *b = new Barrier(start, end);
+      Barrier *b = new Barrier(start, end, width);
       b->addToGame(theGame);
    }
 }
 
-Barrier::Barrier(Point st, Point e)
+Barrier::Barrier(Point st, Point e, F32 width)
 {
    mObjectTypeMask = BarrierType | CommandMapVisType;
    start = st;
    end = e;
    Rect r(start, end);
-   r.expand(Point(BarrierWidth, BarrierWidth));
+   mWidth = width;
+   r.expand(Point(width, width));
    setExtent(r);
    mLastBarrierChangeIndex = 0;
 }
@@ -116,33 +117,11 @@ void Barrier::onAddedToGame(Game *theGame)
 {
 }
 
-U32 Barrier::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
-{
-   stream->write(start.x);
-   stream->write(start.y);
-   stream->write(end.x);
-   stream->write(end.y);
-   return 0;
-}
-
-void Barrier::unpackUpdate(GhostConnection *connection, BitStream *stream)
-{
-   stream->read(&start.x);
-   stream->read(&start.y);
-   stream->read(&end.x);
-   stream->read(&end.y);
-
-   Rect r(start, end);
-   r.expand(Point(BarrierWidth, BarrierWidth));
-   setExtent(r);
-   mBarrierChangeIndex++;
-}
-
 bool Barrier::getCollisionPoly(Vector<Point> &polyPoints)
 {
    Point vec = end - start;
    Point crossVec(vec.y, -vec.x);
-   crossVec.normalize(BarrierWidth * 0.5);
+   crossVec.normalize(mWidth * 0.5);
    
    polyPoints.push_back(Point(start.x + crossVec.x, start.y + crossVec.y));
    polyPoints.push_back(Point(end.x + crossVec.x, end.y + crossVec.y));
@@ -247,7 +226,7 @@ void Barrier::render(U32 layerIndex)
          fillObjects.clear();
 
          Rect bounds(start, end);
-         bounds.expand(Point(BarrierWidth, BarrierWidth));
+         bounds.expand(Point(mWidth, mWidth));
          findObjects(BarrierType, fillObjects, bounds);
 
          for(S32 i = 0; i < fillObjects.size(); i++)
