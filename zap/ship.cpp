@@ -525,10 +525,7 @@ void Ship::emitMovementSparks()
                Color thrust;
 
                F32 t = TNL::Random::readF();
-
-               thrust.r = interp(t, dim.r, light.r);
-               thrust.g = interp(t, dim.g, light.g);
-               thrust.b = interp(t, dim.b, light.b);
+               thrust.interp(t, dim, light);
 
                SparkManager::emitSpark(
                                        mMoveState[RenderState].pos - shipDirs[i] * 13,

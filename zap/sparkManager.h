@@ -33,35 +33,15 @@
 namespace Zap
 {
 
-class SparkManager
+namespace SparkManager
 {
-public:
-   struct Spark
-   {
-      Point pos;
-      Point vel;
-      Color color;
-      F32 ttl;
-
-      Spark *next;
-   };
-
-   static Spark *head;
-
-   static void emitSpark(Point pos, Point vel, Color color, F32 ttl=0);
-   static void emitExplosion(Point pos, F32 size=1.f);
-   static void emitExplosion(Point pos, F32 size, Color *colorArray, U32 numColors);
-   static void emitBurst(Point pos, Point scale, Color color1, Color color2);
-   static void tick( F32 dT);
-   static void render();
-
-   static ClassChunker<Spark> mChunker;
+   void emitSpark(Point pos, Point vel, Color color, F32 ttl=0);
+   void emitExplosion(Point pos, F32 size=1.f);
+   void emitExplosion(Point pos, F32 size, Color *colorArray, U32 numColors);
+   void emitBurst(Point pos, Point scale, Color color1, Color color2);
+   void tick( F32 dT);
+   void render();
 };
-
-F32 inline interp(F32 t, F32 a, F32 b)
-{
-   return (1-t) * a + t * b;
-}
 
 };
 

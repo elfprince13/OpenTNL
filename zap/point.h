@@ -71,6 +71,14 @@ struct Color
 
    Color(float red = 1, float green = 1, float blue = 1) { r = red; g = green; b = blue; }
    void read(const char **argv) { r = (float) atof(argv[0]); g = (float) atof(argv[1]); b = (float) atof(argv[2]); }
+
+   void interp(float t, const Color &c1, const Color &c2)
+   {
+      float oneMinusT = 1.0f - t;
+      r = c1.r * t + c2.r * oneMinusT;
+      g = c1.g * t + c2.g * oneMinusT;
+      b = c1.b * t + c2.b * oneMinusT;
+   }
 };
 
 struct Rect

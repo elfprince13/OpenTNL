@@ -31,29 +31,88 @@ using namespace TNL;
 namespace Zap
 {
 
-ClassChunker<SparkManager::Spark> SparkManager::mChunker;
-SparkManager::Spark * SparkManager::head = NULL;
-
-void SparkManager::emitSpark(Point pos, Point vel, Color color, F32 ttl)
+namespace SparkManager
 {
-   Spark *s = mChunker.alloc();
 
-   // Add to list
-   s->next = head;
-   head = s;
+struct Spark
+{
+   Point pos;
+   Color color;
+   F32 alpha;
+   F32 ttl;
+   Point vel;
+};
 
-   // set it up...
+enum {
+   MaxSparks = 4096,
+};
+
+U32 firstFreeIndex = 0;
+Spark gSparks[MaxSparks];
+
+void emitSpark(Point pos, Point vel, Color color, F32 ttl)
+{
+   if(firstFreeIndex >= MaxSparks)
+      return;
+   Spark *s = gSparks + firstFreeIndex;
+   firstFreeIndex++;
+
    s->pos = pos;
    s->vel = vel;
    s->color = color;
-
+   
    if(!ttl)
       s->ttl = 15 * Random::readF() * Random::readF();
    else
       s->ttl = ttl;
 }
 
-void SparkManager::emitExplosion(Point pos, F32 size)
+
+void tick( F32 dT )
+{
+   for(U32 i = 0; i < firstFreeIndex; )
+   {
+      Spark *theSpark = gSparks + i;
+      if(theSpark->ttl <= dT)
+      {
+         firstFreeIndex--;
+         *theSpark = gSparks[firstFreeIndex];
+      }
+      else
+      {
+         theSpark->ttl -= dT;
+         theSpark->pos += theSpark->vel * dT;
+         if(theSpark->ttl > 2)
+            theSpark->alpha = 1;
+         else
+            theSpark->alpha = theSpark->ttl * 0.5;
+         i++;
+      }
+   }
+}
+
+void SparkManager::render()
+{
+   glPointSize( 2.0f );
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   
+   glEnableClientState(GL_COLOR_ARRAY);
+   glEnableClientState(GL_VERTEX_ARRAY);
+
+   glVertexPointer(2, GL_FLOAT, sizeof(Spark), &gSparks[0].pos);
+   glColorPointer(4, GL_FLOAT , sizeof(Spark), &gSparks[0].color);
+   
+   glDrawArrays(GL_POINTS, 0, firstFreeIndex);
+
+   glDisableClientState(GL_COLOR_ARRAY);
+   glDisableClientState(GL_VERTEX_ARRAY);
+
+   glDisable(GL_BLEND);
+   glBlendFunc(GL_ONE, GL_ZERO);
+}
+
+void emitExplosion(Point pos, F32 size)
 {
    for(U32 i = 0; i < (500.0 * size); i++)
    {
@@ -66,7 +125,7 @@ void SparkManager::emitExplosion(Point pos, F32 size)
    }
 }
 
-void SparkManager::emitExplosion(Point pos, F32 size, Color *colorArray, U32 numColors)
+void emitExplosion(Point pos, F32 size, Color *colorArray, U32 numColors)
 {
    for(U32 i = 0; i < (500.0 * size); i++)
    {
@@ -80,7 +139,7 @@ void SparkManager::emitExplosion(Point pos, F32 size, Color *colorArray, U32 num
    }
 }
 
-void SparkManager::emitBurst(Point pos, Point scale, Color color1, Color color2)
+void emitBurst(Point pos, Point scale, Color color1, Color color2)
 {
    F32 size = 1;
 
@@ -93,9 +152,7 @@ void SparkManager::emitBurst(Point pos, Point scale, Color color1, Color color2)
 
       Color r;
 
-      r.r = interp(t, color1.r, color2.r);
-      r.g = interp(t, color1.g, color2.g);
-      r.b = interp(t, color1.b, color2.b);
+      r.interp(t, color1, color2);
 
       emitSpark(
          pos + Point(cos(th)*scale.x, sin(th)*scale.y),
@@ -106,65 +163,6 @@ void SparkManager::emitBurst(Point pos, Point scale, Color color1, Color color2)
    }
 }
 
-void SparkManager::tick( F32 dT )
-{
-   for(Spark **walk = &head; *walk; )
-   {
-      Spark *theSpark = *walk;
-      theSpark->pos += theSpark->vel * dT;
-      theSpark->ttl -= dT;
-      if(theSpark->ttl <= 0)
-      {
-         *walk = theSpark->next;
-         mChunker.free(theSpark);
-      }
-      else
-         walk = &((*walk)->next);
-   }
-}
-
-void SparkManager::render()
-{
-   Spark *walk = head;
-   static F32    pts[2*4096];
-   static F32    clr[4*4096];
-
-   U32 pos = 0;
-   while(walk && pos < 4095)
-   {
-      clr[pos*4+0] = walk->color.r;
-      clr[pos*4+1] = walk->color.g;
-      clr[pos*4+2] = walk->color.b;
-
-      if(walk->ttl > 2)
-         clr[pos*4+3] = 1;
-      else
-         clr[pos*4+3] = walk->ttl * 0.5;
-
-      pts[pos*2+0] = walk->pos.x;
-      pts[pos*2+1] = walk->pos.y;
-
-      walk = walk->next;
-      pos++;
-   }
-
-   glPointSize( 2.0f );
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-   
-   glEnableClientState(GL_COLOR_ARRAY);
-   glEnableClientState(GL_VERTEX_ARRAY);
-
-   glColorPointer(4, GL_FLOAT , 0, clr);
-   glVertexPointer(2, GL_FLOAT, 0, pts);
-   
-   glDrawArrays(GL_POINTS, 0, pos);
-
-   glDisableClientState(GL_COLOR_ARRAY);
-   glDisableClientState(GL_VERTEX_ARRAY);
-
-   glDisable(GL_BLEND);
-   glBlendFunc(GL_ONE, GL_ZERO);
-}
+};
 
 };
