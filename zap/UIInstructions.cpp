@@ -26,6 +26,7 @@
 
 #include "UIInstructions.h"
 #include "UIMenus.h"
+#include "UIGame.h"
 #include "game.h"
 #include "glutInclude.h"
 #include "gameObjectRender.h"
@@ -48,6 +49,20 @@ const char *pageHeaders[] = {
 
 void InstructionsUserInterface::render()
 {
+   if(gClientGame->isConnectedToServer())
+   {
+      gGameUserInterface.render();
+      glEnable(GL_BLEND);
+      glBegin(GL_POLYGON);
+      glColor4f(0, 0, 0, 0.7);
+      glVertex2f(0,0);
+      glVertex2f(canvasWidth, 0);
+      glVertex2f(canvasWidth, canvasHeight);
+      glVertex2f(0, canvasHeight);
+      glEnd();
+      glDisable(GL_BLEND);
+   }
+
    glColor3f(1,1,1);
    drawStringf(3, 3, 25, "INSTRUCTIONS - %s", pageHeaders[mCurPage - 1]);
    drawStringf(650, 3, 25, "PAGE %d/%d", mCurPage, NumPages);
@@ -219,7 +234,12 @@ void InstructionsUserInterface::nextPage()
 {
    mCurPage++;
    if(mCurPage > NumPages)
-      gMainMenuUserInterface.activate();
+   {
+      if(gClientGame->isConnectedToServer())
+         gGameUserInterface.activate();
+      else
+         gMainMenuUserInterface.activate();
+   }
 }
 
 void InstructionsUserInterface::prevPage()
@@ -251,7 +271,10 @@ void InstructionsUserInterface::onKeyDown(U32 key)
          nextPage();
          break;
       case 27:
-         gMainMenuUserInterface.activate();
+         if(gClientGame->isConnectedToServer())
+            gGameUserInterface.activate();
+         else
+            gMainMenuUserInterface.activate();
          break;
    }
 }

@@ -299,6 +299,7 @@ void GameMenuUserInterface::onActivate()
    menuItems.clear();
    menuItems.push_back("RETURN TO GAME");
    menuItems.push_back("OPTIONS");
+   menuItems.push_back("INSTRUCTIONS");
    menuItems.push_back("LEAVE GAME");
    GameType *theGameType = gClientGame->getGameType();
    if(theGameType)
@@ -319,6 +320,9 @@ void GameMenuUserInterface::processSelection(U32 index)
          gOptionsMenuUserInterface.activate();
          break;
       case 2:
+         gInstructionsUserInterface.activate();
+         break;
+      case 3:
          endGame();
          if(EditorUserInterface::editorEnabled)
             gEditorUserInterface.activate();
@@ -327,7 +331,7 @@ void GameMenuUserInterface::processSelection(U32 index)
          break;
       default:
          if(mGameType.isValid())
-            mGameType->processClientGameMenuOption(index - 3);
+            mGameType->processClientGameMenuOption(index - 4);
          gGameUserInterface.activate();
          break;
    }

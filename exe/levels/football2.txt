@@ -1,4 +1,4 @@
-FootballGameType 10 40
+FootballGameType 10 48
 Team Blue 0 0 1
 Team Red 1 0 0
 LevelName Diamond

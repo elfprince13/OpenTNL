@@ -239,11 +239,11 @@ void renderTeleporter(U32 type, S32 time, F32 radiusFraction, F32 radius, F32 al
 
    static float colors[NumTypes][NumColors][3] = {
       {
-         { 0, 1, 0 },
+         { 0, 0.25, 0.8 },
          { 0, 0.5, 1 },
          { 0, 0, 1 },
          { 0, 1, 1 },
-         { 0, 1, 0.5 },
+         { 0, 0.5, 0.5 },
          { 0, 0, 1 },
       },
       {
@@ -291,14 +291,16 @@ void renderTeleporter(U32 type, S32 time, F32 radiusFraction, F32 radius, F32 al
          alphaMod = (1 - d) * 10;
 
       F32 theta = fmod(float( t.thetaI + time * 0.001 * t.thetaP), (float) Float2Pi);
-      F32 arcRadius = radiusFraction * radius * d;
+      F32 startRadius = radiusFraction * radius * d;
 
       Point start(cos(theta), sin(theta));
-      start *= arcRadius;
+      start *= startRadius;
 
       theta -= arcTime * t.thetaP;
+      d += arcTime / t.dP;
       Point end(cos(theta), sin(theta));
-      end *= arcRadius;
+      F32 endRadius = radiusFraction * radius * d;
+      end *= endRadius;
 
       glColor(tpColors[t.ci], alpha * alphaMod);
       glVertex(start);
@@ -310,7 +312,7 @@ void renderTeleporter(U32 type, S32 time, F32 radiusFraction, F32 radius, F32 al
       {
          F32 frac = (j + 1) / F32(midpointCount + 2);
          Point p = start * (1 - frac) + end * frac;
-         p.normalize(arcRadius);
+         p.normalize(startRadius * (1 - frac) + endRadius * frac);
          glColor(tpColors[t.ci], alpha * alphaMod * (1 - frac));
          glVertex(p);
          glVertex(p);
