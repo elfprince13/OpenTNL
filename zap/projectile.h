@@ -41,6 +41,7 @@ public:
    Point velocity;
    U32 liveTime;
    bool collided;
+   bool alive;
    SafePtr<Ship> mShooter;
 
    Projectile(Point pos = Point(), Point vel = Point(), U32 liveTime = 0, Ship *shooter = NULL);

@@ -44,6 +44,7 @@ Projectile::Projectile(Point p, Point v, U32 t, Ship *shooter)
    velocity = v;
    liveTime = t;
    collided = false;
+   alive = true;
    mShooter = shooter;
 }
 
@@ -104,6 +105,7 @@ void Projectile::handleCollision(GameObject *hitObject, Point collisionPoint)
 
       hitObject->damageObject(&theInfo);
    }
+
    liveTime = 0;
 
    // Do some particle spew...
@@ -161,12 +163,13 @@ void Projectile::process(U32 deltaT)
 void Projectile::processServer(U32 deltaT)
 {
    process(deltaT);
-   if(liveTime)
+   if(alive)
    {
       if(liveTime <= deltaT)
       {
          getGame()->deleteObject(this, 500);
          liveTime = 0;
+         alive = false;
       }
       else
          liveTime -= deltaT;
@@ -177,6 +180,17 @@ void Projectile::processClient(U32 deltaT)
 {
    process(deltaT);
    liveTime += deltaT;
+  /* if(alive)
+   {
+      if(liveTime <= deltaT)
+      {
+         getGame()->deleteObject(this, 500);
+         liveTime = 0;
+         alive = false;
+      }
+      else
+         liveTime -= deltaT;
+   } */
 }
 
 void Projectile::render()
