@@ -146,6 +146,7 @@ void GameType::serverAddClient(GameConnection *theClient)
 
    cref.clientConnection = theClient;
    cref.score = 0;
+   cref.wantsScoreboardUpdates = false;
 
    countTeamPlayers();
 
