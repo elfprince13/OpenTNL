@@ -308,7 +308,7 @@ void InitJoystick()
 	IOObjectRelease (hidObjectIterator); /* release the iterator */
 }
 
-bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask)
+bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask, U32 &hatMask)
 {
    if(!gJoystickInit)
       return false;
