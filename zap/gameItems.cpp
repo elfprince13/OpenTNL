@@ -55,7 +55,7 @@ public:
       di.damagingObject = this;
 
       theShip->damageObject(&di);
-
+      SFXObject::play(SFXShipHeal, getRenderPos(), getRenderVel());
       return true;
    }
 

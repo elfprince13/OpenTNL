@@ -35,12 +35,13 @@
 using namespace TNL;
 #include "UI.h"
 #include "UIGame.h"
-#include "UINameEntry.h"
+#include "UINameEntry.h" 
 #include "UIMenus.h"
 #include "game.h"
 #include "gameNetInterface.h"
 #include "masterConnection.h"
 #include "sfx.h"
+#include "sparkManager.h"
 
 namespace Zap
 {
@@ -366,6 +367,7 @@ int main(int argc, char **argv)
    }
    if(hasClient)
    {
+      SparkManager::init();
       SFXObject::init();
       glutInitWindowSize(800, 600);
       glutInit(&argc, argv);

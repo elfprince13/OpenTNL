@@ -113,7 +113,12 @@ void Projectile::handleCollision(GameObject *hitObject, Point collisionPoint)
    if(isGhost())
    {
       SparkManager::emitExplosion(collisionPoint, 0.4, SparkColors, NumSparkColors);
-      SFXObject::play(SFXPhaserImpact, pos, velocity);
+
+      Ship *s = dynamic_cast<Ship*>(hitObject);
+      if(s && s->mShield)
+         SFXObject::play(SFXBounceShield, pos, velocity);
+      else
+         SFXObject::play(SFXPhaserImpact, pos, velocity);
    }
 }
 

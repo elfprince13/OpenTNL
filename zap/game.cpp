@@ -392,7 +392,11 @@ void ClientGame::idle(U32 timeDelta)
 void ClientGame::zoomCommanderMap()
 {
    mInCommanderMap = !mInCommanderMap;
-   UserInterface::playBoop();
+   if(mInCommanderMap)
+      SFXObject::play(SFXUICommUp);
+   else
+      SFXObject::play(SFXUICommDown);
+
 
    GameConnection *conn = getConnectionToServer();
    

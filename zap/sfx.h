@@ -40,6 +40,8 @@ enum SFXProfiles {
    SFXPhaser,
    SFXPhaserImpact,
    SFXShipExplode,
+   SFXShipHeal,
+   SFXShipTurbo,
    SFXFlagCapture,
    SFXFlagDrop,
    SFXFlagReturn,
@@ -48,7 +50,10 @@ enum SFXProfiles {
    SFXTeleportOut,
    SFXBounceWall,
    SFXBounceObject,
+   SFXBounceShield,
    SFXUIBoop,
+   SFXUICommUp,
+   SFXUICommDown,
    NumSFXBuffers
 };
 

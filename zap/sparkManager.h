@@ -41,6 +41,7 @@ namespace SparkManager
    void emitBurst(Point pos, Point scale, Color color1, Color color2);
    void tick( F32 dT);
    void render();
+   void init();
 };
 
 class fxTrail

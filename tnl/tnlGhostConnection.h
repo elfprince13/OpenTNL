@@ -58,7 +58,7 @@ struct GhostInfo;
 /// important updates being sent as space is available.
 ///
 /// There is a cap on the maximum number of ghosts that can be active through a GhostConnection at once.
-/// The enum GhostIdBitSize (defualts to 10) determines how many bits will be used to transmit the ID for
+/// The enum GhostIdBitSize (defaults to 10) determines how many bits will be used to transmit the ID for
 /// each ghost, so the maximum number is 2^GhostIdBitSize or 1024.  This can be easily raised; see the
 /// GhostConstants enum.
 ///
@@ -165,8 +165,8 @@ public:
    void setGhostFrom(bool ghostFrom); ///< Sets whether ghosts transmit from this side of the connection.
    void setGhostTo(bool ghostTo);     ///< Sets whether ghosts are allowed from the other side of the connection.
 
-   bool doesGhostFrom() { return mGhostArray != NULL; } ///< Does this GhostConnection ghosts NetObjects to the remote host?
-   bool doesGhostTo() { return mLocalGhosts != NULL; }  ///< Does this GhostConnection receive ghosts sent from the remote host?
+   bool doesGhostFrom() { return mGhostArray != NULL; } ///< Does this GhostConnection ghost NetObjects to the remote host?
+   bool doesGhostTo() { return mLocalGhosts != NULL; }  ///< Does this GhostConnection receive ghosts from the remote host?
 
    enum GhostConstants {
       GhostIdBitSize = 10,            ///< Size, in bits, of the integer used to transmit ghost IDs

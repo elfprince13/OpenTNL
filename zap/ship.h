@@ -29,6 +29,7 @@
 
 #include "moveObject.h"
 #include "sparkManager.h"
+#include "sfx.h"
 
 namespace Zap
 {
@@ -74,6 +75,7 @@ public:
    F32 mEnergy;
    StringTableEntry mPlayerName;
    bool mShield, mTurbo, mCooldown;
+   SFXHandle mTurboNoise;
 
    S32     mLastTrailPoint[TrailCount];
    fxTrail mTrail[TrailCount];

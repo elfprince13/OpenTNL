@@ -73,6 +73,7 @@ Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, Collisio
    mShield = false;
    mTurbo = false;
    mCooldown = false;
+   mTurboNoise = NULL;
 }
 
 void Ship::processArguments(S32 argc, const char **argv)
@@ -152,7 +153,7 @@ void Ship::processServerMove(Move *theMove)
       U32 currentTime = Platform::getRealMilliseconds();
       if(currentTime - lastFireTime > FireDelay)
       {
-         mEnergy -= 1.f;
+         mEnergy -= 0.5f;
          lastFireTime = currentTime;
          Point dir(sin(mMoveState[ActualState].angle), cos(mMoveState[ActualState].angle) );
          Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir);
@@ -254,6 +255,9 @@ void Ship::processClientMove(Move *theMove, bool replay)
       mTrail[i].tick(theMove->time);
 
    SFXObject::setListenerParams(mMoveState[RenderState].pos, mMoveState[RenderState].vel);
+
+   if(mTurboNoise)
+      mTurboNoise->setMovementParams(mMoveState[RenderState].pos, mMoveState[RenderState].vel);
 }
 
 void Ship::processClient(U32 deltaT)
@@ -266,6 +270,9 @@ void Ship::processClient(U32 deltaT)
 
    for(U32 i=0; i<TrailCount; i++)
       mTrail[i].tick(deltaT);
+
+   if(mTurboNoise)
+      mTurboNoise->setMovementParams(mMoveState[RenderState].pos, mMoveState[RenderState].vel);
 }
 
 void Ship::updateInterpolation(U32 deltaT)
@@ -377,6 +384,17 @@ void Ship::readControlState(BitStream *stream)
    }
    else
       interpTime = 1;
+
+   // Update the turbo noise
+   if(mTurbo && mTurboNoise.isNull())
+      mTurboNoise = SFXObject::play(SFXShipTurbo, mMoveState[RenderState].pos, mMoveState[RenderState].vel);
+
+   if(!mTurbo && mTurboNoise.isValid())
+   {
+      mTurboNoise->setGain(0);
+      mTurboNoise->stop();
+      mTurboNoise = NULL;
+   }
 }
 
 U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
@@ -520,6 +538,17 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
 
       if(!wasInitialUpdate)
          emitShipExplosion(mMoveState[ActualState].pos);
+   }
+
+   // Update the turbo noise
+   if(mTurbo && mTurboNoise.isNull())
+      mTurboNoise = SFXObject::play(SFXShipTurbo, mMoveState[RenderState].pos, mMoveState[RenderState].vel);
+
+   if(!mTurbo && mTurboNoise.isValid())
+   {
+      mTurboNoise->setGain(0);
+      mTurboNoise->stop();
+      mTurboNoise = NULL;
    }
 }
 
@@ -692,6 +721,52 @@ void Ship::emitMovementSparks()
       mTrail[1].update(rightPt, mTurbo);
       mLastTrailPoint[0] = leftId;
       mLastTrailPoint[1] = rightId;
+   }
+
+   // Finally, do some particles
+   Point velDir(lastMove.right - lastMove.left, lastMove.down - lastMove.up);
+   F32 len = velDir.len();
+
+   if(len > 0)
+   {
+      if(len > 1)
+         velDir *= 1 / len;
+
+      Point shipDirs[4];
+      shipDirs[0].set(sin(mMoveState[RenderState].angle), cos(mMoveState[RenderState].angle) );
+      shipDirs[1].set(-shipDirs[0]);
+      shipDirs[2].set(shipDirs[0].y, -shipDirs[0].x);
+      shipDirs[3].set(-shipDirs[0].y, shipDirs[0].x);
+
+      for(U32 i = 0; i < 4; i++)
+      {
+         F32 th = shipDirs[i].dot(velDir);
+
+          if(th > 0.1)
+          {
+             // shoot some sparks...
+             if(th >= 1*TNL::Random::readF() * velDir.len())
+             {
+                Point chaos(TNL::Random::readF(),TNL::Random::readF());
+                chaos *= 5;
+ 
+                //interp give us some nice enginey colors...
+                Color dim(1, 0, 0);
+                Color light(1, 1, 0);
+                Color thrust;
+  
+                F32 t = TNL::Random::readF();
+                thrust.interp(t, dim, light);
+  
+                SparkManager::emitSpark(
+                                        mMoveState[RenderState].pos - shipDirs[i] * 13,
+                                        -shipDirs[i] * 100 + chaos,
+                                        thrust,
+                                        1.5 * Random::readF()
+                                       );
+             }
+          }
+      }
    }
 
 }
