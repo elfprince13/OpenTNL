@@ -9,8 +9,8 @@
 //   the Free Software Foundation; either version 2 of the License, or
 //   (at your option) any later version.
 //
-//   For use in products that are not compatible with the terms of the GNU 
-//   General Public License, alternative licensing options are available 
+//   For use in products that are not compatible with the terms of the GNU
+//   General Public License, alternative licensing options are available
 //   from GarageGames.com.
 //
 //   This program is distributed in the hope that it will be useful,
@@ -316,21 +316,10 @@ void ClientGame::renderCommander()
    glDisableClientState(GL_VERTEX_ARRAY);
 
    // render the objects
-   Vector<GameObject *> renderObjects; 
-   Vector<Ship *>       sensorObjects; 
+   Vector<GameObject *> renderObjects;
    mDatabase.findObjects(AllObjectTypes, renderObjects, worldBounds);
 
    // Deal with rendering sensor volumes
-
-   for(S32 i = 0; i < renderObjects.size(); i++)
-   {
-      // If it's a ship, add it to the list.
-      Ship * so = dynamic_cast<Ship*>(renderObjects[i]);
-
-      if(so)
-         sensorObjects.push_back(so);
-   }
-
 
    // get info about the current player
    S32 playerId = gClientGame->getGameType()->findClientIndexByName(((Ship*)gClientGame->getConnectionToServer()->getControlObject())->mPlayerName);
@@ -340,26 +329,32 @@ void ClientGame::renderCommander()
    glEnable(GL_BLEND);
    glColor4f(0.1, 0.7, 0.2, 0.3);
 
-   for(S32 i=0; i<sensorObjects.size(); i++)
+   for(S32 i = 0; i < renderObjects.size(); i++)
    {
-      // Get team of this object.
-      S32 ourClientId = gClientGame->getGameType()->findClientIndexByName(sensorObjects[i]->mPlayerName);
-      S32 ourTeam     = gClientGame->getGameType()->mClientList[ourClientId].teamId;
+      // If it's a ship, add it to the list.
+      Ship * so = dynamic_cast<Ship*>(renderObjects[i]);
 
-      if(ourTeam == playerTeam)
+      if(so)
       {
-         glPushMatrix();
-         glTranslatef(sensorObjects[i]->getRenderPos().x, sensorObjects[i]->getRenderPos().y, 0);
+          // Get team of this object.
+          S32 ourClientId = gClientGame->getGameType()->findClientIndexByName(so->mPlayerName);
+          S32 ourTeam     = gClientGame->getGameType()->mClientList[ourClientId].teamId;
 
-         glBegin(GL_TRIANGLE_FAN);
-         glVertex2f(0,0);
+          if(ourTeam == playerTeam)
+          {
+             glPushMatrix();
+             glTranslatef(so->getRenderPos().x, so->getRenderPos().y, 0);
 
-         for(F32 th=0; th<6.38f; th+=.1f)
-               glVertex2f(sin(th) * 325, cos(th) * 325);
+             glBegin(GL_TRIANGLE_FAN);
+             glVertex2f(0,0);
 
-         glEnd();
+             for(F32 th=0; th<6.5f; th+=.2f)
+                   glVertex2f(sin(th) * 325, cos(th) * 325);
 
-         glPopMatrix();
+             glEnd();
+
+             glPopMatrix();
+          }
       }
    }
 
@@ -395,7 +390,7 @@ void ClientGame::renderNormal()
 
    // render the objects
    Vector<GameObject *> renderObjects;
-   
+
    Point screenSize(400, 300);
    Rect extentRect(position - screenSize, position + screenSize);
    mDatabase.findObjects(AllObjectTypes, renderObjects, extentRect);

@@ -253,7 +253,7 @@ void GameUserInterface::onKeyDown(U32 key)
    {
       mCurrentChatType = GlobalChat;
 
-      switch(key)
+      switch(toupper(key))
       {
          case '\t':
          {
@@ -263,19 +263,15 @@ void GameUserInterface::onKeyDown(U32 key)
                g->c2sRequestScoreboardUpdates(true);
             break;
          }
-         case 'w':
          case 'W':
             mCurrentMove.up = 1.0;
             break;
-         case 'a':
          case 'A':
             mCurrentMove.left = 1.0;
             break;
-         case 's':
          case 'S':
             mCurrentMove.down = 1.0;
             break;
-         case 'd':
          case 'D':
             mCurrentMove.right = 1.0;
             break;
@@ -289,10 +285,8 @@ void GameUserInterface::onKeyDown(U32 key)
                gGameMenuUserInterface.activate();
             break;
 
-         case 't':
          case 'T':
             mCurrentChatType = TeamChat;
-         case 'g':
          case 'G':
             mChatLastBlinkTime = 0;
             mChatBlink = true;
@@ -302,13 +296,12 @@ void GameUserInterface::onKeyDown(U32 key)
                mCurrentMove.right = 
                mCurrentMove.down = 0;
             break;
-         case 'v':
          case 'V':
             UserInterface::playBoop();
             mVChat->show();
             mCurrentMode = VChatMode;
             break;
-         case ' ':
+         case 'R':
             if(gClientGame->mInCommanderMap)
                break;
 
@@ -429,7 +422,7 @@ void GameUserInterface::onKeyUp(U32 key)
 {
    if(mCurrentMode == PlayMode)
    {
-      switch(key)
+      switch(toupper(key))
       {
          case '\t':
          {
@@ -439,23 +432,19 @@ void GameUserInterface::onKeyUp(U32 key)
                g->c2sRequestScoreboardUpdates(false);
             break;
          }
-         case 'w':
          case 'W':
             mCurrentMove.up = 0;
             break;
-         case 'a':
          case 'A':
             mCurrentMove.left = 0;
             break;
-         case 's':
          case 'S':
             mCurrentMove.down = 0;
             break;
-         case 'd':
          case 'D':
             mCurrentMove.right = 0;
             break;
-         case ' ':
+         case 'R':
              if(!gClientGame->mInCommanderMap)
                break;
 

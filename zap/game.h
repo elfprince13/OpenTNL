@@ -163,7 +163,7 @@ class ClientGame : public Game
 {
    SafePtr<GameConnection> mConnectionToServer; // If this is a client game, this is the connection to the server
 public:
-   ClientGame(const Address &bindAddress) : Game(bindAddress) {}
+   ClientGame(const Address &bindAddress) : Game(bindAddress), mInCommanderMap(false) {}
 
    bool mInCommanderMap;
 

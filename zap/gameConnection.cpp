@@ -49,6 +49,7 @@ GameConnection::GameConnection(Game *game)
    firstMoveIndex = 1;
    theGame = game;
    setTranslatesStrings();
+   mInCommanderMap = false;
 }
 
 GameConnection::~GameConnection()
