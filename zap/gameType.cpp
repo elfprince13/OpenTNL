@@ -528,6 +528,23 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSendChat, (bool global, const char *mes
    RefPtr<NetEvent> theEvent = TNL_RPC_CONSTRUCT_NETEVENT(this, 
       s2cDisplayChatMessage, (global, source->getClientName(), message));
 
+   sendChatDisplayEvent(clientIndex, global, theEvent);
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSendChatSTE, (bool global, StringTableEntryRef message),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+{
+   GameConnection *source = (GameConnection *) getRPCSourceConnection();
+   S32 clientIndex = findClientIndexByConnection(source);
+
+   RefPtr<NetEvent> theEvent = TNL_RPC_CONSTRUCT_NETEVENT(this, 
+      s2cDisplayChatMessageSTE, (global, source->getClientName(), message));
+
+   sendChatDisplayEvent(clientIndex, global, theEvent);
+}
+
+void GameType::sendChatDisplayEvent(S32 clientIndex, bool global, NetEvent *theEvent)
+{
    S32 teamId = 0;
    
    if(!global)
@@ -550,6 +567,14 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cDisplayChatMessage, (bool global, Strin
    Color theColor = global ? gGlobalChatColor : gTeamChatColor;
 
    gGameUserInterface.displayMessage(theColor, "%s: %s", clientName.getString(), message);
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cDisplayChatMessageSTE, (bool global, StringTableEntryRef clientName, StringTableEntryRef message),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+{
+   Color theColor = global ? gGlobalChatColor : gTeamChatColor;
+
+   gGameUserInterface.displayMessage(theColor, "%s: %s", clientName.getString(), message.getString());
 }
 
 TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sRequestScoreboardUpdates, (bool updates),

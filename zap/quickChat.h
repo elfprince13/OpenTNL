@@ -29,6 +29,7 @@
 
 #include "tnlNetBase.h"
 #include "UI.h"
+#include "tnlNetStringTable.h"
 
 namespace Zap
 {
@@ -42,7 +43,7 @@ private:
       U8  trigger;
       bool teamOnly;
       const char *caption;
-      const char *msg;
+      StringTableEntry msg;
    };
 
    static VChatNode mChatTree[];

@@ -138,8 +138,11 @@ public:
    TNL_DECLARE_RPC(c2sChangeTeams, ());
    TNL_DECLARE_RPC(s2cClientJoinedTeam, (StringTableEntryRef clientName, U32 teamIndex));
 
+   void sendChatDisplayEvent(S32 clientIndex, bool global, NetEvent *theEvent);
    TNL_DECLARE_RPC(c2sSendChat, (bool global, const char *message));
+   TNL_DECLARE_RPC(c2sSendChatSTE, (bool global, StringTableEntryRef ste));
    TNL_DECLARE_RPC(s2cDisplayChatMessage, (bool global, StringTableEntryRef clientName, const char *message));
+   TNL_DECLARE_RPC(s2cDisplayChatMessageSTE, (bool global, StringTableEntryRef clientName, StringTableEntryRef message));
 
    TNL_DECLARE_RPC(s2cKillMessage, (StringTableEntryRef victim, StringTableEntryRef killer));
    TNL_DECLARE_RPC(s2cScoreboardUpdate, (const Vector<RangedU32<0, MaxPing> > &pingTimes, const Vector<Int<24> > &scores));
