@@ -69,7 +69,7 @@ Address gBindAddress(IPProtocol, Address::Any, 28000);
 
 const char *gLevelList = "retrieve1.txt "
                          "retrieve2.txt "
-                         "retrieve3.txt "
+                         "htf1.txt "
                          "football1.txt "
                          "football2.txt "
                          "football3.txt "
@@ -82,8 +82,9 @@ const char *gLevelList = "retrieve1.txt "
                          "ctf2.txt "
                          "ctf3.txt "
                          "ctf4.txt "
-                         "level8.txt "
-                         "level2.txt "
+                         "hunters1.txt "
+                         "hunters2.txt "
+                         "zm1.txt "
                          ;
 
 class ZapJournal : public Journal

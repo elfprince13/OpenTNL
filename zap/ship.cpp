@@ -132,6 +132,7 @@ void Ship::processMove(U32 stateIndex)
 
    F32 time = mCurrentMove.time * 0.001;
    Point requestVel(mCurrentMove.right - mCurrentMove.left, mCurrentMove.down - mCurrentMove.up);
+
    requestVel *= maxVel;
    F32 len = requestVel.len();
 

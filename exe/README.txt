@@ -1,4 +1,4 @@
- ZAP 1.4
+ ZAP 1.4.1
 
 Introduction
 ------------
@@ -64,17 +64,6 @@ module activation key.  The modules in Zap, and their function are:
 4. Sensor - Boosts the screen visible distance of the player
 5. Cloak - Turns the ship invisible
 
-Changes since version 1.2.2:
-----------------------------
-- Added built-in level editor!
-- Added custom ship modules
-- Added Hunters game type
-- Added many new maps
-- Added different weapon types
-- Added deployable objects
-- Added support for more controllers
-- Fixed many bugs
-
 Controls:
 
 w - move up
@@ -109,12 +98,32 @@ Right stick - aim and fire
 right trigger - activate primary module (default = boost)
 left trigger - activate secondary module (default = shield)
 
-button 1 - cycle to next weapon
-button 2 - toggle commander map
-button 3 - open quick chat menu
-button 4 - select weapon and module loadout 
-button 5 - show scores
-button 6 - record voice
+Buttons (Logitech Wingman Cordless)
+A - cycle to next weapon
+B - toggle commander map
+C - open quick chat menu
+X - select weapon and module loadout 
+Y - show scores
+Z - record voice
+
+Saitek P880 Dual Analog
+1 - cycle to next weapon
+2 - toggle commander map
+3 - open quick chat menu
+4 - select weapon and module loadout 
+5 - show scores
+6 - record voice
+
+PS 2 Dual Shock w/USB
+?
+
+XBox controller
+A (green) -
+B (red) -
+X (blue) -
+Y (yellow) -
+white -
+black -
 
 In the game you can press ESC to go to the game options screen.  
 From there you can access the main options which include setting 
