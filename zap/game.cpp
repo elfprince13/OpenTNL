@@ -491,6 +491,7 @@ void ClientGame::renderNormal()
       renderObjects[i]->render();
 
    SparkManager::render();
+   fxTrail::renderTrails();
 
    glPopMatrix();
 }

@@ -47,6 +47,8 @@ public:
 //      Acceleration = 800, // points per second per second
       MaxVelocity = 450, // points per second
       Acceleration = 2500, // points per second per second
+      TurboMaxVelocity = 700, // points per second
+      TurboAcceleration = 5000, // points per second per second
       InterpMaxVelocity = 900, // velocity to use to interpolate to proper position
       InterpAcceleration = 1800,
       InterpMS = 15, // default interpolation time to new position
@@ -57,6 +59,7 @@ public:
       FireDelay = 100,
       MaxControlObjectInterpDistance = 200,
       TrailCount = 2,
+      RechargeRate = 3, // How many percent/second
    };
 
    enum MaskBits {
@@ -66,15 +69,15 @@ public:
       WarpPositionMask  = BIT(3),
       ExplosionMask     = BIT(4),
       HealthMask        = BIT(5),
+      PowersMask        = BIT(6),
    };
 
    U32 interpTime;
    U32 lastFireTime;
    F32 mHealth;
    F32 mEnergy;
-   bool mShieldActive;
-
    StringTableEntry mPlayerName;
+   bool mShield, mTurbo, mCooldown;
 
    S32     mLastTrailPoint[TrailCount];
    fxTrail mTrail[TrailCount];
@@ -94,6 +97,7 @@ public:
 
    F32 getHealth() { return mHealth; }
 
+   void burnEnergy(U32 dT);
    void emitMovementSparks();
    void emitShipExplosion(Point pos);
 

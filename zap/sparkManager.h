@@ -50,18 +50,28 @@ private:
    {
       Point pos;
       S32   ttl;
+      bool  boosted;
    };
 
    Vector<TrailNode> mNodes;
 
    U32 mDropFreq;
-   U32 mLength;
+   S32 mLength;
+
+   fxTrail *mNext;
+
+   
+   static fxTrail *mHead;
+   void registerTrail();
+   void unregisterTrail();
+
 
 public:
    fxTrail(U32 dropFrequency = 32, U32 len = 15);
+   ~fxTrail();
 
    /// Update the point this trail is attached to.
-   void update(Point pos);
+   void update(Point pos, bool boosted = false);
 
    void tick(U32 dT);
 
@@ -70,6 +80,8 @@ public:
    void reset();
 
    Point getLastPos();
+
+   static void renderTrails();
 };
 
 };

@@ -68,6 +68,11 @@ Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, Collisio
 
    for(S32 i=0; i<TrailCount; i++)
       mTrail[i].reset();
+
+   mEnergy = 100.f;
+   mShield = false;
+   mTurbo = false;
+   mCooldown = false;
 }
 
 void Ship::processArguments(S32 argc, const char **argv)
@@ -101,18 +106,18 @@ void Ship::processMove(Move *theMove, U32 stateIndex)
 
    mMoveState[LastProcessState] = mMoveState[stateIndex];
 
-   float time = theMove->time * 0.001;
+   F32 time = theMove->time * 0.001;
    Point requestVel(theMove->right - theMove->left, theMove->down - theMove->up);
-   requestVel *= MaxVelocity;
+   requestVel *= (mTurbo ? TurboMaxVelocity : MaxVelocity);
    F32 len = requestVel.len();
 
-   if(len > MaxVelocity)
-      requestVel *= MaxVelocity / len;
+   if(len > (mTurbo ? TurboMaxVelocity : MaxVelocity))
+      requestVel *= (mTurbo ? TurboMaxVelocity : MaxVelocity) / len;
 
    Point velDelta = requestVel - mMoveState[stateIndex].vel;
-   float accRequested = velDelta.len();
+   F32 accRequested = velDelta.len();
 
-   float maxAccel = Acceleration * time;
+   F32 maxAccel = (mTurbo ? TurboAcceleration : Acceleration) * time;
    if(accRequested > maxAccel)
    {
       velDelta *= maxAccel / accRequested;
@@ -134,30 +139,90 @@ void Ship::processServerMove(Move *theMove)
 
    mMoveState[RenderState] = mMoveState[ActualState];
    setMaskBits(PositionMask);
+   
    if(!theMove->isEqualMove(&lastMove))
    {
       lastMove = *theMove;
       setMaskBits(MoveMask);
    }
+
    if(theMove->fire)
    {
       U32 currentTime = Platform::getRealMilliseconds();
       if(currentTime - lastFireTime > FireDelay)
       {
+         mEnergy -= 1.f;
          lastFireTime = currentTime;
          Point dir(sin(mMoveState[ActualState].angle), cos(mMoveState[ActualState].angle) );
-         Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir); //mMoveState[ActualState].vel + dir * 500;
+         Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir);
          Projectile *proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this);
          proj->addToGame(getGame());
       }
    }
+
+   if(mTurbo != theMove->boost || mShield != theMove->shield)
+      setMaskBits(PowersMask);
+
+   mShield = theMove->shield;
+   mTurbo  = theMove->boost;
+
+   burnEnergy(theMove->time);
    updateExtent();
+}
+
+void Ship::burnEnergy( U32 dT )
+{
+   if(isGhost()) return;
+
+   F32 scaleFactor = ((F32)dT) / 1000.f;
+
+   // Update things based on available energy...
+   if(mEnergy <= 5.f || mCooldown)
+   {
+      mShield = false;
+      mTurbo  = false;
+      mCooldown = true;
+   }
+
+   if(mCooldown && mEnergy >= 15.f)
+   {
+      mCooldown = false;
+   }
+
+   if(mShield)
+   {
+      mEnergy -= 7.0f * scaleFactor;
+   }
+
+   if(mTurbo)
+   {
+      mEnergy -= 20.0f * scaleFactor;
+   }
+
+
+   if(mEnergy < 100.f)
+   {
+      mEnergy += (F32)(dT * RechargeRate) / 1000.f;
+
+      if(mEnergy < 0.f)
+         mEnergy = 0.f;
+   }
+
+   if(mEnergy >= 100.f)
+      mEnergy = 100.f;
 }
 
 void Ship::damageObject(DamageInfo *theInfo)
 {
    if(!getGame()->getGameType()->objectCanDamageObject(theInfo->damagingObject, this))
       return;
+
+   // Factor in shields
+   if(mShield && mEnergy >= 10.f)
+   {
+      mEnergy -= 10.f;
+      return;
+   }
 
    mHealth -= theInfo->damageAmount;
    setMaskBits(HealthMask);
@@ -274,6 +339,7 @@ void Ship::processServer(U32 deltaT)
       mMoveState[RenderState] = mMoveState[ActualState];
       setMaskBits(PositionMask);
    }
+   burnEnergy(deltaT);
    updateExtent();
 }
 
@@ -285,6 +351,8 @@ void Ship::writeControlState(BitStream *stream)
    stream->write(mMoveState[ActualState].vel.x);
    stream->write(mMoveState[ActualState].vel.y);
    stream->write(mEnergy);
+   stream->writeFlag(mTurbo);
+   stream->writeFlag(mShield);
 }
 
 void Ship::readControlState(BitStream *stream)
@@ -295,6 +363,8 @@ void Ship::readControlState(BitStream *stream)
    stream->read(&mMoveState[ActualState].vel.x);
    stream->read(&mMoveState[ActualState].vel.y);
    stream->read(&mEnergy);
+   mTurbo = stream->readFlag();
+   mShield = stream->readFlag();
    
    Point delta = mMoveState[ActualState].pos - mMoveState[RenderState].pos;
    if(delta.len() > MaxControlObjectInterpDistance)
@@ -332,6 +402,12 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
    }
    if(stream->writeFlag(updateMask & HealthMask))
       stream->writeFloat(mHealth, 6);
+
+   if(stream->writeFlag(updateMask & PowersMask))
+   {
+      stream->writeFlag(mTurbo);
+      stream->writeFlag(mShield);
+   }
 
    stream->writeFlag(hasExploded);
 
@@ -387,10 +463,18 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
          theItem->mountToShip(this);
       }
    }
+
    if(stream->readFlag())
       mHealth = stream->readFloat(6);
 
+   if(stream->readFlag())
+   {
+      mTurbo  = stream->readFlag();
+      mShield = stream->readFlag();
+   }
+
    bool explode = stream->readFlag();
+
    if(stream->readFlag())
    {
       stream->read(&mMoveState[ActualState].pos.x);
@@ -624,22 +708,22 @@ void Ship::emitMovementSparks()
    // Stitch things up if we must...
    if(leftId == mLastTrailPoint[0] && rightId == mLastTrailPoint[1])
    {
-      mTrail[0].update(leftPt);
-      mTrail[1].update(rightPt); 
+      mTrail[0].update(leftPt, mTurbo);
+      mTrail[1].update(rightPt, mTurbo); 
       mLastTrailPoint[0] = leftId;
       mLastTrailPoint[1] = rightId;
    }
    else if(leftId == mLastTrailPoint[1] && rightId == mLastTrailPoint[0])
    {
-      mTrail[1].update(leftPt);
-      mTrail[0].update(rightPt);
+      mTrail[1].update(leftPt, mTurbo);
+      mTrail[0].update(rightPt, mTurbo);
       mLastTrailPoint[1] = leftId;
       mLastTrailPoint[0] = rightId;
    }
    else
    {
-      mTrail[0].update(leftPt);
-      mTrail[1].update(rightPt);
+      mTrail[0].update(leftPt, mTurbo);
+      mTrail[1].update(rightPt, mTurbo);
       mLastTrailPoint[0] = leftId;
       mLastTrailPoint[1] = rightId;
    }
@@ -650,9 +734,6 @@ void Ship::render()
 {
    if(hasExploded)
       return;
-
-   for(U32 i=0; i<TrailCount; i++)
-      mTrail[i].render();
 
    if(posSegments.size())
    {
@@ -723,6 +804,12 @@ void Ship::render()
       thrusts[2] += 0.25;
    else if(rotVel < -0.001)
       thrusts[3] += 0.25;
+
+   if(mTurbo)
+   {
+      for(U32 i = 0; i < 4; i++)
+         thrusts[i] *= 1.3;
+   }
 
    // first render the thrusters
 
@@ -824,12 +911,14 @@ void Ship::render()
    glVertex2f(12.5, 10);
    glVertex2f(12.5, 0);
    glEnd();
+   
    glColor4f(color.r,color.g,color.b, alpha);
    glBegin(GL_LINE_LOOP);
    glVertex2f(-12, -13);
    glVertex2f(0, 22);
    glVertex2f(12, -13);
    glEnd();
+
    U32 health = 14 * mHealth;
    glBegin(GL_LINES);
    for(U32 i = 0; i < health; i++)
@@ -847,11 +936,23 @@ void Ship::render()
    glVertex2f(20, -15);
    glEnd();
 
+   // Render shield if appropriate
+   if(mShield)
+   {
+      glColor4f(1,1,0, alpha);
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(-23, -18);
+      glVertex2f(0, 27);
+      glVertex2f(23, -18);
+      glEnd();
+   }
+
    if(hasExploded)
    {
       glDisable(GL_BLEND);
       glBlendFunc(GL_ONE, GL_ZERO);
    }
+
 
    glPopMatrix();
 

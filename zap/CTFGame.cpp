@@ -145,6 +145,52 @@ void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
          glColor3f(1,1,1);
          UserInterface::drawStringf(pos.x, pos.y, 32, "%d", mTeams[i].score);
       }
+
+      // Render current ship's energy, too.
+      if(gClientGame && gClientGame->getConnectionToServer())
+      {
+         Ship *s = dynamic_cast<Ship*>(gClientGame->getConnectionToServer()->getControlObject());
+         if(s)
+         {
+            static F32 curEnergy = 0.f;
+
+            curEnergy = (curEnergy + s->mEnergy) * 0.5f;
+
+            const F32 offset = 50;
+
+            glColor3f(0.0, 0.0, 1);
+            glBegin(GL_POLYGON);
+            glVertex2f(15,              515 + offset);
+            glVertex2f(15 + curEnergy,  515 + offset);
+            glVertex2f(15 + curEnergy,  535 + offset);
+            glVertex2f(15,              535 + offset);
+            glEnd();
+
+            // Show danger line.
+            glColor3f(1, 0, 0);
+            glBegin(GL_LINES);
+            glVertex2f(15 + 5, 512 + offset);
+            glVertex2f(15 + 5, 539 + offset);
+            glEnd();
+
+            // Show safety line.
+            glColor3f(1, 1, 0);
+            glBegin(GL_LINES);
+            glVertex2f(15 + 15, 512 + offset);
+            glVertex2f(15 + 15, 539 + offset);
+            glEnd();
+
+            // Show full marker
+            glColor3f(0, 1, 0);
+            glBegin(GL_LINE_STRIP);
+            glVertex2f(15 +  90, 512 + offset);
+            glVertex2f(15 + 101, 512 + offset);
+            glVertex2f(15 + 101, 539 + offset);
+            glVertex2f(15 +  90, 539 + offset);
+            glEnd();
+
+         }
+      }
    }
 }
 

@@ -165,24 +165,37 @@ void emitBurst(Point pos, Point scale, Color color1, Color color2)
 
 };
 
+//-----------------------------------------------------------------------------
+
 fxTrail::fxTrail(U32 dropFrequency, U32 len)
 {
    mDropFreq = dropFrequency;
    mLength   = len;
+   registerTrail();
 }
 
-void fxTrail::update(Point pos)
+fxTrail::~fxTrail()
+{
+   unregisterTrail();
+}
+
+void fxTrail::update(Point pos, bool boosted)
 {
    if(mNodes.size() < mLength)
    {
       TrailNode t;
       t.pos = pos;
       t.ttl = mDropFreq;
+      t.boosted = boosted;
 
       mNodes.push_front(t);
    }
    else
+   {
       mNodes[0].pos = pos;
+      if(boosted)
+         mNodes[0].boosted = true;
+   }
 }
 
 void fxTrail::tick(U32 dT)
@@ -197,22 +210,21 @@ void fxTrail::tick(U32 dT)
 
 void fxTrail::render()
 {
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
    glBegin(GL_LINE_STRIP);
 
    for(S32 i=0; i<mNodes.size(); i++)
    {
       F32 t = ((F32)i/(F32)mNodes.size());
-      glColor4f(1.f - 2*t, 1.f - 2*t, 1.f, 1.f-t);
+
+      if(mNodes[i].boosted)
+         glColor4f(1.f - t, 1.f - t, 0.f, 1.f-t);
+      else
+         glColor4f(1.f - 2*t, 1.f - 2*t, 1.f, 0.7f-0.7*t);
+
       glVertex2f(mNodes[i].pos.x, mNodes[i].pos.y);
    }
 
    glEnd();
-
-   glDisable(GL_BLEND);
-   glBlendFunc(GL_ONE, GL_ZERO);
 }
 
 void fxTrail::reset()
@@ -228,6 +240,53 @@ Point fxTrail::getLastPos()
    }
    else
       return Point(0,0);
+}
+
+fxTrail * fxTrail::mHead = NULL;
+
+void fxTrail::registerTrail()
+{
+  fxTrail *n = mHead;
+  mHead = this;
+  mNext = n;
+}
+
+void fxTrail::unregisterTrail()
+{
+   // Find ourselves in the list (lame O(n) solution)
+   fxTrail *w = mHead, *p = NULL;
+   while(w)
+   {
+      if(w == this)
+      {
+         if(p)
+         {
+            p->mNext = w->mNext;
+         }
+         else
+         {
+            mHead = w->mNext;
+         }
+      }
+      p = w;
+      w = w->mNext;
+   }
+}
+
+void fxTrail::renderTrails()
+{
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+   fxTrail *w = mHead;
+   while(w)
+   {
+      w->render();
+      w = w->mNext;
+   }
+
+   glDisable(GL_BLEND);
+   glBlendFunc(GL_ONE, GL_ZERO);
 }
 
 };

@@ -254,7 +254,7 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
 {
    switch(buttonIndex)
    {
-      case 6:
+      case 3:
       {
          mInScoreboardMode = true;
          GameType *g = gClientGame->getGameType();
@@ -262,8 +262,16 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
             g->c2sRequestScoreboardUpdates(true);
          break;
       }
-      case 7:
+      case 2:
          gClientGame->zoomCommanderMap();
+         break;
+
+      case 7:
+         mCurrentMove.boost = true;
+         break;
+
+      case 6:
+         mCurrentMove.shield = true;
          break;
    }
 }
@@ -272,7 +280,7 @@ void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
 {
    switch(buttonIndex)
    {
-      case 6:
+      case 3:
       {
          mInScoreboardMode = false;
          GameType *g = gClientGame->getGameType();
@@ -280,6 +288,14 @@ void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
             g->c2sRequestScoreboardUpdates(false);
          break;
       }
+
+      case 7:
+         mCurrentMove.boost = false;
+         break;
+
+      case 6:
+         mCurrentMove.shield = false;
+         break;
    }
 }
 
@@ -311,6 +327,10 @@ void GameUserInterface::onKeyDown(U32 key)
          case 'D':
             mCurrentMove.right = 1.0;
             break;
+         case ' ':
+            mCurrentMove.boost = true;
+            break;
+
          case 27:
             if(!gClientGame->isConnectedToServer())
             {
@@ -405,6 +425,13 @@ void GameUserInterface::onKeyUp(U32 key)
             break;
          case 'D':
             mCurrentMove.right = 0;
+            break;
+
+         case ' ':
+            mCurrentMove.boost = false;
+            break;
+         case 'F':
+            mCurrentMove.shield = !mCurrentMove.shield;
             break;
       }
    }
