@@ -278,6 +278,8 @@ void GameType::spawnShip(GameConnection *theClient)
    S32 clientIndex = findClientIndexByConnection(theClient);
    S32 teamIndex = mClientList[clientIndex].teamId;
 
+   TNLAssert(mTeams[teamIndex].spawnPoints.size(), "No spawn points!");
+
    Point spawnPoint;
    S32 spawnIndex = Random::readI() % mTeams[teamIndex].spawnPoints.size();
    spawnPoint = mTeams[teamIndex].spawnPoints[spawnIndex];
