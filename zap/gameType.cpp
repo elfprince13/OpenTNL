@@ -497,14 +497,12 @@ void GameType::setTeamScore(S32 teamIndex, S32 newScore)
       gameOverManGameOver();
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cSetTimeRemaining, (U32 timeLeft),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+GAMETYPE_RPC_S2C(GameType, s2cSetTimeRemaining, (U32 timeLeft))
 {
    mGameTimer.reset(timeLeft);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sChangeTeams, (),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+GAMETYPE_RPC_C2S(GameType, c2sChangeTeams, ())
 {
    if(mTeams.size() <= 1)
       return;
@@ -522,8 +520,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sChangeTeams, (),
    spawnShip(source);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddClient, (StringTableEntryRef name, bool isMyClient),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+GAMETYPE_RPC_S2C(GameType, s2cAddClient, (StringTableEntryRef name, bool isMyClient))
 {
    ClientRef cref;
    cref.name = name;
@@ -553,8 +550,7 @@ void GameType::serverRemoveClient(GameConnection *theClient)
    s2cRemoveClient(theClient->getClientName());
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cRemoveClient, (StringTableEntryRef name),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+GAMETYPE_RPC_S2C(GameType, s2cRemoveClient, (StringTableEntryRef name))
 {
    S32 clientIndex = findClientIndexByName(name);
 
@@ -562,8 +558,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cRemoveClient, (StringTableEntryRef name
    mClientList.erase(clientIndex);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddTeam, (StringTableEntryRef teamName, F32 r, F32 g, F32 b),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+GAMETYPE_RPC_S2C(GameType, s2cAddTeam, (StringTableEntryRef teamName, F32 r, F32 g, F32 b))
 {
    Team team;
    team.name = teamName;
@@ -573,14 +568,12 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddTeam, (StringTableEntryRef teamName,
    mTeams.push_back(team);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cSetTeamScore, (U32 teamIndex, U32 score),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+GAMETYPE_RPC_S2C(GameType, s2cSetTeamScore, (U32 teamIndex, U32 score))
 {
    mTeams[teamIndex].score = score;
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cClientJoinedTeam, (StringTableEntryRef name, U32 teamIndex),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+GAMETYPE_RPC_S2C(GameType, s2cClientJoinedTeam, (StringTableEntryRef name, U32 teamIndex))
 {
    S32 clientIndex = findClientIndexByName(name);
    mClientList[clientIndex].teamId = teamIndex;
@@ -619,14 +612,12 @@ void GameType::onGhostAvailable(GhostConnection *theConnection)
    NetObject::setRPCDestConnection(NULL);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cSyncMessagesComplete, (U32 sequence),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+GAMETYPE_RPC_S2C(GameType, s2cSyncMessagesComplete, (U32 sequence))
 {
    c2sSyncMessagesComplete(sequence);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSyncMessagesComplete, (U32 sequence),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+GAMETYPE_RPC_C2S(GameType, c2sSyncMessagesComplete, (U32 sequence))
 {
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
    S32 clientIndex = findClientIndexByConnection(source);
@@ -635,8 +626,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSyncMessagesComplete, (U32 sequence),
    mClientList[clientIndex].readyForRegularGhosts = true;
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddBarriers, (const Vector<F32> &barrier),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+GAMETYPE_RPC_S2C(GameType, s2cAddBarriers, (const Vector<F32> &barrier))
 {
    if(!barrier.size())
       getGame()->deleteObjects(BarrierType);
@@ -644,8 +634,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddBarriers, (const Vector<F32> &barrie
       constructBarriers(getGame(), barrier);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSendChat, (bool global, const char *message),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+GAMETYPE_RPC_C2S(GameType, c2sSendChat, (bool global, const char *message))
 {
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
    S32 clientIndex = findClientIndexByConnection(source);
@@ -656,8 +645,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSendChat, (bool global, const char *mes
    sendChatDisplayEvent(clientIndex, global, theEvent);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSendChatSTE, (bool global, StringTableEntryRef message),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+GAMETYPE_RPC_C2S(GameType, c2sSendChatSTE, (bool global, StringTableEntryRef message))
 {
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
    S32 clientIndex = findClientIndexByConnection(source);
@@ -686,24 +674,21 @@ void GameType::sendChatDisplayEvent(S32 clientIndex, bool global, NetEvent *theE
 extern Color gGlobalChatColor;
 extern Color gTeamChatColor;
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cDisplayChatMessage, (bool global, StringTableEntryRef clientName, const char *message),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+GAMETYPE_RPC_S2C(GameType, s2cDisplayChatMessage, (bool global, StringTableEntryRef clientName, const char *message))
 {
    Color theColor = global ? gGlobalChatColor : gTeamChatColor;
 
    gGameUserInterface.displayMessage(theColor, "%s: %s", clientName.getString(), message);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cDisplayChatMessageSTE, (bool global, StringTableEntryRef clientName, StringTableEntryRef message),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+GAMETYPE_RPC_S2C(GameType, s2cDisplayChatMessageSTE, (bool global, StringTableEntryRef clientName, StringTableEntryRef message))
 {
    Color theColor = global ? gGlobalChatColor : gTeamChatColor;
 
    gGameUserInterface.displayMessage(theColor, "%s: %s", clientName.getString(), message.getString());
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sRequestScoreboardUpdates, (bool updates),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+GAMETYPE_RPC_C2S(GameType, c2sRequestScoreboardUpdates, (bool updates))
 {
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
    S32 clientIndex = findClientIndexByConnection(source);
@@ -712,8 +697,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sRequestScoreboardUpdates, (bool updates
       updateClientScoreboard(clientIndex);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sAdvanceWeapon, (),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+GAMETYPE_RPC_C2S(GameType, c2sAdvanceWeapon, ())
 {
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
    Ship *s = dynamic_cast<Ship*>(source->getControlObject());
@@ -745,8 +729,7 @@ void GameType::updateClientScoreboard(S32 clientIndex)
 
 TNL_DECLARE_MEMBER_ENUM(GameType, MaxPing);
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cScoreboardUpdate, (const Vector<RangedU32<0, GameType::MaxPing> > &pingTimes, const Vector<Int<24> > &scores),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+GAMETYPE_RPC_S2C(GameType, s2cScoreboardUpdate, (const Vector<RangedU32<0, GameType::MaxPing> > &pingTimes, const Vector<Int<24> > &scores))
 {
    for(S32 i = 0; i < mClientList.size(); i++)
    {
@@ -758,8 +741,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cScoreboardUpdate, (const Vector<RangedU
    }
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cKillMessage, (StringTableEntryRef victim, StringTableEntryRef killer),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+GAMETYPE_RPC_S2C(GameType, s2cKillMessage, (StringTableEntryRef victim, StringTableEntryRef killer))
 {
    gGameUserInterface.displayMessage(Color(1.0f, 1.0f, 0.8f), 
             "%s zapped %s", killer.getString(), victim.getString());

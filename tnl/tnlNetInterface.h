@@ -190,6 +190,7 @@ protected:
 
    /// @}
 
+   U32 mCurrentTime;            ///< Current time tracked by this NetInterface.
    bool mRequiresKeyExchange;   ///< True if all connections outgoing and incoming require key exchange.
    U32  mLastTimeoutCheckTime;  ///< Last time all the active connections were checked for timeouts.
    U8  mRandomHashData[12];    ///< Data that gets hashed with connect challenge requests to prevent connection spoofing.
@@ -375,6 +376,9 @@ public:
 
    /// looks up a connected connection on this NetInterface
    NetConnection *findConnection(const Address &remoteAddress);
+
+   /// returns the current process time for this NetInterface
+   U32 getCurrentTime() { return mCurrentTime; }
 };
 
 };

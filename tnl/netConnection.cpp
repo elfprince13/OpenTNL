@@ -205,7 +205,7 @@ void NetConnection::writeRawPacket(BitStream *bstream, NetPacketType packetType)
          mNotifyQueueTail->nextPacket = note;
       mNotifyQueueTail = note;
       note->nextPacket = NULL;
-      note->sendTime = Platform::getRealMilliseconds();
+      note->sendTime = mInterface->getCurrentTime();
 
       writePacketRateInfo(bstream, note);
       S32 start = bstream->getBitPosition();
@@ -233,7 +233,7 @@ void NetConnection::readRawPacket(BitStream *bstream)
    mErrorBuffer[0] = 0;
    if(readPacketHeader(bstream))
    {
-      mLastPacketRecvTime = Platform::getRealMilliseconds();
+      mLastPacketRecvTime = mInterface->getCurrentTime();
 
       readPacketRateInfo(bstream);
       readPacket(bstream);
@@ -274,7 +274,7 @@ void NetConnection::writePacketHeader(BitStream *stream, NetPacketType packetTyp
       stream->writeInt(mAckMask[i], i == wordCount - 1 ?
          (ackByteCount - (i * 4)) * 8 : 32);
 
-   U32 sendDelay = Platform::getRealMilliseconds() - mLastPacketRecvTime;
+   U32 sendDelay = mInterface->getCurrentTime() - mLastPacketRecvTime;
    if(sendDelay > 2047)
       sendDelay = 2047;
    stream->writeInt(sendDelay >> 3, 8);
@@ -437,7 +437,7 @@ bool NetConnection::readPacketHeader(BitStream *pstream)
       // Running average of roundTrip time
       if(mHighestAckedSendTime)
       {
-         S32 roundTripDelta = Platform::getRealMilliseconds() - (mHighestAckedSendTime + pkSendDelay);
+         S32 roundTripDelta = mInterface->getCurrentTime() - (mHighestAckedSendTime + pkSendDelay);
          mRoundTripTime = mRoundTripTime * 0.9f + roundTripDelta * 0.1f;
          if(mRoundTripTime < 0)
             mRoundTripTime = 0;
@@ -454,6 +454,11 @@ bool NetConnection::readPacketHeader(BitStream *pstream)
    // first things first...
    // ackback any pings or half-full windows
 
+   keepAlive(); // notification that the connection is ok
+
+   U32 prevLastSequence = mLastSeqRecvd;
+   mLastSeqRecvd = pkSequenceNumber;
+
    if(pkPacketType == PingPacket || (pkSequenceNumber - mLastRecvAckAck > (MaxPacketWindowSize >> 1)))
    {
       // send an ack to the other side
@@ -462,11 +467,6 @@ bool NetConnection::readPacketHeader(BitStream *pstream)
       // we must resend that packet
       sendAckPacket();
    }
-   keepAlive(); // notification that the connection is ok
-
-   U32 prevLastSequence = mLastSeqRecvd;
-   mLastSeqRecvd = pkSequenceNumber;
-
    return prevLastSequence != pkSequenceNumber && pkPacketType == DataPacket;
 }
 

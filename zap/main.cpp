@@ -208,6 +208,16 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkeyup, (S32 key))
       UserInterface::current->onSpecialKeyUp(key);
 }
 
+inline U32 RandomInt(U32 range)
+{
+   return U32((U32(rand()) / (F32(RAND_MAX) + 1)) * range);
+}
+
+inline U32 RandomBool()
+{
+   return (U32(rand()) / (F32(RAND_MAX) + 1)) > 0.5f;
+}
+
 void idle()
 {
    static S64 lastTimer = Platform::getHighPrecisionTimerValue();
@@ -243,7 +253,7 @@ void idle()
          for(S32 i = 0; i < 32; i++)
          {
             bool found = false;
-            S8 key = keyBuffer[Random::readI() % rklen];
+            S8 key = keyBuffer[RandomInt(rklen)];
             for(S32 i = 0; i < keyDownVector.size(); i++)
             {
                if(keyDownVector[i] == key)
@@ -262,12 +272,12 @@ void idle()
          }
 
          // Do mouse craziness
-         S32 x = Random::readI(0, 800);
-         S32 y = Random::readI(0, 600);
+         S32 x = RandomInt(800);
+         S32 y = RandomInt(600);
          gZapJournal.passivemotion(x,y);
-         gZapJournal.mouse(0, Random::readB(), x, y);
-         gZapJournal.mouse(1, Random::readB(), x, y);
-         gZapJournal.mouse(2, Random::readB(), x, y);
+         gZapJournal.mouse(0, RandomBool(), x, y);
+         gZapJournal.mouse(1, RandomBool(), x, y);
+         gZapJournal.mouse(2, RandomBool(), x, y);
          lastMove = currentTimer;
       }
       gIsCrazyBot = true; // Reenable input events
@@ -561,7 +571,10 @@ int main(int argc, char **argv)
    for(S32 i = 1; i < argc; i++)
    {
       if(!stricmp(argv[i], "-crazybot"))
+      {
+         srand(Platform::getRealMilliseconds());
          gIsCrazyBot = true;
+      }
       else if(!stricmp(argv[i], "-jsave"))
       {
          if(i != argc - 1)

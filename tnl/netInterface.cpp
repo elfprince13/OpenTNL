@@ -55,6 +55,7 @@ NetInterface::NetInterface(const Address &bindAddress) : mSocket(bindAddress)
    for(S32 i = 0; i < mConnectionHashTable.size(); i++)
       mConnectionHashTable[i] = NULL;
    mSendPacketList = NULL;
+   mCurrentTime = Platform::getRealMilliseconds();
 }
 
 NetInterface::~NetInterface()
@@ -106,7 +107,7 @@ void NetInterface::sendtoDelayed(const Address &address, BitStream *stream, U32 
    // allocate the send packet, with the data size added on
    DelaySendPacket *thePacket = (DelaySendPacket *) malloc(sizeof(DelaySendPacket) + dataSize);
    thePacket->remoteAddress = address;
-   thePacket->sendTime = Platform::getRealMilliseconds() + millisecondDelay;
+   thePacket->sendTime = getCurrentTime() + millisecondDelay;
    thePacket->packetSize = dataSize;
    memcpy(thePacket->packetData, stream->getBuffer(), dataSize);
 
@@ -302,11 +303,11 @@ void NetInterface::addConnection(NetConnection *conn)
 
 void NetInterface::processConnections()
 {
-   U32 time = Platform::getRealMilliseconds();
-   mPuzzleManager.tick(time);
+   mCurrentTime = Platform::getRealMilliseconds();
+   mPuzzleManager.tick(mCurrentTime);
 
    // first see if there are any delayed packets that need to be sent...
-   while(mSendPacketList && mSendPacketList->sendTime < time)
+   while(mSendPacketList && mSendPacketList->sendTime < getCurrentTime())
    {
       DelaySendPacket *next = mSendPacketList->nextPacket;
       mSocket.sendto(mSendPacketList->remoteAddress,
@@ -317,16 +318,16 @@ void NetInterface::processConnections()
 
    NetObject::collapseDirtyList(); // collapse all the mask bits...
    for(S32 i = 0; i < mConnectionList.size(); i++)
-      mConnectionList[i]->checkPacketSend(false, time);
+      mConnectionList[i]->checkPacketSend(false, getCurrentTime());
 
-   if(time > mLastTimeoutCheckTime + TimeoutCheckInterval)
+   if(getCurrentTime() > mLastTimeoutCheckTime + TimeoutCheckInterval)
    {
       for(S32 i = 0; i < mPendingConnections.size();)
       {
          NetConnection *pending = mPendingConnections[i];
 
          if(pending->getConnectionState() == NetConnection::AwaitingChallengeResponse &&
-            time > pending->mConnectLastSendTime + ChallengeRetryTime)
+            getCurrentTime() > pending->mConnectLastSendTime + ChallengeRetryTime)
          {
             if(pending->mConnectSendCount > ChallengeRetryCount)
             {
@@ -339,7 +340,7 @@ void NetInterface::processConnections()
                sendConnectChallengeRequest(pending);
          }
          else if(pending->getConnectionState() == NetConnection::AwaitingConnectResponse &&
-            time > pending->mConnectLastSendTime + ConnectRetryTime)
+            getCurrentTime() > pending->mConnectLastSendTime + ConnectRetryTime)
          {
             if(pending->mConnectSendCount > ConnectRetryCount)
             {
@@ -357,7 +358,7 @@ void NetInterface::processConnections()
             }
          }
          else if(pending->getConnectionState() == NetConnection::SendingPunchPackets &&
-            time > pending->mConnectLastSendTime + PunchRetryTime)
+            getCurrentTime() > pending->mConnectLastSendTime + PunchRetryTime)
          {
             if(pending->mConnectSendCount > PunchRetryCount)
             {
@@ -370,7 +371,7 @@ void NetInterface::processConnections()
                sendPunchPackets(pending);
          }
          else if(pending->getConnectionState() == NetConnection::ComputingPuzzleSolution &&
-            time > pending->mConnectLastSendTime + PuzzleSolutionTimeout)
+            getCurrentTime() > pending->mConnectLastSendTime + PuzzleSolutionTimeout)
          {
             pending->setConnectionState(NetConnection::ConnectTimedOut);
             pending->onConnectTerminated(NetConnection::ReasonTimedOut, "Timeout");
@@ -378,11 +379,11 @@ void NetInterface::processConnections()
          }
          i++;
       }
-      mLastTimeoutCheckTime = time;
+      mLastTimeoutCheckTime = getCurrentTime();
 
       for(S32 i = 0; i < mConnectionList.size();)
       {
-         if(mConnectionList[i]->checkTimeout(time))
+         if(mConnectionList[i]->checkTimeout(getCurrentTime()))
          {
             mConnectionList[i]->setConnectionState(NetConnection::TimedOut);
             mConnectionList[i]->onConnectionTerminated(NetConnection::ReasonTimedOut, "Timeout");
@@ -413,6 +414,8 @@ void NetInterface::checkIncomingPackets()
    PacketStream stream;
    NetError error;
    Address sourceAddress;
+
+   mCurrentTime = Platform::getRealMilliseconds();
 
    // read out all the available packets:
    while((error = stream.recvfrom(mSocket, &sourceAddress)) == NoError)
@@ -508,7 +511,7 @@ void NetInterface::sendConnectChallengeRequest(NetConnection *conn)
    out.writeFlag(params.mRequestCertificate);
  
    conn->mConnectSendCount++;
-   conn->mConnectLastSendTime = Platform::getRealMilliseconds();
+   conn->mConnectLastSendTime = getCurrentTime();
    out.sendto(mSocket, conn->getNetAddress());
 }
 
@@ -612,7 +615,7 @@ void NetInterface::handleConnectChallengeResponse(const Address &address, BitStr
    conn->mConnectSendCount = 0;
 
    theParams.mPuzzleSolution = 0;
-   conn->mConnectLastSendTime = Platform::getRealMilliseconds();
+   conn->mConnectLastSendTime = getCurrentTime();
    continuePuzzleSolution(conn);   
 }
 
@@ -672,7 +675,7 @@ void NetInterface::sendConnectRequest(NetConnection *conn)
    }
 
    conn->mConnectSendCount++;
-   conn->mConnectLastSendTime = Platform::getRealMilliseconds();
+   conn->mConnectLastSendTime = getCurrentTime();
 
    out.sendto(mSocket, conn->getNetAddress());
 }
@@ -923,7 +926,7 @@ void NetInterface::startArrangedConnection(NetConnection *conn)
    conn->setConnectionState(NetConnection::SendingPunchPackets);
    addPendingConnection(conn);
    conn->mConnectSendCount = 0;
-   conn->mConnectLastSendTime = Platform::getRealMilliseconds();
+   conn->mConnectLastSendTime = getCurrentTime();
    sendPunchPackets(conn);
 }
 
@@ -967,7 +970,7 @@ void NetInterface::sendPunchPackets(NetConnection *conn)
          theParams.mPossibleAddresses[i].toString()));
    }
    conn->mConnectSendCount++;
-   conn->mConnectLastSendTime = Platform::getRealMilliseconds();
+   conn->mConnectLastSendTime = getCurrentTime();
 }
 
 void NetInterface::handlePunch(const Address &theAddress, BitStream *stream)
@@ -1080,7 +1083,7 @@ void NetInterface::handlePunch(const Address &theAddress, BitStream *stream)
 
    conn->setConnectionState(NetConnection::AwaitingConnectResponse);
    conn->mConnectSendCount = 0;
-   conn->mConnectLastSendTime = Platform::getRealMilliseconds();
+   conn->mConnectLastSendTime = getCurrentTime();
 
    sendArrangedConnectRequest(conn);
 }
@@ -1120,7 +1123,7 @@ void NetInterface::sendArrangedConnectRequest(NetConnection *conn)
    out.hashAndEncrypt(NetConnection::MessageSignatureBytes, encryptPos, &theCipher);
 
    conn->mConnectSendCount++;
-   conn->mConnectLastSendTime = Platform::getRealMilliseconds();
+   conn->mConnectLastSendTime = getCurrentTime();
 
    out.sendto(mSocket, conn->getNetAddress());
 }

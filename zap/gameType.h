@@ -177,6 +177,14 @@ public:
    TNL_DECLARE_CLASS(GameType);
 };
 
+#define GAMETYPE_RPC_S2C(className, methodName, args) \
+   TNL_IMPLEMENT_NETOBJECT_RPC(className, methodName, args, NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+
+#define GAMETYPE_RPC_C2S(className, methodName, args) \
+   TNL_IMPLEMENT_NETOBJECT_RPC(className, methodName, args, NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+
+
+
 };
 
 #endif
