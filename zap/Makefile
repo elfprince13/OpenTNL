@@ -18,10 +18,12 @@ OBJECTS_ZAP=\
 	gameType.o\
 	gridDB.o\
 	item.o\
+	loadoutSelect.o\
 	masterConnection.o\
 	../master/masterInterface.o\
 	moveObject.o\
 	UI.o\
+	UIEditor.o\
 	UIGame.o\
 	UIMenus.o\
 	UINameEntry.o\

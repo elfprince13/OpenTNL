@@ -28,6 +28,7 @@
 #include "glutInclude.h"
 #include "UICredits.h"
 #include <stdio.h>
+#include <ctype.h>
 
 namespace Zap
 {
