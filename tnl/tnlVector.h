@@ -94,11 +94,6 @@ template<class T> class Vector
    S32 size() const;
    bool empty() const;
 
-   T&       front();
-   const T& front() const;
-   T&       back();
-   const T& back() const;
-
    void push_front(const T&);
    void push_back(const T&);
    void pop_front();
@@ -295,26 +290,6 @@ template<class T> inline S32 Vector<T>::size() const
 template<class T> inline bool Vector<T>::empty() const
 {
    return (mElementCount == 0);
-}
-
-template<class T> inline T& Vector<T>::front()
-{
-   return *begin();
-}
-
-template<class T> inline const T& Vector<T>::front() const
-{
-   return *begin();
-}
-
-template<class T> inline T& Vector<T>::back()
-{
-   return *end();
-}
-
-template<class T> inline const T& Vector<T>::back() const
-{
-   return *end();
 }
 
 template<class T> inline void Vector<T>::push_front(const T &x)
