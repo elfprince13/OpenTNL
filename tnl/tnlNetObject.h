@@ -408,7 +408,7 @@ public:
 class RPCEV_##className##_##name : public TNL::NetObjectRPCEvent { \
 public: \
    TNL::FunctorDecl<void (className::*)args> mFunctorDecl;\
-   RPCEV_##className##_##name(TNL::NetObject *theObject = NULL) : mFunctorDecl(className::name##_remote), TNL::NetObjectRPCEvent(theObject, guaranteeType, eventDirection) { mFunctor = &mFunctorDecl; } \
+   RPCEV_##className##_##name(TNL::NetObject *theObject = NULL) : TNL::NetObjectRPCEvent(theObject, guaranteeType, eventDirection), mFunctorDecl(&className::name##_remote) { mFunctor = &mFunctorDecl; } \
    TNL_DECLARE_CLASS( RPCEV_##className##_##name ); \
    bool checkClassType(TNL::Object *theObject) { return dynamic_cast<className *>(theObject) != NULL; } }; \
    TNL_IMPLEMENT_NETEVENT( RPCEV_##className##_##name, groupMask, rpcVersion ); \

@@ -101,7 +101,7 @@ struct JournalEntryRecord
 #define TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(className, func, args, argNames) \
       struct Journal_##className##_##func##_er : public JournalEntryRecord { \
       FunctorDecl<void (className::*) args> mFunctorDecl; \
-      Journal_##className##_##func##_er(const char *name) : JournalEntryRecord(name), mFunctorDecl(className::func##_body) { mFunctor = &mFunctorDecl; } \
+      Journal_##className##_##func##_er(const char *name) : JournalEntryRecord(name), mFunctorDecl(&className::func##_body) { mFunctor = &mFunctorDecl; } \
       } gJournal_##className##_##func##_er(#func); \
       void className::func args { \
       gJournal_##className##_##func##_er.mFunctorDecl.set argNames; \

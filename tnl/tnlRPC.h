@@ -146,7 +146,7 @@ enum RPCGuaranteeType {
 class RPC_##className##_##name : public TNL::RPCEvent { \
 public: \
    TNL::FunctorDecl<void (className::*) args > mFunctorDecl;\
-   RPC_##className##_##name() : mFunctorDecl(className::name##_remote), TNL::RPCEvent(guaranteeType, eventDirection) { mFunctor = &mFunctorDecl; } \
+   RPC_##className##_##name() : TNL::RPCEvent(guaranteeType, eventDirection), mFunctorDecl(&className::name##_remote) { mFunctor = &mFunctorDecl; } \
    TNL_DECLARE_CLASS( RPC_##className##_##name ); \
    bool checkClassType(TNL::Object *theObject) { return dynamic_cast<className *>(theObject) != NULL; } }; \
    TNL_IMPLEMENT_NETEVENT( RPC_##className##_##name, groupMask, rpcVersion ); \

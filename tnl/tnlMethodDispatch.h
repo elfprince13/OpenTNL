@@ -79,15 +79,15 @@ namespace Types
    }
    template <typename T> inline void read(TNL::BitStream &s, TNL::Vector<T> *val)
    {
-      U32 size = s.readInt(VectorSizeBitSize);
+      TNL::U32 size = s.readInt(VectorSizeBitSize);
       val->setSize(size);
-      for(S32 i = 0; i < val->size(); i++)
+      for(TNL::S32 i = 0; i < val->size(); i++)
          read(s, &((*val)[i]));
    }
    template <typename T> void write(TNL::BitStream &s, TNL::Vector<T> &val)
    {
       s.writeInt(val.size(), VectorSizeBitSize);
-      for(S32 i = 0; i < val.size(); i++)
+      for(TNL::S32 i = 0; i < val.size(); i++)
          write(s, val[i]);
    }
 

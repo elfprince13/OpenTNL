@@ -202,7 +202,7 @@ public:
 /// Declares the implementation of a ThreadQueue method.
 #define TNL_IMPLEMENT_THREADQ_METHOD(className, func, args, argNames) \
    void className::func args { \
-   FunctorDecl<void (className::*)args> *theCall = new FunctorDecl<void (className::*)args>(className::func##_body); \
+   FunctorDecl<void (className::*)args> *theCall = new FunctorDecl<void (className::*)args>(&className::func##_body); \
    theCall->set argNames; \
    postCall(theCall); \
    }\
