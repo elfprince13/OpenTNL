@@ -31,6 +31,7 @@ OBJECTS=\
 	random.o\
 	rpc.o\
 	symmetricCipher.o\
+	tnlMessageDispatch.o\
 	udp.o\
 	vector.o\
 

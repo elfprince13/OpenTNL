@@ -35,10 +35,15 @@ OBJECTS_ZAP=\
 	sparkManager.o\
 	teleporter.o\
 	barrier.o\
+	lpc10dec.o\
+	lpc10enc.o\
 	main.o
 
 
 CFLAGS=
+
+.c.o:
+	$(CC) -c $(CFLAGS) $<
 
 .cpp.o : 
 	$(CC) -c $(CFLAGS) $<

@@ -46,11 +46,6 @@ enum {
 
 static U32 lastReadOffset = 0;
 
-void SFXObject::setCaptureGain(S32 amt)
-{
-   mCaptureGain = amt;
-}
-
 bool SFXObject::startRecording()
 {
    if(recording)
@@ -225,6 +220,11 @@ static ALuint gBuffers[NumSFXBuffers];
 static Vector<ALuint> gVoiceFreeBuffers;
 
 static Vector<SFXHandle> gPlayList;
+
+void SFXObject::setCaptureGain(S32 amt)
+{
+   mCaptureGain = amt;
+}
 
 SFXObject::SFXObject(U32 profileIndex, ByteBufferPtr ib, F32 gain, Point position, Point velocity)
 {
