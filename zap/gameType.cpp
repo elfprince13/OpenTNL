@@ -630,7 +630,8 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sAdvanceWeapon, (),
 {
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
    Ship *s = dynamic_cast<Ship*>(source->getControlObject());
-   s->selectWeapon();
+   if(s)
+      s->selectWeapon();
 }
 
 Vector<RangedU32<0, GameType::MaxPing> > GameType::mPingTimes; ///< Static vector used for constructing update RPCs
