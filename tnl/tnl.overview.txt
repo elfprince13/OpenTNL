@@ -503,6 +503,8 @@ int main(int argc, const char **argv)
 
 Once the code is written, use your compiler to build simpletnltest, making sure to link in the tnl library, along with whatever network libraries your platform requires (wsock32.lib on Windows, for example).
 
+Also, make sure Run-Time Type Checking is turned ON for your compiler or the program will not function correctly (option /GR in MSVC, for example).
+
 To test the program, open up two console shells, and in the first, type:
 
 @code
