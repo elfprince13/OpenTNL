@@ -468,10 +468,17 @@ void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
 
 void GameUserInterface::onKeyDown(U32 key)
 {
-   if(mCurrentMode == PlayMode)
+   if(mCurrentMode == LoadoutMode)
+      if(mLoadout.processKey(key))
+         return;
+   
+   if(mCurrentMode == LoadoutMode || mCurrentMode == PlayMode)
    {
       mCurrentChatType = GlobalChat;
 
+      // the following keys are allowed in both play mode
+      // and in loadout mode if not used in the loadout
+      // menu
       switch(toupper(key))
       {
          case '\t':
@@ -513,30 +520,40 @@ void GameUserInterface::onKeyDown(U32 key)
             else
                gGameMenuUserInterface.activate();
             break;
-
-         case 'T':
-            mCurrentChatType = TeamChat;
-         case 'G':
-            mChatLastBlinkTime = 0;
-            mChatBlink = true;
-            mCurrentMode = ChatMode;
-            mCurrentMove.up = 
-               mCurrentMove.left = 
-               mCurrentMove.right = 
-               mCurrentMove.down = 0;
-            break;
-         case 'V':
-            enterVChat(false);
-            break;
-         case 'W':
-            enterLoadout(false);
-            break;
          case 'C':
             gClientGame->zoomCommanderMap();
             break;
          case 'R':
             mVoiceRecorder.start();
             break;
+         default:
+         {
+            if(mCurrentMode == LoadoutMode)
+               break;
+            // the following keys are only allowed in play mode
+            switch(toupper(key))
+            {
+               case 'T':
+                  mCurrentChatType = TeamChat;
+               case 'G':
+                  
+                  mChatLastBlinkTime = 0;
+                  mChatBlink = true;
+                  mCurrentMode = ChatMode;
+                  mCurrentMove.up = 
+                     mCurrentMove.left = 
+                     mCurrentMove.right = 
+                     mCurrentMove.down = 0;
+                  break;
+               case 'V':
+                  enterVChat(false);
+                  break;
+               case 'Q':
+                  enterLoadout(false);
+                  break;
+
+            }
+         }
       }
    }
    else if(mCurrentMode == ChatMode)
@@ -570,13 +587,16 @@ void GameUserInterface::onKeyDown(U32 key)
    }
    else if(mCurrentMode == VChatMode)
       mVChat.processKey(key);
-   else if(mCurrentMode == LoadoutMode)
-      mLoadout.processKey(key);
 }
 
 void GameUserInterface::onKeyUp(U32 key)
 {
-   if(mCurrentMode == PlayMode)
+   if(mCurrentMode == LoadoutMode)
+   {
+      if(!mLoadout.isActive())
+         mCurrentMode = PlayMode;
+   }
+   if(mCurrentMode == LoadoutMode || mCurrentMode == PlayMode)
    {
       switch(toupper(key))
       {
@@ -620,11 +640,6 @@ void GameUserInterface::onKeyUp(U32 key)
    else if(mCurrentMode == VChatMode)
    {
       if(!mVChat.isActive())
-         mCurrentMode = PlayMode;
-   }
-   else if(mCurrentMode == LoadoutMode)
-   {
-      if(!mLoadout.isActive())
          mCurrentMode = PlayMode;
    }
 }

@@ -24,11 +24,12 @@ A - activate secondary module (default = shield)
 
 TAB - show scores
 
-W - select weapon and module loadout
+Q - select weapon and module loadout
 
 Mouse:
 
-Aim and fire with mouse button 1
+Mouse button 1 - fire weapon
+Mouse button 2 - activate secondary module
 
 Dual-Analog Controller:
 

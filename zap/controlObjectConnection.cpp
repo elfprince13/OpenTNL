@@ -131,6 +131,15 @@ void ControlObjectConnection::writePacket(BitStream *bstream, PacketNotify *noti
 
 void ControlObjectConnection::readPacket(BitStream *bstream)
 {
+   // we only replay control object moves if we got an update
+   // from the server.  However, we wait until after the super
+   // class connection objects have a chance to process so
+   // that ghosts of other objects can be updated first.
+   // This way the control object won't get ahead of objects
+   // it is pushing in a laggy situation.
+
+   bool replayControlObjectMoves = false;
+
    if(isConnectionToClient())
    {
       bstream->read(&mLastClientControlCRC);
@@ -174,15 +183,7 @@ void ControlObjectConnection::readPacket(BitStream *bstream)
             controlObject = (GameObject *) resolveGhost(ghostIndex);
             controlObject->readControlState(bstream);
             mServerPosition = controlObject->getActualPos();
-
-            for(S32 i = 0; i < pendingMoves.size(); i++)
-            {
-               Move theMove = pendingMoves[i];
-               theMove.prepare();
-               controlObject->setCurrentMove(theMove);
-               controlObject->idle(GameObject::ClientIdleControlReplay);
-            }
-            controlObject->controlMoveReplayComplete();
+            replayControlObjectMoves = true;
             gGameUserInterface.receivedControlUpdate(true);
          }
          else
@@ -190,6 +191,18 @@ void ControlObjectConnection::readPacket(BitStream *bstream)
       }
    }
    Parent::readPacket(bstream);
+
+   if(replayControlObjectMoves)
+   {
+      for(S32 i = 0; i < pendingMoves.size(); i++)
+      {
+         Move theMove = pendingMoves[i];
+         theMove.prepare();
+         controlObject->setCurrentMove(theMove);
+         controlObject->idle(GameObject::ClientIdleControlReplay);
+      }
+      controlObject->controlMoveReplayComplete();
+   }
 }
 
 void ControlObjectConnection::writeCompressedPoint(Point &p, BitStream *stream)

@@ -44,7 +44,7 @@ struct Spark
 };
 
 enum {
-   MaxSparks = 4096,
+   MaxSparks = 8192,
 };
 
 U32 firstFreeIndex = 0;
@@ -123,19 +123,6 @@ void SparkManager::render()
    glBlendFunc(GL_ONE, GL_ZERO);
 }
 
-void emitExplosion(Point pos, F32 size)
-{
-   for(U32 i = 0; i < (500.0 * size); i++)
-   {
-
-      F32 th = Random::readF() * 2 * 3.14;
-      F32 f = (Random::readF() * 2 - 1) * 400 * size;
-      F32 green = Random::readF();
-
-      emitSpark(pos, Point(cos(th)*f, sin(th)*f), Color(1, green, 0), Random::readF()*size + 2*size);
-   }
-}
-
 void emitExplosion(Point pos, F32 size, Color *colorArray, U32 numColors)
 {
    for(U32 i = 0; i < (500.0 * size); i++)
@@ -143,7 +130,6 @@ void emitExplosion(Point pos, F32 size, Color *colorArray, U32 numColors)
 
       F32 th = Random::readF() * 2 * 3.14;
       F32 f = (Random::readF() * 2 - 1) * 400 * size;
-      F32 green = Random::readF();
       U32 colorIndex = Random::readI() % numColors;
 
       emitSpark(pos, Point(cos(th)*f, sin(th)*f), colorArray[colorIndex], Random::readF()*size + 2*size);

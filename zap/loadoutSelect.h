@@ -46,7 +46,7 @@ public:
    void render();
    void show(bool fromController);
    bool isActive() { return mVisible; }
-   void processKey(U32 key);
+   bool processKey(U32 key);
 };
 
 };

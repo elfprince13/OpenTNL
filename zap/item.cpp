@@ -143,7 +143,6 @@ U32 Item::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
    return MountMask;
 }
 
-#define InterpMS 50
 void Item::unpackUpdate(GhostConnection *connection, BitStream *stream)
 {
    bool interpolate = false;

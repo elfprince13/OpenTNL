@@ -36,7 +36,6 @@ namespace Zap
 namespace SparkManager
 {
    void emitSpark(Point pos, Point vel, Color color, F32 ttl=0);
-   void emitExplosion(Point pos, F32 size=1.f);
    void emitExplosion(Point pos, F32 size, Color *colorArray, U32 numColors);
    void emitBurst(Point pos, Point scale, Color color1, Color color2);
    void tick( F32 dT);

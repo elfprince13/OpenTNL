@@ -843,6 +843,12 @@ void Ship::render()
    glPushMatrix();
    glTranslatef(mMoveState[RenderState].pos.x, mMoveState[RenderState].pos.y, 0);
 
+   F32 alpha = 1.0;
+   if(isCloakActive())
+      alpha = 1 - mCloakTimer.getFraction();
+   else
+      alpha = mCloakTimer.getFraction();
+
    // Render name...
    GameConnection *conn = gClientGame->getConnectionToServer();
    if(conn && conn->getControlObject() != this)
@@ -853,31 +859,18 @@ void Ship::render()
       // Make it a nice pastel
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glColor4f(1,1,1,0.5);
+      glColor4f(1,1,1,0.5 * alpha);
       //glColor3f(color.r*1.2,color.g*1.2,color.b*1.2);
       UserInterface::drawString( U32( UserInterface::getStringWidth(14, buff) * -0.5), 30, 14, buff );
       glDisable(GL_BLEND);
       glBlendFunc(GL_ONE, GL_ZERO);
    }
    
-   F32 alpha = 1.0;
-   if(isCloakActive())
-      alpha = 1 - mCloakTimer.getFraction();
-   else
-      alpha = mCloakTimer.getFraction();
-
    if(alpha != 1.0)
    {
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    }
-
-//   if(hasExploded)
-//   {
-//      glEnable(GL_BLEND);
-//      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//      alpha = timeUntilRemove / F32(ExplosionFadeTime);
-//   }
 
    // draw thrusters
    Point velDir(mCurrentMove.right - mCurrentMove.left, mCurrentMove.down - mCurrentMove.up);

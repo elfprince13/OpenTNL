@@ -44,21 +44,21 @@ struct LoadoutItem
 };
 
 LoadoutItem gLoadoutModules[] = {
-   { 'W', 0, ModuleBoost, "Turbo Boost" },
-   { 'G', 1, ModuleShield, "Shield Generator" },
-   { 'R', 2, ModuleRepair, "Repair Module", },
-   { 'S', 3, ModuleSensor, "Enhanced Sensor" },
-   { 'C', 4, ModuleCloak, "Cloak Field Modulator" },
-   { 'E', 5, ModuleEngineer, "Engineering Bay" },
+   { '1', 0, ModuleBoost, "Turbo Boost" },
+   { '2', 1, ModuleShield, "Shield Generator" },
+   { '3', 2, ModuleRepair, "Repair Module", },
+   { '4', 3, ModuleSensor, "Enhanced Sensor" },
+   { '5', 4, ModuleCloak, "Cloak Field Modulator" },
+   { '6', 5, ModuleEngineer, "Engineering Bay" },
    { 0, 0, NULL },
 };
 
 LoadoutItem gLoadoutWeapons[] = {
-   { 'W', 0, WeaponPhaser, "Phaser" },
-   { 'G', 1, WeaponBounce, "Bouncer" },
-   { 'R', 2, WeaponTriple, "Three-Way" },
-   { 'S', 3, WeaponBurst, "Burster" },
-   { 'E', 4, WeaponMineLayer, "Mine Dropper" },
+   { '1', 0, WeaponPhaser, "Phaser" },
+   { '2', 1, WeaponBounce, "Bouncer" },
+   { '3', 2, WeaponTriple, "Three-Way" },
+   { '4', 3, WeaponBurst, "Burster" },
+   { '5', 4, WeaponMineLayer, "Mine Dropper" },
    { 0, 0, NULL },
 };
 
@@ -87,7 +87,7 @@ void LoadoutHelper::render()
    S32 curPos = 300;
    const int fontSize = 15;
 
-   glColor3f(0, 1, 0);
+   glColor3f(0.8, 1, 0.8);
 
    UserInterface::drawStringf(20, curPos, fontSize, "%s", gLoadoutTitles[mCurrentIndex]); 
    curPos += fontSize + 4;
@@ -104,9 +104,9 @@ void LoadoutHelper::render()
       if((mCurrentIndex == 1 && mModule[0] == i) ||
          (mCurrentIndex == 3 && mWeapon[0] == i) ||
          (mCurrentIndex == 4 && (mWeapon[0] == i || mWeapon[1] == i)))
-         glColor3f(0.3, 0.3, 0.3);
+         glColor3f(0.3, 0.7, 0.3);
       else
-         glColor3f(0.3, 1.0, 0.3);
+         glColor3f(0.1, 1.0, 0.1);
 
       UserInterface::drawStringf(20, curPos, fontSize, "%c - %s", 
          (mFromController ? '1' + list[i].button : 
@@ -116,12 +116,12 @@ void LoadoutHelper::render()
 
 }
 
-void LoadoutHelper::processKey(U32 key)
+bool LoadoutHelper::processKey(U32 key)
 {
    if(key == 27)
    {
       mVisible = false;
-      return;
+      return true;
    }
    if(!mFromController)
       key = toupper(key);
@@ -141,7 +141,7 @@ void LoadoutHelper::processKey(U32 key)
       }
    }
    if(!gLoadoutModules[index].text)
-      return;
+      return false;
 
    switch(mCurrentIndex)
    {
@@ -189,6 +189,7 @@ void LoadoutHelper::processKey(U32 key)
          gc->c2sRequestLoadout(loadout);
       mVisible = false;
    }
+   return true;
 }
 
 };
