@@ -479,7 +479,7 @@ public:
 
    /// Connection state flags for a NetConnection instance.
    enum NetConnectionState {
-      NotConnected,              ///< Initial state of a NetConnection instance - not connected.
+      NotConnected=0,            ///< Initial state of a NetConnection instance - not connected.
       AwaitingChallengeResponse, ///< We've sent a challenge request, awaiting the response.
       SendingPunchPackets,       ///< The state of a pending arranged connection when both sides haven't heard from the other yet
       ComputingPuzzleSolution,   ///< We've received a challenge response, and are in the process of computing a solution to its puzzle.
