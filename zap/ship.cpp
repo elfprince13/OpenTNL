@@ -36,6 +36,7 @@
 #include "UIMenus.h"
 #include "gameType.h"
 #include "gameConnection.h"
+#include "shipItems.h"
 
 #include <stdio.h>
 
@@ -67,16 +68,21 @@ Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, Collisio
       mTrail[i].reset();
 
    mEnergy = EnergyMax;
-   mShield = false;
-   mTurbo = false;
+   for(S32 i = 0; i < ModuleCount; i++)
+      mModuleActive[i] = false;
+
+   mModule[0] = ModuleBoost;
+   mModule[1] = ModuleShield;
+
    mCooldown = false;
 }
 
 void Ship::onGhostRemove()
 {
    Parent::onGhostRemove();
-   mTurbo = false;
-   updateTurboNoise();
+   for(S32 i = 0; i < ModuleCount; i++)
+      mModuleActive[i] = false;
+   updateModuleSounds();
 }
 
 void Ship::processArguments(S32 argc, const char **argv)
@@ -111,18 +117,20 @@ void Ship::processMove(U32 stateIndex)
 
    mMoveState[LastProcessState] = mMoveState[stateIndex];
 
+   F32 maxVel = isBoostActive() ? BoostMaxVelocity : MaxVelocity;
+
    F32 time = mCurrentMove.time * 0.001;
    Point requestVel(mCurrentMove.right - mCurrentMove.left, mCurrentMove.down - mCurrentMove.up);
-   requestVel *= (mTurbo ? TurboMaxVelocity : MaxVelocity);
+   requestVel *= maxVel;
    F32 len = requestVel.len();
 
-   if(len > (mTurbo ? TurboMaxVelocity : MaxVelocity))
-      requestVel *= (mTurbo ? TurboMaxVelocity : MaxVelocity) / len;
+   if(len > maxVel)
+      requestVel *= maxVel / len;
 
    Point velDelta = requestVel - mMoveState[stateIndex].vel;
    F32 accRequested = velDelta.len();
 
-   F32 maxAccel = (mTurbo ? TurboAcceleration : Acceleration) * time;
+   F32 maxAccel = (isBoostActive() ? BoostAcceleration : Acceleration) * time;
    if(accRequested > maxAccel)
    {
       velDelta *= maxAccel / accRequested;
@@ -247,6 +255,8 @@ void Ship::idle(GameObject::IdleCallPath path)
       setMaskBits(MoveMask);
 
    mLastMove = mCurrentMove;
+   mSensorZoomTimer.update(mCurrentMove.time);
+   mCloakTimer.update(mCurrentMove.time);
 
    if(path == GameObject::ServerIdleControlFromClient ||
       path == GameObject::ClientIdleControlMain ||
@@ -264,50 +274,63 @@ void Ship::idle(GameObject::IdleCallPath path)
       emitMovementSparks();
       for(U32 i=0; i<TrailCount; i++)
          mTrail[i].tick(mCurrentMove.time);
-      updateTurboNoise();
+      updateModuleSounds();
    }
 }
 
+static U32 gEnergyDrain[ModuleCount] = 
+{
+   Ship::EnergyShieldDrain,
+   Ship::EnergyBoostDrain,
+   Ship::EnergySensorDrain,
+   0,
+   0,
+   Ship::EnergyCloakDrain,
+};
+
 void Ship::processEnergy()
 {
-   bool shield = mShield, turbo = mTurbo;
-
-   mShield = mCurrentMove.shield;
-   mTurbo  = mCurrentMove.boost;
-
-   F32 scaleFactor = mCurrentMove.time * 0.001;
-
-   // Update things based on available energy...
+   bool modActive[ModuleCount];
+   for(S32 i = 0; i < ModuleCount; i++)
+   {
+      modActive[i] = mModuleActive[i];
+      mModuleActive[i] = false;
+   }
 
    if(mEnergy > EnergyCooldownThreshold)
       mCooldown = false;
 
-   if(mCooldown)
+   for(S32 i = 0; i < ShipModuleCount; i++)
+      if(mCurrentMove.module[i] && !mCooldown)
+         mModuleActive[mModule[i]] = true;
+
+   F32 scaleFactor = mCurrentMove.time * 0.001;
+
+   // Update things based on available energy...
+   bool anyActive = false;
+   for(S32 i = 0; i < ModuleCount; i++)
    {
-      mShield = false;
-      mTurbo  = false;
+      if(mModuleActive[i])
+      {
+         mEnergy -= S32(gEnergyDrain[i] * scaleFactor);
+         anyActive = true;
+      }
    }
 
-   if(mShield)
-      mEnergy -= S32(EnergyShieldDrain * scaleFactor);
-
-   if(mTurbo)
-      mEnergy -= S32(EnergyTurboDrain * scaleFactor);
-
-   if(!mShield && !mTurbo && mEnergy <= EnergyCooldownThreshold)
+   if(!anyActive && mEnergy <= EnergyCooldownThreshold)
       mCooldown = true;
 
    if(mEnergy < EnergyMax)
    {
       // If we're not doing anything, recharge.
-      if(!(mShield || mTurbo))
+      if(!anyActive)
          mEnergy += S32(EnergyRechargeRate * scaleFactor);
 
       if(mEnergy <= 0)
       {
          mEnergy = 0;
-         mShield = false;
-         mTurbo = false;
+         for(S32 i = 0; i < ModuleCount; i++)
+            mModuleActive[i] = false;
          mCooldown = true;
       }
    }
@@ -315,8 +338,18 @@ void Ship::processEnergy()
    if(mEnergy >= EnergyMax)
       mEnergy = EnergyMax;
 
-   if(mTurbo != turbo || mShield != shield)
-      setMaskBits(PowersMask);
+   for(S32 i = 0; i < ModuleCount;i++)
+   {
+      if(mModuleActive[i] != modActive[i])
+      {
+         if(i == ModuleSensor)
+            mSensorZoomTimer.reset(SensorZoomTime - mSensorZoomTimer.getCurrent(), SensorZoomTime);
+         else if(i == ModuleCloak)
+            mCloakTimer.reset(CloakFadeTime - mCloakTimer.getCurrent(), CloakFadeTime);
+         setMaskBits(PowersMask);
+         break;
+      }
+   }
 }
 
 void Ship::damageObject(DamageInfo *theInfo)
@@ -325,7 +358,7 @@ void Ship::damageObject(DamageInfo *theInfo)
       return;
 
    // Factor in shields
-   if(mShield && mEnergy >= EnergyShieldHitDrain)
+   if(isShieldActive() && mEnergy >= EnergyShieldHitDrain)
    {
       mEnergy -= EnergyShieldHitDrain;
       return;
@@ -343,21 +376,34 @@ void Ship::damageObject(DamageInfo *theInfo)
 }
 
 
-void Ship::updateTurboNoise()
+void Ship::updateModuleSounds()
 {
-   if(mTurbo)
+   static S32 moduleSFXs[ModuleCount] = 
    {
-      if(mTurboNoise.isValid())
-         mTurboNoise->setMovementParams(mMoveState[RenderState].pos, mMoveState[RenderState].vel);
-      else
-         mTurboNoise = SFXObject::play(SFXShipTurbo, mMoveState[RenderState].pos, mMoveState[RenderState].vel);
-   }
-   else
+      -1,
+      SFXShipBoost,
+      SFXShipBoost,
+      -1,
+      -1,
+      SFXShipBoost,
+   };
+
+   for(U32 i = 0; i < ModuleCount; i++)
    {
-      if(mTurboNoise.isValid())
+      if(mModuleActive[i])
       {
-         mTurboNoise->stop();
-         mTurboNoise = 0;
+         if(mModuleSound[i].isValid())
+            mModuleSound[i]->setMovementParams(mMoveState[RenderState].pos, mMoveState[RenderState].vel);
+         else if(moduleSFXs[i] != -1)
+            mModuleSound[i] = SFXObject::play(moduleSFXs[i], mMoveState[RenderState].pos, mMoveState[RenderState].vel);
+      }
+      else
+      {
+         if(mModuleSound[i].isValid())
+         {
+            mModuleSound[i]->stop();
+            mModuleSound[i] = 0;
+         }
       }
    }
 }
@@ -413,6 +459,12 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
    if(stream->writeFlag(updateMask & HealthMask))
       stream->writeFloat(mHealth, 6);
 
+   if(stream->writeFlag(updateMask & ModulesMask))
+   {
+      stream->writeRangedU32(mModule[0], 0, ModuleCount);
+      stream->writeRangedU32(mModule[1], 0, ModuleCount);
+   }
+
    stream->writeFlag(hasExploded);
 
    bool shouldWritePosition = (updateMask & InitialMask) || 
@@ -429,7 +481,7 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
       if(stream->writeFlag(updateMask & PositionMask))
       {
          gameConnection->writeCompressedPoint(mMoveState[RenderState].pos, stream);
-         writeCompressedVelocity(mMoveState[RenderState].vel, TurboMaxVelocity + 1, stream);
+         writeCompressedVelocity(mMoveState[RenderState].vel, BoostMaxVelocity + 1, stream);
          stream->writeFlag(updateMask & WarpPositionMask);
       }
       if(stream->writeFlag(updateMask & MoveMask))
@@ -438,8 +490,8 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
       }
       if(stream->writeFlag(updateMask & PowersMask))
       {
-         stream->writeFlag(mTurbo);
-         stream->writeFlag(mShield);
+         for(S32 i = 0; i < ModuleCount; i++)
+            stream->writeFlag(mModuleActive[i]);
       }
    }
    return 0;
@@ -474,12 +526,18 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
    if(stream->readFlag())
       mHealth = stream->readFloat(6);
 
+   if(stream->readFlag())
+   {
+      mModule[0] = stream->readRangedU32(0, ModuleCount);
+      mModule[1] = stream->readRangedU32(0, ModuleCount);
+   }
+
    bool explode = stream->readFlag();
 
    if(stream->readFlag())
    {
       ((GameConnection *) connection)->readCompressedPoint(mMoveState[ActualState].pos, stream);
-      readCompressedVelocity(mMoveState[ActualState].vel, TurboMaxVelocity + 1, stream);
+      readCompressedVelocity(mMoveState[ActualState].vel, BoostMaxVelocity + 1, stream);
       positionChanged = true;
       interpolate = !stream->readFlag();
    }
@@ -490,8 +548,16 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
    }
    if(stream->readFlag())
    {
-      mTurbo  = stream->readFlag();
-      mShield = stream->readFlag();
+      bool wasActive[ModuleCount];
+      for(S32 i = 0; i < ModuleCount; i++)
+      {
+         wasActive[i] = mModuleActive[i];
+         mModuleActive[i] = stream->readFlag();
+         if(i == ModuleSensor && wasActive[i] != mModuleActive[i])
+            mSensorZoomTimer.reset(SensorZoomTime - mSensorZoomTimer.getCurrent(), SensorZoomTime);
+         if(i == ModuleCloak && wasActive[i] != mModuleActive[i])
+            mCloakTimer.reset(CloakFadeTime - mCloakTimer.getCurrent(), CloakFadeTime);
+      }
    }
 
    mMoveState[ActualState].angle = mCurrentMove.angle;
@@ -612,6 +678,9 @@ void Ship::emitShipExplosion(Point pos)
 
 void Ship::emitMovementSparks()
 {
+   if(isCloakActive())
+      return;
+
    U32 deltaT = mCurrentMove.time;
 
    // Do nothing if we're under 0.1 vel
@@ -622,6 +691,8 @@ void Ship::emitMovementSparks()
 
    if(mSparkElapsed <= 32)
       return;
+
+   bool boostActive = isBoostActive();
 
    Point corners[3];
    Point shipDirs[3];
@@ -684,22 +755,22 @@ void Ship::emitMovementSparks()
    // Stitch things up if we must...
    if(leftId == mLastTrailPoint[0] && rightId == mLastTrailPoint[1])
    {
-      mTrail[0].update(leftPt, mTurbo);
-      mTrail[1].update(rightPt, mTurbo); 
+      mTrail[0].update(leftPt, boostActive);
+      mTrail[1].update(rightPt, boostActive); 
       mLastTrailPoint[0] = leftId;
       mLastTrailPoint[1] = rightId;
    }
    else if(leftId == mLastTrailPoint[1] && rightId == mLastTrailPoint[0])
    {
-      mTrail[1].update(leftPt, mTurbo);
-      mTrail[0].update(rightPt, mTurbo);
+      mTrail[1].update(leftPt, boostActive);
+      mTrail[0].update(rightPt, boostActive);
       mLastTrailPoint[1] = leftId;
       mLastTrailPoint[0] = rightId;
    }
    else
    {
-      mTrail[0].update(leftPt, mTurbo);
-      mTrail[1].update(rightPt, mTurbo);
+      mTrail[0].update(leftPt, boostActive);
+      mTrail[1].update(rightPt, boostActive);
       mLastTrailPoint[0] = leftId;
       mLastTrailPoint[1] = rightId;
    }
@@ -733,7 +804,7 @@ void Ship::emitMovementSparks()
  
                 //interp give us some nice enginey colors...
                 Color dim(1, 0, 0);
-                Color light(1, 1, mTurbo ? 1.f : 0.f);
+                Color light(1, 1, boostActive ? 1.f : 0.f);
                 Color thrust;
   
                 F32 t = TNL::Random::readF();
@@ -790,6 +861,16 @@ void Ship::render()
    }
    
    F32 alpha = 1.0;
+   if(isCloakActive())
+      alpha = 1 - mCloakTimer.getFraction();
+   else
+      alpha = mCloakTimer.getFraction();
+
+   if(alpha != 1.0)
+   {
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   }
 
 //   if(hasExploded)
 //   {
@@ -828,7 +909,7 @@ void Ship::render()
    else if(rotVel < -0.001)
       thrusts[3] += 0.25;
 
-   if(mTurbo)
+   if(isBoostActive())
    {
       for(U32 i = 0; i < 4; i++)
          thrusts[i] *= 1.3;
@@ -837,6 +918,16 @@ void Ship::render()
    // first render the thrusters
 
    glRotatef(radiansToDegrees(mMoveState[RenderState].angle), 0, 0, -1.0);
+
+   if(isCloakActive())
+   {
+      glColor4f(0,0,0, 1 - alpha);
+      glBegin(GL_POLYGON);
+      glVertex2f(-20, -15);
+      glVertex2f(0, 25);
+      glVertex2f(20, -15);
+      glEnd();
+   }
 
    if(thrusts[0] > 0) // forward thrust:
    {
@@ -960,7 +1051,7 @@ void Ship::render()
    glEnd();
 
    // Render shield if appropriate
-   if(mShield)
+   if(isShieldActive())
    {
       F32 shieldRadius = mRadius + 3;
 
@@ -980,6 +1071,12 @@ void Ship::render()
 
 
    glPopMatrix();
+
+   if(alpha != 1.0)
+   {
+      glDisable(GL_BLEND);
+      glBlendFunc(GL_ONE, GL_ZERO);
+   }
 
    for(S32 i = 0; i < mMountedItems.size(); i++)
       if(mMountedItems[i].isValid())

@@ -468,9 +468,25 @@ S32 QSORT_CALLBACK renderSortCompare(GameObject **a, GameObject **b)
    return (*a)->getRenderSortValue() - (*b)->getRenderSortValue();
 }
 
+Point ClientGame::computePlayerVisArea(Ship *player)
+{
+   F32 fraction = player->getSensorZoomFraction();
+   bool sensActive = player->isSensorActive();
+
+   Point ret;
+   Point regVis(PlayerHorizVisDistance, PlayerVertVisDistance);
+   Point sensVis(PlayerSensorHorizVisDistance, PlayerSensorVertVisDistance);
+   if(sensActive)
+      return regVis + (sensVis - regVis) * fraction;
+   else
+      return sensVis + (regVis - sensVis) * fraction;
+}
+
 void ClientGame::renderCommander()
 {
-   GameObject *u = mConnectionToServer->getControlObject();
+   GameObject *controlObject = mConnectionToServer->getControlObject();
+   Ship *u = (Ship *) controlObject;
+
    Point position = u->getRenderPos();
 
    F32 zoomFrac = mCommanderZoomDelta / F32(CommanderMapZoomTime);
@@ -488,7 +504,7 @@ void ClientGame::renderCommander()
       worldExtents.x *= screenAspectRatio / aspectRatio;
 
    Point offset = (worldCenter - position) * zoomFrac + position;
-   Point visSize(2 * PlayerHorizVisDistance, 2 * PlayerVertVisDistance);
+   Point visSize = computePlayerVisArea(u) * 2;
    Point modVisSize = (worldExtents - visSize) * zoomFrac + visSize;
 
    Point visScale(UserInterface::canvasWidth / modVisSize.x,
@@ -511,11 +527,10 @@ void ClientGame::renderCommander()
 
    // get info about the current player
    GameType *gt = gClientGame->getGameType();
-   GameObject *co = gClientGame->getConnectionToServer()->getControlObject();
 
-   if(gt && dynamic_cast<Ship*>(co))
+   if(gt)
    {
-      S32 playerId = gt->findClientIndexByName(((Ship *) co)->mPlayerName);
+      S32 playerId = gt->findClientIndexByName(u->mPlayerName);
       S32 playerTeam = gt->mClientList[playerId].teamId;
       Color teamColor = gt->mTeams[playerTeam].color;
       
@@ -537,12 +552,13 @@ void ClientGame::renderCommander()
             if(ourTeam == playerTeam)
             {
                Point p = so->getRenderPos();
-               
+               Point visExt = computePlayerVisArea(so);
+
                glBegin(GL_POLYGON);
-               glVertex2f(p.x - PlayerHorizScopeDistance, p.y - PlayerVertScopeDistance);
-               glVertex2f(p.x + PlayerHorizScopeDistance, p.y - PlayerVertScopeDistance);
-               glVertex2f(p.x + PlayerHorizScopeDistance, p.y + PlayerVertScopeDistance);
-               glVertex2f(p.x - PlayerHorizScopeDistance, p.y + PlayerVertScopeDistance);
+               glVertex2f(p.x - visExt.x, p.y - visExt.y);
+               glVertex2f(p.x + visExt.x, p.y - visExt.y);
+               glVertex2f(p.x + visExt.x, p.y + visExt.y);
+               glVertex2f(p.x - visExt.x, p.y + visExt.y);
                glEnd();
 
             }
@@ -568,16 +584,17 @@ void ClientGame::renderNormal()
    glPushMatrix();
    glTranslatef(400, 300, 0);
 
-   glScalef(400 / F32(PlayerHorizVisDistance), 300 / F32(PlayerVertVisDistance), 1);
+   Point visExt = computePlayerVisArea((Ship *) u);
+   glScalef(400 / visExt.x, 300 / visExt.y, 1);
 
    glTranslatef(-position.x, -position.y, 0);
 
-   drawStars(1.0, position, Point(PlayerHorizVisDistance * 2, PlayerVertVisDistance * 2));
+   drawStars(1.0, position, visExt * 2);
 
    // render the objects
    Vector<GameObject *> renderObjects;
 
-   Point screenSize(PlayerHorizVisDistance, PlayerVertVisDistance);
+   Point screenSize = visExt;
    Rect extentRect(position - screenSize, position + screenSize);
    mDatabase.findObjects(AllObjectTypes, renderObjects, extentRect);
 

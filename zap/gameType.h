@@ -127,6 +127,8 @@ public:
    void renderTimeLeft();
    void renderTalkingClients();
    virtual void updateClientScoreboard(S32 clientIndex);
+   virtual void clientRequestLoadout(GameConnection *client, const Vector<U32> &loadout);
+   void setClientShipLoadout(S32 clientIndex, const Vector<U32> &loadout);
 
    virtual void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);
 

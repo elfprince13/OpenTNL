@@ -284,6 +284,23 @@ void GameType::spawnShip(GameConnection *theClient)
    Ship *newShip = new Ship(mClientList[clientIndex].name, spawnPoint);
    newShip->addToGame(getGame());
    theClient->setControlObject(newShip);
+   setClientShipLoadout(clientIndex, theClient->getLoadout());
+}
+
+void GameType::setClientShipLoadout(S32 clientIndex, const Vector<U32> &loadout)
+{
+   if(loadout.size() != 5)
+      return;
+   Ship *theShip = (Ship *) mClientList[clientIndex].clientConnection->getControlObject();
+
+   theShip->setModules(loadout[0], loadout[1]);
+}
+
+void GameType::clientRequestLoadout(GameConnection *client, const Vector<U32> &loadout)
+{
+   S32 clientIndex = findClientIndexByConnection(client);
+   if(clientIndex != -1)
+      setClientShipLoadout(clientIndex, loadout);
 }
 
 void GameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection)
@@ -302,14 +319,22 @@ void GameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *c
             if(!mClientList[i].clientConnection)
                continue;
 
-            GameObject *co = mClientList[i].clientConnection->getControlObject();
+            Ship *co = (Ship *) mClientList[i].clientConnection->getControlObject();
             if(!co)
                continue;
 
             Point pos = co->getActualPos();
+            Point scopeRange;
+            if(co->isSensorActive())
+               scopeRange.set(Game::PlayerSensorHorizVisDistance + Game::PlayerScopeMargin,
+                              Game::PlayerSensorVertVisDistance + Game::PlayerScopeMargin);
+            else
+               scopeRange.set(Game::PlayerHorizVisDistance + Game::PlayerScopeMargin,
+                              Game::PlayerVertVisDistance + Game::PlayerScopeMargin);
 
             Rect queryRect(pos, pos);
-            queryRect.expand(Point(Game::PlayerHorizScopeDistance, Game::PlayerVertScopeDistance));
+            
+            queryRect.expand(scopeRange);
             findObjects(scopeObject == co ? AllObjectTypes : CommandMapVisType, fillVector, queryRect);
          }
       }
@@ -317,9 +342,18 @@ void GameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *c
    else
    {
       Point pos = scopeObject->getActualPos();
+      Ship *co = (Ship *) scopeObject;
+      Point scopeRange;
+
+      if(co->isSensorActive())
+         scopeRange.set(Game::PlayerSensorHorizVisDistance + Game::PlayerScopeMargin,
+                        Game::PlayerSensorVertVisDistance + Game::PlayerScopeMargin);
+      else
+         scopeRange.set(Game::PlayerHorizVisDistance + Game::PlayerScopeMargin,
+                        Game::PlayerVertVisDistance + Game::PlayerScopeMargin);
 
       Rect queryRect(pos, pos);
-      queryRect.expand(Point(Game::PlayerHorizScopeDistance, Game::PlayerVertScopeDistance));
+      queryRect.expand(scopeRange);
       findObjects(AllObjectTypes, fillVector, queryRect);
    }
 

@@ -31,6 +31,8 @@
 #include "sparkManager.h"
 #include "sfx.h"
 #include "timer.h"
+#include "shipItems.h"
+
 namespace Zap
 {
 
@@ -45,8 +47,8 @@ public:
 //      Acceleration = 800, // points per second per second
       MaxVelocity = 450, // points per second
       Acceleration = 2500, // points per second per second
-      TurboMaxVelocity = 700, // points per second
-      TurboAcceleration = 5000, // points per second per second
+      BoostMaxVelocity = 700, // points per second
+      BoostAcceleration = 5000, // points per second per second
 
       CollisionRadius = 24,
       VisibilityRadius = 30,
@@ -57,32 +59,44 @@ public:
       TrailCount = 2,
       EnergyMax = 100000,
       EnergyRechargeRate = 6000, // How many percent/second
-      EnergyTurboDrain = 15000,
+      EnergyBoostDrain = 15000,
       EnergyShieldDrain = 15000,
+      EnergySensorDrain = 8000,
+      EnergyCloakDrain = 8000,
       EnergyShieldHitDrain = 20000,
       EnergyShootDrain = 500,
       EnergyCooldownThreshold = 15000,
+      ShipModuleCount = 2,
+      SensorZoomTime = 300,
+      CloakFadeTime = 300,
    };
 
    enum MaskBits {
-      InitialMask       = BIT(0),
-      PositionMask      = BIT(1),
-      MoveMask          = BIT(2),
-      WarpPositionMask  = BIT(3),
-      ExplosionMask     = BIT(4),
-      HealthMask        = BIT(5),
-      PowersMask        = BIT(6),
+      InitialMask = BIT(0),
+      PositionMask = BIT(1),
+      MoveMask = BIT(2),
+      WarpPositionMask = BIT(3),
+      ExplosionMask = BIT(4),
+      HealthMask = BIT(5),
+      PowersMask = BIT(6),
+      ModulesMask = BIT(7),
    };
 
    Timer mFireTimer;
    F32 mHealth;
    S32 mEnergy;
    StringTableEntry mPlayerName;
-   bool mShield, mTurbo, mCooldown;
-   SFXHandle mTurboNoise;
+   bool mCooldown;
 
-   U32     mSparkElapsed;
-   S32     mLastTrailPoint[TrailCount];
+   U32 mModule[ShipModuleCount];
+   bool mModuleActive[ModuleCount];
+   SFXHandle mModuleSound[ModuleCount];
+
+   Timer mSensorZoomTimer;
+   Timer mCloakTimer;
+
+   U32 mSparkElapsed;
+   S32 mLastTrailPoint[TrailCount];
    fxTrail mTrail[TrailCount];
 
    Color color; // color of the ship
@@ -99,13 +113,20 @@ public:
 
    void onGhostRemove();
 
-   bool shouldToggleShieldOff() { return !mShield && mEnergy < EnergyCooldownThreshold; }
+   bool isShieldActive() { return mModuleActive[ModuleShield]; }
+   bool isBoostActive() { return mModuleActive[ModuleBoost]; }
+   bool isCloakActive() { return mModuleActive[ModuleCloak]; }
+   bool isSensorActive() { return mModuleActive[ModuleSensor]; }
+
+   F32 getSensorZoomFraction() { return mSensorZoomTimer.getFraction(); }
+
+   void setModules(U32 module1, U32 module2) { mModule[0] = module1; mModule[1] = module2; setMaskBits(ModulesMask); }
    void idle(IdleCallPath path);
 
    void processMove(U32 stateIndex);
    void processWeaponFire();
    void processEnergy();
-   void updateTurboNoise();
+   void updateModuleSounds();
    void emitMovementSparks();
 
    void controlMoveReplayComplete();

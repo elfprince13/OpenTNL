@@ -82,6 +82,7 @@ GameItemRec gGameItemRecs[] = {
    { "Teleporter", false, true },
    { "RepairItem", false, false },
    { "SoccerGoalObject", true, true },
+   { "TestItem", false, false },
    { NULL, false, false },
 };
 

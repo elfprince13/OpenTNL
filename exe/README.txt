@@ -4,13 +4,14 @@ Welcome to ZAP, the retro multiplayer team action game!
 
 Changes since version 1.2.2:
 - Added built-in level editor!
+- Added custom ship modules
 
 Controls:
 
-W - move up
-S - move down
-A - move left
-D - move right
+E - move up
+D - move down
+S - move left
+F - move right
 
 T - chat to team
 G - chat global
@@ -18,10 +19,12 @@ V - open quick chat menu
 R - record voice chat
 
 C - toggle commander map
-F - toggle shields
-SPACE - boost
+SPACE - activate primary module (default = boost)
+A - activate secondary module (default = shield)
 
 TAB - show scores
+
+W - select weapon and module loadout
 
 Mouse:
 
@@ -32,10 +35,11 @@ Dual-Analog Controller:
 Left stick - move
 Right stick - aim and fire
 
-left trigger - shield
-right trigger - boost
+right trigger - activate primary module (default = boost)
+left trigger - activate secondary module (default = shield)
 
 button 1 - record voice chat
+button 2 - select weapon and module loadout
 button 3 - toggle commander map
 button 4 - show scores
 button 6 - open quick chat menu

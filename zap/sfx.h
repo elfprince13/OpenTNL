@@ -43,7 +43,7 @@ enum SFXProfiles {
    SFXPhaserImpact,
    SFXShipExplode,
    SFXShipHeal,
-   SFXShipTurbo,
+   SFXShipBoost,
    SFXFlagCapture,
    SFXFlagDrop,
    SFXFlagReturn,

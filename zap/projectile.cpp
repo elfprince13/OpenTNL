@@ -124,7 +124,7 @@ void Projectile::explode(GameObject *hitObject, Point thePos)
       SparkManager::emitExplosion(thePos, 0.4, SparkColors, NumSparkColors);
 
       Ship *s = dynamic_cast<Ship*>(hitObject);
-      if(s && s->mShield)
+      if(s && s->isShieldActive())
          SFXObject::play(SFXBounceShield, thePos, velocity);
       else
          SFXObject::play(SFXPhaserImpact, thePos, velocity);

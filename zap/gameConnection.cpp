@@ -26,6 +26,7 @@
 
 #include "gameConnection.h"
 #include "game.h"
+#include "gameType.h"
 
 #include "UIGame.h"
 #include "UIMenus.h"
@@ -85,6 +86,13 @@ TNL_IMPLEMENT_RPC(GameConnection, c2sReleaseCommanderMap, (), NetClassGroupGameM
    mInCommanderMap = false;
 }
 
+TNL_IMPLEMENT_RPC(GameConnection, c2sRequestLoadout, (const Vector<U32> &loadout), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
+{
+   mLoadout = loadout;
+   GameType *gt = gServerGame->getGameType();
+   if(gt)
+      gt->clientRequestLoadout(this, mLoadout);
+}
 
 
 void GameConnection::writeConnectRequest(BitStream *stream)

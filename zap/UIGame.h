@@ -31,6 +31,7 @@
 #include "point.h"
 #include "gameConnection.h"
 #include "quickChat.h"
+#include "loadoutSelect.h"
 #include "timer.h"
 #include "sfx.h"
 #include "voiceCodec.h"
@@ -61,6 +62,7 @@ class GameUserInterface : public UserInterface
       PlayMode,
       ChatMode,
       VChatMode,
+      LoadoutMode,
    };
    enum ChatType {
       GlobalChat,
@@ -84,7 +86,8 @@ class GameUserInterface : public UserInterface
    U32 mIdleTimeDelta[FPSAvgCount];
    U32 mFrameIndex;
 
-   VChatHelper *mVChat;
+   VChatHelper mVChat;
+   LoadoutHelper mLoadout;
 
    struct VoiceRecorder
    {
@@ -112,6 +115,8 @@ class GameUserInterface : public UserInterface
 
    } mVoiceRecorder;
 
+   void enterVChat(bool fromController);
+   void enterLoadout(bool fromController);
 public:
    GameUserInterface();
 

@@ -82,6 +82,7 @@ class GameType;
 /// base class manages all the objects in the game simulation on
 /// either the server or the client, and is responsible for
 /// managing the passage of time as well as rendering.
+
 class Game
 {
 protected:
@@ -110,8 +111,9 @@ public:
       DefaultGridSize = 256,
       PlayerHorizVisDistance = 600,
       PlayerVertVisDistance = 450,
-      PlayerHorizScopeDistance = PlayerHorizVisDistance + 150,
-      PlayerVertScopeDistance = PlayerVertVisDistance + 150,
+      PlayerScopeMargin = 150,
+      PlayerSensorHorizVisDistance = 1060,
+      PlayerSensorVertVisDistance = 795,
       MasterServerConnectAttemptDelay = 60000,
    };
 
@@ -174,6 +176,7 @@ public:
    void gameEnded();
 };
 
+class Ship;
 class ClientGame : public Game
 {
    enum {
@@ -202,6 +205,7 @@ public:
    bool isServer() { return false; }
    void idle(U32 timeDelta);
    void zoomCommanderMap();
+   Point computePlayerVisArea(Ship *player);
 };
 
 extern ServerGame *gServerGame;
@@ -212,7 +216,7 @@ extern void hostGame(bool dedicated, Address bindAddress);
 extern void joinGame(Address remoteAddress, bool isFromMaster, bool local = false);
 extern void endGame();
 
-#define ZAP_GAME_STRING "ZAP 1.3.0 rc 1"
+#define ZAP_GAME_STRING "ZAP 1.3.0 rc 2"
 };
 
 #endif

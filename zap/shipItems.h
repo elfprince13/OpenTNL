@@ -24,62 +24,32 @@
 //
 //------------------------------------------------------------------------------------
 
-#ifndef _TIMER_H_
-#define _TIMER_H_
+#ifndef _SHIPITEMS_H_
+#define _SHIPITEMS_H_
 
 namespace Zap
 {
 
-class Timer
+enum ShipModule
 {
-   U32 mPeriod;
-   U32 mCurrentCounter;
-public:
-   Timer(U32 period = 0)
-   {
-      mCurrentCounter = mPeriod = period;
-   }
-
-   bool update(U32 timeDelta)
-   {
-      if(!mCurrentCounter)
-         return false;
-
-      if(timeDelta >= mCurrentCounter)
-      {
-         mCurrentCounter = 0;
-         return true;
-      }
-      mCurrentCounter -= timeDelta;
-      return false;
-   }
-
-   U32 getCurrent()
-   {
-      return mCurrentCounter;
-   }
-
-   F32 getFraction()
-   {
-      if(!mPeriod)
-         return 1;
-      return 1 - (mCurrentCounter / F32(mPeriod));
-   }
-
-   void reset()
-   {
-      mCurrentCounter = mPeriod;
-   }
-
-   void reset(U32 newCounter, U32 newPeriod = 0)
-   {
-      if(!newPeriod)
-         newPeriod = newCounter;
-      mCurrentCounter = newCounter;
-      mPeriod = newPeriod;
-   }
+   ModuleShield,
+   ModuleBoost,
+   ModuleSensor,
+   ModuleRepair,
+   ModuleEngineer,
+   ModuleCloak,
+   ModuleCount,
 };
 
+enum ShipWeapon
+{
+   WeaponPhaser,
+   WeaponTriple,
+   WeaponBounce,
+   WeaponBurst,
+   WeaponMineLayer,
+   WeaponCount,
+};
 
 };
 

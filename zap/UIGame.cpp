@@ -63,7 +63,6 @@ GameUserInterface::GameUserInterface()
    for(U32 i = 0; i < MessageDisplayCount; i++)
       mDisplayMessage[i][0] = 0;
 
-   mVChat = new VChatHelper();
    mGotControlUpdate = false;
 }
 
@@ -109,14 +108,6 @@ void GameUserInterface::idle(U32 timeDelta)
    mVoiceRecorder.idle(timeDelta);
    mIdleTimeDelta[mFrameIndex % FPSAvgCount] = timeDelta;
    mFrameIndex++;
-
-   // check if the shield mode should be on:
-   if(gClientGame->isConnectedToServer())
-   {
-      Ship *s = dynamic_cast<Ship *>(gClientGame->getConnectionToServer()->getControlObject());
-      if(s && mCurrentMove.shield && s->shouldToggleShieldOff())
-         mCurrentMove.shield = false;
-   }
 }
 
 #ifdef TNL_OS_WIN32
@@ -162,8 +153,10 @@ void GameUserInterface::render()
          sum += mIdleTimeDelta[i];
       drawStringf(710, 10, 30, "%4.2f fps", (1000 * FPSAvgCount) / F32(sum));
    }
-   if(mVChat->isActive())
-      mVChat->render();
+   if(mVChat.isActive())
+      mVChat.render();
+   if(mLoadout.isActive())
+      mLoadout.render();
 
    GameType *theGameType = gClientGame->getGameType();
 
@@ -368,20 +361,34 @@ void GameUserInterface::onMouseUp(S32 x, S32 y)
 
 void GameUserInterface::onRightMouseDown(S32 x, S32 y)
 {
-   mCurrentMove.shield = true;
+   mCurrentMove.module[1] = true;
 }
 
 void GameUserInterface::onRightMouseUp(S32 x, S32 y)
 {
-   mCurrentMove.shield = false;
+   mCurrentMove.module[1] = false;
+}
+
+void GameUserInterface::enterVChat(bool fromController)
+{
+   UserInterface::playBoop();
+   mVChat.show(fromController);
+   mCurrentMode = VChatMode;
+}
+
+void GameUserInterface::enterLoadout(bool fromController)
+{
+   UserInterface::playBoop();
+   mLoadout.show(fromController);
+   mCurrentMode = LoadoutMode;
 }
 
 void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
 {
    if(buttonIndex == 6)
-      mCurrentMove.shield = true;
+      mCurrentMove.module[1] = true;
    else if(buttonIndex == 7)
-      mCurrentMove.boost = true;
+      mCurrentMove.module[0] = true;
    else
    {
       if(mCurrentMode == PlayMode)
@@ -391,7 +398,9 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
             case 0:
                mVoiceRecorder.start();
                break;
-
+            case 1:
+               enterLoadout(true);
+               break;
             case 2:
                gClientGame->zoomCommanderMap();
                break;
@@ -404,15 +413,17 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
                break;
             }
             case 5:
-               UserInterface::playBoop();
-               mVChat->show(true);
-               mCurrentMode = VChatMode;
+               enterVChat(true);
                break;
          }
       }
       else if(mCurrentMode == VChatMode)
       {
-         mVChat->processKey(buttonIndex);
+         mVChat.processKey(buttonIndex);
+      }
+      else if(mCurrentMode == LoadoutMode)
+      {
+         mLoadout.processKey(buttonIndex);
       }
    }
 }
@@ -420,9 +431,9 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
 void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
 {
    if(buttonIndex == 6)
-      mCurrentMove.shield = false;
+      mCurrentMove.module[1] = false;
    else if(buttonIndex == 7)
-      mCurrentMove.boost = false;
+      mCurrentMove.module[0] = false;
    else
    {
       if(mCurrentMode == PlayMode)
@@ -444,7 +455,12 @@ void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
       }
       else if(mCurrentMode == VChatMode)
       {
-         if(!mVChat->isActive())
+         if(!mVChat.isActive())
+            mCurrentMode = PlayMode;
+      }
+      else if(mCurrentMode == LoadoutMode)
+      {
+         if(!mLoadout.isActive())
             mCurrentMode = PlayMode;
       }
    }
@@ -469,20 +485,23 @@ void GameUserInterface::onKeyDown(U32 key)
          case 'P':
             mFPSVisible = !mFPSVisible;
             break;
-         case 'W':
+         case 'E':
             mCurrentMove.up = 1.0;
             break;
-         case 'A':
+         case 'S':
             mCurrentMove.left = 1.0;
             break;
-         case 'S':
+         case 'D':
             mCurrentMove.down = 1.0;
             break;
-         case 'D':
+         case 'F':
             mCurrentMove.right = 1.0;
             break;
          case ' ':
-            mCurrentMove.boost = true;
+            mCurrentMove.module[0] = true;
+            break;
+         case 'A':
+            mCurrentMove.module[1] = true;
             break;
 
          case 27:
@@ -507,9 +526,10 @@ void GameUserInterface::onKeyDown(U32 key)
                mCurrentMove.down = 0;
             break;
          case 'V':
-            UserInterface::playBoop();
-            mVChat->show(false);
-            mCurrentMode = VChatMode;
+            enterVChat(false);
+            break;
+         case 'W':
+            enterLoadout(false);
             break;
          case 'C':
             gClientGame->zoomCommanderMap();
@@ -549,9 +569,9 @@ void GameUserInterface::onKeyDown(U32 key)
       }
    }
    else if(mCurrentMode == VChatMode)
-   {
-      mVChat->processKey(key);
-   }
+      mVChat.processKey(key);
+   else if(mCurrentMode == LoadoutMode)
+      mLoadout.processKey(key);
 }
 
 void GameUserInterface::onKeyUp(U32 key)
@@ -568,24 +588,24 @@ void GameUserInterface::onKeyUp(U32 key)
                g->c2sRequestScoreboardUpdates(false);
             break;
          }
-         case 'W':
+         case 'E':
             mCurrentMove.up = 0;
             break;
-         case 'A':
+         case 'S':
             mCurrentMove.left = 0;
             break;
-         case 'S':
+         case 'D':
             mCurrentMove.down = 0;
             break;
-         case 'D':
+         case 'F':
             mCurrentMove.right = 0;
             break;
 
          case ' ':
-            mCurrentMove.boost = false;
+            mCurrentMove.module[0] = false;
             break;
-         case 'F':
-            mCurrentMove.shield = !mCurrentMove.shield;
+         case 'A':
+            mCurrentMove.module[1] = false;
             break;
          case 'R':
             mVoiceRecorder.stop();
@@ -599,7 +619,12 @@ void GameUserInterface::onKeyUp(U32 key)
    }
    else if(mCurrentMode == VChatMode)
    {
-      if(!mVChat->isActive())
+      if(!mVChat.isActive())
+         mCurrentMode = PlayMode;
+   }
+   else if(mCurrentMode == LoadoutMode)
+   {
+      if(!mLoadout.isActive())
          mCurrentMode = PlayMode;
    }
 }

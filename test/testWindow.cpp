@@ -157,14 +157,7 @@ public:
 
 int main(int argc, char **argv)
 {
-
-/*  wxMenu *TNL_menu = new wxMenu;
-  TNL_menu->Append(MenuCommandMakeServer, wxT("Restart as server"));
-  TNL_menu->Append(MenuCommandMakeClient, wxT("Restart as client"));
-  TNL_menu->Append(MenuCommandMakeClientLocalHost, wxT("Restart as client pinging localhost"));
-  TNL_menu->Append(MenuCommandMakeClientServer, wxT("Restart as client and server"));
-  menuBar->Append(TNL_menu, wxT("&Network"));
-*/
+   TNLLogEnable(LogGhostConnection, true);
    createGameClient();
    glutInitWindowSize(gWindowWidth, gWindowHeight);
    glutInit(&argc, argv);

@@ -57,6 +57,7 @@ class GameConnection : public ControlObjectConnection
 
    bool mInCommanderMap;
    StringTableEntry mClientName;
+   Vector<U32> mLoadout;
 
    void linkToClientList();
 public:
@@ -70,9 +71,12 @@ public:
    TNL_DECLARE_RPC(c2sRequestCommanderMap, ());
    TNL_DECLARE_RPC(c2sReleaseCommanderMap, ());
 
+   TNL_DECLARE_RPC(c2sRequestLoadout, (const Vector<U32> &loadout));
+
    static GameConnection *getClientList();
    GameConnection *getNextClient();
 
+   const Vector<U32> &getLoadout() { return mLoadout; }
    void writeConnectRequest(BitStream *stream);
    bool readConnectRequest(BitStream *stream, const char **errorString);
 

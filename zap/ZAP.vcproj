@@ -131,10 +131,19 @@
 			<File
 				RelativePath="..\exe\level4.txt">
 			</File>
+			<File
+				RelativePath="..\exe\level5.txt">
+			</File>
 		</Filter>
 		<Filter
 			Name="UI"
 			Filter="">
+			<File
+				RelativePath=".\loadoutSelect.cpp">
+			</File>
+			<File
+				RelativePath=".\loadoutSelect.h">
+			</File>
 			<File
 				RelativePath=".\quickChat.cpp">
 			</File>
@@ -262,6 +271,9 @@
 			</File>
 			<File
 				RelativePath=".\ship.h">
+			</File>
+			<File
+				RelativePath=".\shipItems.h">
 			</File>
 			<File
 				RelativePath=".\SweptEllipsoid.cpp">
