@@ -33,6 +33,7 @@ namespace TNL {
 
 GhostConnection *NetObject::mRPCSourceConnection = NULL;
 GhostConnection *NetObject::mRPCDestConnection = NULL;
+bool NetObject::mIsInitialUpdate = false;
 
 NetObject::NetObject()
 {

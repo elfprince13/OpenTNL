@@ -15,6 +15,16 @@ you can only score if it is at home!
 Soccer - Team game where the objective is to move the white circle
 (the ball) into the goal of the opponent's color.
 
+Football - Team game with a single flag and multiple "capture zone"
+areas.  The goal of the game is to escort a team member carrying the
+flag to each of the capture zones in the map.  When a capture zone
+is entered by the flag carrier, the zone turns to that team's color
+and the team scores a point.  If the capture zone was already owned
+by a different team, the team that lost the zone loses a point.  If
+all the zones on the level are captured by a single team, that team
+earns an additional point for the "touchdown", and the zones and flag
+reset.
+
 Hunters - Solo game where the objective is to collect flags from
 other players and return them to the Nexus for points.  Each player
 starts with one flag, and drops it if he or she is zapped.  Scoring
@@ -24,6 +34,10 @@ second is worth two, the third 3, and so on.  So the total value
 of capturing 5 flags would be 5 + 4 + 3 + 2 + 1 = 15 points.  If
 the Nexus is dark, it is closed -- the upper timer in the lower
 right corner counts down to when it will next be open.
+
+Rabbit - Solo game wherein there is one flag that all players are fighting
+to control.  Players accumulate points by holding the flag, zapping
+the flag carrier or zapping other players while holding the flag.
 
 Zapmatch - Solo game, often of short duration between levels.  Just
 zap as many other players as you can!
@@ -150,8 +164,8 @@ or IP:www.foobar.com:24601
 		
 Level editor instructions:
 
-Currently the level editor allows you to edit the barrier objects within
-levels, and will display spawn points and some mission objects.
+Currently the level editor allows you to edit the barrier and level objects
+within levels.
 
 Mouse functions:
 
@@ -180,8 +194,9 @@ R - reset view to 0,0 in the top left corner
 F - flip current selection horizontally
 V - flip current selection vertically
 
-0...9 - set the active team for item construction
-T - construct a ResourceItem at the mouse point
+0...9 - set the active team for item construction.  This will also set the team 
+	of any selected objects
+T - construct a Teleporter at the mouse point
 G - construct a Spawn point at the mouse point
 B - construct a RepairItem at the mouse point
 

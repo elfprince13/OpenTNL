@@ -673,9 +673,9 @@ void Turret::idle(IdleCallPath path)
    queryRect.unionPoint(aimPos - cross * TurretPerceptionDistance);
    queryRect.unionPoint(aimPos + mAnchorNormal * TurretPerceptionDistance);
    fillVector.clear();
-   findObjects(ShipType, fillVector, queryRect);
+   findObjects(TurretTargetType, fillVector, queryRect);
 
-   Ship * bestTarget = NULL;
+   GameObject * bestTarget = NULL;
    F32 bestRange = 10000.f;
    Point bestDelta;
 
@@ -685,11 +685,15 @@ void Turret::idle(IdleCallPath path)
 
    for(S32 i=0; i<fillVector.size(); i++)
    {
-      Ship *potential = (Ship*)fillVector[i];
+      if(fillVector[i]->getObjectTypeMask() & ShipType)
+      {
+         Ship *potential = (Ship*)fillVector[i];
 
-      // Is it dead or cloaked?
-      if((potential->isCloakActive() && !potential->areItemsMounted()) || potential->hasExploded)
-         continue;
+         // Is it dead or cloaked?
+         if((potential->isCloakActive() && !potential->areItemsMounted()) || potential->hasExploded)
+            continue;
+      }
+      GameObject *potential = fillVector[i];
 
       // Is it on our team?
       if(potential->getTeam() == mTeam)

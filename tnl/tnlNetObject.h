@@ -214,6 +214,7 @@ class NetObject : public Object
    U32 mNetIndex;              ///< The index of this ghost on the other side of the connection.
    GhostInfo *mFirstObjectRef; ///< Head of the linked list of GhostInfos for this object.
 
+   static bool mIsInitialUpdate; ///< Managed by GhostConnection - set to true when this is an initial update
    SafePtr<NetObject> mServerObject; ///< Direct pointer to the parent object on the server if it is a local connection
    GhostConnection *mOwningConnection; ///< The connection that owns this ghost, if it's a ghost
 protected:
@@ -232,6 +233,9 @@ protected:
 
    /// NetObject RPC method destination connection.
    static GhostConnection *mRPCDestConnection;
+
+   /// Returns true if this pack/unpackUpdate is the initial one for the object
+   bool isInitialUpdate() { return mIsInitialUpdate; }
 public:
    NetObject();
    ~NetObject();

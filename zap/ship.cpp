@@ -51,7 +51,7 @@ TNL_IMPLEMENT_NETOBJECT(Ship);
 
 Ship::Ship(StringTableEntry playerName, S32 team, Point p, F32 m) : MoveObject(p, CollisionRadius)
 {
-   mObjectTypeMask = ShipType | MoveableType | CommandMapVisType;
+   mObjectTypeMask = ShipType | MoveableType | CommandMapVisType | TurretTargetType;
 
    mNetFlags.set(Ghostable);
 

@@ -69,17 +69,6 @@ public:
 
 extern NameEntryUserInterface gNameEntryUserInterface;
 
-class IPEntryUserInterface : public NameEntryUserInterface
-{
-public:
-   IPEntryUserInterface() { title = "ENTER SERVER IP ADDRESS:"; }
-
-   void onAccept();
-   void onEscape();
-};
-
-extern IPEntryUserInterface gIPEntryUserInterface;
-
 };
 
 #endif

@@ -120,28 +120,43 @@
 			Name="Levels"
 			Filter="">
 			<File
-				RelativePath="..\exe\levels\gauntlet.txt">
+				RelativePath="..\exe\levels\ctf1.txt">
 			</File>
 			<File
-				RelativePath="..\exe\levels\level1.txt">
+				RelativePath="..\exe\levels\ctf2.txt">
+			</File>
+			<File
+				RelativePath="..\exe\levels\ctf3.txt">
+			</File>
+			<File
+				RelativePath="..\exe\levels\ctf4.txt">
+			</File>
+			<File
+				RelativePath="..\exe\levels\football1.txt">
+			</File>
+			<File
+				RelativePath="..\exe\levels\hunters1.txt">
 			</File>
 			<File
 				RelativePath="..\exe\levels\level2.txt">
-			</File>
-			<File
-				RelativePath="..\exe\levels\level3.txt">
-			</File>
-			<File
-				RelativePath="..\exe\levels\level4.txt">
-			</File>
-			<File
-				RelativePath="..\exe\levels\level5.txt">
 			</File>
 			<File
 				RelativePath="..\exe\levels\level8.txt">
 			</File>
 			<File
 				RelativePath="..\exe\levels\level9.txt">
+			</File>
+			<File
+				RelativePath="..\exe\levels\rabbit1.txt">
+			</File>
+			<File
+				RelativePath="..\exe\levels\rabbit2.txt">
+			</File>
+			<File
+				RelativePath="..\exe\levels\soccer1.txt">
+			</File>
+			<File
+				RelativePath="..\exe\levels\soccer2.txt">
 			</File>
 		</Filter>
 		<Filter

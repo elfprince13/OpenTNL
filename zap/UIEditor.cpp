@@ -65,7 +65,9 @@ struct GameItemRec
 {
    const char *name;
    bool hasTeam;
+   bool canHaveNoTeam;
    bool isPoly;
+   char letter;
 };
 
 extern void renderFlag(Point pos, Color c);
@@ -84,22 +86,24 @@ enum GameItems
    ItemLoadoutZone,
    ItemTurret,
    ItemForceField,
+   ItemFootballZone,
 };
 
 GameItemRec gGameItemRecs[] = {
-   { "Spawn", true, false },
-   { "SoccerBallItem", false, false },
-   { "FlagItem", true, false },
-   { "BarrierMaker", false, true },
-   { "Teleporter", false, true },
-   { "RepairItem", false, false },
-   { "SoccerGoalObject", true, true },
-   { "TestItem", false, false },
-   { "ResourceItem", false, false },
-   { "LoadoutZone", true, true },
-   { "Turret", true, false },
-   { "ForceFieldProjector", true, false },
-   { NULL, false, false },
+   { "Spawn", true, false, false, 'S' },
+   { "SoccerBallItem", false, false, false, 'B' },
+   { "FlagItem", true, true, false, 0 },
+   { "BarrierMaker", false, false, true, 0 },
+   { "Teleporter", false, false, true, 'T' },
+   { "RepairItem", false, false, false, 'R' },
+   { "SoccerGoalObject", true, false, true, 0 },
+   { "TestItem", false, false, false, 't' },
+   { "ResourceItem", false, false, false, 'r' },
+   { "LoadoutZone", true, true, true, 0 },
+   { "Turret", true, true, false, 'N' },
+   { "ForceFieldProjector", true, true, false, 'P' },
+   { "FootballZone", false, false, true, 0 },
+   { NULL, false, false, false, 0 },
 };
 
 void EditorUserInterface::processLevelLoadLine(int argc, const char **argv)
@@ -336,15 +340,17 @@ void EditorUserInterface::renderItem(S32 index)
    {
       if(i.selected)
          glColor3f(1,1,0);
-      else if(gGameItemRecs[i.index].hasTeam)
+      else if(i.index == ItemBarrierMaker)
+         glColor3f(0,0,1);
+      else if(i.team == -1)
+         glColor3f(0.7, 0.7, 0.7);
+      else
       {
          Color c = mTeams[i.team].color;
          glColor3f(c.r, c.g, c.b);
       }
-      else
-         glColor3f(0,0,1);
 
-      if(gGameItemRecs[i.index].hasTeam)
+      if(i.index != ItemBarrierMaker)
       {
          // render the team ones as GL_POLYGONs
          glBegin(GL_POLYGON);
@@ -378,6 +384,7 @@ void EditorUserInterface::renderItem(S32 index)
    }
    else
    {
+      char letter = gGameItemRecs[i.index].letter;
       if(i.team == -1)
          c = Color(0.5, 0.5, 0.5);
       else
@@ -411,7 +418,11 @@ void EditorUserInterface::renderItem(S32 index)
          glVertex2f(pos.x - 10, pos.y + 10);
          glEnd();
       }
-
+      if(letter)
+      {
+         glColor3f(1,1,1);
+         drawStringf(pos.x - 5, pos.y - 8, 15, "%c", letter);
+      }
    }
 }
 
@@ -486,6 +497,22 @@ void EditorUserInterface::computeSelectionMinMax(Point &min, Point &max)
          if(v.y > max.y)
             max.y = v.y;
       }
+   }
+}
+
+void EditorUserInterface::setCurrentTeam(S32 currentTeam)
+{
+   mCurrentTeam = currentTeam;
+
+   for(S32 i = 0; i < mItems.size(); i++)
+   {
+      if(!mItems[i].selected)
+         continue;
+      if(!gGameItemRecs[mItems[i].index].hasTeam)
+         continue;
+      if(currentTeam == -1 && !gGameItemRecs[mItems[i].index].canHaveNoTeam)
+         continue;
+      mItems[i].team = mCurrentTeam;
    }
 }
 
@@ -806,10 +833,18 @@ void EditorUserInterface::constructItem(U32 itemIndex)
       w.team = mCurrentTeam;
    else
       w.team = -1;
+   if(w.team == -1 && gGameItemRecs[itemIndex].hasTeam && !gGameItemRecs[itemIndex].canHaveNoTeam)
+      w.team = 0;
+
    w.selected = false;
    Point pos = convertCanvasToLevelCoord(mMousePos);
    w.verts.push_back(snapToLevelGrid(pos));
    w.vertSelected.push_back(false);
+   if(itemIndex == ItemTeleporter)
+   {
+      w.verts.push_back(w.verts[0] + Point(1,1));
+      w.vertSelected.push_back(false);
+   }
    mItems.push_back(w);
 }
 
@@ -817,9 +852,9 @@ void EditorUserInterface::onKeyDown(U32 key)
 {
    bool ctrlActive = glutGetModifiers() & GLUT_ACTIVE_CTRL;
 
-   if(key >= '0' && key < U32('0' + mTeams.size()))
+   if(key >= '0' && key < U32('1' + mTeams.size()))
    {
-      mCurrentTeam = key - '0';
+      setCurrentTeam(S32(key) - '1');
       return;
    }
 
@@ -863,7 +898,7 @@ void EditorUserInterface::onKeyDown(U32 key)
          mOut = true;
          break;
       case 't':
-         constructItem(ItemResource);
+         constructItem(ItemTeleporter);
          break;
       case 'g':
          constructItem(ItemSpawn);
@@ -930,8 +965,8 @@ void EditorUserInterface::idle(U32 timeDelta)
       mCurrentScale *= 1 + timeDelta * 0.002;
    if(mOut && !mIn)
       mCurrentScale *= 1 - timeDelta * 0.002;
-   if(mCurrentScale > 100)
-      mCurrentScale = 100;
+   if(mCurrentScale > 200)
+      mCurrentScale = 200;
    else if(mCurrentScale < 10)
       mCurrentScale = 10;
    Point newMousePoint = convertLevelToCanvasCoord(mouseLevelPoint);

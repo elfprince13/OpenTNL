@@ -323,7 +323,6 @@ void GhostConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
       if(!bstream->writeFlag(walk->flags & GhostInfo::KillGhost))
       {
          // this is an update of some kind:
-         bool isInitialUpdate = false;
          if(mConnectionParameters.mDebugObjectSizes)
             bstream->advanceBitPosition(BitStreamPosBitSize);
 
@@ -333,14 +332,17 @@ void GhostConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
          {
             S32 classId = walk->obj->getClassId(getNetClassGroup());
             bstream->writeClassId(classId, NetClassTypeObject, getNetClassGroup());
-            isInitialUpdate = true;
+            NetObject::mIsInitialUpdate = true;
          }
 
          // update the object
          retMask = walk->obj->packUpdate(this, updateMask, bstream);
 
-         if(isInitialUpdate)
+         if(NetObject::mIsInitialUpdate)
+         {
+            NetObject::mIsInitialUpdate = false;
             walk->obj->getClassRep()->addInitialUpdate(bstream->getBitPosition() - startPos);
+         }
          else
             walk->obj->getClassRep()->addPartialUpdate(bstream->getBitPosition() - startPos);
 
@@ -472,7 +474,10 @@ void GhostConnection::readPacket(BitStream *bstream)
 
             obj->mNetIndex = index;
             mLocalGhosts[index] = obj;
+
+            NetObject::mIsInitialUpdate = true;
             mLocalGhosts[index]->unpackUpdate(this, bstream);
+            NetObject::mIsInitialUpdate = false;
             
             if(!obj->onGhostAdd(this))
             {

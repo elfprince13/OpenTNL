@@ -66,7 +66,7 @@ class EditorUserInterface : public UserInterface, public LevelLoader
    Point mCurrentOffset;
    Point mMousePos;
    Point mMouseDownPos;
-   U32 mCurrentTeam;
+   S32 mCurrentTeam;
 
    bool mCreatingPoly;
    bool mDragSelecting;
@@ -100,6 +100,7 @@ public:
    void idle(U32 timeDelta);
    void deleteSelection();
    void duplicateSelection();
+   void setCurrentTeam(S32 currentTeam);
    void flipSelectionVertical();
    void flipSelectionHorizontal();
 

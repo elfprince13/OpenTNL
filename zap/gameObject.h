@@ -54,6 +54,7 @@ enum GameObjectType
    MineType          = BIT(10),
    TestItemType      = BIT(11),
    FlagType          = BIT(12),
+   TurretTargetType  = BIT(13),
 
    DeletedType       = BIT(30),
    CommandMapVisType = BIT(31),

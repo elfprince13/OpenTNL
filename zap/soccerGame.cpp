@@ -94,7 +94,7 @@ TNL_IMPLEMENT_NETOBJECT(SoccerBallItem);
 
 SoccerBallItem::SoccerBallItem(Point pos) : Item(pos, true, 30, 4)
 {
-   mObjectTypeMask |= CommandMapVisType;
+   mObjectTypeMask |= CommandMapVisType | TurretTargetType;
    mNetFlags.set(Ghostable);
    initialPos = pos;
 }

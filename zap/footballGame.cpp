@@ -58,16 +58,22 @@ class FootballZone : public GameObject
    Vector<Point> mPolyBounds;
    enum {
       MaxPoints = 10,
+
+      FlashDelay = 500,
+      FlashCount = 5,
+
       InitialMask = BIT(0),
       TeamMask = BIT(1),
    };
-
+   S32 mFlashCount;
+   Timer mFlashTimer;
 public:
    FootballZone()
    {
       mTeam = -1;
       mNetFlags.set(Ghostable);
       mObjectTypeMask = CommandMapVisType;
+      mFlashCount = 0;
    }
 
    void render()
@@ -79,7 +85,11 @@ public:
       for(S32 i = 0; i < mPolyBounds.size(); i++)
          glVertex2f(mPolyBounds[i].x, mPolyBounds[i].y);
       glEnd();
-      glColor3f(theColor.r * 0.7, theColor.g * 0.7, theColor.b * 0.7);
+      if(mFlashCount & 1)
+         glColor3f(theColor.r, theColor.g, theColor.b);
+      else
+         glColor3f(theColor.r * 0.7, theColor.g * 0.7, theColor.b * 0.7);
+
       glBegin(GL_LINE_LOOP);
       for(S32 i = 0; i < mPolyBounds.size(); i++)
          glVertex2f(mPolyBounds[i].x, mPolyBounds[i].y);
@@ -176,7 +186,26 @@ public:
             computeExtent();
       }
       if(stream->readFlag())
+      {
          stream->read(&mTeam);
+         if(!isInitialUpdate())
+         {
+            mFlashTimer.reset(FlashDelay);
+            mFlashCount = FlashCount;
+         }
+      }
+   }
+
+   void idle(GameObject::IdleCallPath path)
+   {
+      if(path != GameObject::ClientIdleMainRemote || mFlashCount == 0)
+         return;
+
+      if(mFlashTimer.update(mCurrentMove.time))
+      {
+         mFlashTimer.reset(FlashDelay);
+         mFlashCount--;
+      }
    }
 
    TNL_DECLARE_CLASS(FootballZone);

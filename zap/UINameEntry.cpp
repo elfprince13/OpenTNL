@@ -125,17 +125,5 @@ void NameEntryUserInterface::onAccept()
    gMainMenuUserInterface.activate();
 }
 
-IPEntryUserInterface gIPEntryUserInterface;
-
-void IPEntryUserInterface::onAccept()
-{
-   joinGame(Address(getText()), false);
-}
-
-void IPEntryUserInterface::onEscape()
-{
-   gMainMenuUserInterface.activate();
-}
-
 };
 

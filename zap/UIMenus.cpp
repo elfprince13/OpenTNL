@@ -134,8 +134,8 @@ MainMenuUserInterface::MainMenuUserInterface()
    menuFooter = "(C) 2004 GARAGEGAMES.COM, INC.";
 
    menuItems.push_back("JOIN LAN/INTERNET GAME");
-   menuItems.push_back("JOIN SPECIFIC GAME");
    menuItems.push_back("HOST GAME");
+   menuItems.push_back("INSTRUCTIONS");
    menuItems.push_back("OPTIONS");
    menuItems.push_back("QUIT");
 }
@@ -148,9 +148,6 @@ void MainMenuUserInterface::processSelection(U32 index)
          gQueryServersUserInterface.activate();
          break;
       case 1:
-         gIPEntryUserInterface.activate();
-         break;
-      case 2:
          hostGame(false, Address(IPProtocol, Address::Any, 28000));
          break;
       case 3:
