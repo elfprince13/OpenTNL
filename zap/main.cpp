@@ -63,24 +63,18 @@ Address gMasterAddress;
 Address gConnectAddress;
 Address gBindAddress(IPProtocol, Address::Any, 28000);
 
-const char *gLevelList = "retrieve2.txt "
+const char *gLevelList = "retrieve1.txt "
                          "retrieve2.txt "
-                         "football3.txt "
-                         "retrieve1.txt "
-                         "level2.txt "
-                         "football2.txt "
-                         "level2.txt "
                          "football1.txt "
-                         "level8.txt "
-                         "ctf4.txt "
+                         "football2.txt "
+                         "football3.txt "
                          "rabbit1.txt "
-                         "level2.txt "
+                         "soccer1.txt "
+                         "soccer2.txt "
                          "ctf1.txt "
-                         "level2.txt "
                          "ctf2.txt "
-                         "level2.txt "
                          "ctf3.txt "
-                         "level2.txt "
+                         "ctf4.txt "
                          "level8.txt "
                          "level2.txt "
                          ;
@@ -470,7 +464,13 @@ void joinGame(Address remoteAddress, bool isFromMaster, bool local)
       theConnection->setSimulatedNetParams(gSimulatedPacketLoss, gSimulatedPing);
 
       if(local)
+      {
          theConnection->connectLocal(gClientGame->getNetInterface(), gServerGame->getNetInterface());
+         // set the local connection to be an admin
+         theConnection->setIsAdmin(true);
+         GameConnection *gc = (GameConnection *) theConnection->getRemoteConnectionObject();
+         gc->setIsAdmin(true);
+      }
       else
          theConnection->connect(gClientGame->getNetInterface(), remoteAddress);
       gGameUserInterface.activate();

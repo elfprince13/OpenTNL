@@ -27,6 +27,7 @@
 #include "gameType.h"
 #include "ship.h"
 #include "UIGame.h"
+#include "UIMenus.h"
 #include "gameNetInterface.h"
 #include "flagItem.h"
 #include "glutInclude.h"
@@ -600,16 +601,22 @@ void GameType::controlObjectForClientKilled(GameConnection *theClient, GameObjec
    clientRef->respawnTimer.reset(RespawnDelay);
 }
 
-void GameType::addClientGameMenuOptions(Vector<const char *> &menuOptions)
+void GameType::addClientGameMenuOptions(Vector<MenuItem> &menuOptions)
 {
    if(mTeams.size() > 1)
-      menuOptions.push_back("CHANGE TEAMS");
+      menuOptions.push_back(MenuItem("CHANGE TEAMS",1000));
+   GameConnection *gc = gClientGame->getConnectionToServer();
+   if(gc && gc->isAdmin())
+      menuOptions.push_back(MenuItem("CHANGE LEVEL",1001));
+
 }
 
 void GameType::processClientGameMenuOption(U32 index)
 {
-   if(index == 0)
+   if(index == 1000)
       c2sChangeTeams();
+   else if(index == 1001)
+      gLevelMenuUserInterface.activate();
 }
 
 void GameType::setTeamScore(S32 teamIndex, S32 newScore)
@@ -890,8 +897,8 @@ GAMETYPE_RPC_S2C(GameType, s2cKillMessage, (StringTableEntryRef victim, StringTa
 TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sVoiceChat, (bool echo, ByteBufferRef voiceBuffer),
    NetClassGroupGameMask, RPCUnguaranteed, RPCToGhostParent, 0)
 {
-   // in the naive implementation, we just broadcast this to everyone,
-   // including the sender...
+   // Broadcast this to all clients on the same team
+   // Only send back to the source if echo is true.
 
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
    ClientRef *cl = source->getClientRef();
@@ -900,7 +907,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sVoiceChat, (bool echo, ByteBufferRef vo
       RefPtr<NetEvent> event = TNL_RPC_CONSTRUCT_NETEVENT(this, s2cVoiceChat, (cl->name, voiceBuffer));
       for(S32 i = 0; i < mClientList.size(); i++)
       {
-         if((mClientList[i] != cl || echo) && mClientList[i]->clientConnection)
+         if(mClientList[i]->teamId == cl->teamId && (mClientList[i] != cl || echo) && mClientList[i]->clientConnection)
             mClientList[i]->clientConnection->postNetEvent(event);
       }
    }

@@ -166,6 +166,9 @@ class ServerGame : public Game, public LevelLoader
    U32 mMaxPlayers;
    const char *mHostName;
    Vector<StringTableEntry> mLevelList;
+   Vector<StringTableEntry> mLevelNames;
+   Vector<StringTableEntry> mLevelTypes;
+
    U32 mCurrentLevelIndex;
    Timer mLevelSwitchTimer;
 public:
@@ -180,7 +183,7 @@ public:
 
    void setLevelList(const char *levelList);
    void loadLevel(const char *fileName);
-   void cycleLevel();
+   void cycleLevel(S32 newLevelIndex = -1);
 
    void processLevelLoadLine(int argc, const char **argv);
    bool isServer() { return true; }

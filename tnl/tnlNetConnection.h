@@ -408,6 +408,7 @@ public:
    /// returns true if this object initiated the connection with the remote host
    bool isInitiator() { return mConnectionParameters.mIsInitiator; }
    void setRemoteConnectionObject(NetConnection *connection) { mRemoteConnection = connection; };
+   NetConnection *getRemoteConnectionObject() { return mRemoteConnection; }
 
    U32 mConnectSendCount;    ///< Number of challenge or connect requests sent to the remote host.
    U32 mConnectLastSendTime; ///< The send time of the last challenge or connect request.

@@ -1093,7 +1093,6 @@ EditorMenuUserInterface gEditorMenuUserInterface;
 EditorMenuUserInterface::EditorMenuUserInterface()
 {
    menuTitle = "EDITOR MENU:";
-   clearBackground = false;
 }
 
 void EditorMenuUserInterface::onActivate()
@@ -1105,14 +1104,14 @@ void EditorMenuUserInterface::setupMenus()
 {
    Parent::onActivate();
    menuItems.clear();
-   menuItems.push_back("RETURN TO EDITOR");
+   menuItems.push_back(MenuItem("RETURN TO EDITOR", 0));
    if(OptionsMenuUserInterface::fullscreen)
-      menuItems.push_back("SET WINDOWED MODE");
+      menuItems.push_back(MenuItem("SET WINDOWED MODE", 1));
    else
-      menuItems.push_back("SET FULLSCREEN MODE");
-   menuItems.push_back("TEST LEVEL");
-   menuItems.push_back("SAVE LEVEL");
-   menuItems.push_back("QUIT");
+      menuItems.push_back(MenuItem("SET FULLSCREEN MODE", 1));
+   menuItems.push_back(MenuItem("TEST LEVEL",2));
+   menuItems.push_back(MenuItem("SAVE LEVEL",3));
+   menuItems.push_back(MenuItem("QUIT",4));
 }
 
 void EditorMenuUserInterface::processSelection(U32 index)

@@ -1,8 +1,7 @@
 CTFGameType 10 8
-LevelName "Crossover"
-
 Team Blue 0 0 1
 Team Red 1 0 0
+LevelName "Galaxy Crossover"
 GridSize 300
 TestItem 13.5 5
 FlagItem 0 4 -1
@@ -126,11 +125,11 @@ ForceFieldProjector 0 5.7 -1.1
 Turret 0 3.6 0.7
 Turret 0 4.4 0.7
 ForceFieldProjector 0 2.4 1.2
-ForceFieldProjector 0 8.5 4.7
-ForceFieldProjector 0 14.1 1.1
+ForceFieldProjector -1 8.5 4.7
+ForceFieldProjector -1 14.1 1.1
 Turret 0 7.5 0.7
 Turret 0 7.5 -1.1
-Turret 0 14.3 2.9
+Turret -1 14.3 2.9
 Turret 0 9.1 0.7
 Turret 0 9.1 -1.1
 Turret 1 13.8 13.7
@@ -140,10 +139,10 @@ ForceFieldProjector 1 10.8 12.1
 Turret 1 12.9 10.3
 Turret 1 12.1 10.3
 ForceFieldProjector 1 14.1 9.8
-ForceFieldProjector 1 8 6.3
-ForceFieldProjector 1 2.4 9.9
+ForceFieldProjector -1 8 6.3
+ForceFieldProjector -1 2.4 9.9
 Turret 1 9 10.3
 Turret 1 9 12.1
-Turret 1 2.2 8.1
+Turret -1 2.2 8.1
 Turret 1 7.4 10.3
 Turret 1 7.4 12.1

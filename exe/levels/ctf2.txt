@@ -1,5 +1,5 @@
 CTFGameType 10 8
-LevelName "Dash"
+LevelName "Monki's Dash"
 
 Team Blue 0 0 1
 Team Red 1 0 0

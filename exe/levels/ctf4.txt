@@ -1,5 +1,5 @@
 CTFGameType 10 8
-LevelName "Crunchy Caverns"
+LevelName "Arcturus Triple Gakk"
 LevelDescription "Hint: Make sure to keep your flag out of enemy hands."
 
 Team Blue 0 0 1

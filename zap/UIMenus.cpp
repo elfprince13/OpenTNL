@@ -41,6 +41,20 @@ namespace Zap
 
 void MenuUserInterface::render()
 {
+   if(gClientGame->getConnectionToServer())
+   {
+      gGameUserInterface.render();
+      glColor4f(0, 0, 0, 0.5);
+      glEnable(GL_BLEND);
+      glBegin(GL_POLYGON);
+      glVertex2f(0, 0);
+      glVertex2f(canvasWidth, 0);
+      glVertex2f(canvasWidth, canvasHeight);
+      glVertex2f(0, canvasHeight);
+      glEnd();  
+      glDisable(GL_BLEND); 
+   }
+
    glColor3f(1,1,1);
    drawCenteredString( 10, 30, menuTitle);
    drawCenteredString( 45, 18, menuSubTitle);
@@ -71,7 +85,7 @@ void MenuUserInterface::render()
          glEnd();
       }      
       glColor3f(1,1,1);
-      drawCenteredString(y, 25, menuItems[i]);
+      drawCenteredString(y, 25, menuItems[i].mText);
    }
 }
 
@@ -100,7 +114,7 @@ void MenuUserInterface::onKeyDown(U32 key)
    if(key == '\r')
    {
       UserInterface::playBoop();
-      processSelection(selectionIndex);
+      processSelection(menuItems[selectionIndex].mIndex);
    }
    else if(key == 27)
    {
@@ -124,11 +138,11 @@ MainMenuUserInterface::MainMenuUserInterface()
    menuSubTitle = "A TORQUE NETWORK LIBRARY GAME - WWW.OPENTNL.ORG";
    menuFooter = "(C) 2004 GARAGEGAMES.COM, INC.";
 
-   menuItems.push_back("JOIN LAN/INTERNET GAME");
-   menuItems.push_back("HOST GAME");
-   menuItems.push_back("INSTRUCTIONS");
-   menuItems.push_back("OPTIONS");
-   menuItems.push_back("QUIT");
+   menuItems.push_back(MenuItem("JOIN LAN/INTERNET GAME", 0));
+   menuItems.push_back(MenuItem("HOST GAME",1));
+   menuItems.push_back(MenuItem("INSTRUCTIONS",2));
+   menuItems.push_back(MenuItem("OPTIONS",3));
+   menuItems.push_back(MenuItem("QUIT",4));
 }
 
 void MainMenuUserInterface::setMOTD(const char *motdString)
@@ -201,67 +215,47 @@ void OptionsMenuUserInterface::onActivate()
 
 void OptionsMenuUserInterface::setupMenus()
 {
-   clearBackground = !gClientGame->getConnectionToServer();
-
    menuItems.clear();
    if(controlsRelative)
-      menuItems.push_back("CONTROLS: RELATIVE");
+      menuItems.push_back(MenuItem("CONTROLS: RELATIVE",0));
    else
-      menuItems.push_back("CONTROLS: ABSOLUTE");
+      menuItems.push_back(MenuItem("CONTROLS: ABSOLUTE",0));
 
    if(fullscreen)
-      menuItems.push_back("VIDEO: FULLSCREEN");
+      menuItems.push_back(MenuItem("VIDEO: FULLSCREEN",1));
    else
-      menuItems.push_back("VIDEO: WINDOW");
+      menuItems.push_back(MenuItem("VIDEO: WINDOW",1));
 
    switch(joystickType)
    {
       case -1:
-         menuItems.push_back("INPUT: KEYBOARD + MOUSE");
+         menuItems.push_back(MenuItem("INPUT: KEYBOARD + MOUSE",2));
          break;
       case 0:
-         menuItems.push_back("INPUT: LOGITECH WINGMAN DUAL-ANALOG");
+         menuItems.push_back(MenuItem("INPUT: LOGITECH WINGMAN DUAL-ANALOG",2));
          break;
       case 1:
-         menuItems.push_back("INPUT: SAITEK P-880 DUAL-ANALOG");
+         menuItems.push_back(MenuItem("INPUT: SAITEK P-880 DUAL-ANALOG",2));
          break;
       case 2:
-         menuItems.push_back("INPUT: PS2 DUALSHOCK USB");
+         menuItems.push_back(MenuItem("INPUT: PS2 DUALSHOCK USB",2));
          break;
       case 3:
-         menuItems.push_back("INPUT: XBOX CONTROLLER USB");
+         menuItems.push_back(MenuItem("INPUT: XBOX CONTROLLER USB",2));
          break;
       default:
-         menuItems.push_back("INPUT: UNKNOWN");
+         menuItems.push_back(MenuItem("INPUT: UNKNOWN",2));
    }
 
    if(echoVoice)
-      menuItems.push_back("VOICE ECHO: ENABLED");
+      menuItems.push_back(MenuItem("VOICE ECHO: ENABLED",3));
    else
-      menuItems.push_back("VOICE ECHO: DISABLED");
+      menuItems.push_back(MenuItem("VOICE ECHO: DISABLED",3));
 
    if(gClientGame->getConnectionToServer())
-      menuItems.push_back("RETURN TO GAME");
+      menuItems.push_back(MenuItem("RETURN TO GAME",4));
    else
-      menuItems.push_back("GO TO MAIN MENU");
-}
-
-void OptionsMenuUserInterface::render()
-{
-   if(!clearBackground)
-   {
-      gGameUserInterface.render();
-      glColor4f(0, 0, 0, 0.5);
-      glEnable(GL_BLEND);
-      glBegin(GL_POLYGON);
-      glVertex2f(0, 0);
-      glVertex2f(canvasWidth, 0);
-      glVertex2f(canvasWidth, canvasHeight);
-      glVertex2f(0, canvasHeight);
-      glEnd();  
-      glDisable(GL_BLEND); 
-   }
-   Parent::render();
+      menuItems.push_back(MenuItem("GO TO MAIN MENU",4));
 }
 
 void OptionsMenuUserInterface::processSelection(U32 index)
@@ -313,17 +307,16 @@ GameMenuUserInterface gGameMenuUserInterface;
 GameMenuUserInterface::GameMenuUserInterface()
 {
    menuTitle = "GAME MENU:";
-   clearBackground = false;
 }
 
 void GameMenuUserInterface::onActivate()
 {
    Parent::onActivate();
    menuItems.clear();
-   menuItems.push_back("RETURN TO GAME");
-   menuItems.push_back("OPTIONS");
-   menuItems.push_back("INSTRUCTIONS");
-   menuItems.push_back("LEAVE GAME");
+   menuItems.push_back(MenuItem("RETURN TO GAME",0));
+   menuItems.push_back(MenuItem("OPTIONS",1));
+   menuItems.push_back(MenuItem("INSTRUCTIONS",2));
+   menuItems.push_back(MenuItem("LEAVE GAME",3));
    GameType *theGameType = gClientGame->getGameType();
    if(theGameType)
    {
@@ -353,9 +346,9 @@ void GameMenuUserInterface::processSelection(U32 index)
             gMainMenuUserInterface.activate();
          break;
       default:
-         if(mGameType.isValid())
-            mGameType->processClientGameMenuOption(index - 4);
          gGameUserInterface.activate();
+         if(mGameType.isValid())
+            mGameType->processClientGameMenuOption(index);
          break;
    }
 }
@@ -365,19 +358,61 @@ void GameMenuUserInterface::onEscape()
    gGameUserInterface.activate();
 }
 
-void GameMenuUserInterface::render()
+LevelMenuUserInterface gLevelMenuUserInterface;
+
+void LevelMenuUserInterface::onActivate()
 {
-   gGameUserInterface.render();
-   glColor4f(0, 0, 0, 0.5);
-   glEnable(GL_BLEND);
-   glBegin(GL_POLYGON);
-   glVertex2f(0, 0);
-   glVertex2f(canvasWidth, 0);
-   glVertex2f(canvasWidth, canvasHeight);
-   glVertex2f(0, canvasHeight);
-   glEnd();  
-   glDisable(GL_BLEND); 
-   Parent::render();
+   Parent::onActivate();
+   mTypeSelectDone = false;
+   menuTitle = "CHOOSE LEVEL TYPE:";
+
+   GameConnection *gc = gClientGame->getConnectionToServer();
+   if(!gc || !gc->mLevelTypes.size())
+      return;
+   
+   menuItems.clear();
+   menuItems.push_back(MenuItem(gc->mLevelTypes[0].getString(),0));
+
+   for(S32 i = 1; i < gc->mLevelTypes.size();i++)
+   {
+      S32 j;
+      for(j = 0;j < menuItems.size();j++)
+         if(!stricmp(gc->mLevelTypes[i].getString(),menuItems[j].mText))
+            break;
+      if(j == menuItems.size())
+      {
+         menuItems.push_back(MenuItem(gc->mLevelTypes[i].getString(), i));
+      }
+   }
+}
+
+void LevelMenuUserInterface::processSelection(U32 index)
+{
+   Parent::onActivate();
+   GameConnection *gc = gClientGame->getConnectionToServer();
+   if(mTypeSelectDone)
+   {
+      // The selection index is the level to load.
+      logprintf("load level %s", gc->mLevelNames[index].getString());
+      gc->c2sRequestLevelChange(index);
+      gGameUserInterface.activate();
+   }
+   else
+   {
+      mTypeSelectDone = true;
+      StringTableEntry s = gc->mLevelTypes[index];
+      menuItems.clear();
+      for(S32 i = 0; i < gc->mLevelTypes.size();i++)
+      {
+         if(gc->mLevelTypes[i] == s)
+            menuItems.push_back(MenuItem(gc->mLevelNames[i].getString(), i));
+      }
+   }
+}
+
+void LevelMenuUserInterface::onEscape()
+{
+   gGameUserInterface.activate();
 }
 
 };

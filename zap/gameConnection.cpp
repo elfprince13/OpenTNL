@@ -43,6 +43,7 @@ GameConnection::GameConnection()
    mNext = mPrev = this;
    setTranslatesStrings();
    mInCommanderMap = false;
+   mIsAdmin = false;
 }
 
 GameConnection::~GameConnection()
@@ -220,6 +221,22 @@ TNL_IMPLEMENT_RPC(GameConnection, s2cDisplayMessage,
    outputBuffer[pos] = 0;
    displayMessage(color, sfx, outputBuffer);
 }                 
+
+
+TNL_IMPLEMENT_RPC(GameConnection, s2cAddLevel, (StringTableEntryRef name, StringTableEntryRef type),
+                  NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirServerToClient, 1)
+{
+   mLevelNames.push_back(name);
+   mLevelTypes.push_back(type);
+}
+
+TNL_IMPLEMENT_RPC(GameConnection, c2sRequestLevelChange, (S32 newLevelIndex), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
+{
+   if(mIsAdmin)
+   {
+      gServerGame->cycleLevel(newLevelIndex);
+   }
+}
 
 void GameConnection::writeConnectRequest(BitStream *stream)
 {

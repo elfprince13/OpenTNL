@@ -37,6 +37,7 @@ namespace Zap
 
 class FlagItem;
 class GoalZone;
+struct MenuItem;
 
 class ClientRef : public Object
 {
@@ -185,7 +186,7 @@ public:
 
    TNL_DECLARE_RPC(c2sAdvanceWeapon, ());
 
-   virtual void addClientGameMenuOptions(Vector<const char *> &menuOptions);
+   virtual void addClientGameMenuOptions(Vector<MenuItem> &menuOptions);
    virtual void processClientGameMenuOption(U32 index);
    TNL_DECLARE_RPC(c2sChangeTeams, ());
 

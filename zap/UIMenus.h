@@ -32,22 +32,29 @@
 
 namespace Zap
 {
+struct MenuItem
+{
+   const char *mText;
+   U32 mIndex;
+   MenuItem(const char *text = 0, U32 index = 0)
+   {
+      mText = text;
+      mIndex = index;
+   }
+};
 
 class MenuUserInterface : public UserInterface
 {
 public:
-   Vector<const char *> menuItems;
+   Vector<MenuItem> menuItems;
    const char *menuTitle;
    const char *menuSubTitle;
    const char *menuFooter;
-
-   bool clearBackground;
 
    S32 selectionIndex;
 
    MenuUserInterface() 
    {
-      clearBackground = true;
       menuTitle = "Menu";
       menuSubTitle = "";
       menuFooter = "";
@@ -93,7 +100,6 @@ public:
    void onEscape();
    void setupMenus();
    void onActivate();
-   void render();
 };
 
 extern OptionsMenuUserInterface gOptionsMenuUserInterface;
@@ -106,13 +112,25 @@ class GameMenuUserInterface : public MenuUserInterface
    SafePtr<GameType> mGameType;
 public:
    GameMenuUserInterface();
-   void render();
+
    void onActivate();
    void processSelection(U32 index);
    void onEscape();
 };
 
 extern GameMenuUserInterface gGameMenuUserInterface;
+
+class LevelMenuUserInterface : public MenuUserInterface
+{
+   typedef MenuUserInterface Parent;
+   bool mTypeSelectDone;
+public:
+   void onActivate();
+   void processSelection(U32 index);
+   void onEscape();
+};
+
+extern LevelMenuUserInterface gLevelMenuUserInterface;
 
 };
 

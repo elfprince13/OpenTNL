@@ -59,12 +59,16 @@ class GameConnection : public ControlObjectConnection
    static GameConnection gClientList;
 
    bool mInCommanderMap;
+   bool mIsAdmin;
    StringTableEntry mClientName;
    Vector<U32> mLoadout;
    SafePtr<ClientRef> mClientRef;
 
    void linkToClientList();
 public:
+   Vector<StringTableEntry> mLevelNames;
+   Vector<StringTableEntry> mLevelTypes;
+
    enum MessageColors
    {
       ColorWhite,
@@ -86,6 +90,8 @@ public:
 
    StringTableEntryRef getClientName() { return mClientName; }
 
+   bool isAdmin() { return mIsAdmin; }
+   void setIsAdmin(bool admin) { mIsAdmin = admin; }
    bool isInCommanderMap() { return mInCommanderMap; }
    TNL_DECLARE_RPC(c2sRequestCommanderMap, ());
    TNL_DECLARE_RPC(c2sReleaseCommanderMap, ());
@@ -98,6 +104,8 @@ public:
    TNL_DECLARE_RPC(s2cDisplayMessageE, (RangedU32<0, ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString,
                    const Vector<StringTableEntry> &e));
    TNL_DECLARE_RPC(s2cDisplayMessage, (RangedU32<0, ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString));
+   TNL_DECLARE_RPC(s2cAddLevel, (StringTableEntryRef name, StringTableEntryRef type));
+   TNL_DECLARE_RPC(c2sRequestLevelChange, (S32 newLevelIndex));
 
    static GameConnection *getClientList();
    GameConnection *getNextClient();

@@ -208,11 +208,26 @@ void ServerGame::setLevelList(const char *levelList)
          break;
       levelList = firstSpace + 1;
    }
+   for(S32 i = 0; i < mLevelList.size(); i++)
+   {
+      loadLevel(mLevelList[i].getString());
+      StringTableEntry name = getGameType()->mLevelName;
+      StringTableEntry type(getGameType()->getGameTypeString()); 
+      mLevelNames.push_back(name);
+      mLevelTypes.push_back(type);
+      // delete any objects that may exist
+      while(mGameObjects.size())
+         delete mGameObjects[0];
+
+      mScopeAlwaysList.clear();
+      logprintf ("Added level %s of type %s", name.getString(), type.getString());
+   }
+
    mCurrentLevelIndex = mLevelList.size() - 1;
    cycleLevel();
 }
 
-void ServerGame::cycleLevel()
+void ServerGame::cycleLevel(S32 nextLevel)
 {
    // delete any objects on the delete list:
    processDeleteList(0xFFFFFFFF);
@@ -226,15 +241,13 @@ void ServerGame::cycleLevel()
    for(GameConnection *walk = GameConnection::getClientList(); walk ; walk = walk->getNextClient())
       walk->resetGhosting();
 
-   mCurrentLevelIndex++;
+   if(nextLevel >= 0)
+      mCurrentLevelIndex = nextLevel;
+   else
+      mCurrentLevelIndex++;
    if(S32(mCurrentLevelIndex) >= mLevelList.size())
       mCurrentLevelIndex = 0;
    loadLevel(mLevelList[mCurrentLevelIndex].getString());
-   if(!getGameType())
-   {
-      GameType *g = new GameType;
-      g->addToGame(this);
-   }
    Vector<GameConnection *> connectionList;
 
    for(GameConnection *walk = GameConnection::getClientList(); walk ; walk = walk->getNextClient())
@@ -247,7 +260,7 @@ void ServerGame::cycleLevel()
       GameConnection *gc = connectionList[index];
       connectionList.erase(index);
 
-      if(mGameType.isValid())
+      if(mGameType.isValid()) 
          mGameType->serverAddClient(gc);
       gc->activateGhosting();
    }
@@ -259,6 +272,11 @@ void ServerGame::loadLevel(const char *fileName)
    char fileBuffer[256];
    dSprintf(fileBuffer, sizeof(fileBuffer), "levels/%s", fileName);
    initLevelFromFile(fileBuffer);
+   if(!getGameType())
+   {
+      GameType *g = new GameType;
+      g->addToGame(this);
+   }
 }
 
 void ServerGame::processLevelLoadLine(int argc, const char **argv)
@@ -288,6 +306,9 @@ void ServerGame::processLevelLoadLine(int argc, const char **argv)
 
 void ServerGame::addClient(GameConnection *theConnection)
 {
+   for(S32 i = 0; i < mLevelList.size();i++)
+      theConnection->s2cAddLevel(mLevelNames[i], mLevelTypes[i]);
+
    if(mGameType.isValid())
       mGameType->serverAddClient(theConnection);
    mPlayerCount++;
