@@ -205,6 +205,7 @@ void Barrier::clipRenderLinesToPoly(Vector<Point> &polyPoints)
                rp1 = clipPoint;
             }
          }
+
          // if both are in, just go to the next edge.
 
          cp1 = cp2;

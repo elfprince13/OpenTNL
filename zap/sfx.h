@@ -46,6 +46,8 @@ enum SFXBuffers {
    SFXFlagSnatch,
    SFXTeleportIn,
    SFXTeleportOut,
+   SFXBounceWall,
+   SFXBounceObject,
    NumSFXBuffers
 };
 

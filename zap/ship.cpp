@@ -174,7 +174,7 @@ void Ship::processClient(U32 deltaT)
       mMoveState[RenderState].angle = mMoveState[ActualState].angle;
       float time = deltaT * 0.001;
       Point deltap = mMoveState[ActualState].pos -
-                       mMoveState[RenderState].pos;
+                     mMoveState[RenderState].pos;
 
       Point requestVel = deltap;
       requestVel *= 1 / time;
@@ -210,36 +210,8 @@ void Ship::processClient(U32 deltaT)
    }
    else
       mMoveState[RenderState] = mMoveState[ActualState];
-   /*
 
-   U32 timeUsed = deltaT;
-   if(interpTime)
-   {
-      if(interpTime < timeUsed)
-      {
-         timeUsed -= interpTime;
-         interpTime = 0;
-         mMoveState[RenderState] = mMoveState[ActualState];
-      }
-      else
-      {
-         Point totalDelta = mMoveState[ActualState].pos -
-                            mMoveState[RenderState].pos;
 
-         mMoveState[RenderState].pos +=
-               totalDelta * (timeUsed / F32(interpTime));
-
-         interpTime -= timeUsed;
-         timeUsed = 0;
-      }
-   }
-
-   if(timeUsed)
-   {
-      lastMove.time = timeUsed;
-      processMove(&lastMove, ActualState);
-      mMoveState[RenderState] = mMoveState[ActualState];
-   }*/
    updateExtent();
    if(hasExploded && timeUntilRemove)
    {
@@ -423,7 +395,7 @@ static Vector<GameObject *> fillVector;
 void Ship::performScopeQuery(GhostConnection *connection)
 {
    Rect queryRect(mMoveState[ActualState].pos, mMoveState[ActualState].pos);
-   queryRect.expand(Point(500, 400));
+   queryRect.expand(Point(600, 500));
 
    fillVector.clear();
    findObjects(AllObjectTypes, fillVector, queryRect);
@@ -475,18 +447,18 @@ enum {
 };
 
 Color ShipExplosionColors[NumShipExplosionColors] = {
-Color(1, 0, 0),
-Color(0.9, 0.5, 0),
-Color(1, 1, 1),
-Color(1, 1, 0),
-Color(1, 0, 0),
-Color(0.8, 1.0, 0),
-Color(1, 0.5, 0),
-Color(1, 1, 1),
-Color(1, 0, 0),
-Color(0.9, 0.5, 0),
-Color(1, 1, 1),
-Color(1, 1, 0),
+   Color(1, 0, 0),
+   Color(0.9, 0.5, 0),
+   Color(1, 1, 1),
+   Color(1, 1, 0),
+   Color(1, 0, 0),
+   Color(0.8, 1.0, 0),
+   Color(1, 0.5, 0),
+   Color(1, 1, 1),
+   Color(1, 0, 0),
+   Color(0.9, 0.5, 0),
+   Color(1, 1, 1),
+   Color(1, 1, 0),
 };
 
 void Ship::emitShipExplosion(Point pos)

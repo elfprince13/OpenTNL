@@ -37,35 +37,34 @@ We presume the reader is familiar with C++ programming and concepts.
 @section acknowledgements Acknowledgments
 John Quigley - For his incredible patience as the Linux build master.
 
-Ben Garney - For his mad documentation skills and for usefully doing other projects that would have distracted Mark.
+Ben Garney - For his mad documentation skills and for usefully doing other projects that would have distracted Mark - and sound effects.
 
-Tom St. Denis - For his excellent libtomcrypt cryptographic library that is included in the TNL.
+Tom St. Denis - For his excellent <a href="http://libtomcrypt.org/">libtomcrypt</a> cryptographic library that is included in the TNL.
 
 The GLUT developers - For a cross-platform, easy-to-use OpenGL initialization, input and windowing API.
 
 The OpenAL team - For a good, cross-platform audio API.
 
-Ari Juels and John Brainard for their work on Client Puzzles.
+Ari Juels and John Brainard - For their work on Client Puzzles.
 
-Tuomas Aura, Pekka Nikander, and Jussipekka Leiwo of the Helsinki University of Technology for their work on DoS resistant Authentication with Client Puzzles.
+Tuomas Aura, Pekka Nikander, and Jussipekka Leiwo of the Helsinki University of Technology - For their work on DoS resistant Authentication with Client Puzzles.
 
 */
 /*! @page gettingstarted Getting Started
 
 @section downloading Downloading the Torque Network Library
 
-
+Please see <a href="http://www.opentnl.org/download.php">the download page</a> for information on how to get the source.
 
 @section building Compiling the Torque Network Library
 
-
+Once you have a copy of the source code, you may compile it by following the instructions in the Readme.html in the root of the source code.
 
 @section troubleshooting Troubleshooting and Questions
 
-Link to FAQ
-Link to Forums
+For general information, <a href="http://www.opentnl.org/faq.php">please see our FAQ</a>.
 
-With that overview complete, you should now have a working version of the Torque Network Library and its sample programs up and running on your computer.
+For bugs or other issues, you can get help from our <a href="http://lists.sourceforge.net/lists/listinfo/opentnl-general">mailing list</a>. Please check the archives first, as others may have had similar issues; if not, feel free to ask questions.
 
 */
 /*! @page history History of the Torque Network Library
@@ -281,7 +280,7 @@ By using interpolation and extrapolation, the client view can be made to reasona
 
 */
 
-/*! @page archoverview Torque Network Library Archtectural Overview
+/*! @page archoverview Torque Network Library Architectural Overview
 
 The Torque Network Library is built in layers, each adding more functionality to the layer below it.
 

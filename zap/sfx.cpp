@@ -47,7 +47,8 @@ static ALbyte *wavFileNames[] = {
    "flag_snatch.wav",
    "teleport_in.wav",
    "teleport_out.wav",
-
+   "bounce_wall.wav",
+   "bounce_obj.wav",
    NULL,
 };
 

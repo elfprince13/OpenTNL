@@ -27,6 +27,7 @@
 #include "moveObject.h"
 #include "SweptEllipsoid.h"
 #include "sparkManager.h"
+#include "sfx.h"
 
 namespace Zap
 {
@@ -296,6 +297,10 @@ void MoveObject::computeCollisionResponseBarrier(U32 stateIndex, Point &collisio
       F32 scale = normal.dot(mMoveState[stateIndex].vel) * 0.01f;
       if(scale > 0.5f)
       {
+         // Make a noise...
+         SFXHandle h = new SFXObject(SFXBounceWall, collisionPoint, Point());
+         h->play();
+
          Color bumpC(scale/3, scale/3, scale);
 
          for(S32 i=0; i<4*pow((F32)scale, 0.5f); i++)
@@ -333,6 +338,10 @@ void MoveObject::computeCollisionResponseMoveObject(U32 stateIndex, MoveObject *
 
    mMoveState[stateIndex].vel += collisionVector * (v1f - v1i);
    shipHit->mMoveState[stateIndex].vel += collisionVector * (v2f - v2i);
+
+   SFXHandle h = new SFXObject(SFXBounceObject, shipHit->mMoveState[stateIndex].pos, Point());
+   h->play();
+
 }
 
 
