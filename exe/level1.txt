@@ -1,6 +1,6 @@
 # World definition - BJG
 
-GridSize 256
+GridSize 300
 
 CTFGameType
 

@@ -31,6 +31,7 @@
 
 #include "gameConnection.h"
 #include "point.h"
+#include "UI.h"
 
 namespace Zap
 {
@@ -138,6 +139,18 @@ void JoystickUpdateMove( Move *theMove )
     }
     else
        theMove->fire = false;
+
+   static bool buttonDown[12] = { 0, };
+   // check the state of the buttons:
+   for( U32 i = 0; i < 12; i++ )
+   {
+      bool buttonPressed = (js.rgbButtons[i] & 0x80) != 0;
+      if(buttonPressed && !buttonDown[i])
+         UserInterface::current->onControllerButtonDown(i);
+      else if(!buttonPressed && buttonDown[i])
+         UserInterface::current->onControllerButtonUp(i);
+      buttonDown[i] = buttonPressed;
+   }
 }
 
 void FreeDirectInput()

@@ -55,6 +55,8 @@ public:
    virtual void onKeyUp(U32 key);
    virtual void onSpecialKeyDown(U32 key);
    virtual void onSpecialKeyUp(U32 key);
+   virtual void onControllerButtonDown(U32 buttonIndex) {}
+   virtual void onControllerButtonUp(U32 buttonIndex) {}
 
    static void drawString(S32 x, S32 y, S32 size, const char *string);
    static void drawCenteredString(S32 y, S32 size, const char *string);

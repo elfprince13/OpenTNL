@@ -54,6 +54,9 @@ public:
    /// Barrier constructor.
    Barrier(Point st = Point(), Point e = Point());
 
+   /// Adds the server object to the net interface's scope always list
+   void onAddedToGame(Game *theGame);
+
    /// writes the Barrier state into the packet.  Since Barrier objects never change
    /// network state, this will only be called for the initial update of a barrier.
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);

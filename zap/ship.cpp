@@ -140,7 +140,7 @@ void Ship::processServerMove(Move *theMove)
          lastFireTime = currentTime;
          Point dir(sin(mMoveState[ActualState].angle), cos(mMoveState[ActualState].angle) );
          Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir); //mMoveState[ActualState].vel + dir * 500;
-         Projectile *proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 1000, this);
+         Projectile *proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this);
          proj->addToGame(getGame());
       }
    }
@@ -403,7 +403,7 @@ static Vector<GameObject *> fillVector;
 void Ship::performInnerScopeQuery(GhostConnection *connection)
 {
    Rect queryRect(mMoveState[ActualState].pos, mMoveState[ActualState].pos);
-   queryRect.expand(Point(500, 400));
+   queryRect.expand(Point(Game::PlayerHorizScopeDistance, Game::PlayerVertScopeDistance));
 
 
    fillVector.clear();

@@ -38,6 +38,9 @@ class MenuUserInterface : public UserInterface
 public:
    Vector<const char *> menuItems;
    const char *menuTitle;
+   const char *menuSubTitle;
+   const char *menuFooter;
+
    bool clearBackground;
 
    S32 selectionIndex;
@@ -45,7 +48,9 @@ public:
    MenuUserInterface() 
    {
       clearBackground = true;
-      menuTitle = "Menu"; 
+      menuTitle = "Menu";
+      menuSubTitle = "";
+      menuFooter = "";
       selectionIndex = 0;
    }
 

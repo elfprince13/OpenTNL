@@ -156,6 +156,17 @@ void Game::removeFromGameObjectList(GameObject *theObject)
    TNLAssert(0, "Object not in game's list!");
 }
 
+Rect Game::computeWorldObjectExtents()
+{
+   if(!mGameObjects.size())
+      return Rect();
+
+   Rect theRect = mGameObjects[0]->getExtent();
+   for(S32 i = 0; i < mGameObjects.size(); i++)
+      theRect.unionRect(mGameObjects[i]->getExtent());
+   return theRect;
+}
+
 //-----------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------
 
@@ -227,6 +238,12 @@ void ServerGame::idle(U32 timeDelta)
 //-----------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------
 
+ClientGame::ClientGame(const Address &bindAddress)
+ : Game(bindAddress)
+{
+   mInCommanderMap = false;
+   mCommanderZoomDelta = 0;
+}
 
 bool ClientGame::hasValidControlObject()
 {
@@ -261,6 +278,20 @@ void ClientGame::idle(U32 timeDelta)
    if(timeDelta > Move::MaxMoveTime)
       timeDelta = Move::MaxMoveTime;
 
+   if(!mInCommanderMap && mCommanderZoomDelta != 0)
+   {
+      if(timeDelta > mCommanderZoomDelta)
+         mCommanderZoomDelta = 0;
+      else
+         mCommanderZoomDelta -= timeDelta;
+   }
+   else if(mInCommanderMap && mCommanderZoomDelta != CommanderMapZoomTime)
+   {
+      mCommanderZoomDelta += timeDelta;
+      if(mCommanderZoomDelta > CommanderMapZoomTime)
+         mCommanderZoomDelta = CommanderMapZoomTime;
+   }
+
    Move *theMove = gGameUserInterface.getCurrentMove();
 
 #ifdef TNL_OS_WIN32
@@ -290,34 +321,67 @@ void ClientGame::idle(U32 timeDelta)
    mNetInterface->processConnections();
 }
 
+void ClientGame::zoomCommanderMap()
+{
+   mInCommanderMap = !mInCommanderMap;
+   UserInterface::playBoop();
+
+   GameConnection *conn = getConnectionToServer();
+   
+   if(conn)
+   {
+      if(mInCommanderMap)
+         conn->c2sRequestCommanderMap();
+      else
+         conn->c2sReleaseCommanderMap();
+   }
+}
+
 void ClientGame::renderCommander()
 {
    GameObject *u = mConnectionToServer->getControlObject();
    Point position = u->getRenderPos();
 
-   glPushMatrix();
-
+   F32 zoomFrac = mCommanderZoomDelta / F32(CommanderMapZoomTime);
    // Set up the view to show the whole level.
-   Rect worldBounds(Point(0,0), Point(WorldSize, WorldSize));
+   Rect worldBounds = computeWorldObjectExtents();
 
    Point worldCenter = worldBounds.getCenter();
    Point worldExtents = worldBounds.getExtents();
 
-   glScalef(UserInterface::canvasHeight / worldExtents.x, UserInterface::canvasHeight / worldExtents.y, 0);
-   glTranslatef(-worldCenter.x, -worldCenter.y, 0);
+   F32 aspectRatio = worldExtents.x / worldExtents.y;
+   F32 screenAspectRatio = UserInterface::canvasWidth / F32(UserInterface::canvasHeight);
+   if(aspectRatio > screenAspectRatio)
+      worldExtents.y *= aspectRatio / screenAspectRatio;
+   else
+      worldExtents.x *= screenAspectRatio / aspectRatio;
+
+   Point offset = (worldCenter - position) * zoomFrac + position;
+   Point visSize(2 * PlayerHorizVisDistance, 2 * PlayerVertVisDistance);
+   Point modVisSize = (worldExtents - visSize) * zoomFrac + visSize;
+
+   Point visScale(UserInterface::canvasWidth / modVisSize.x,
+                  UserInterface::canvasHeight / modVisSize.y );
+
+   glPushMatrix();
+   glScalef(visScale.x, visScale.y, 1);
+   glTranslatef(-offset.x, -offset.y, 0);
+
+   //glScalef(UserInterface::canvasHeight / worldExtents.x, UserInterface::canvasHeight / worldExtents.y, 0);
+   //glTranslatef(-worldCenter.x, -worldCenter.y, 0);
 
    // render the stars, but only 1/8th of them for our own sanity.
    glPointSize( 1.0f );
    glColor3f(0.8, 0.8, 1.0);
 
-   glEnableClientState(GL_VERTEX_ARRAY);
-   glVertexPointer(2, GL_FLOAT, 8*sizeof(Point), &mStars[0]);
-   glDrawArrays(GL_POINTS, 0, NumStars/8);
-   glDisableClientState(GL_VERTEX_ARRAY);
+//   glEnableClientState(GL_VERTEX_ARRAY);
+//   glVertexPointer(2, GL_FLOAT, 8*sizeof(Point), &mStars[0]);
+//   glDrawArrays(GL_POINTS, 0, NumStars/8);
+//   glDisableClientState(GL_VERTEX_ARRAY);
 
    // render the objects
    Vector<GameObject *> renderObjects;
-   mDatabase.findObjects(AllObjectTypes, renderObjects, worldBounds);
+   mDatabase.findObjects(BarrierType | ShipType | ItemType, renderObjects, worldBounds);
 
    // Deal with rendering sensor volumes
 
@@ -327,7 +391,7 @@ void ClientGame::renderCommander()
 
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA);
    glEnable(GL_BLEND);
-   glColor4f(0.1, 0.7, 0.2, 0.3);
+   glColor4f(0.1, 0.7, 0.2, 0.3 * zoomFrac);
 
    for(S32 i = 0; i < renderObjects.size(); i++)
    {
@@ -365,7 +429,7 @@ void ClientGame::renderCommander()
       renderObjects[i]->render();
    }
 
-   SparkManager::render();
+   //SparkManager::render();
 
    glPopMatrix();
 }
@@ -376,6 +440,7 @@ void ClientGame::renderNormal()
    Point position = u->getRenderPos();
 
    glPushMatrix();
+   glScalef(400 / F32(PlayerHorizVisDistance), 300 / F32(PlayerVertVisDistance), 1);
 
    glTranslatef(-position.x, -position.y, 0);
 
@@ -391,7 +456,7 @@ void ClientGame::renderNormal()
    // render the objects
    Vector<GameObject *> renderObjects;
 
-   Point screenSize(400, 300);
+   Point screenSize(PlayerHorizVisDistance, PlayerVertVisDistance);
    Rect extentRect(position - screenSize, position + screenSize);
    mDatabase.findObjects(AllObjectTypes, renderObjects, extentRect);
 
@@ -408,7 +473,7 @@ void ClientGame::render()
    if(!hasValidControlObject())
       return;
 
-   if(mInCommanderMap)
+   if(mCommanderZoomDelta)
       renderCommander();
    else
       renderNormal();

@@ -51,6 +51,8 @@ void MenuUserInterface::render()
 
    glColor3f(1,1,1);
    drawCenteredString( 10, 30, menuTitle);
+   drawCenteredString( 45, 18, menuSubTitle);
+   drawCenteredString( 570, 18, menuFooter);
 
    U32 yStart = (canvasHeight - menuItems.size() * 45) / 2;
    //glColor3f(0,1,0);
@@ -126,7 +128,9 @@ MainMenuUserInterface gMainMenuUserInterface;
 
 MainMenuUserInterface::MainMenuUserInterface()
 {
-   menuTitle = "MAIN MENU:";
+   menuTitle = "ZAP:";
+   menuSubTitle = "A TORQUE NETWORK LIBRARY GAME - WWW.OPENTNL.ORG";
+   menuFooter = "(C) 2004 GARAGEGAMES.COM, INC.";
 
    menuItems.push_back("JOIN LAN/INTERNET GAME");
    menuItems.push_back("JOIN SPECIFIC GAME");

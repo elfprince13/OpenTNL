@@ -44,8 +44,8 @@ public:
    enum {
 //      MaxVelocity = 500, // points per second
 //      Acceleration = 800, // points per second per second
-      MaxVelocity = 400, // points per second
-      Acceleration = 3000, // points per second per second
+      MaxVelocity = 450, // points per second
+      Acceleration = 2500, // points per second per second
       InterpMaxVelocity = 900, // velocity to use to interpolate to proper position
       InterpAcceleration = 1800,
       InterpMS = 15, // default interpolation time to new position

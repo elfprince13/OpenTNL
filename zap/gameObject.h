@@ -84,6 +84,7 @@ public:
    Game *getGame() { return mGame; }
 
    void setExtent(Rect &extentRect);
+   Rect getExtent() { return extent; }
    void findObjects(U32 typeMask, Vector<GameObject *> &fillVector, Rect &extents);
    GameObject *findObjectLOS(U32 typeMask, U32 stateIndex, Point rayStart, Point rayEnd, float &collisionTime);
 

@@ -106,14 +106,23 @@ protected:
 
    enum {
       NumStars = 2048,
-      WorldSize = 4096,
-      DefaultGridSize = 256,
-      MasterServerConnectAttemptDelay = 60000,
    };
    Point mStars[NumStars];
 
 public:
+   enum
+   {
+      WorldSize = 4096,
+      DefaultGridSize = 256,
+      PlayerHorizVisDistance = 600,
+      PlayerVertVisDistance = 450,
+      PlayerHorizScopeDistance = PlayerHorizVisDistance + 150,
+      PlayerVertScopeDistance = PlayerVertVisDistance + 150,
+      MasterServerConnectAttemptDelay = 60000,
+   };
+
    Game(const Address &theBindAddress);
+   Rect computeWorldObjectExtents();
 
    void deleteObject(GameObject *theObject, U32 delay);
 
@@ -162,10 +171,13 @@ public:
 class ClientGame : public Game
 {
    SafePtr<GameConnection> mConnectionToServer; // If this is a client game, this is the connection to the server
-public:
-   ClientGame(const Address &bindAddress) : Game(bindAddress), mInCommanderMap(false) {}
-
    bool mInCommanderMap;
+   enum {
+      CommanderMapZoomTime = 350,
+   };
+   U32 mCommanderZoomDelta;
+public:
+   ClientGame(const Address &bindAddress);
 
    bool hasValidControlObject();
    bool isConnectedToServer();
@@ -177,6 +189,7 @@ public:
    void renderCommander();
    bool isServer() { return false; }
    void idle(U32 timeDelta);
+   void zoomCommanderMap();
 };
 
 extern ServerGame *gServerGame;

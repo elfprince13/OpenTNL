@@ -123,40 +123,42 @@ void GameUserInterface::render()
       gClientGame->render();
 
    // draw the reticle
-   glPushMatrix();
+   if(!OptionsMenuUserInterface::joystickEnabled)
+   {
+      glPushMatrix();
 
-   glTranslatef(mMousePoint.x, mMousePoint.y, 0);
+      glTranslatef(mMousePoint.x, mMousePoint.y, 0);
 
-   static U32 cursorSpin = 90;
-   cursorSpin++;
+      static U32 cursorSpin = 90;
+      cursorSpin++;
 
-   glRotatef((cursorSpin % 720) * 0.9, 0, 0, 1);
+      glRotatef((cursorSpin % 720) * 0.9, 0, 0, 1);
 
-   glColor3f(1, 0, 0);
-   glBegin(GL_LINE_LOOP);
-   glVertex2f(-8, -6);
-   glVertex2f(-6, -8);
-   glVertex2f(-3, -3);
-   glEnd();
-   glBegin(GL_LINE_LOOP);
-   glVertex2f( 8, 6);
-   glVertex2f( 6, 8);
-   glVertex2f( 3, 3);
-   glEnd();
-   glBegin(GL_LINE_LOOP);
-   //glColor3f(1, 0, 0);
-   glVertex2f(8, -6);
-   glVertex2f(6, -8);
-   glVertex2f(3, -3);
-   glEnd();
-   glBegin(GL_LINE_LOOP);
-   glVertex2f(-8, 6);
-   glVertex2f(-6, 8);
-   glVertex2f(-3, 3);
+      glColor3f(1, 0, 0);
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(-8, -6);
+      glVertex2f(-6, -8);
+      glVertex2f(-3, -3);
+      glEnd();
+      glBegin(GL_LINE_LOOP);
+      glVertex2f( 8, 6);
+      glVertex2f( 6, 8);
+      glVertex2f( 3, 3);
+      glEnd();
+      glBegin(GL_LINE_LOOP);
+      //glColor3f(1, 0, 0);
+      glVertex2f(8, -6);
+      glVertex2f(6, -8);
+      glVertex2f(3, -3);
+      glEnd();
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(-8, 6);
+      glVertex2f(-6, 8);
+      glVertex2f(-3, 3);
 
-   glEnd();
-   glPopMatrix();
-
+      glEnd();
+      glPopMatrix();
+   }
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
 
@@ -247,6 +249,21 @@ void GameUserInterface::onMouseUp(S32 x, S32 y)
    mCurrentMove.fire = false;
 }
 
+void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
+{
+   switch(buttonIndex)
+   {
+      case 7:
+         gClientGame->zoomCommanderMap();
+         break;
+   }
+}
+
+void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
+{
+
+}
+
 void GameUserInterface::onKeyDown(U32 key)
 {
    if(mCurrentMode == PlayMode)
@@ -301,16 +318,9 @@ void GameUserInterface::onKeyDown(U32 key)
             mVChat->show();
             mCurrentMode = VChatMode;
             break;
-         case 'R':
-            if(gClientGame->mInCommanderMap)
-               break;
-
-            UserInterface::playBoop();
-            gClientGame->mInCommanderMap = true;
-            GameConnection * conn = gClientGame->getConnectionToServer();
-            if(conn)
-               conn->c2sRequestCommanderMap();
-         break;
+         case 'C':
+            gClientGame->zoomCommanderMap();
+            break;
       }
    }
    else if(mCurrentMode == ChatMode)
@@ -444,16 +454,6 @@ void GameUserInterface::onKeyUp(U32 key)
          case 'D':
             mCurrentMove.right = 0;
             break;
-         case 'R':
-             if(!gClientGame->mInCommanderMap)
-               break;
-
-             UserInterface::playBoop();
-            gClientGame->mInCommanderMap = false;
-            GameConnection * conn = gClientGame->getConnectionToServer();
-            if(conn)
-               conn->c2sReleaseCommanderMap();
-         break;
       }
    }
    else if(mCurrentMode == ChatMode)

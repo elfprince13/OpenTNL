@@ -27,6 +27,7 @@
 #include "barrier.h"
 #include "glutInclude.h"
 #include "gameLoader.h"
+#include "gameNetInterface.h"
 #include <math.h>
 
 using namespace TNL;
@@ -110,13 +111,22 @@ void BarrierMaker::processArguments(S32 argc, const char **argv)
 Barrier::Barrier(Point st, Point e)
 {
    mObjectTypeMask = BarrierType;
-   mNetFlags.set(Ghostable | ScopeAlways);
+   mNetFlags.set(Ghostable);
    start = st;
    end = e;
    Rect r(start, end);
    r.expand(Point(BarrierWidth, BarrierWidth));
    setExtent(r);
    mLastBarrierChangeIndex = 0;
+}
+
+void Barrier::onAddedToGame(Game *theGame)
+{
+   if(!isGhost())
+   {
+      setInterface(theGame->getNetInterface());
+      setScopeAlways();
+   }
 }
 
 U32 Barrier::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
