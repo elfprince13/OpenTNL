@@ -139,8 +139,9 @@ void idle()
       if(gClientGame)
          glutPostRedisplay();
    }
+
    // Sleep a bit so we don't saturate the system.
-   Platform::sleep(1);
+   Platform::sleep((gClientGame ? 0 : 1));
 }
 
 void dedicatedServerLoop()

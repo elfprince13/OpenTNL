@@ -126,24 +126,43 @@ void SparkManager::tick( F32 dT )
 void SparkManager::render()
 {
    Spark *walk = head;
+   static F32    pts[2*4096];
+   static F32    clr[4*4096];
+
+   U32 pos = 0;
+   while(walk && pos < 4095)
+   {
+      clr[pos*4+0] = walk->color.r;
+      clr[pos*4+1] = walk->color.g;
+      clr[pos*4+2] = walk->color.b;
+
+      if(walk->ttl > 2)
+         clr[pos*4+3] = 1;
+      else
+         clr[pos*4+3] = walk->ttl * 0.5;
+
+      pts[pos*2+0] = walk->pos.x;
+      pts[pos*2+1] = walk->pos.y;
+
+      walk = walk->next;
+      pos++;
+   }
 
    glPointSize( 2.0f );
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-   glBegin(GL_POINTS);
+   
+   glEnableClientState(GL_COLOR_ARRAY);
+   glEnableClientState(GL_VERTEX_ARRAY);
 
-   while(walk)
-   {
-      if(walk->ttl > 2)
-         glColor4f(walk->color.r, walk->color.g, walk->color.b, 1);
-      else
-         glColor4f(walk->color.r, walk->color.g, walk->color.b, walk->ttl * 0.5);
+   glColorPointer(4, GL_FLOAT , 0, clr);
+   glVertexPointer(2, GL_FLOAT, 0, pts);
+   
+   glDrawArrays(GL_POINTS, 0, pos);
 
-      glVertex2f( walk->pos.x, walk->pos.y );
-      walk = walk->next;
-   }
+   glDisableClientState(GL_COLOR_ARRAY);
+   glDisableClientState(GL_VERTEX_ARRAY);
 
-   glEnd();
    glDisable(GL_BLEND);
    glBlendFunc(GL_ONE, GL_ZERO);
 }
