@@ -31,12 +31,12 @@
 namespace Zap
 {
 
-void glVertex(Point &p)
+void glVertex(Point p)
 {
    glVertex2f(p.x, p.y);
 }
 
-void glColor(Color &c, float alpha)
+void glColor(Color c, float alpha)
 {
    glColor4f(c.r, c.g, c.b, alpha);
 }

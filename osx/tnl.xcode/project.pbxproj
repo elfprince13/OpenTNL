@@ -97,6 +97,96 @@
 //1D2
 //1D3
 //1D4
+		1D3E3EE90666A7EE005D645B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = loadoutSelect.cpp;
+			path = ../zap/loadoutSelect.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1D3E3EEA0666A7EE005D645B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = loadoutSelect.h;
+			path = ../zap/loadoutSelect.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1D3E3EEB0666A7EE005D645B = {
+			fileRef = 1D3E3EE90666A7EE005D645B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1D3E3EEC0666A7EE005D645B = {
+			fileRef = 1D3E3EEA0666A7EE005D645B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1D3E3EED0666A871005D645B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = UIEditor.cpp;
+			path = ../zap/UIEditor.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1D3E3EEE0666A871005D645B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = UIEditor.h;
+			path = ../zap/UIEditor.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1D3E3EEF0666A871005D645B = {
+			fileRef = 1D3E3EED0666A871005D645B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1D3E3EF00666A871005D645B = {
+			fileRef = 1D3E3EEE0666A871005D645B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1D8DCBB606557E6D00BC4809 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = controlObjectConnection.cpp;
+			path = ../zap/controlObjectConnection.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1D8DCBB706557E6D00BC4809 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = controlObjectConnection.h;
+			path = ../zap/controlObjectConnection.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1D8DCBB806557E6D00BC4809 = {
+			fileRef = 1D8DCBB606557E6D00BC4809;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1D8DCBB906557E6D00BC4809 = {
+			fileRef = 1D8DCBB706557E6D00BC4809;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		1DC6ED430652D22A00BDEE0B = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -292,6 +382,260 @@
 			settings = {
 			};
 		};
+		1DE1EC6906909AB400D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = engineeredObjects.cpp;
+			path = ../zap/engineeredObjects.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EC6A06909AB400D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = engineeredObjects.h;
+			path = ../zap/engineeredObjects.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EC6B06909AB400D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = flagItem.cpp;
+			path = ../zap/flagItem.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EC6C06909AB400D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = footballGame.cpp;
+			path = ../zap/footballGame.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EC6D06909AB400D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = gameObjectRender.cpp;
+			path = ../zap/gameObjectRender.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EC6E06909AB400D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = gameObjectRender.h;
+			path = ../zap/gameObjectRender.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EC6F06909AB400D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = huntersGame.cpp;
+			path = ../zap/huntersGame.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EC7006909AB400D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = huntersGame.h;
+			path = ../zap/huntersGame.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EC7106909AB400D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = LoadoutZone.cpp;
+			path = ../zap/LoadoutZone.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EC7206909AB400D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = rabbitGame.cpp;
+			path = ../zap/rabbitGame.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EC7306909AB400D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = rabbitGame.h;
+			path = ../zap/rabbitGame.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EC7406909AB400D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = UIInstructions.cpp;
+			path = ../zap/UIInstructions.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EC7506909AB400D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = UIInstructions.h;
+			path = ../zap/UIInstructions.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EC7606909AB400D93C76 = {
+			fileRef = 1DE1EC6906909AB400D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1EC7706909AB400D93C76 = {
+			fileRef = 1DE1EC6A06909AB400D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1EC7806909AB400D93C76 = {
+			fileRef = 1DE1EC6B06909AB400D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1EC7906909AB400D93C76 = {
+			fileRef = 1DE1EC6C06909AB400D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1EC7A06909AB400D93C76 = {
+			fileRef = 1DE1EC6D06909AB400D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1EC7B06909AB400D93C76 = {
+			fileRef = 1DE1EC6E06909AB400D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1EC7C06909AB400D93C76 = {
+			fileRef = 1DE1EC6F06909AB400D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1EC7D06909AB400D93C76 = {
+			fileRef = 1DE1EC7006909AB400D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1EC7E06909AB400D93C76 = {
+			fileRef = 1DE1EC7106909AB400D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1EC7F06909AB400D93C76 = {
+			fileRef = 1DE1EC7206909AB400D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1EC8006909AB400D93C76 = {
+			fileRef = 1DE1EC7306909AB400D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1EC8106909AB400D93C76 = {
+			fileRef = 1DE1EC7406909AB400D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1EC8206909AB400D93C76 = {
+			fileRef = 1DE1EC7506909AB400D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1ED0B06909D0A00D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = gameWeapons.cpp;
+			path = ../zap/gameWeapons.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1ED0C06909D0A00D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = gameWeapons.h;
+			path = ../zap/gameWeapons.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1ED0D06909D0A00D93C76 = {
+			fileRef = 1DE1ED0B06909D0A00D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1ED0E06909D0A00D93C76 = {
+			fileRef = 1DE1ED0C06909D0A00D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1ED3306909FA300D93C76 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = Carbon.framework;
+			path = /System/Library/Frameworks/Carbon.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		1DE1ED3406909FA300D93C76 = {
+			fileRef = 1DE1ED3306909FA300D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DE1EDF40690BA1600D93C76 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = osxInput.cpp;
+			path = ../zap/osxInput.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DE1EDF50690BA1600D93C76 = {
+			fileRef = 1DE1EDF40690BA1600D93C76;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 //1D0
 //1D1
 //1D2
@@ -383,6 +727,7 @@
 		};
 		29B97323FDCFA39411CA2CEA = {
 			children = (
+				1DE1ED3306909FA300D93C76,
 				DB9525CF0636109800B8795E,
 				6656DD9B0635C8EF00E30126,
 				6692C11906247CF900D5ADFE,
@@ -1965,6 +2310,15 @@
 				1DC8204D064C5CBC00F61B0E,
 				1DC6ED500652D24B00BDEE0B,
 				1DC6ED520652D24B00BDEE0B,
+				1D8DCBB906557E6D00BC4809,
+				1D3E3EEC0666A7EE005D645B,
+				1D3E3EF00666A871005D645B,
+				1DE1EC7706909AB400D93C76,
+				1DE1EC7B06909AB400D93C76,
+				1DE1EC7D06909AB400D93C76,
+				1DE1EC8006909AB400D93C76,
+				1DE1EC8206909AB400D93C76,
+				1DE1ED0E06909D0A00D93C76,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2007,6 +2361,19 @@
 				1DC6ED4E0652D24B00BDEE0B,
 				1DC6ED4F0652D24B00BDEE0B,
 				1DC6ED510652D24B00BDEE0B,
+				1D8DCBB806557E6D00BC4809,
+				1D3E3EEB0666A7EE005D645B,
+				1D3E3EEF0666A871005D645B,
+				1DE1EC7606909AB400D93C76,
+				1DE1EC7806909AB400D93C76,
+				1DE1EC7906909AB400D93C76,
+				1DE1EC7A06909AB400D93C76,
+				1DE1EC7C06909AB400D93C76,
+				1DE1EC7E06909AB400D93C76,
+				1DE1EC7F06909AB400D93C76,
+				1DE1EC8106909AB400D93C76,
+				1DE1ED0D06909D0A00D93C76,
+				1DE1EDF50690BA1600D93C76,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2441,6 +2808,28 @@
 		};
 		6692C0E606247C3B00D5ADFE = {
 			children = (
+				1DE1EDF40690BA1600D93C76,
+				1DE1ED0B06909D0A00D93C76,
+				1DE1ED0C06909D0A00D93C76,
+				1DE1EC6906909AB400D93C76,
+				1DE1EC6A06909AB400D93C76,
+				1DE1EC6B06909AB400D93C76,
+				1DE1EC6C06909AB400D93C76,
+				1DE1EC6D06909AB400D93C76,
+				1DE1EC6E06909AB400D93C76,
+				1DE1EC6F06909AB400D93C76,
+				1DE1EC7006909AB400D93C76,
+				1DE1EC7106909AB400D93C76,
+				1DE1EC7206909AB400D93C76,
+				1DE1EC7306909AB400D93C76,
+				1DE1EC7406909AB400D93C76,
+				1DE1EC7506909AB400D93C76,
+				1D3E3EED0666A871005D645B,
+				1D3E3EEE0666A871005D645B,
+				1D3E3EE90666A7EE005D645B,
+				1D3E3EEA0666A7EE005D645B,
+				1D8DCBB606557E6D00BC4809,
+				1D8DCBB706557E6D00BC4809,
 				1DC6ED470652D24B00BDEE0B,
 				1DC6ED480652D24B00BDEE0B,
 				1DC6ED490652D24B00BDEE0B,
@@ -2528,6 +2917,7 @@
 				6692C16106247D2700D5ADFE,
 				6656DD9C0635C8EF00E30126,
 				DB9525D00636109800B8795E,
+				1DE1ED3406909FA300D93C76,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;

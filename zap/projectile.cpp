@@ -36,6 +36,28 @@
 namespace Zap
 {
 
+TNL_IMPLEMENT_NETOBJECT(Projectile);
+
+Projectile::Projectile(U32 type, Point p, Point v, U32 t, GameObject *shooter)
+{
+   mObjectTypeMask = BIT(4); //ProjectileType
+
+   mNetFlags.set(Ghostable);
+   pos = p;
+   velocity = v;
+   mTimeRemaining = t;
+   mAliveTime = 0;
+   collided = false;
+   alive = true;
+   mShooter = shooter;
+   if(shooter)
+   {
+      setOwner(shooter->getOwner());
+      mTeam = shooter->getTeam();
+   }
+   mType = type;
+}
+
 enum {
    NumSparkColors = 4,
 };
@@ -57,28 +79,6 @@ ProjectileInfo gProjInfo[Projectile::TypeCount] = {
    { 0.11f, { Color(0,1,1), Color(1,1,0), Color(0,1,0.5), Color(0.5,1,0) }, { Color(0.5, 1, 0), Color(0, 1, 0.5) }, 0.6, SFXTurretProjectile, SFXTurretImpact },
 };
 
-
-TNL_IMPLEMENT_NETOBJECT(Projectile);
-
-Projectile::Projectile(U32 type, Point p, Point v, U32 t, GameObject *shooter)
-{
-   mObjectTypeMask |= Zap::GameObjectType::ProjectileType;
-
-   mNetFlags.set(Ghostable);
-   pos = p;
-   velocity = v;
-   mTimeRemaining = t;
-   mAliveTime = 0;
-   collided = false;
-   alive = true;
-   mShooter = shooter;
-   if(shooter)
-   {
-      setOwner(shooter->getOwner());
-      mTeam = shooter->getTeam();
-   }
-   mType = type;
-}
 
 U32 Projectile::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {

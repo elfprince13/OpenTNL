@@ -122,6 +122,8 @@ public:
    };
 
    Game(const Address &theBindAddress);
+   virtual ~Game() {}
+   
    Rect computeWorldObjectExtents();
 
    void addToDeleteList(GameObject *theObject, U32 delay);

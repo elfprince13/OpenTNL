@@ -34,8 +34,8 @@ using namespace TNL;
 namespace Zap
 {
 
-extern void glVertex(Point &p);
-extern void glColor(Color &c, float alpha = 1);
+extern void glVertex(Point p);
+extern void glColor(Color c, float alpha = 1);
 extern void drawCircle(Point pos, F32 radius);
 extern void fillCircle(Point pos, F32 radius);
 
