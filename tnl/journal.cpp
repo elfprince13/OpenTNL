@@ -96,7 +96,7 @@ const char *JournalBlockTypeToken::findName(U32 value)
    return "INVALID";
 }
 
-JournalEntryRecord::JournalEntryRecord(const char *functionName, MethodArgList *methodArgList)
+JournalEntryRecord::JournalEntryRecord(const char *functionName)
 {
    S32 i;
    if(!mEntryVector)
@@ -110,7 +110,6 @@ JournalEntryRecord::JournalEntryRecord(const char *functionName, MethodArgList *
    mEntryVector->insert(i);
    (*mEntryVector)[i] = this;
    mFunctionName = functionName;
-   mMethodArgList = methodArgList;
    mEntryIndex = 0;
 }
 
@@ -203,7 +202,7 @@ void Journal::load(const char *fileName)
    mCurrentMode = Playback;
 }
 
-void Journal::callEntry(const char *funcName, MarshalledCall *theCall)
+void Journal::callEntry(const char *funcName, Functor *theCall)
 {
    if(mCurrentMode == Playback)
       return;
@@ -225,20 +224,13 @@ void Journal::callEntry(const char *funcName, MarshalledCall *theCall)
       TNL_JOURNAL_WRITE( (U16(0x1234)) );
 #endif
       mWriteStream.writeRangedU32(entryIndex, 0, JournalEntryRecord::mEntryVector->size() - 1);
-      mWriteStream.writeBits(theCall->marshalledData.getBitPosition(), theCall->marshalledData.getBuffer());
+      theCall->write(mWriteStream);
 #ifdef TNL_ENABLE_BIG_JOURNALS
       TNL_JOURNAL_WRITE( (U16(0x5678)) );
 #endif
       syncWriteStream();
    }
-
-   BitStream unmarshallData(theCall->marshalledData.getBuffer(), theCall->marshalledData.getBytePosition());
-   theCall->unmarshall(&unmarshallData);
-
-   JournalEntryRecord *theEntry = (*JournalEntryRecord::mEntryVector)[entryIndex];
-   MethodPointer p;
-   theEntry->getFuncPtr(p);
-   theCall->dispatch((void *) this, &p);
+   theCall->dispatch(this);
    mInsideEntrypoint = false;
 }
 
@@ -319,11 +311,7 @@ void Journal::processNextJournalEntry()
    {
       TNLAssert(0, "blech!");
    }
-
-   MethodPointer p;
-   theEntry->getFuncPtr(p);
-   MarshalledCall theCall(theEntry->mMethodArgList);
-   theCall.unmarshall(&mReadStream);
+   theEntry->mFunctor->read(mReadStream);
 
 #ifdef TNL_ENABLE_BIG_JOURNALS
    TNL_JOURNAL_READ( (&token) );
@@ -334,7 +322,7 @@ void Journal::processNextJournalEntry()
    checkReadPosition();
 
    mInsideEntrypoint = true;
-   theCall.dispatch((void *) this, &p);
+   theEntry->mFunctor->dispatch(this);
    mInsideEntrypoint = false;
 }
 

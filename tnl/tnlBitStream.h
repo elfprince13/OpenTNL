@@ -31,6 +31,10 @@
 #include "tnlByteBuffer.h"
 #endif
 
+#ifndef _TNL_CONNECTIONSTRINGTABLE_H_
+#include "tnlConnectionStringTable.h"
+#endif
+
 namespace TNL {
 
 class SymmetricCipher;
@@ -68,7 +72,7 @@ protected:
    Point3F mCompressPoint;    ///< Reference point for relative point compression.
    U32  maxReadBitNum;        ///< Last valid read bit position.
    U32  maxWriteBitNum;       ///< Last valid write bit position.
-
+   ConnectionStringTable *mStringTable; ///< String table used to compress StringTableEntries over the network.
    /// String buffer holds the last string written into the stream for substring compression.
    char mStringBuffer[256];
 
@@ -104,6 +108,9 @@ public:
 
    /// clears the string compression buffer.
    void clearStringBuffer() { mStringBuffer[0] = 0; }
+
+   /// sets the ConnectionStringTable for compressing string table entries across the network
+   void setStringTable(ConnectionStringTable *table) { mStringTable = table; }
 
    /// clears the error state from an attempted read or write overrun
    void clearError() { error = false; }
@@ -235,6 +242,12 @@ public:
    /// Reads a huffman compressed string from the stream.
    void readString(char stringBuf[256]);
 
+   /// Writes a string table entry into the stream
+   void writeStringTableEntry(const StringTableEntry &ste);
+
+   /// Reads a string table entry from the stream
+   void readStringTableEntry(StringTableEntry *ste);
+
    /// Writes byte data into the stream.
    bool write(const U32 in_numBytes, const void* in_pBuffer);
    /// Reads byte data from the stream.
@@ -272,21 +285,6 @@ public:
 
    /// Decrypts the BitStream, then checks the hash digest at the end of the buffer to validate the contents
    bool decryptAndCheckHash(U32 hashDigestSize, U32 decryptStartOffset, SymmetricCipher *theCipher);
-};
-
-//------------------------------------------------------------------------------
-
-/// PacketStream provides a network interface to the BitStream for easy construction of data packets.
-class PacketStream : public BitStream
-{
-   U8 buffer[MaxPacketDataSize]; ///< internal buffer for packet data, sized to the maximum UDP packet size.
-public:
-   /// Constructor assigns the internal buffer to the BitStream.
-   PacketStream(U32 targetPacketSize = MaxPacketDataSize) : BitStream(buffer, targetPacketSize, MaxPacketDataSize) {}
-   /// Sends this packet to the specified address through the specified socket.
-   NetError sendto(Socket &outgoingSocket, const Address &theAddress);
-   /// Reads a packet into the stream from the specified socket.
-   NetError recvfrom(Socket &incomingSocket, Address *recvAddress);
 };
 
 //------------------------------------------------------------------------------
@@ -387,6 +385,21 @@ inline U32 BitStream::readEnum(U32 enumRange)
 {
    return U32(readInt(getNextBinLog2(enumRange)));
 }
+
+/// PacketStream provides a network interface to the BitStream for easy construction of data packets.
+class PacketStream : public BitStream
+{
+   typedef BitStream Parent;
+   U8 buffer[MaxPacketDataSize]; ///< internal buffer for packet data, sized to the maximum UDP packet size.
+public:
+   /// Constructor assigns the internal buffer to the BitStream.
+   PacketStream(U32 targetPacketSize = MaxPacketDataSize) : BitStream(buffer, targetPacketSize, MaxPacketDataSize) {}
+   /// Sends this packet to the specified address through the specified socket.
+   NetError sendto(Socket &outgoingSocket, const Address &theAddress);
+   /// Reads a packet into the stream from the specified socket.
+   NetError recvfrom(Socket &incomingSocket, Address *recvAddress);
+};
+
 
 };
 #endif //_TNL_BITSTREAM_H_

@@ -259,7 +259,7 @@ public:
    TNL_DECLARE_RPC_OVERRIDE(c2mQueryServers,
                 (U32 queryId, U32 regionMask, U32 minPlayers, U32 maxPlayers,
                  U32 infoFlags, U32 maxBots, U32 minCPUSpeed,
-                 StringTableEntryRef gameType, StringTableEntryRef missionType)
+                 StringTableEntry gameType, StringTableEntry missionType)
    )
    {
       Vector<IPAddress> theVector(IPMessageAddressCount);
@@ -366,14 +366,15 @@ public:
    // This is called when a client wishes to arrange a connection with a
    // server.
    TNL_DECLARE_RPC_OVERRIDE(c2mRequestArrangedConnection, (U32 requestId,
-      IPAddressRef remoteAddress, IPAddressRef internalAddress,
-      ByteBufferRef connectionParameters))
+      IPAddress remoteAddress, IPAddress internalAddress,
+      ByteBufferPtr connectionParameters))
    {
       // First, make sure that we're connected with the server that they're requesting a connection with.
       MasterServerConnection *conn = (MasterServerConnection *) gNetInterface->findConnection(remoteAddress);
       if(!conn)
       {
-         c2mRejectArrangedConnection(requestId, ByteBuffer((U8 *) MasterNoSuchHost, strlen(MasterNoSuchHost) + 1));
+         ByteBufferPtr ptr = new ByteBuffer((U8 *) MasterNoSuchHost, strlen(MasterNoSuchHost) + 1);
+         c2mRejectArrangedConnection(requestId, ptr);
          return;
       }
 
@@ -426,7 +427,7 @@ public:
    }
 
    // Called to indicate a connect request is being accepted.
-   TNL_DECLARE_RPC_OVERRIDE(c2mAcceptArrangedConnection, (U32 requestId, IPAddressRef internalAddress, ByteBufferRef connectionData))
+   TNL_DECLARE_RPC_OVERRIDE(c2mAcceptArrangedConnection, (U32 requestId, IPAddress internalAddress, ByteBufferPtr connectionData))
    {
       GameConnectRequest *req = findAndRemoveRequest(requestId);
       if(!req)
@@ -459,7 +460,7 @@ public:
 
 
    // Called to indicate a connect request is being rejected.
-   TNL_DECLARE_RPC_OVERRIDE(c2mRejectArrangedConnection, (U32 requestId, ByteBufferRef rejectData))
+   TNL_DECLARE_RPC_OVERRIDE(c2mRejectArrangedConnection, (U32 requestId, ByteBufferPtr rejectData))
    {
       GameConnectRequest *req = findAndRemoveRequest(requestId);
       if(!req)
@@ -477,7 +478,7 @@ public:
 
    // Called to update the status of a game server.
    TNL_DECLARE_RPC_OVERRIDE(c2mUpdateServerStatus, (
-      StringTableEntryRef gameType, StringTableEntryRef missionType,
+      StringTableEntry gameType, StringTableEntry missionType,
       U32 botCount, U32 playerCount, U32 maxPlayers, U32 infoFlags))
    {
       // If we didn't know we were a game server, don't accept updates.
@@ -560,7 +561,8 @@ public:
             if(gcr->initiator.isValid())
             {
                gcr->initiator->removeConnectRequest(gcr);
-               gcr->initiator->c2mRejectArrangedConnection(gcr->initiatorQueryId, ByteBuffer((U8 *) MasterRequestTimedOut, strlen(MasterRequestTimedOut) + 1));
+               ByteBufferPtr reqTimeoutBuffer = new ByteBuffer((U8 *) MasterRequestTimedOut, strlen(MasterRequestTimedOut) + 1);
+               gcr->initiator->c2mRejectArrangedConnection(gcr->initiatorQueryId, reqTimeoutBuffer);
             }
 
             // And the host's lists..

@@ -34,7 +34,7 @@ namespace TNL {
 //--------------------------------------------------------------------
 static ClassChunker<ConnectionStringTable::PacketEntry> packetEntryFreeList(4096);
 
-ConnectionStringTable::ConnectionStringTable(EventConnection *parent)
+ConnectionStringTable::ConnectionStringTable(NetConnection *parent)
 {
    mParent = parent;
    for(U32 i = 0; i < EntryCount; i++)
@@ -51,7 +51,7 @@ ConnectionStringTable::ConnectionStringTable(EventConnection *parent)
    mEntryTable[EntryCount-1].nextLink = &mLRUTail;
 }
 
-void ConnectionStringTable::writeStringTableEntry(BitStream *stream, StringTableEntryRef string, PacketList *note)
+void ConnectionStringTable::writeStringTableEntry(BitStream *stream, StringTableEntryRef string)
 {
    // see if the entry is in the hash table right now
    U32 hashIndex = string.getIndex() % EntryCount;
@@ -101,6 +101,8 @@ void ConnectionStringTable::writeStringTableEntry(BitStream *stream, StringTable
       entry->stringTableEntry = sendEntry;
       entry->string = sendEntry->string;
       entry->nextInPacket = NULL;
+
+      PacketList *note = &mParent->getCurrentWritePacketNotify()->stringList;
 
       if(!note->stringHead)
          note->stringHead = entry;

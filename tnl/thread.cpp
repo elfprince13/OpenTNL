@@ -189,7 +189,7 @@ ThreadStorage::~ThreadStorage()
 
 void *ThreadStorage::get()
 {
-   pthread_getspecific(mThreadKey);
+   return pthread_getspecific(mThreadKey);
 }
 
 void ThreadStorage::set(void *value)
@@ -261,16 +261,14 @@ void ThreadQueue::dispatchNextCall()
       unlock();
       return;
    }
-   ThreadQueueCall c = mThreadCalls.first();
+   Functor *c = mThreadCalls.first();
    mThreadCalls.pop_front();
    unlock();
-   BitStream unmarshallData(c.c->marshalledData.getBuffer(), c.c->marshalledData.getBytePosition());
-   c.c->unmarshall(&unmarshallData);
-   c.c->dispatch(this, &c.p);
-   delete c.c;
+   c->dispatch(this);
+   delete c;
 }
 
-void ThreadQueue::postCall(ThreadQueueCall &theCall)
+void ThreadQueue::postCall(Functor *theCall)
 {
    lock();
    if(isMainThread())
@@ -291,11 +289,9 @@ void ThreadQueue::dispatchResponseCalls()
    lock();
    for(S32 i = 0; i < mResponseCalls.size(); i++)
    {
-      ThreadQueueCall c = mResponseCalls[i];
-      BitStream unmarshallData(c.c->marshalledData.getBuffer(), c.c->marshalledData.getBytePosition());
-      c.c->unmarshall(&unmarshallData);
-      c.c->dispatch(this, &c.p);
-      delete c.c;
+      Functor *c = mResponseCalls[i];
+      c->dispatch(this);
+      delete c;
    }
    mResponseCalls.clear();
    unlock();

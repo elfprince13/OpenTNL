@@ -93,40 +93,52 @@ class RPCTestConnection : public EventConnection
 public:
 
    /// Test RPC function for long argument lists, especially useful in debugging architectures that pass some arguments in registers, and some on the stack.
-   TNL_DECLARE_RPC(rpcLongArgChainTest, (Float<7> i1, Float<6> i2, F32 i3, F32 i4, RangedU32<0,40> i5, F32 i6, F32 i7, F32 i8, F32 i9, F32 i10, F32 i11, F32 i12, F32 i13, F32 i14, F32 i15, U32 i16, U32 i17, F32 i18, F32 i19, F32 i20, F32 i21, F32 i22));
+   TNL_DECLARE_RPC(rpcLongArgChainTest, (Float<7> i1, Float<6> i2, F32 i3, F32 i4, RangedU32<0,40> i5, F32 i6, U32 i7, F32 i8, U32 i9));
 
-   TNL_DECLARE_RPC(rpcVectorTest, (IPAddressRef theIP, ByteBufferRef buf, const Vector<IPAddress> &v0, const Vector<const char *> &v1, const Vector<F32> &v2));
-   TNL_DECLARE_RPC(rpcSTETest, (StringTableEntryRef e1, const Vector<StringTableEntry> &v2));
+   TNL_DECLARE_RPC(rpcVectorTest, (IPAddress theIP, ByteBufferPtr buf, Vector<IPAddress> v0, Vector<StringPtr> v1, Vector<F32> v2));
+   TNL_DECLARE_RPC(rpcVectorTest2, (Vector<F32> v, F32 v2));
+   TNL_DECLARE_RPC(rpcSTETest, (StringTableEntry e1, Vector<StringTableEntry> v2));
 
 };
 
-TNL_IMPLEMENT_RPC(RPCTestConnection, rpcLongArgChainTest, (Float<7> i1, Float<6> i2, F32 i3, F32 i4, RangedU32<0,40> i5, F32 i6, F32 i7, F32 i8, F32 i9, F32 i10, F32 i11, F32 i12, F32 i13, F32 i14, F32 i15, U32 i16, U32 i17, F32 i18, F32 i19, F32 i20, F32 i21, F32 i22), 
+TNL_IMPLEMENT_RPC(RPCTestConnection, rpcLongArgChainTest, (Float<7> i1, Float<6> i2, F32 i3, F32 i4, RangedU32<0,40> i5, F32 i6, U32 i7, F32 i8, U32 i9), 
+   (i1, i2, i3, i4, i5, i6, i7, i8, i9),
       NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {
    F32 fi1 = i1;
    F32 fi2 = i2;
-   logprintf( "%g %g %g %g %d %g %g %g %g %g %g %g %g %g %g %d %d %g %g %g %g %g", 
-             fi1, fi2, i3, i4, U32(i5), i6, i7, i8, i9, i10, i11, i12, i13, i14, i15, i16, i17, i18, i19, i20, i21, i22);
+   logprintf( "%g %g %g %g %d %g %d %g %d", 
+             fi1, fi2, i3, i4, U32(i5), i6, i7, i8, i9);
+}
+
+TNL_IMPLEMENT_RPC(RPCTestConnection, rpcVectorTest2, (Vector<F32> floatVec, F32 floatVal), (floatVec, floatVal),
+      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
+{
+   logprintf("val = %g", floatVal);
+   for(S32 i = 0; i < floatVec.size(); i++)
+      logprintf("floatVec[%d] = %g", i, floatVec[i]);
 }
 
 TNL_IMPLEMENT_RPC(RPCTestConnection, rpcVectorTest,
-    (IPAddressRef theIP, ByteBufferRef buf, const Vector<IPAddress> &v0, const Vector<const char *> &v1, const Vector<F32> &v2),
+    (IPAddress theIP, ByteBufferPtr buf, Vector<IPAddress> v0, Vector<StringPtr> v1, Vector<F32> v2),
+    (theIP, buf, v0, v1, v2),
       NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {
    logprintf("Vector 0 size: %d, Vector 1 size: %d, Vector 2 size: %d", v0.size(), v1.size(), v2.size());
    Address anAddress(theIP);
-   logprintf("BB: %d - %s", buf.getBufferSize(), buf.getBuffer());
+   logprintf("BB: %d - %s", buf->getBufferSize(), buf->getBuffer());
    logprintf("IPAddress = %s", anAddress.toString());
    for(S32 i = 0; i < v0.size(); i++)
       logprintf("Addr: %s", Address(v0[i]).toString());
    for(S32 i = 0; i < v1.size(); i++)
-      logprintf("%s", v1[i]);
+      logprintf("%s", v1[i].getString());
    for(S32 i = 0; i < v2.size(); i++)
       logprintf("%g", v2[i]);
 }
 
 TNL_IMPLEMENT_RPC(RPCTestConnection, rpcSTETest,
-    (StringTableEntryRef e1, const Vector<StringTableEntry> &v2),
+    (StringTableEntry e1, Vector<StringTableEntry> v2),
+    (e1, v2),
       NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {
    logprintf("e1 = %s", e1.getString());
@@ -171,8 +183,8 @@ int main(int argc, const char **argv)
    printf("sizeof U32Struct = %d\n", sizeof(U32Struct));
    fflush(stdout);
 
-   tc->rpcLongArgChainTest_test(0.25, 0.5, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
-   Vector<const char *> v1;
+   tc->rpcLongArgChainTest_test(0.25, 0.5, 3, 4, 5, 6, 7, 8, 9);
+   Vector<StringPtr> v1;
    Vector<IPAddress> v0;
    v0.push_back(Address("IP:192.168.0.1:1").toIPAddress());
    v0.push_back(Address("IP:192.168.0.2:3").toIPAddress());
@@ -188,8 +200,10 @@ int main(int argc, const char **argv)
    v2.push_back(3.5);
    v2.push_back(4.5);
    v2.push_back(5.5);
+
+   tc->rpcVectorTest2_test(v2, 50);
    Address theAddress("IP:192.168.0.23:6969");
-   ByteBuffer buf((U8 *) "Simple test buffer.", 20);
+   ByteBufferPtr buf = new ByteBuffer((U8 *) "Simple test buffer.", 20);
 
    Vector<StringTableEntry> v3;
    v3.push_back("Foo Bar!");

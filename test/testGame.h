@@ -31,6 +31,7 @@
 #include "../tnl/tnlNetObject.h"
 #include "../tnl/tnlLog.h"
 #include "../tnl/tnlRPC.h"
+#include "../tnl/tnlString.h"
 
 /// TNL Graphical Test Application.
 ///
@@ -141,7 +142,7 @@ public:
    void addToGame(TestGame *theGame);
 
    /// rpcPlayerWillMove is used in TNLTest to demonstrate ghost->parent NetObject RPCs.
-   TNL_DECLARE_RPC(rpcPlayerWillMove,  (const char *testString));
+   TNL_DECLARE_RPC(rpcPlayerWillMove,  (TNL::StringPtr testString));
 
    /// rpcPlayerDidMove is used in TNLTest to demostrate a broadcast RPC from the server
    /// to all of the ghosts on clients scoping this object.  It also demonstrates the
@@ -262,7 +263,7 @@ public:
    /// We only use 6 bits of precision on each float to illustrate the float compression
    /// that's possible using TNL's RPC.  This RPC also sends bool and StringTableEntry data,
    /// as well as showing the use of the TNL_DECLARE_RPC_ENUM macro.
-   TNL_DECLARE_RPC(rpcGotPlayerPos, (bool b1, bool b2, TNL::StringTableEntryRef string, TNL::Float<PlayerPosReplyBitSize> x, TNL::Float<PlayerPosReplyBitSize> y));
+   TNL_DECLARE_RPC(rpcGotPlayerPos, (bool b1, bool b2, TNL::StringTableEntry string, TNL::Float<PlayerPosReplyBitSize> x, TNL::Float<PlayerPosReplyBitSize> y));
 
    /// TNL_DECLARE_NETCONNECTION is used to declare that TestConnection is a valid connection class to the
    /// TNL network system.

@@ -76,7 +76,7 @@ public:
    /// multiple m2cQueryGameTypesResponse RPCs.  The master will always send a final
    /// m2cQueryGameTypesResponse with Vectors of size 0 to indicate that no more game or mission
    /// types are to be added.
-   TNL_DECLARE_RPC(m2cQueryGameTypesResponse, (U32 queryId, const Vector<StringTableEntry> &gameTypes, const Vector<StringTableEntry> &missionTypes));
+   TNL_DECLARE_RPC(m2cQueryGameTypesResponse, (U32 queryId, Vector<StringTableEntry> gameTypes, Vector<StringTableEntry> missionTypes));
 
    /// c2mQueryServers is sent by the client to the master server to request a list of
    /// servers that match the specified filter criteria.  A c2mQueryServers request will
@@ -84,59 +84,59 @@ public:
    /// Vector of servers.
    TNL_DECLARE_RPC(c2mQueryServers, (U32 queryId, U32 regionMask,
       U32 minPlayers, U32 maxPlayers, U32 infoFlags,
-      U32 maxBots, U32 minCPUSpeed, StringTableEntryRef gameType, StringTableEntryRef missionType));
+      U32 maxBots, U32 minCPUSpeed, StringTableEntry gameType, StringTableEntry missionType));
 
    /// m2cQueryServersResponse is sent by the master server in response to a c2mQueryServers RPC, to
    /// return a partial list of the servers that matched the specified filter criteria.  Because packets
    /// are limited in size, the response server list is broken up into lists of at most IPMessageAddressCount IP addresses
    /// per message.  The Master Server will always send a final, empty m2cQueryServersResponse to signify that the list
    /// is complete.
-   TNL_DECLARE_RPC(m2cQueryServersResponse, (U32 queryId, const Vector<IPAddress> &ipList));
+   TNL_DECLARE_RPC(m2cQueryServersResponse, (U32 queryId, Vector<IPAddress> ipList));
 
    /// c2mRequestArrangedConnection is an RPC sent from the client to the master to request an arranged
    /// connection with the specified server address.  The internalAddress should be the client's own self-reported
    /// IP address.  The connectionParameters buffer will be sent without modification to the specified
    /// server.
    TNL_DECLARE_RPC(c2mRequestArrangedConnection, (U32 requestId,
-      IPAddressRef remoteAddress, IPAddressRef internalAddress,
-      ByteBufferRef connectionParameters));
+      IPAddress remoteAddress, IPAddress internalAddress,
+      ByteBufferPtr connectionParameters));
 
    /// m2cClientRequestedArranged connection is sent from the master to a server to notify it that
    /// a client has requested a connection.  The possibleAddresses vector is a list of possible IP addresses
    /// that the server should attempt to connect to for that client if it accepts the connection request.
-   TNL_DECLARE_RPC(m2cClientRequestedArrangedConnection, (U32 requestId, const Vector<IPAddress> &possibleAddresses,
-      ByteBufferRef connectionParameters));
+   TNL_DECLARE_RPC(m2cClientRequestedArrangedConnection, (U32 requestId, Vector<IPAddress> possibleAddresses,
+      ByteBufferPtr connectionParameters));
  
    /// c2mAcceptArrangedConnection is sent by a server to notify the master that it will accept the connection
    /// request from a client.  The requestId parameter sent by the MasterServer in m2cClientRequestedArrangedConnection
    /// should be sent back as the requestId field.  The internalAddress is the server's self-determined IP address.
-   TNL_DECLARE_RPC(c2mAcceptArrangedConnection, (U32 requestId, IPAddressRef internalAddress, ByteBufferRef connectionData));
+   TNL_DECLARE_RPC(c2mAcceptArrangedConnection, (U32 requestId, IPAddress internalAddress, ByteBufferPtr connectionData));
 
    /// c2mRejectArrangedConnection notifies the Master Server that the server is rejecting the arranged connection
    /// request specified by the requestId.  The rejectData will be passed along to the requesting client.
-   TNL_DECLARE_RPC(c2mRejectArrangedConnection, (U32 requestId, ByteBufferRef rejectData));
+   TNL_DECLARE_RPC(c2mRejectArrangedConnection, (U32 requestId, ByteBufferPtr rejectData));
 
    /// m2cArrangedConnectionAccepted is sent to a client that has previously requested a connection to a listed server
    /// via c2mRequestArrangedConnection if the server accepted the connection.  The possibleAddresses vector is the list
    /// of IP addresses the client should attempt to connect to, and the connectionData buffer is the buffer sent by the
    /// server upon accepting the connection.
-   TNL_DECLARE_RPC(m2cArrangedConnectionAccepted, (U32 requestId, const Vector<IPAddress> &possibleAddresses, ByteBufferRef connectionData));
+   TNL_DECLARE_RPC(m2cArrangedConnectionAccepted, (U32 requestId, Vector<IPAddress> possibleAddresses, ByteBufferPtr connectionData));
 
    /// m2cArrangedConnectionRejected is sent to a client when an arranged connection request is rejected by the
    /// server, or when the request times out because the server never responded.
-   TNL_DECLARE_RPC(m2cArrangedConnectionRejected, (U32 requestId, ByteBufferRef rejectData));
+   TNL_DECLARE_RPC(m2cArrangedConnectionRejected, (U32 requestId, ByteBufferPtr rejectData));
 
    /// c2mUpdateServerStatus updates the status of a server to the Master Server, specifying the current game
    /// and mission types, any player counts and the current info flags.
    TNL_DECLARE_RPC(c2mUpdateServerStatus, (
-      StringTableEntryRef gameType, StringTableEntryRef missionType,
+      StringTableEntry gameType, StringTableEntry missionType,
       U32 botCount, U32 playerCount, U32 maxPlayers, U32 infoFlags));
 
    // Version 1 protocol messages:
 
    /// m2cSetMOTD is sent to a client when the connection is established.  The
    /// client's game string is used to pick which MOTD will be sent.
-   TNL_DECLARE_RPC(m2cSetMOTD, (const char *motdString));
+   TNL_DECLARE_RPC(m2cSetMOTD, (StringPtr motdString));
 
 };
 

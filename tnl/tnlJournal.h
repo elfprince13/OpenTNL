@@ -67,7 +67,7 @@ public:
    void record(const char *fileName);
    void load(const char *fileName);
 
-   void callEntry(const char *funcName, MarshalledCall *theCall);
+   void callEntry(const char *funcName, Functor *theCall);
    void processNextJournalEntry();
 
    static Mode getCurrentMode() { return mCurrentMode; }
@@ -84,40 +84,30 @@ struct JournalEntryRecord
 {
    U32 mEntryIndex;
    const char *mFunctionName;
-   MethodArgList *mMethodArgList;
    JournalEntryRecord *mNext;
+   Functor *mFunctor;
+
    static Vector<JournalEntryRecord *> *mEntryVector;
 
-   JournalEntryRecord(const char *functionName, MethodArgList *methodArgList);
+   JournalEntryRecord(const char *functionName);
    virtual ~JournalEntryRecord();
-
-   virtual void getFuncPtr(MethodPointer &m) = 0;
 };
 
 #ifdef TNL_ENABLE_JOURNALING
 #define TNL_DECLARE_JOURNAL_ENTRYPOINT(func, args) \
-      virtual void FN_CDECL func args; \
-      virtual void FN_CDECL func##_body args
+      void func args; \
+      void func##_body args
 
-#define TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(className, func, args) \
-      TNL::MethodArgList Journal_##className##_##func(#className, #args); \
+#define TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(className, func, args, argNames) \
       struct Journal_##className##_##func##_er : public JournalEntryRecord { \
-         void getFuncPtr(MethodPointer &m) { \
-            void (FN_CDECL className::*fptr) args; \
-            fptr = &className::func##_body; \
-            m.v1 = *((U32 *) &fptr); \
-            if(sizeof(fptr) > sizeof(U32)) m.v2 = *(((U32 *) &fptr) + 1); \
-            if(sizeof(fptr) > 2*sizeof(U32)) m.v3 = *(((U32 *) &fptr) + 2); \
-         }; \
-         Journal_##className##_##func##_er(const char *name, MethodArgList *methodArgList) : JournalEntryRecord(name, methodArgList) {} \
-      } gJournal_##className##_##func##_er(#func, &Journal_##className##_##func); \
-      void FN_CDECL className::func args { \
-         SAVE_PARAMS \
-         MarshalledCall call(&Journal_##className##_##func); \
-         call.marshall(); \
-         callEntry(#func, &call); \
+      FunctorDecl<void (className::*) args> mFunctorDecl; \
+      Journal_##className##_##func##_er(const char *name) : JournalEntryRecord(name), mFunctorDecl(className::func##_body) { mFunctor = &mFunctorDecl; } \
+      } gJournal_##className##_##func##_er(#func); \
+      void className::func args { \
+      gJournal_##className##_##func##_er.mFunctorDecl.set argNames; \
+         callEntry(#func, gJournal_##className##_##func##_er.mFunctor); \
       } \
-      void FN_CDECL className::func##_body args
+      void className::func##_body args
 
 class JournalToken
 {

@@ -255,20 +255,56 @@ void Player::onGhostAvailable(TNL::GhostConnection *theConnection)
    theConnection->postNetEvent(theRPCEvent);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerIsInScope, (TNL::Float<6> x, TNL::Float<6> y),
+/*
+class RPCEV_Player_rpcPlayerIsInScope : 
+   public TNL::NetObjectRPCEvent 
+{ 
+public: TNL::FunctorDecl<void (Player::*)(TNL::Float<6> x, TNL::Float<6> y)> mFunctorDecl; 
+        RPCEV_Player_rpcPlayerIsInScope() : 
+        mFunctorDecl(Player::rpcPlayerIsInScope_remote), 
+           RPCEvent(TNL::RPCGuaranteedOrdered, TNL::RPCToGhost) 
+        { mFunctor = &mFunctorDecl; } 
+        static TNL::NetClassRepInstance<RPCEV_Player_rpcPlayerIsInScope> dynClassRep; 
+        virtual TNL::NetClassRep* getClassRep() const; 
+        bool checkClassType(TNL::Object *theObject) 
+        { return dynamic_cast<Player *>(theObject) != __null; } 
+}; 
+TNL::NetClassRep* RPCEV_Player_rpcPlayerIsInScope::getClassRep() 
+const { return &RPCEV_Player_rpcPlayerIsInScope::dynClassRep; } 
+TNL::NetClassRepInstance<RPCEV_Player_rpcPlayerIsInScope> RPCEV_Player_rpcPlayerIsInScope::dynClassRep("RPCEV_Player_rpcPlayerIsInScope",TNL::NetClassGroupGameMask, TNL::NetClassTypeEvent, 0); 
+void Player::rpcPlayerIsInScope (TNL::Float<6> x, TNL::Float<6> y) 
+{ 
+   RPCEV_Player_rpcPlayerIsInScope *theEvent = new RPCEV_Player_rpcPlayerIsInScope; 
+   theEvent->mFunctorDecl.set (x, y) ; 
+   postNetEvent(theEvent); 
+} 
+
+TNL::NetEvent * Player::rpcPlayerIsInScope_construct (TNL::Float<6> x, TNL::Float<6> y) { RPCEV_Player_rpcPlayerIsInScope *theEvent = new RPCEV_Player_rpcPlayerIsInScope; theEvent->mFunctorDecl.set (x, y) ; return theEvent; } void Player::rpcPlayerIsInScope_test (TNL::Float<6> x, TNL::Float<6> y) { RPCEV_Player_rpcPlayerIsInScope *theEvent = new RPCEV_Player_rpcPlayerIsInScope; theEvent->mFunctorDecl.set (x, y) ; TNL::PacketStream ps; theEvent->pack(this, &ps); ps.setBytePosition(0); theEvent->unpack(this, &ps); theEvent->process(this); } void Player::rpcPlayerIsInScope_remote (TNL::Float<6> x, TNL::Float<6> y)
+
+
+{
+   TNL::F32 fx = x, fy = y;
+   TNL::logprintf("A player is now in scope at %g, %g", fx, fy);
+}
+
+*/
+TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerIsInScope,
+   (TNL::Float<6> x, TNL::Float<6> y), (x, y),
    TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCToGhost, 0)
 {
    TNL::F32 fx = x, fy = y;
    TNL::logprintf("A player is now in scope at %g, %g", fx, fy);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerWillMove, (const char *testString), 
+TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerWillMove,
+                            (TNL::StringPtr testString), (testString), 
    TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCToGhostParent, 0)
 {
    TNL::logprintf("Expecting a player move from the connection: %s", testString);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerDidMove, (TNL::Float<6> x, TNL::Float<6> y), 
+TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerDidMove,
+   (TNL::Float<6> x, TNL::Float<6> y), (x, y),
    TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCToGhost, 0)
 {
    TNL::F32 fx = x, fy = y;
@@ -357,16 +393,16 @@ void Building::unpackUpdate(TNL::GhostConnection *connection, TNL::BitStream *st
 
 TNL_IMPLEMENT_NETCONNECTION(TestConnection, TNL::NetClassGroupGame, true);
 
-TNL_DECLARE_MEMBER_ENUM(TestConnection, PlayerPosReplyBitSize);
-
-TNL_IMPLEMENT_RPC(TestConnection, rpcGotPlayerPos, (bool b1, bool b2, TNL::StringTableEntryRef string, TNL::Float<TestConnection::PlayerPosReplyBitSize> x, TNL::Float<TestConnection::PlayerPosReplyBitSize> y), 
+TNL_IMPLEMENT_RPC(TestConnection, rpcGotPlayerPos,
+      (bool b1, bool b2, TNL::StringTableEntry string, TNL::Float<TestConnection::PlayerPosReplyBitSize> x, TNL::Float<TestConnection::PlayerPosReplyBitSize> y), (b1, b2, string, x, y),
       TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCDirAny, 0)
 {
    TNL::F32 xv = x, yv = y;
    TNL::logprintf("Server acknowledged position update - %d %d %s %g %g", b1, b2, string.getString(), xv, yv);
 }
 
-TNL_IMPLEMENT_RPC(TestConnection, rpcSetPlayerPos, (TNL::F32 x, TNL::F32 y), 
+TNL_IMPLEMENT_RPC(TestConnection, rpcSetPlayerPos, 
+      (TNL::F32 x, TNL::F32 y), (x, y),
       TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCDirClientToServer, 0)
 {
    Position newPosition;

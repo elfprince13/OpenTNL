@@ -43,166 +43,234 @@
 #include "tnlNetStringTable.h"
 #endif
 
-namespace TNL {
+#ifndef _TNL_STRING_H_
+#include "tnlString.h"
+#endif
 
-/// Manages an enumeration declared with TNL_DECLARE_ENUM
-struct MethodEnum
+namespace Types
 {
-   const char *mSymbol; ///< The name of the enumeration value
-
-   U32 mValue;     ///< The value of the enumeration constant
-   MethodEnum *mNext; ///< The next in global linked list of enums
-
-   static MethodEnum *mLinkedList; ///< The head of the linked list of enums
-
-   /// Constructor - called from statically allocated RPCEnums, using the declare macros
-   MethodEnum(const char *symbol, U32 value)
-   {
-      mNext = mLinkedList;
-      mLinkedList = this;
-      mSymbol = symbol;
-      mValue = value;
-   }
-};
-
-/// Declares a global enumeration as usable as a template argument in an RPC declaration
-#define TNL_DECLARE_MEMBER_ENUM(className,symbol) static TNL::MethodEnum gTNLEnum_##className##symbol(#className "::" #symbol, className::symbol);
-#define TNL_DECLARE_ENUM(symbol) static TNL::MethodEnum gTNLEnum_##symbol(#symbol, symbol); 
-
-struct MarshalledCall;
-struct MethodArgInfo;
-
-/// RPCArgList instances parse and evaluate the argument lists of declared RPC methods
-struct MethodArgList
-{
-   /// MethodArgInfo tracks an individual parameter in an method parameter list
-   struct MethodArgInfo {
-      bool isVector;  ///< True if this is a vector of the specified type argument
-      U32 argType;    ///< The type of this argument.
-      U32 rangeStart; ///< Start of the U32 range, for TypeRangedU32s.
-      U32 rangeEnd;   ///< End of the U32 range, for TypeRangedU32s.
-      U32 bitCount;   ///< Bit size of this argument.
-   };
-
-   MethodArgList(const char *className, const char *argList);
    enum {
-      MaxRPCDataSize = 4096,
-      MaxOffsets = 1024,
-      VectorSizeBitSize = 9,
+      VectorSizeBitSize = 8,
       ByteBufferSizeBitSize = 10,
    };
-   U32 getValue(const char *buffer); ///< Converts a text string into an enumerated value using the RPCEnum global linked list
 
-   U32 argListSize;
-   const char *argListString; ///< The original argument list for the RPC method, converted into a string in the macro
-   const char *mClassName;    ///< Class name this RPC is a member of.
-                              ///
-                              ///  Used for resolving enums declared in this class
+   extern void read(TNL::BitStream &s, TNL::StringPtr *val);
+   extern void write(TNL::BitStream &s, TNL::StringPtr &val);
+   extern void read(TNL::BitStream &s, TNL::ByteBufferPtr *val);
+   extern void write(TNL::BitStream &s, TNL::ByteBufferPtr &val);
+   extern void read(TNL::BitStream &s, TNL::IPAddress *val);
+   extern void write(TNL::BitStream &s, TNL::IPAddress &val);
 
-   Vector<MethodArgInfo> argList; ///< Vector of structures representing each argument in the RPC call
-
-   S32 floatRegOffsets[13];    ///< offsets for reading the floating point values into registers
-   void marshall(MarshalledCall *theCall); ///< Copies the arguments to the RPC method invocation into a BitStream buffer
-
-   bool unmarshall(BitStream *stream, MarshalledCall *theEvent); ///< Reads the arguments from a BitStream buffer (packet) into an allocated buffer
-                                        ///<
-                                        ///<  Later we do some chicanery to stuff this back onto the sack for the method call.
-};
-
-struct MethodPointer
-{
-   U32 v1;
-   U32 v2;
-   U32 v3;
-};
-
-struct MarshalledCall
-{
-   BitStream marshalledData; ///< Bit compressed data marshalled from the call
-   Vector<StringTableEntry> mSTEs; ///< Index list of StringTableEntry ids that are a part of this RPC
-   ByteBuffer unmarshalledData; ///< Data from the call uncompressed into stack form
-   MethodArgList *mMarshaller; ///< Proxy object responsible for marshalling and unmarshalling this call
-
-   MarshalledCall(MethodArgList *marshaller) : marshalledData(NULL, 0)
+   inline void read(TNL::BitStream &s, TNL::StringTableEntry *val)
    {
-      mMarshaller = marshaller;
+      s.readStringTableEntry(val);
+   }
+   inline void write(TNL::BitStream &s, TNL::StringTableEntry &val)
+   {
+      s.writeStringTableEntry(val);
+   }
+   template <typename T> inline void read(TNL::BitStream &s, T *val)
+   { 
+      s.read(val);
+   }
+   template <typename T> inline void write(TNL::BitStream &s, T &val)
+   { 
+      s.write(val);
+   }
+   template <typename T> inline void read(TNL::BitStream &s, TNL::Vector<T> *val)
+   {
+      U32 size = s.readInt(VectorSizeBitSize);
+      val->setSize(size);
+      for(S32 i = 0; i < val->size(); i++)
+         read(s, &((*val)[i]));
+   }
+   template <typename T> void write(TNL::BitStream &s, TNL::Vector<T> &val)
+   {
+      s.writeInt(val.size(), VectorSizeBitSize);
+      for(S32 i = 0; i < val.size(); i++)
+         write(s, val[i]);
    }
 
-   /// Reads the call's data from the stack and marshalls it into the internal bit stream
-   void marshall()
+   template <TNL::U32 BitCount> inline void read(TNL::BitStream &s, TNL::Int<BitCount> *val)
    {
-      mMarshaller->marshall(this);
+      val->value = s.readInt(BitCount);
+   }
+   template <TNL::U32 BitCount> inline void write(TNL::BitStream &s,TNL::Int<BitCount> &val)
+   {
+      s.writeInt(val.value, BitCount);
    }
 
-   /// Reads the bit compressed data from the input stream and unmarshalls it into unmarshalledData.
-   /// If theStream is NULL it will unmarshall from its own marshalled data buffer.
-   bool unmarshall(BitStream *theStream = NULL)
+   template <TNL::U32 BitCount> inline void read(TNL::BitStream &s, TNL::SignedInt<BitCount> *val)
    {
-      return mMarshaller->unmarshall(theStream ? theStream : &marshalledData, this);
+      val->value = s.readSignedInt(BitCount);
+   }
+   template <TNL::U32 BitCount> inline void write(TNL::BitStream &s,TNL::SignedInt<BitCount> &val)
+   {
+      s.writeSignedInt(val.value, BitCount);
    }
 
-   /// Calls the method associated with this call on the given object and virtual function pointer.
-   void dispatch(void *thisPointer, MethodPointer *method);
+   template <TNL::U32 T, TNL::U32 U> inline void read(TNL::BitStream &s, TNL::RangedU32<T,U> *val)
+   {
+      val->value = s.readRangedU32(T, U);
+   }
+   template <TNL::U32 T, TNL::U32 U> inline void write(TNL::BitStream &s,TNL::RangedU32<T,U> &val)
+   {
+      s.writeRangedU32(val.value, T, U);
+   }
+
+   template <TNL::U32 T> inline void read(TNL::BitStream &s, TNL::Float<T> *val)
+   {
+      val->value = s.readFloat(T);
+   }
+   template <TNL::U32 T> inline void write(TNL::BitStream &s,TNL::Float<T> &val)
+   {
+      s.writeFloat(val.value, T);
+   }
+   template <TNL::U32 T> inline void read(TNL::BitStream &s, TNL::SignedFloat<T> *val)
+   {
+      val->value = s.readSignedFloat(T);
+   }
+   template <TNL::U32 T> inline void write(TNL::BitStream &s,TNL::SignedFloat<T> &val)
+   {
+      s.writeSignedFloat(val.value, T);
+   }
 };
 
-struct RPCThreadStorage
-{
-   void *basePtr;
-#ifdef TNL_CPU_PPC
-   U32 registerSaves[8 + 13 + 1];
-#endif
-   U8 rpcReadData[MethodArgList::MaxRPCDataSize];
-   U32 rpcReadOffsets[MethodArgList::MaxOffsets];
-   U8 *rpcSTEOffsets[MethodArgList::MaxOffsets];
-   U32 rpcSTEIndex[MethodArgList::MaxOffsets];
-   U32 rpcNumSTEs;
-   U32 rpcNumOffsets;
+namespace TNL {
+
+struct Functor {
+   Functor() {}
+   virtual ~Functor() {}
+   virtual void read(BitStream &stream) = 0;
+   virtual void write(BitStream &stream) = 0;
+   virtual void dispatch(void *t) = 0;
 };
-extern RPCThreadStorage &getRPCThreadStorage();
+template <class T> 
+struct FunctorDecl : public Functor {
+   FunctorDecl() {}
+   void set() {}
+   void read(BitStream &stream) {}
+   void write(BitStream &stream) {}
+   void dispatch(void *t) { }
+};
+template <class T> 
+struct FunctorDecl<void (T::*)()> : public Functor {
+   typedef void (T::*FuncPtr)();
+   FuncPtr ptr;
+   FunctorDecl(FuncPtr p) : ptr(p) {}
+   void set() {}
+   void read(BitStream &stream) {}
+   void write(BitStream &stream) {}
+   void dispatch(void *t) { ((T *)t->*ptr)(); }
+};
+template <class T, class A> 
+struct FunctorDecl<void (T::*)(A)> : public Functor {
+   typedef void (T::*FuncPtr)(A);
+   FuncPtr ptr; A a;
+   FunctorDecl(FuncPtr p) : ptr(p) {}
+   void set(A &_a) { a = _a; }
+   void read(BitStream &stream) { Types::read(stream, &a); }
+   void write(BitStream &stream) { Types::write(stream, a); }
+   void dispatch(void *t) { (((T *)t)->*ptr)(a); }
+};
+template <class T, class A, class B>
+struct FunctorDecl<void (T::*)(A,B)>: public Functor {
+   typedef void (T::*FuncPtr)(A,B);
+   FuncPtr ptr; A a; B b;
+   FunctorDecl(FuncPtr p) : ptr(p) {}
+   void set(A &_a, B &_b) { a = _a; b = _b;}
+   void read(BitStream &stream) { Types::read(stream, &a); Types::read(stream, &b); }
+   void write(BitStream &stream) { Types::write(stream, a); Types::write(stream, b); }
+   void dispatch(void *t) { (((T *)t)->*ptr)(a, b); }
+};
 
+template <class T, class A, class B, class C>
+struct FunctorDecl<void (T::*)(A,B,C)>: public Functor {
+   typedef void (T::*FuncPtr)(A,B,C);
+   FuncPtr ptr; A a; B b; C c;
+   FunctorDecl(FuncPtr p) : ptr(p) {}
+   void set(A &_a, B &_b, C &_c) { a = _a; b = _b; c = _c;}
+   void read(BitStream &stream) { Types::read(stream, &a); Types::read(stream, &b); Types::read(stream, &c); }
+   void write(BitStream &stream) { Types::write(stream, a); Types::write(stream, b); Types::write(stream, c); }
+   void dispatch(void *t) { (((T *)t)->*ptr)(a, b, c); }
+};
 
-#if defined(TNL_SUPPORTS_VC_INLINE_X86_ASM) || defined(TNL_SUPPORTS_MWERKS_INLINE_X86_ASM)
+template <class T, class A, class B, class C, class D>
+struct FunctorDecl<void (T::*)(A,B,C,D)>: public Functor {
+   typedef void (T::*FuncPtr)(A,B,C,D);
+   FuncPtr ptr; A a; B b; C c; D d;
+   FunctorDecl(FuncPtr p) : ptr(p) {}
+   void set(A &_a, B &_b, C &_c, D &_d) { a = _a; b = _b; c = _c; d = _d; }
+   void read(BitStream &stream) { Types::read(stream, &a); Types::read(stream, &b); Types::read(stream, &c); Types::read(stream, &d); }
+   void write(BitStream &stream) { Types::write(stream, a); Types::write(stream, b); Types::write(stream, c); Types::write(stream, d); }
+   void dispatch(void *t) { (((T *)t)->*ptr)(a, b, c, d); }
+};
 
-#define SAVE_PARAMS { void *basePtr; __asm { lea eax, this }; __asm { mov basePtr, eax }; TNL::getRPCThreadStorage().basePtr = basePtr; }
+template <class T, class A, class B, class C, class D, class E>
+struct FunctorDecl<void (T::*)(A,B,C,D,E)>: public Functor {
+   typedef void (T::*FuncPtr)(A,B,C,D,E);
+   FuncPtr ptr; A a; B b; C c; D d; E e;
+   FunctorDecl(FuncPtr p) : ptr(p) {}
+   void set(A &_a, B &_b, C &_c, D &_d, E &_e) { a = _a; b = _b; c = _c; d = _d; e = _e; }
+   void read(BitStream &stream) { Types::read(stream, &a); Types::read(stream, &b); Types::read(stream, &c); Types::read(stream, &d); Types::read(stream, &e); }
+   void write(BitStream &stream) { Types::write(stream, a); Types::write(stream, b); Types::write(stream, c); Types::write(stream, d); Types::write(stream, e); }
+   void dispatch(void *t) { (((T *)t)->*ptr)(a, b, c, d, e); }
+};
 
-#elif defined(TNL_SUPPORTS_GCC_INLINE_X86_ASM )
+template <class T, class A, class B, class C, class D, class E, class F>
+struct FunctorDecl<void (T::*)(A,B,C,D,E,F)>: public Functor {
+   typedef void (T::*FuncPtr)(A,B,C,D,E,F);
+   FuncPtr ptr; A a; B b; C c; D d; E e; F f;
+   FunctorDecl(FuncPtr p) : ptr(p) {}
+   void set(A &_a, B &_b, C &_c, D &_d, E &_e, F &_f) { a = _a; b = _b; c = _c; d = _d; e = _e; f = _f; }
+   void read(BitStream &stream) { Types::read(stream, &a); Types::read(stream, &b); Types::read(stream, &c); Types::read(stream, &d); Types::read(stream, &e); Types::read(stream, &f); }
+   void write(BitStream &stream) { Types::write(stream, a); Types::write(stream, b); Types::write(stream, c); Types::write(stream, d); Types::write(stream, e); Types::write(stream, f); }
+   void dispatch(void *t) { (((T *)t)->*ptr)(a, b, c, d, e, f); }
+};
 
-#define SAVE_PARAMS { void *basePtr = (void *) ((TNL::U8 *) __builtin_frame_address(0) + 8); TNL::getRPCThreadStorage().basePtr = basePtr; }
+template <class T, class A, class B, class C, class D, class E, class F, class G>
+struct FunctorDecl<void (T::*)(A,B,C,D,E,F,G)>: public Functor {
+   typedef void (T::*FuncPtr)(A,B,C,D,E,F,G);
+   FuncPtr ptr; A a; B b; C c; D d; E e; F f; G g;
+   FunctorDecl(FuncPtr p) : ptr(p) {}
+   void set(A &_a, B &_b, C &_c, D &_d, E &_e, F &_f, G &_g) { a = _a; b = _b; c = _c; d = _d; e = _e; f = _f; g = _g; }
+   void read(BitStream &stream) { Types::read(stream, &a); Types::read(stream, &b); Types::read(stream, &c); Types::read(stream, &d); Types::read(stream, &e); Types::read(stream, &f); Types::read(stream, &g); }
+   void write(BitStream &stream) { Types::write(stream, a); Types::write(stream, b); Types::write(stream, c); Types::write(stream, d); Types::write(stream, e); Types::write(stream, f); Types::write(stream, g); }
+   void dispatch(void *t) { (((T *)t)->*ptr)(a, b, c, d, e, f, g); }
+};
 
-#elif defined(TNL_SUPPORTS_GCC_INLINE_PPC_ASM )
+template <class T, class A, class B, class C, class D, class E, class F, class G, class H>
+struct FunctorDecl<void (T::*)(A,B,C,D,E,F,G,H)>: public Functor {
+   typedef void (T::*FuncPtr)(A,B,C,D,E,F,G,H);
+   FuncPtr ptr; A a; B b; C c; D d; E e; F f; G g; H h;
+   FunctorDecl(FuncPtr p) : ptr(p) {}
+   void set(A &_a, B &_b, C &_c, D &_d, E &_e, F &_f, G &_g, H &_h) { a = _a; b = _b; c = _c; d = _d; e = _e; f = _f; g = _g; h = _h; }
+   void read(BitStream &stream) { Types::read(stream, &a); Types::read(stream, &b); Types::read(stream, &c); Types::read(stream, &d); Types::read(stream, &e); Types::read(stream, &f); Types::read(stream, &g); Types::read(stream, &h); }
+   void write(BitStream &stream) { Types::write(stream, a); Types::write(stream, b); Types::write(stream, c); Types::write(stream, d); Types::write(stream, e); Types::write(stream, f); Types::write(stream, g); Types::write(stream, h); }
+   void dispatch(void *t) { (((T *)t)->*ptr)(a, b, c, d, e, f, g, h); }
+};
 
-#define SAVE_PARAMS { \
-   U32 *registerSaves = TNL::getRPCThreadStorage().registerSaves; \
-   __asm__ volatile ( \
-   "mr r2, %0\n" \
-   "stw r3, 0(r2) \n" \
-   "stw r4, 4(r2) \n" \
-   "stw r5, 8(r2) \n" \
-   "stw r6, 12(r2) \n" \
-   "stw r7, 16(r2) \n" \
-   "stw r8, 20(r2) \n" \
-   "stw r9, 24(r2) \n" \
-   "stw r10, 28(r2) \n" \
-   "stfs f1, 32(r2) \n" \
-   "stfs f2, 36(r2) \n" \
-   "stfs f3, 40(r2) \n" \
-   "stfs f4, 44(r2) \n" \
-   "stfs f5, 48(r2) \n" \
-   "stfs f6, 52(r2) \n" \
-   "stfs f7, 56(r2) \n" \
-   "stfs f8, 60(r2) \n" \
-   "stfs f9, 64(r2) \n" \
-   "stfs f10, 68(r2) \n" \
-   "stfs f11, 72(r2) \n" \
-   "stfs f12, 76(r2) \n" \
-   "stfs f13, 80(r2) \n" \
-   "stw r1, 84(r2) \n" \
-   : : "r" (TNL::gRegisterSaves) : "r2" ); \
-}
+template <class T, class A, class B, class C, class D, class E, class F, class G, class H, class I>
+struct FunctorDecl<void (T::*)(A,B,C,D,E,F,G,H,I)>: public Functor {
+   typedef void (T::*FuncPtr)(A,B,C,D,E,F,G,H,I);
+   FuncPtr ptr; A a; B b; C c; D d; E e; F f; G g; H h; I i;
+   FunctorDecl(FuncPtr p) : ptr(p) {}
+   void set(A &_a, B &_b, C &_c, D &_d, E &_e, F &_f, G &_g, H &_h, I &_i) { a = _a; b = _b; c = _c; d = _d; e = _e; f = _f; g = _g; h = _h; i = _i; }
+   void read(BitStream &stream) { Types::read(stream, &a); Types::read(stream, &b); Types::read(stream, &c); Types::read(stream, &d); Types::read(stream, &e); Types::read(stream, &f); Types::read(stream, &g); Types::read(stream, &h); Types::read(stream, &i); }
+   void write(BitStream &stream) { Types::write(stream, a); Types::write(stream, b); Types::write(stream, c); Types::write(stream, d); Types::write(stream, e); Types::write(stream, f); Types::write(stream, g); Types::write(stream, h); Types::write(stream, i); }
+   void dispatch(void *t) { (((T *)t)->*ptr)(a, b, c, d, e, f, g, h, i); }
+};
 
-#else
-#error "Compiling RPC code without inline assembler support! You will need to implement RPCEvent::process() and co for your platform."
-#endif
+template <class T, class A, class B, class C, class D, class E, class F, class G, class H, class I, class J>
+struct FunctorDecl<void (T::*)(A,B,C,D,E,F,G,H,I,J)>: public Functor {
+   typedef void (T::*FuncPtr)(A,B,C,D,E,F,G,H,I,J);
+   FuncPtr ptr; A a; B b; C c; D d; E e; F f; G g; H h; I i; J j;
+   FunctorDecl(FuncPtr p) : ptr(p) {}
+   void set(A &_a, B &_b, C &_c, D &_d, E &_e, F &_f, G &_g, H &_h, I &_i, J &_j) { a = _a; b = _b; c = _c; d = _d; e = _e; f = _f; g = _g; h = _h; i = _i; j = _j; }
+   void read(BitStream &stream) { Types::read(stream, &a); Types::read(stream, &b); Types::read(stream, &c); Types::read(stream, &d); Types::read(stream, &e); Types::read(stream, &f); Types::read(stream, &g); Types::read(stream, &h); Types::read(stream, &i); Types::read(stream, &j); }
+   void write(BitStream &stream) { Types::write(stream, a); Types::write(stream, b); Types::write(stream, c); Types::write(stream, d); Types::write(stream, e); Types::write(stream, f); Types::write(stream, g); Types::write(stream, h); Types::write(stream, i); Types::write(stream, j); }
+   void dispatch(void *t) { (((T *)t)->*ptr)(a, b, c, d, e, f, g, h, i, j); }
+};
 
 };
 

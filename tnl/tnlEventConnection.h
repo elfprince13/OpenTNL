@@ -39,10 +39,6 @@
 #include "tnlDataChunker.h"
 #endif
 
-#ifndef _TNL_CONNECTIONSTRINGTABLE_H_
-#include "tnlConnectionStringTable.h"
-#endif
-
 namespace TNL {
 
 /// EventConnection is a NetConnection subclass used for sending guaranteed and unguaranteed
@@ -51,11 +47,6 @@ namespace TNL {
 /// The EventConnection is responsible for transmitting NetEvents over the wire.
 /// It deals with ensuring that the various types of NetEvents are delivered appropriately,
 /// and with notifying the event of its delivery status.
-///
-/// Because string data can easily soak up network bandwidth, for
-/// efficiency EventConnection implements an optional networked string table.
-/// Users can then notify the connection of strings it references often, such as player names,
-/// and transmit only a tag, instead of the whole string.
 ///
 /// The EventConnection is mainly accessed via postNetEvent(), which accepts NetEvents.
 ///
@@ -77,7 +68,6 @@ public:
    struct EventPacketNotify : public NetConnection::PacketNotify
    {
       EventNote *eventList; ///< linked list of events sent with this packet
-      ConnectionStringTable::PacketList stringList;
       EventPacketNotify() { eventList = NULL; }
    };
 
@@ -134,8 +124,6 @@ private:
       InvalidSendEventSeq = -1,
       FirstValidSendEventSeq = 0
    };
-public:
-   bool postNetEvent(NetEvent *event);  ///< Posts a NetEvent for processing on the remote host
 
 protected:
    U32 mEventClassCount;      ///< Number of NetEvent classes supported by this connection
@@ -157,20 +145,12 @@ protected:
    /// Reads the negotiated NetEvent class count from the stream and validates that it is on
    /// a boundary between versions.
    bool readConnectAccept(BitStream *stream, const char **errorString);
-private:
-   ConnectionStringTable *mStringTable; ///< Helper for managing translation between global NetStringTable ids to local ids for this connection.
 public:
-   /// Enables string tag translation on this connection.
-   void setTranslatesStrings();
-   /// sends a global NetStringTable entry over the network.
-   /// This method will send the full string if the other side has not received the string through an event
-   void packStringTableEntry(BitStream *stream, StringTableEntryRef h);
-
-   /// reads a global NetStringTable entry from the network stream.
-   StringTableEntry unpackStringTableEntry(BitStream *stream);
-
    /// returns the highest event version number supported on this connection.
    U32 getEventClassVersion() { return mEventClassVersion; }
+
+   /// Posts a NetEvent for processing on the remote host
+   bool postNetEvent(NetEvent *event);
 };
 
 };

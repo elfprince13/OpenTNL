@@ -48,7 +48,6 @@ EventConnection::EventConnection()
    mNextSendEventSeq = FirstValidSendEventSeq;
    mNextRecvEventSeq = FirstValidSendEventSeq;
    mLastAckedEventSeq = -1;
-   mStringTable = NULL;
    mEventClassCount = 0;
    mEventClassBitSize = 0;
 }
@@ -80,7 +79,6 @@ EventConnection::~EventConnection()
       temp->mEvent->notifyDelivered(this, true);
       mEventNoteChunker.free(temp);
    }
-   delete mStringTable;
 }
 
 void EventConnection::writeConnectRequest(BitStream *stream)
@@ -135,12 +133,6 @@ bool EventConnection::readConnectAccept(BitStream *stream, const char **errorStr
    return true;
 }
 
-void EventConnection::setTranslatesStrings()
-{
-   if(!mStringTable) 
-      mStringTable = new ConnectionStringTable(this);
-}
-
 void EventConnection::processEvent(NetEvent *theEvent)
 {
    if(getConnectionState() == NetConnection::Connected)
@@ -151,9 +143,6 @@ void EventConnection::packetDropped(PacketNotify *pnotify)
 {
    Parent::packetDropped(pnotify);
    EventPacketNotify *notify = static_cast<EventPacketNotify *>(pnotify);
-
-   if(mStringTable)
-      mStringTable->packetDropped(&notify->stringList);
 
    EventNote *walk = notify->eventList;
    EventNote **insertList = &mSendEventQueueHead;
@@ -205,9 +194,6 @@ void EventConnection::packetReceived(PacketNotify *pnotify)
    Parent::packetReceived(pnotify);
 
    EventPacketNotify *notify = static_cast<EventPacketNotify *>(pnotify);
-
-   if(mStringTable)
-      mStringTable->packetReceived(&notify->stringList);
 
    EventNote *walk = notify->eventList;
    EventNote **noteList = &mNotifyEventList;
@@ -498,26 +484,6 @@ bool EventConnection::postNetEvent(NetEvent *theEvent)
       mUnorderedSendEventQueueTail = event;
    }
    return true;
-}
-
-void EventConnection::packStringTableEntry(BitStream *stream, StringTableEntryRef h)
-{
-   if(!mStringTable)
-      stream->writeString(h.getString());
-   else
-      mStringTable->writeStringTableEntry(stream, h, &((EventPacketNotify *) getCurrentWritePacketNotify())->stringList);
-}
-
-StringTableEntry EventConnection::unpackStringTableEntry(BitStream *stream)
-{
-   if(!mStringTable)
-   {
-      char buf[256];
-      stream->readString(buf);
-      return StringTableEntry(buf);
-   }
-   else
-      return mStringTable->readStringTableEntry(stream);
 }
 
 bool EventConnection::isDataToTransmit()

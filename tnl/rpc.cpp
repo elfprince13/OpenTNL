@@ -29,47 +29,29 @@
 #include "tnlVector.h"
 #include "tnlNetEvent.h"
 #include "tnlRPC.h"
-#include "tnlNetStringTable.h"
 #include "tnlEventConnection.h"
 
 namespace TNL {
 
-RPCEvent::RPCEvent(MethodArgList *aMarshaller, RPCGuaranteeType gType, RPCDirection dir) :
-      NetEvent((NetEvent::GuaranteeType) gType, (NetEvent::EventDirection) dir), 
-      mCall(aMarshaller)
+RPCEvent::RPCEvent(RPCGuaranteeType gType, RPCDirection dir) :
+      NetEvent((NetEvent::GuaranteeType) gType, (NetEvent::EventDirection) dir)
 {
-}
-
-void RPCEvent::marshallArguments()
-{
-   mCall.marshall();
 }
 
 void RPCEvent::pack(EventConnection *ps, BitStream *bstream)
 {
-   bstream->clearStringBuffer();
-   bstream->writeBits(mCall.marshalledData.getBitPosition(), mCall.marshalledData.getBuffer());
-   for(S32 i = 0; i < mCall.mSTEs.size(); i++)
-      ps->packStringTableEntry(bstream, mCall.mSTEs[i]);
+   mFunctor->write(*bstream);
 }
 
 void RPCEvent::unpack(EventConnection *ps, BitStream *bstream)
 {
-   bstream->clearStringBuffer();
-   mCall.unmarshall(bstream);
-   bstream->clearStringBuffer();
-   for(S32 i = 0; i < mCall.mSTEs.size(); i++)
-      mCall.mSTEs[i] = ps->unpackStringTableEntry(bstream);
+   mFunctor->read(*bstream);
 }
 
 void RPCEvent::process(EventConnection *ps)
 {
-   if(!checkClassType(ps))
-      return;
-
-   MethodPointer p;
-   getFuncPtr(p);
-   mCall.dispatch(ps, &p);
+   if(checkClassType(ps))
+      mFunctor->dispatch(ps);
 }
 
 };

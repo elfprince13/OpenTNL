@@ -43,6 +43,10 @@
 #include "tnlSymmetricCipher.h"
 #endif
 
+#ifndef _TNL_CONNECTIONSTRINGTABLE_H_
+#include "tnlConnectionStringTable.h"
+#endif
+
 namespace TNL {
 
 class NetConnection;
@@ -130,9 +134,15 @@ struct ConnectionParameters
 /// NetConnection manages the flow of packets over the network, and calls its subclasses
 /// to read and write packet data, as well as handle packet delivery notification.
 ///
+/// Because string data can easily soak up network bandwidth, for
+/// efficiency NetConnection implements an optional networked string table.
+/// Users can then notify the connection of strings it references often, such as player names,
+/// and transmit only a tag, instead of the whole string.
+///
 class NetConnection : public Object
 {
    friend class NetInterface;
+   friend class ConnectionStringTable;
 
    typedef Object Parent;
 
@@ -248,10 +258,10 @@ protected:
 
    virtual void readPacket(BitStream *bstream);                      ///< Called to read a subclass's packet data from the packet.
 
-   virtual void prepareWritePacket();                                ///< Called to prepare the connection for packet writing.
-                                                                     ///
-                                                                     ///  Any setup work to determine if there isDataToTransmit() should happen in
-                                                                     ///  this function.  prepareWritePacket should _always_ call the Parent:: function.
+   virtual void prepareWritePacket();  ///< Called to prepare the connection for packet writing.
+                                       ///
+                                       ///  Any setup work to determine if there isDataToTransmit() should happen in
+                                       ///  this function.  prepareWritePacket should _always_ call the Parent:: function.
 
    virtual void writePacket(BitStream *bstream, PacketNotify *note); ///< Called to write a subclass's packet data into the packet.
                                                                      ///
@@ -342,6 +352,7 @@ public:
       // packet stream notify stuff:
       bool rateChanged;  ///< True if this packet requested a change of rate.
       U32  sendTime;     ///< Platform::getRealMilliseconds() when packet was sent.
+      ConnectionStringTable::PacketList stringList; ///< List of string table entries sent in this packet
 
       PacketNotify *nextPacket; ///< Pointer to the next packet sent on this connection
       PacketNotify();
@@ -574,6 +585,11 @@ private:
    U32 mLastAckTime;
 
    /// @}
+private:
+   ConnectionStringTable *mStringTable; ///< Helper for managing translation between global NetStringTable ids to local ids for this connection.
+public:
+   /// Enables string tag translation on this connection.
+   void setTranslatesStrings();
 };
 
 static const U32 MinimumPaddingBits = 128;       ///< Padding space that is required at the end of each packet for bit flag writes and such.

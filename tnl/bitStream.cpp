@@ -53,6 +53,7 @@ void BitStream::reset()
    error = false;
    mCompressRelative = false;
    mStringBuffer[0] = 0;
+   mStringTable = NULL;
 }
 
 U8 *BitStream::getBytePtr()
@@ -497,6 +498,30 @@ void BitStream::writeString(const char *string, U8 maxLen)
       HuffmanStringProcessor::writeHuffBuffer(this, string, maxLen);
 }
 
+//--------------------------------------------------------------------
+//--------------------------------------------------------------------
+
+//----------------------------------------------------------------------------
+
+void BitStream::readStringTableEntry(StringTableEntry *ste)
+{
+   if(mStringTable)
+      *ste = mStringTable->readStringTableEntry(this);
+   else
+   {
+      char buf[256];
+      readString(buf);
+      ste->set(buf);
+   }
+}
+
+void BitStream::writeStringTableEntry(const StringTableEntry &ste)
+{
+   if(mStringTable)
+      mStringTable->writeStringTableEntry(this, ste);
+   else
+      writeString(ste.getString());
+}
 //------------------------------------------------------------------------------
 
 void BitStream::hashAndEncrypt(U32 hashDigestSize, U32 encryptStartOffset, SymmetricCipher *theCipher)

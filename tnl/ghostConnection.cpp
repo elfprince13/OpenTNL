@@ -695,8 +695,8 @@ void GhostConnection::activateGhosting()
    //TNLAssert(validateGhostArray(), "Invalid ghost array!");
 }
 
-TNL_DECLARE_MEMBER_ENUM(GhostConnection, GhostCountBitSize);
-TNL_IMPLEMENT_RPC(GhostConnection, rpcStartGhosting, (U32 sequence), 
+TNL_IMPLEMENT_RPC(GhostConnection, rpcStartGhosting, 
+                  (U32 sequence), (sequence),
       NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {
    TNLLogMessageV(LogGhostConnection, ("Got GhostingStarting %d", sequence));
@@ -710,7 +710,8 @@ TNL_IMPLEMENT_RPC(GhostConnection, rpcStartGhosting, (U32 sequence),
    rpcReadyForNormalGhosts(sequence);
 }
 
-TNL_IMPLEMENT_RPC(GhostConnection, rpcReadyForNormalGhosts, (U32 sequence), 
+TNL_IMPLEMENT_RPC(GhostConnection, rpcReadyForNormalGhosts, 
+                  (U32 sequence), (sequence),
       NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {
    TNLLogMessageV(LogGhostConnection, ("Got ready for normal ghosts %d %d", sequence, mGhostingSequence));
@@ -724,7 +725,7 @@ TNL_IMPLEMENT_RPC(GhostConnection, rpcReadyForNormalGhosts, (U32 sequence),
    mGhosting = true;
 }
 
-TNL_IMPLEMENT_RPC(GhostConnection, rpcEndGhosting, (), 
+TNL_IMPLEMENT_RPC(GhostConnection, rpcEndGhosting, (), (),
       NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {
    if(!doesGhostTo())

@@ -33,8 +33,8 @@
 
 namespace TNL {
 
-class EventConnection;
-class EventPacketNotify;
+class NetConnection;
+class BitStream;
 
 /// ConnectionStringTable is a helper class to EventConnection for reducing duplicated string data sends
 class ConnectionStringTable
@@ -80,7 +80,7 @@ private:
    StringTableEntry mRemoteStringTable[EntryCount];
    Entry mLRUHead, mLRUTail;
 
-   EventConnection *mParent;
+   NetConnection *mParent;
 
    /// Pushes an entry to the back of the LRU list.
    inline void pushBack(Entry *entry)
@@ -93,9 +93,9 @@ private:
       entry->prevLink->nextLink = entry;
    }
 public:
-   ConnectionStringTable(EventConnection *parent);
+   ConnectionStringTable(NetConnection *parent);
 
-   void writeStringTableEntry(BitStream *stream, StringTableEntryRef string, PacketList *note);
+   void writeStringTableEntry(BitStream *stream, StringTableEntryRef string);
    StringTableEntry readStringTableEntry(BitStream *stream);
 
    void packetReceived(PacketList *note);

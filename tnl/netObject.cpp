@@ -260,9 +260,8 @@ void NetObjectRPCEvent::process(EventConnection *ps)
    void *thisPointer = (void *) mDestObject.getPointer();
 
    NetObject::mRPCSourceConnection = (GhostConnection *) ps;
-   MethodPointer p;
-   getFuncPtr(p);
-   mCall.dispatch(thisPointer, &p);
+   mFunctor->dispatch(thisPointer);
+
    NetObject::mRPCSourceConnection = NULL;
 }
 

@@ -142,12 +142,6 @@ public:
    void set(void *data);
 };
 
-/// Structure representing a stored call to a ThreadQueue function
-struct ThreadQueueCall {
-   MarshalledCall *c;
-   MethodPointer p;
-};
-
 /// Managing object for a queue of worker threads that pass
 /// messages back and forth to the main thread.  ThreadQueue
 /// methods declared with the TNL_DECLARE_THREADQ_METHOD macro
@@ -167,9 +161,9 @@ class ThreadQueue : public Object
    /// list of worker threads on this ThreadQueue
    Vector<Thread *> mThreads;
    /// list of calls to be processed by the worker threads
-   Vector<ThreadQueueCall> mThreadCalls;
+   Vector<Functor *> mThreadCalls;
    /// list of calls to be processed by the main thread
-   Vector<ThreadQueueCall> mResponseCalls;
+   Vector<Functor *> mResponseCalls;
    /// Synchronization variable that manages worker threads
    Semaphore mSemaphore;
    /// Internal Mutex for synchronizing access to thread call vectors.
@@ -182,7 +176,7 @@ protected:
    /// Unlocks the ThreadQueue.
    void unlock() { mLock.unlock(); }
    /// Posts a marshalled call onto either the worker thread call list or the response call list.
-   void postCall(ThreadQueueCall &theCall);
+   void postCall(Functor *theCall);
    /// Dispatches the next available worker thread call.  Called internally by the worker threads when they awaken from the semaphore.
    void dispatchNextCall();
    /// helper function to determine if the currently executing thread is a worker thread or the main thread.
@@ -202,25 +196,17 @@ public:
 
 /// Declares a ThreadQueue method on a subclass of ThreadQueue.
 #define TNL_DECLARE_THREADQ_METHOD(func, args) \
-   virtual void FN_CDECL func args; \
-   virtual void FN_CDECL func##_body args
+   void func args; \
+   void func##_body args
 
 /// Declares the implementation of a ThreadQueue method.
-#define TNL_IMPLEMENT_THREADQ_METHOD(className, func, args) \
-   TNL::MethodArgList ThreadQ_##className##_##func(#className, #args); \
-   void FN_CDECL className::func args { \
-   SAVE_PARAMS \
-   ThreadQueueCall theCall; \
-   theCall.c = new MarshalledCall(&ThreadQ_##className##_##func); \
-   theCall.c->marshall(); \
-   void (FN_CDECL className::*fptr) args; \
-   fptr = &className::func##_body; \
-   theCall.p.v1 = *((U32 *) &fptr); \
-   if(sizeof(fptr) > sizeof(U32)) theCall.p.v2 = *(((U32 *) &fptr) + 1); \
-   if(sizeof(fptr) > 2*sizeof(U32)) theCall.p.v3 = *(((U32 *) &fptr) + 2); \
+#define TNL_IMPLEMENT_THREADQ_METHOD(className, func, args, argNames) \
+   void className::func args { \
+   FunctorDecl<void (className::*)args> *theCall = new FunctorDecl<void (className::*)args>(className::func##_body); \
+   theCall->set argNames; \
    postCall(theCall); \
    }\
-   void FN_CDECL className::func##_body args
+   void className::func##_body args
 
 
 };

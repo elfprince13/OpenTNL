@@ -27,12 +27,12 @@
 #include "tnl.h"
 #include "tnlNetBase.h"
 #include "tnlNetConnection.h"
-#include "tnlBitStream.h"
 #include "tnlNetInterface.h"
 #include "tnlLog.h"
 #include "tnlRandom.h"
 #include "tnlSymmetricCipher.h"
 #include "tnlAsymmetricKey.h"
+#include "tnlConnectionStringTable.h"
 
 #include <stdarg.h>
 
@@ -108,6 +108,7 @@ NetConnection::NetConnection()
 
    mPingTimeout = DefaultPingTimeout;
    mPingRetryCount = DefaultPingRetryCount;
+   mStringTable = NULL;
 }
 
 void NetConnection::setInitialRecvSequence(U32 sequence)
@@ -124,6 +125,7 @@ void NetConnection::clearAllPacketNotifies()
 NetConnection::~NetConnection()
 {
    clearAllPacketNotifies();
+   delete mStringTable;
 
    TNLAssert(mNotifyQueueHead == NULL, "Uncleared notifies remain.");
 }
@@ -219,6 +221,7 @@ void NetConnection::writeRawPacket(BitStream *bstream, NetPacketType packetType)
 
       writePacketRateInfo(bstream, note);
       S32 start = bstream->getBitPosition();
+      bstream->setStringTable(mStringTable);
 
       TNLLogMessageV(LogNetConnection, ("NetConnection %s: START %s", mNetAddress.toString(), getClassName()) );
       writePacket(bstream, note);
@@ -246,6 +249,7 @@ void NetConnection::readRawPacket(BitStream *bstream)
       mLastPacketRecvTime = mInterface->getCurrentTime();
 
       readPacketRateInfo(bstream);
+      bstream->setStringTable(mStringTable);
       readPacket(bstream);
 
       if(!bstream->isValid() && !mErrorBuffer[0])
@@ -749,18 +753,24 @@ void NetConnection::writePacket(BitStream *bstream, PacketNotify *note)
 
 void NetConnection::packetReceived(PacketNotify *note)
 {
+   if(mStringTable)
+      mStringTable->packetReceived(&note->stringList);
 }
 
 void NetConnection::packetDropped(PacketNotify *note)
 {
+   if(mStringTable)
+      mStringTable->packetDropped(&note->stringList);
+
 }
 
-//--------------------------------------------------------------------
-//--------------------------------------------------------------------
-
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
+void NetConnection::setTranslatesStrings()
+{
+   if(!mStringTable) 
+      mStringTable = new ConnectionStringTable(this);
+}
 
 void NetConnection::setInterface(NetInterface *myInterface)
 {

@@ -189,7 +189,7 @@ public:
       c2mQueryGameTypes(mCurrentQueryId);
    }
 
-   TNL_DECLARE_RPC_OVERRIDE(m2cQueryGameTypesResponse, (U32 queryId, const Vector<StringTableEntry> &gameTypes, const Vector<StringTableEntry> &missionTypes))
+   TNL_DECLARE_RPC_OVERRIDE(m2cQueryGameTypesResponse, (U32 queryId, Vector<StringTableEntry> gameTypes, Vector<StringTableEntry> missionTypes))
    {
       // Ignore old queries...
       if(queryId != mCurrentQueryId)
@@ -216,7 +216,7 @@ public:
       }
    }
 
-   TNL_DECLARE_RPC_OVERRIDE(m2cQueryServersResponse, (U32 queryId, const Vector<IPAddress> &ipList))
+   TNL_DECLARE_RPC_OVERRIDE(m2cQueryServersResponse, (U32 queryId, Vector<IPAddress> ipList))
    {
       // Only process results from current query...
       if(queryId != mCurrentQueryId)
@@ -247,7 +247,7 @@ public:
             // And request an arranged connnection (notice gratuitous hardcoded payload)
             c2mRequestArrangedConnection(mCurrentQueryId, mIPList[index],
                getInterface()->getFirstBoundInterfaceAddress().toIPAddress(),
-               ByteBuffer((U8 *) "Hello World!", 13));
+               new ByteBuffer((U8 *) "Hello World!", 13));
 
             logprintf("Requesting arranged connection with %s", Address(mIPList[index]).toString());
          }
@@ -259,8 +259,8 @@ public:
       }
    }
 
-   TNL_DECLARE_RPC_OVERRIDE(m2cClientRequestedArrangedConnection, (U32 requestId, const Vector<IPAddress> &possibleAddresses,
-      ByteBufferRef connectionParameters))
+   TNL_DECLARE_RPC_OVERRIDE(m2cClientRequestedArrangedConnection, (U32 requestId, Vector<IPAddress> possibleAddresses,
+      ByteBufferPtr connectionParameters))
    {
       if(!gIsServer || Random::readF() > 0.75)
       {
@@ -274,10 +274,11 @@ public:
          // Ok, let's do the arranged connection!
 
          U8 data[Nonce::NonceSize * 2 + SymmetricCipher::KeySize * 2];
-         ByteBuffer b(data, sizeof(data));
          Random::read(data, sizeof(data));
          IPAddress localAddress = getInterface()->getFirstBoundInterfaceAddress().toIPAddress();
 
+         ByteBufferPtr b = new ByteBuffer(data, sizeof(data));
+         b->takeOwnership();
          c2mAcceptArrangedConnection(requestId, localAddress, b);
          GameConnection *conn = new GameConnection();
 
@@ -286,9 +287,11 @@ public:
             fullPossibleAddresses.push_back(Address(possibleAddresses[i]));
 
          logprintf("Accepting arranged connection from %s", Address(fullPossibleAddresses[0]).toString());
-         logprintf("  Generated shared secret data: %s", b.encodeBase64()->getBuffer());
+
+         logprintf("  Generated shared secret data: %s", b->encodeBase64()->getBuffer());
 
          ByteBufferPtr theSharedData = new ByteBuffer(data + 2 * Nonce::NonceSize, sizeof(data) - 2 * Nonce::NonceSize);
+         theSharedData->takeOwnership();
          Nonce nonce(data);
          Nonce serverNonce(data + Nonce::NonceSize);
 
@@ -297,12 +300,12 @@ public:
       }
    }
 
-   TNL_DECLARE_RPC_OVERRIDE(m2cArrangedConnectionAccepted, (U32 requestId, const Vector<IPAddress> &possibleAddresses, ByteBufferRef connectionData))
+   TNL_DECLARE_RPC_OVERRIDE(m2cArrangedConnectionAccepted, (U32 requestId, Vector<IPAddress> possibleAddresses, ByteBufferPtr connectionData))
    {
-      if(!gIsServer && requestId == mCurrentQueryId && connectionData.getBufferSize() >= Nonce::NonceSize * 2 + SymmetricCipher::KeySize * 2)
+      if(!gIsServer && requestId == mCurrentQueryId && connectionData->getBufferSize() >= Nonce::NonceSize * 2 + SymmetricCipher::KeySize * 2)
       {
          logprintf("Remote host accepted arranged connection.");
-         logprintf("  Shared secret data: %s", connectionData.encodeBase64()->getBuffer());
+         logprintf("  Shared secret data: %s", connectionData->encodeBase64()->getBuffer());
          GameConnection *conn = new GameConnection();
 
          Vector<Address> fullPossibleAddresses;
@@ -311,19 +314,20 @@ public:
 
          ByteBufferPtr theSharedData =
                         new ByteBuffer(
-                            (U8 *) connectionData.getBuffer() + Nonce::NonceSize * 2,
-                            connectionData.getBufferSize() - Nonce::NonceSize * 2
+                            (U8 *) connectionData->getBuffer() + Nonce::NonceSize * 2,
+                            connectionData->getBufferSize() - Nonce::NonceSize * 2
                         );
+         theSharedData->takeOwnership();
 
-         Nonce nonce(connectionData.getBuffer());
-         Nonce serverNonce(connectionData.getBuffer() + Nonce::NonceSize);
+         Nonce nonce(connectionData->getBuffer());
+         Nonce serverNonce(connectionData->getBuffer() + Nonce::NonceSize);
 
          conn->connectArranged(getInterface(), fullPossibleAddresses,
             nonce, serverNonce, theSharedData,true);
       }
    }
 
-   TNL_DECLARE_RPC_OVERRIDE(m2cArrangedConnectionRejected, (U32 requestId, ByteBufferRef rejectData))
+   TNL_DECLARE_RPC_OVERRIDE(m2cArrangedConnectionRejected, (U32 requestId, ByteBufferPtr rejectData))
    {
       if(!gIsServer && requestId == mCurrentQueryId)
       {
