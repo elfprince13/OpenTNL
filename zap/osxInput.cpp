@@ -44,6 +44,10 @@
 #include <IOKit/hid/IOHIDKeys.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <carbon/carbon.h>
+#include "TNLAssert.h"
+#include "tnlVector.h"
+#include "input.h"
+#include "tnlLog.h"
 
 namespace Zap
 {
@@ -95,7 +99,7 @@ static void HIDGetElementsCFArrayHandler (const void * value, void * parameter)
 	if (CFGetTypeID (value) != CFDictionaryGetTypeID ())
       return;
 
-   CFTypeRef refElement = (CFTypeRef(value);
+   CFTypeRef refElement = CFTypeRef(value);
 	long elementType, usagePage, usage;
 	CFTypeRef refElementType = CFDictionaryGetValue (refElement, CFSTR(kIOHIDElementTypeKey));
 	CFTypeRef refUsagePage = CFDictionaryGetValue (refElement, CFSTR(kIOHIDElementUsagePageKey));
@@ -141,25 +145,33 @@ static void HIDGetElementsCFArrayHandler (const void * value, void * parameter)
 		}
 		else if (kIOHIDElementTypeCollection == elementType)
       {
-         CFTypeID type = CFGetTypeID (refElement);
+        CFTypeRef refElementTop = CFDictionaryGetValue ((CFMutableDictionaryRef) refElement, CFSTR(kIOHIDElementKey));
+        if (refElementTop)
+		{
+		CFTypeID type = CFGetTypeID (refElementTop);
 	      if (type == CFArrayGetTypeID()) /* if element is an array */
 	      {
-		      CFRange range = {0, CFArrayGetCount (refElement)};
+		      CFRange range = {0, CFArrayGetCount (refElementTop)};
 		      /* CountElementsCFArrayHandler called for each array member */
-		      CFArrayApplyFunction (refElement, range, HIDGetElementsCFArrayHandler, NULL);
+		      CFArrayApplyFunction (refElementTop, range, HIDGetElementsCFArrayHandler, NULL);
 	      }
+		  }
       }
 	}
    ControllerElement *theElement = NULL;
    if(isButton)
    {
-      gController.buttons.increment();
+      ControllerElement e;
+      gController.buttons.push_back(e);
       theElement = &gController.buttons.last();
+	  logprintf("Found Button!");
    }
    else if(isAxis)
    {
-      gController.axes.increment();
+      ControllerElement e;
+      gController.axes.push_back(e);
       theElement = &gController.axes.last();
+	  logprintf("Found Axis!");
    }
 
 	if (theElement) /* add to list */
@@ -178,6 +190,7 @@ static void HIDGetElementsCFArrayHandler (const void * value, void * parameter)
 
 	   if (refType && CFNumberGetValue (refType, kCFNumberLongType, &number))
 		   theElement->maxValue = number;
+	  logprintf("Cookie = %d min = %d max = %d", theElement->cookie, theElement->minValue, theElement->maxValue);
 	}
 }
 
@@ -207,8 +220,8 @@ void InitJoystick()
          break;
 
       CFMutableDictionaryRef hidProperties = 0;
-      kern_result_t result = IORegistryEntryCreateCFProperties(ioHIDDeviceObject, &hidProperties, kCFAllocatorDefault, kNilOptions);
-      if(result == KERN_SUCCESS && hidProperties)
+      long kresult = IORegistryEntryCreateCFProperties(ioHIDDeviceObject, &hidProperties, kCFAllocatorDefault, kNilOptions);
+      if(kresult == KERN_SUCCESS && hidProperties)
       {
 			CFTypeRef refCF = 0;
 			refCF = CFDictionaryGetValue (hidProperties, CFSTR(kIOHIDPrimaryUsagePageKey));
@@ -217,9 +230,9 @@ void InitJoystick()
          refCF = CFDictionaryGetValue (hidProperties, CFSTR(kIOHIDPrimaryUsageKey));
 			CFNumberGetValue (refCF, kCFNumberLongType, &usage);
 
-   		if ( (device->usagePage == kHIDPage_GenericDesktop) &&
-		     ((device->usage == kHIDUsage_GD_Joystick ||
-		      device->usage == kHIDUsage_GD_GamePad)) )
+   		if ( (usagePage == kHIDPage_GenericDesktop) &&
+		     ((usage == kHIDUsage_GD_Joystick ||
+		      usage == kHIDUsage_GD_GamePad)) )
          {
 	         CFTypeRef refElementTop = CFDictionaryGetValue (hidProperties, CFSTR(kIOHIDElementKey));
 	         if (refElementTop)
@@ -232,13 +245,13 @@ void InitJoystick()
 		            CFArrayApplyFunction (refElementTop, range, HIDGetElementsCFArrayHandler, NULL);
 
                   IOCFPlugInInterface ** ppPlugInInterface = NULL;
-	
-		            IOReturn result = IOCreatePlugInInterfaceForService (hidDevice, kIOHIDDeviceUserClientTypeID,
+					S32 score;
+		            IOReturn result = IOCreatePlugInInterfaceForService (ioHIDDeviceObject, kIOHIDDeviceUserClientTypeID,
 													            kIOCFPlugInInterfaceID, &ppPlugInInterface, &score);
 		            if (result == kIOReturnSuccess)
 		            {
 			            // Call a method of the intermediate plug-in to create the device interface
-			            plugInResult = (*ppPlugInInterface)->QueryInterface (ppPlugInInterface,
+			            (*ppPlugInInterface)->QueryInterface (ppPlugInInterface,
 								            CFUUIDGetUUIDBytes (kIOHIDDeviceInterfaceID), (void *) &device);
                      if(device)
                      {
@@ -251,9 +264,9 @@ void InitJoystick()
                }
             }
          }
-         CFRelease(hidProperties)
+         CFRelease(hidProperties);
       }
-      IOObjectRelese(ioHIDDeviceObject);
+      IOObjectRelease(ioHIDDeviceObject);
       if(gJoystickInit)
          break;
    }
@@ -275,7 +288,7 @@ bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask)
       S32 diff = e->maxValue - e->minValue;
       if(diff != 0)
       {
-         axes[i] = (elementValue - e->minValue) * 2 / diff;
+         axes[i] = (elementValue - e->minValue) * 2 / F32(diff);
          axes[i] -= 1;
       }
       else
@@ -287,11 +300,12 @@ bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask)
    buttonMask = 0;
    for(i = 0; i < gController.buttons.size(); i++)
    {
-      ControllerElement *e = &gController.axes[i];
+      ControllerElement *e = &gController.buttons[i];
       S32 value = getElementValue(e);
       if(value)
          buttonMask |= (1 << i);
    }
+   return true;
 }
 
 void ShutdownJoystick()

@@ -157,6 +157,50 @@
 			settings = {
 			};
 		};
+		1D49BD0C0691F71200643C72 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = IOKit.framework;
+			path = /System/Library/Frameworks/IOKit.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		1D49BD0D0691F71200643C72 = {
+			fileRef = 1D49BD0C0691F71200643C72;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1D49BDC50691F8E000643C72 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = input.cpp;
+			path = ../zap/input.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1D49BDC60691F8E000643C72 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = input.h;
+			path = ../zap/input.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1D49BDC70691F8E000643C72 = {
+			fileRef = 1D49BDC50691F8E000643C72;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1D49BDC80691F8E000643C72 = {
+			fileRef = 1D49BDC60691F8E000643C72;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		1D8DCBB606557E6D00BC4809 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -727,6 +771,7 @@
 		};
 		29B97323FDCFA39411CA2CEA = {
 			children = (
+				1D49BD0C0691F71200643C72,
 				1DE1ED3306909FA300D93C76,
 				DB9525CF0636109800B8795E,
 				6656DD9B0635C8EF00E30126,
@@ -2319,6 +2364,7 @@
 				1DE1EC8006909AB400D93C76,
 				1DE1EC8206909AB400D93C76,
 				1DE1ED0E06909D0A00D93C76,
+				1D49BDC80691F8E000643C72,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2374,6 +2420,7 @@
 				1DE1EC8106909AB400D93C76,
 				1DE1ED0D06909D0A00D93C76,
 				1DE1EDF50690BA1600D93C76,
+				1D49BDC70691F8E000643C72,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2808,6 +2855,8 @@
 		};
 		6692C0E606247C3B00D5ADFE = {
 			children = (
+				1D49BDC50691F8E000643C72,
+				1D49BDC60691F8E000643C72,
 				1DE1EDF40690BA1600D93C76,
 				1DE1ED0B06909D0A00D93C76,
 				1DE1ED0C06909D0A00D93C76,
@@ -2918,6 +2967,7 @@
 				6656DD9C0635C8EF00E30126,
 				DB9525D00636109800B8795E,
 				1DE1ED3406909FA300D93C76,
+				1D49BD0D0691F71200643C72,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;

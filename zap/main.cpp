@@ -611,7 +611,6 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *
 };
 
 using namespace Zap;
-
 int main(int argc, char **argv)
 {
    //TNLLogEnable(LogConnectionProtocol, true);

@@ -389,10 +389,9 @@ void ClientGame::idle(U32 timeDelta)
 
    Move *theMove = gGameUserInterface.getCurrentMove();
 
-#ifdef TNL_OS_WIN32
    if(OptionsMenuUserInterface::joystickType != -1)
       JoystickUpdateMove(theMove);
-#endif
+
    theMove->time = timeDelta;
 
    if(mConnectionToServer.isValid())
