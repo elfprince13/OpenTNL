@@ -64,7 +64,7 @@ enum ArgTypeId {
    NumTypes,
 };
 
-static TypeInfo gTypes[] = {
+TypeInfo gTypes[] = {
 
 { "S8", sizeof(S8), true, true },
 { "U8", sizeof(U8), true, true },
@@ -73,12 +73,12 @@ static TypeInfo gTypes[] = {
 { "S32", sizeof(S32), true, true },
 { "U32", sizeof(U32), true, true },
 { "F32", sizeof(F32), true, true },
-{ "SignedInt<", sizeof(S32), true, true },
-{ "Int<", sizeof(U32), true, true },
-{ "SignedFloat<", sizeof(F32), true, true },
-{ "Float<", sizeof(F32), true, true },
+{ "SignedInt<", sizeof(SignedInt<32>), true, true },
+{ "Int<", sizeof(Int<32>), true, true },
+{ "SignedFloat<", sizeof(SignedFloat<32>), true, true },
+{ "Float<", sizeof(Float<32>), true, true },
 { "const char *", sizeof(const char *), true, true },
-{ "RangedU32<", sizeof(U32), true, true },
+{ "RangedU32<", sizeof(RangedU32<0, U32_MAX>), true, true },
 { "bool", sizeof(bool), true, true },
 { "StringTableEntryRef", sizeof(StringTableEntryRef), true, false },
 { "StringTableEntry", sizeof(StringTableEntry), false, true },
@@ -558,13 +558,7 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
    }
    theEvent->mSTEs.setSize(rpcCurrentSTEIndex);
    for(U32 i = 0; i < rpcNumSTEs; i++)
-   {
       *((StringTableEntry **) rpcSTEOffsets[i]) = &theEvent->mSTEs[rpcSTEIndex[i]];
-
-//      StringTableEntry ste = ps->unpackStringTableEntry(bstream);
-//      theEvent->mSTEs.push_back(ste);
-//     *((U32 *) rpcSTEOffsets[i]) = ste.getIndex();
-   }
 
    theEvent->unmarshalledData.setBuffer(rpcReadData, currentSize, false);
    theEvent->unmarshalledData.takeOwnership();
