@@ -291,6 +291,9 @@ void GameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *c
       {
          if(mClientList[i].teamId == teamId)
          {
+            if(!mClientList[i].clientConnection)
+               continue;
+
             GameObject *co = mClientList[i].clientConnection->getControlObject();
             if(!co)
                continue;

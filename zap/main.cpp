@@ -235,55 +235,107 @@ void idle()
       F64 delta = Platform::getHighPrecisionMilliseconds(currentTimer - lastMove);
       if(delta > 200.0)
       {
-            // Do movement craziness
+         // See if we feel like chatting
+         if(Random::readB() && Random::readB())
+         {
             if(Random::readB())
-               gZapJournal.key('w');
+            {
+               // Global chat
+               gZapJournal.key('g');
+               gZapJournal.keyup('g');
+            }
             else
-               gZapJournal.keyup('w');
+            {
+               // Team chat
+               gZapJournal.key('t');
+               gZapJournal.keyup('t');
+            }
 
-            if(Random::readB())
-               gZapJournal.key('a');
-            else
-               gZapJournal.keyup('a');
+            char *msg[13] = 
+            {
+               "GIMME THE YUM YUM!",
+               "Weasels! Oh yeah!",
+               "Here, pony-pony-pony!",
+               "ERMINES!",
+               "fr0hnzed!",
+               "m1lked!",
+               "Ben IS love",
+               "Blame Joe.",
+               "Just ask the ponies.",
+               "the ponies know.",
+               "EVIL!@#$%^&*()",
+               "EVIL\\1\\2\\3\\4\\5\\6\\7\\8\\9\\0",
+               "EVIL\\n\\r\\t\\b\\",
+            };
 
-            if(Random::readB())
-               gZapJournal.key('s');
-            else
-               gZapJournal.keyup('s');
+            U32 msgId = Random::readI(0, 12);
 
-            if(Random::readB())
-               gZapJournal.key('d');
-            else
-               gZapJournal.keyup('d');
+            char *w = msg[msgId];
 
-            if(Random::readB())
-               gZapJournal.key('r');
-            else
-               gZapJournal.keyup('r');
+            while(*w)
+            {
+               gZapJournal.key(*w);
+               gZapJournal.keyup(*w);
+               w++;
+            }
 
-            if(Random::readB())
-               gZapJournal.key('c');
-            else
-               gZapJournal.keyup('c');
+            // Occasionally drop the enter
+            if(Random::readI(0, 16) != 4)
+            {
+               gZapJournal.key('\r');
+               gZapJournal.keyup('\r');
+            }
+         }
+      
+         // Do movement craziness
+         if(Random::readB())
+            gZapJournal.key('w');
+         else
+            gZapJournal.keyup('w');
 
-            if(Random::readB())
-               gZapJournal.key('\t');
-            else
-               gZapJournal.keyup('\t');
+         if(Random::readB())
+            gZapJournal.key('a');
+         else
+            gZapJournal.keyup('a');
 
-            if(Random::readB())
-               gZapJournal.key(' ');
-            else
-               gZapJournal.keyup(' ');
+         if(Random::readB())
+            gZapJournal.key('s');
+         else
+            gZapJournal.keyup('s');
 
-            // Do mouse craziness
-            S32 x = Random::readI(0, 800);
-            S32 y = Random::readI(0, 600);
-            gZapJournal.passivemotion(x,y);
-            gZapJournal.mouse(0, Random::readF() > 0.2, x,y);
-            gZapJournal.mouse(1, Random::readF() > 0.2, x,y);
-            gZapJournal.mouse(2, Random::readF() > 0.8, x,y);
-            lastMove = currentTimer;
+         if(Random::readB())
+            gZapJournal.key('d');
+         else
+            gZapJournal.keyup('d');
+
+         if(Random::readB())
+            gZapJournal.key('r');
+         else
+            gZapJournal.keyup('r');
+
+         if(Random::readB() && false)
+            gZapJournal.key('c');
+         else
+            gZapJournal.keyup('c');
+
+         if(Random::readB())
+            gZapJournal.key('\t');
+         else
+            gZapJournal.keyup('\t');
+
+         if(Random::readB())
+            gZapJournal.key(' ');
+         else
+            gZapJournal.keyup(' ');
+
+         // Do mouse craziness
+         S32 x = Random::readI(0, 800);
+         S32 y = Random::readI(0, 600);
+         gZapJournal.passivemotion(x,y);
+         gZapJournal.mouse(0, Random::readB(), x, y);
+         gZapJournal.mouse(1, Random::readB(), x, y);
+         gZapJournal.mouse(2, Random::readB(), x, y);
+         lastMove = currentTimer;
       }
       gIsCrazyBot = true; // Reenable input events
    }
