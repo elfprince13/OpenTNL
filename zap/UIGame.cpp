@@ -60,6 +60,7 @@ GameUserInterface::GameUserInterface()
    mVChat = new VChatHelper();
    mRecordingAudio = false;
    mMaxAudioSample = 0;
+   mVoiceEncoder = new LPC10VoiceEncoder;
 }
 
 void GameUserInterface::displayMessage(Color theColor, const char *format, ...)
@@ -524,20 +525,19 @@ void GameUserInterface::onKeyUp(U32 key)
    }
 }
 
-static lpc10_encoder_state *encoderState = NULL;
-
 void GameUserInterface::startRecordingAudio()
 {
    if(!mRecordingAudio)
    {
-      encoderState = create_lpc10_encoder_state();
-      init_lpc10_encoder_state(encoderState);
-
       mUnusedAudio = new ByteBuffer(0);
       mRecordingAudio = true;
       mMaxAudioSample = 0;
       mVoiceAudioTimer.reset(FirstVoiceAudioSampleTime);
       SFXObject::startRecording();
+
+      // trim the start of the capture buffer:
+      SFXObject::captureSamples(mUnusedAudio);
+      mUnusedAudio->resize(0);
    }
 }
 
@@ -546,19 +546,21 @@ void GameUserInterface::stopRecordingAudio()
    if(mRecordingAudio)
    {
       processRecordingAudio();
-      destroy_lpc10_encoder_state(encoderState);
+      SFXObject::stopRecording();
 
       mRecordingAudio = false;
       SFXObject::stopRecording();
       mVoiceSfx = NULL;
+      mUnusedAudio = NULL;
    }
 }
 
 void GameUserInterface::processRecordingAudio()
 {
    SFXObject::captureSamples(mUnusedAudio);
-   U32 sampleCount = mUnusedAudio->getBufferSize() / 2;
+   ByteBufferPtr sendBuffer = mVoiceEncoder->compressBuffer(mUnusedAudio);
 
+   U32 sampleCount = mUnusedAudio->getBufferSize() / 2;
    S16 *samplePtr = (S16 *) mUnusedAudio->getBuffer();
    mMaxAudioSample = 0;
 
@@ -566,28 +568,11 @@ void GameUserInterface::processRecordingAudio()
       if(samplePtr[i] > mMaxAudioSample)
          mMaxAudioSample = samplePtr[i];
 
-   U32 useCount = U32(sampleCount / LPC10_SAMPLES_PER_FRAME) * LPC10_SAMPLES_PER_FRAME;
-   //U32 useCount = sampleCount - (sampleCount % LPC10_SAMPLES_PER_FRAME);
-
-   if(useCount)
-   {      
-      U32 unusedCount = sampleCount - useCount;
-
-      U8 codingBuffer[2048];
-      U32 len = 0;
-
-      for(U32 i = 0; i < useCount; i += LPC10_SAMPLES_PER_FRAME)
-         len += vbr_lpc10_encode(samplePtr + i, codingBuffer + len, encoderState);
-
-      memcpy(mUnusedAudio->getBuffer(), mUnusedAudio->getBuffer() + useCount * 2, unusedCount * 2);
-      mUnusedAudio->resize(unusedCount * 2);
-
-      ByteBuffer sendBuffer(codingBuffer, len);
-      //logprintf("Encoded %d samples in %d bytes", useCount, len);
-
+   if(sendBuffer.isValid())
+   {
       GameType *gt = gClientGame->getGameType();
       if(gt)
-         gt->c2sVoiceChat(OptionsMenuUserInterface::echoVoice, sendBuffer);
+         gt->c2sVoiceChat(OptionsMenuUserInterface::echoVoice, *(sendBuffer.getPointer()));
    }
 }
 

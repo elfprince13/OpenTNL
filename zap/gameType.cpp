@@ -432,8 +432,8 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddClient, (StringTableEntryRef name, b
    cref.teamId = 0;
    cref.wantsScoreboardUpdates = false;
    cref.ping = 0;
-   cref.decoderState = create_lpc10_decoder_state();
-   init_lpc10_decoder_state(cref.decoderState);
+   cref.decoder = new LPC10VoiceDecoder();
+
    cref.voiceSFX = new SFXObject(SFXVoice, NULL, 1, Point(), Point());
 
    mClientList.push_back(cref);
@@ -461,7 +461,6 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cRemoveClient, (StringTableEntryRef name
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
    S32 clientIndex = findClientIndexByName(name);
-   destroy_lpc10_decoder_state(mClientList[clientIndex].decoderState);
 
    gGameUserInterface.displayMessage(Color(0.6f, 0.6f, 0.8f), "%s left the game.", name.getString());
    mClientList.erase(clientIndex);
@@ -625,18 +624,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cVoiceChat, (StringTableEntryRef clientN
    S32 clientIndex = findClientIndexByName(clientName);
    if(clientIndex != -1)
    {
-      S16 frame[LPC10_SAMPLES_PER_FRAME];
-      int p = 0, decodeLen = 0;
-      ByteBufferPtr playBuffer = new ByteBuffer(0);
-
-      for(U32 i = 0; i < voiceBuffer.getBufferSize(); i += p)
-      {
-         int frameLen = vbr_lpc10_decode((unsigned char *) voiceBuffer.getBuffer() + i, frame, mClientList[clientIndex].decoderState, &p);
-         playBuffer->resize((decodeLen + frameLen) * 2);
-
-         memcpy(playBuffer->getBuffer() + decodeLen * 2, frame, frameLen * 2);
-         decodeLen += frameLen;
-      }
+      ByteBufferPtr playBuffer = mClientList[clientIndex].decoder->decompressBuffer(voiceBuffer);
 
       //logprintf("Decoded buffer size %d", playBuffer->getBufferSize());
       mClientList[clientIndex].voiceSFX->queueBuffer(playBuffer);

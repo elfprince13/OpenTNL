@@ -30,7 +30,7 @@
 #include "gameObject.h"
 #include "timer.h"
 #include "sfx.h"
-#include "lpc10.h"
+#include "voiceCodec.h"
 
 namespace Zap
 {
@@ -53,7 +53,8 @@ public:
       bool wantsScoreboardUpdates;
       SafePtr<GameConnection> clientConnection;
       RefPtr<SFXObject> voiceSFX;
-      lpc10_decoder_state *decoderState;
+      RefPtr<VoiceDecoder> decoder;
+
       U32 ping;
       ClientRef() { ping = 0; score = 0; }
    };

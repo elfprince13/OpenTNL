@@ -33,6 +33,7 @@
 #include "quickChat.h"
 #include "timer.h"
 #include "sfx.h"
+#include "voiceCodec.h"
 
 namespace Zap
 {
@@ -84,6 +85,8 @@ class GameUserInterface : public UserInterface
    VChatHelper *mVChat;
    Timer mVoiceAudioTimer;
    RefPtr<SFXObject> mVoiceSfx;
+   RefPtr<VoiceEncoder> mVoiceEncoder;
+
    ByteBufferPtr mUnusedAudio;
 public:
    GameUserInterface();
