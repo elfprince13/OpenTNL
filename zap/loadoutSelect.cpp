@@ -50,7 +50,7 @@ LoadoutItem gLoadoutModules[] = {
    { '4', 3, ModuleSensor, "Enhanced Sensor" },
    { '5', 4, ModuleCloak, "Cloak Field Modulator" },
    { '6', 5, ModuleEngineer, "Engineering Bay" },
-   { 0, 0, NULL },
+   { 0, 0, 0, NULL },
 };
 
 LoadoutItem gLoadoutWeapons[] = {
@@ -59,7 +59,7 @@ LoadoutItem gLoadoutWeapons[] = {
    { '3', 2, WeaponTriple, "Three-Way" },
    { '4', 3, WeaponBurst, "Burster" },
    { '5', 4, WeaponMineLayer, "Mine Dropper" },
-   { 0, 0, NULL },
+   { 0, 0, 0, NULL },
 };
 
 const char *gLoadoutTitles[] = {
@@ -193,3 +193,4 @@ bool LoadoutHelper::processKey(U32 key)
 }
 
 };
+
