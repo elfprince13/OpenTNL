@@ -212,7 +212,11 @@ static void HIDGetElementsCFArrayHandler (const void * value, void * parameter)
 	}
 }
 
-
+enum {
+MaxJoystickNameLen = 256,
+};
+char gJoystickName[MaxJoystickNameLen + 1] = { 0, };
+const char *GetJoystickName() { return gJoystickName; }
 void InitJoystick()
 {
    mach_port_t masterPort = NULL;
@@ -242,6 +246,19 @@ void InitJoystick()
       if(kresult == KERN_SUCCESS && hidProperties)
       {
 			CFTypeRef refCF = 0;
+			refCF = CFDictionaryGetValue (hidProperties, CFSTR(kIOHIDProductKey));
+			
+			if(CFGetTypeID(refCF) == CFStringGetTypeID())
+			{
+				CFIndex bufferSize = CFStringGetLength (refCF) + 1;
+				char * buffer = (char *)malloc (bufferSize);
+				if (buffer)
+				{
+					if (CFStringGetCString (refCF, buffer, bufferSize, CFStringGetSystemEncoding ()))
+						strncpy(gJoystickName, buffer, MaxJoystickNameLen);
+					free(buffer);
+				}
+			}
 			refCF = CFDictionaryGetValue (hidProperties, CFSTR(kIOHIDPrimaryUsagePageKey));
          long usage, usagePage;
 			CFNumberGetValue (refCF, kCFNumberLongType, &usagePage);

@@ -97,6 +97,51 @@
 //1D2
 //1D3
 //1D4
+		1D3CACC90694D76300313D6F = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = goalZone.cpp;
+			path = ../zap/goalZone.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1D3CACCA0694D76300313D6F = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = goalZone.h;
+			path = ../zap/goalZone.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1D3CACCB0694D76300313D6F = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = retrieveGame.cpp;
+			path = ../zap/retrieveGame.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1D3CACCC0694D76300313D6F = {
+			fileRef = 1D3CACC90694D76300313D6F;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1D3CACCD0694D76300313D6F = {
+			fileRef = 1D3CACCA0694D76300313D6F;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1D3CACCE0694D76300313D6F = {
+			fileRef = 1D3CACCB0694D76300313D6F;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		1D3E3EE90666A7EE005D645B = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -422,6 +467,21 @@
 		};
 		1DC8204F064C5CBC00F61B0E = {
 			fileRef = 1DC8204C064C5CBC00F61B0E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DD229E2070B4A02000DFF1F = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = HTFGame.cpp;
+			path = ../zap/HTFGame.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DD229E3070B4A02000DFF1F = {
+			fileRef = 1DD229E2070B4A02000DFF1F;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -2365,6 +2425,7 @@
 				1DE1EC8206909AB400D93C76,
 				1DE1ED0E06909D0A00D93C76,
 				1D49BDC80691F8E000643C72,
+				1D3CACCD0694D76300313D6F,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2421,6 +2482,9 @@
 				1DE1ED0D06909D0A00D93C76,
 				1DE1EDF50690BA1600D93C76,
 				1D49BDC70691F8E000643C72,
+				1D3CACCC0694D76300313D6F,
+				1D3CACCE0694D76300313D6F,
+				1DD229E3070B4A02000DFF1F,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2855,6 +2919,10 @@
 		};
 		6692C0E606247C3B00D5ADFE = {
 			children = (
+				1DD229E2070B4A02000DFF1F,
+				1D3CACC90694D76300313D6F,
+				1D3CACCA0694D76300313D6F,
+				1D3CACCB0694D76300313D6F,
 				1D49BDC50691F8E000643C72,
 				1D49BDC60691F8E000643C72,
 				1DE1EDF40690BA1600D93C76,

@@ -293,9 +293,12 @@ void SFXObject::playOnSource()
       alSourcei(source, AL_BUFFER, gBuffers[mSFXIndex]);
 
    alSourcei(source, AL_LOOPING, mProfile->isLooping);
-   //alSourcef(source, AL_REFERENCE_DISTANCE,9000);
-   //alSourcef(source, AL_ROLLOFF_FACTOR,1);
-   //alSourcef(source, AL_MAX_DISTANCE, 10000);
+#ifdef TNL_OS_MAC_OSX
+   // This is a workaround for the broken OS X implementation of AL_NONE distance model.
+   alSourcef(source, AL_REFERENCE_DISTANCE,9000);
+   alSourcef(source, AL_ROLLOFF_FACTOR,1);
+   alSourcef(source, AL_MAX_DISTANCE, 10000);
+#endif
    updateMovementParams();
 
    updateGain();
