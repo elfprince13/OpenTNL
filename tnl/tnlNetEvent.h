@@ -60,7 +60,7 @@ class BitStream;
 ///        This is good for information which is not only important, but also order-critical, like
 ///        chat messages or file transfers.
 ///
-/// There are 6 methods that you need to implement if you want to make a
+/// There are 3 methods that you need to implement if you want to make a
 /// basic NetEvent subclass, and 2 macros you need to call.
 ///
 /// @code
@@ -73,9 +73,9 @@ class BitStream;
 ///    SimpleMessageEvent(const char *message = NULL);
 ///    ~SimpleMessageEvent();
 ///
-///    virtual void pack   (NetConnection *conn, BitStream *bstream);
-///    virtual void unpack (NetConnection *conn, BitStream *bstream);
-///    virtual void process(NetConnection *conn);
+///    virtual void pack   (EventConnection *conn, BitStream *bstream)
+///    virtual void unpack (EventConnection *conn, BitStream *bstream);
+///    virtual void process(EventConnection *conn);
 ///
 ///    TNL_DECLARE_CLASS(SimpleMessageEvent);
 /// };
@@ -83,9 +83,8 @@ class BitStream;
 /// TNL_IMPLEMENT_NETEVENT(SimpleMessageEvent, NetClassGroupGameMask,0);
 /// @endcode
 ///
-/// Notice the two macros which we call. The first, TNL_DECLARE_CLASS() is there
-/// to register the static class functions and NetClassRep object that will assign
-/// this class a network ID and allow instances to be construced by ID.
+/// The first macro called, TNL_DECLARE_CLASS() registers the static class functions and NetClassRep object that will assign
+/// this class a network ID and allow instances to be constructed by ID.
 ///
 /// The second, TNL_IMPLEMENT_NETEVENT(), instantiates the NetClassRep and
 /// tells it that the instances are NetEvent objects in the Game group.  The final
@@ -93,17 +92,17 @@ class BitStream;
 /// class.  Versioning allows a server to offer new event services without forcing
 /// older clients to be updated.
 ///
-/// In the constructor for the event, you must also specify, by way of the constructor
-/// for the base NetEvent class, what guarantee type the event has, and in which direction(s)
-/// it is allowed to travel over the connection.  The guarantee type can be one of:
+/// In the constructor for the event the guarantee type of the event and the direction it will be
+/// allowed to travel over the connection, must be specified by way of the constructor
+/// for the base NetEvent class.  The guarantee type can be one of:
 ///      - <b>NetEvent::GuaranteedOrdered</b>, for guaranteed, ordered events
 ///      - <b>NetEvent::Guaranteed</b>, for guaranteed events
 ///      - <b>NetEvent::Unguaranteed</b>, for unguaranteed events
 ///
 /// It is also a good idea to clearly specify which direction the event is allowed to travel.
-/// If your game has a certain set of message events that are only sent from server to client,
-/// then the network system can do some error checking for you, in order to prevent hacks that may
-/// otherwise crash or compromise your game.  The valid event directions are:
+/// If the program has a certain set of message events that are only sent from server to client,
+/// then the network system can enforce that error checking automatically, in order to prevent hacks that may
+/// otherwise crash or compromise the program.  The valid event directions are:
 ///      - <b>NetEvent::DirAny</b>, this event can be sent from server to client
 ///        or from client to server
 ///      - <b>NetEvent::DirServerToClient</b>, this event can only be sent from
@@ -114,14 +113,14 @@ class BitStream;
 ///        error on the connection.
 ///
 /// @note TNL allows you to call NetConnection::setLastError() on the EventConnection passed to
-///       your NetEvent. You can cause the connection to abort if invalid data is received, specifying
+///       the NetEvent. This will cause the connection to abort if invalid data is received, specifying
 ///       a reason to the user.
 ///
-/// Now, the 5 methods which we have above; the constructor and destructor need only do
-/// whatever book-keeping is needed for your specific implementation, in addition to calling
-/// the NetEvent constructor with the direction and type information the networking system
-/// needs to function. In our case, we just need to allocate/deallocate the space for our string,
-/// and specify the event as guaranteed ordered and bidirectional.
+/// Of the 5 methods declared above; the constructor and destructor need only do
+/// whatever book-keeping is needed for the specific implementation, in addition to calling
+/// the NetEvent constructor with the direction and type information that the networking system
+/// needs to function. In this case, the SimpleMessageEvent simply allocates/deallocates the space for the string,
+/// and specifies the event as guaranteed ordered and bidirectional.
 ///
 /// @code
 ///    SimpleMessageEvent::SimpleMessageEvent(const char *message = NULL)
@@ -140,7 +139,7 @@ class BitStream;
 ///    }
 /// @endcode
 ///
-/// Simple as that! Now, onto pack(), unpack(), process().
+/// The 3 other functions that must be overridden for evern NetEvent are pack(), unpack() and process().
 ///
 /// <b>pack()</b> is responsible for packing the event over the wire:
 ///
@@ -180,8 +179,7 @@ class BitStream;
 /// }
 /// @endcode
 ///
-/// The NetEvent is sent over the wire in a straightforward way (assuming you have a
-/// handle to an EventConnection):
+/// Posting an event to the remote host on a connection is simple:
 ///
 /// @code
 /// EventConnection *conn; // We assume you have filled this in.
@@ -191,7 +189,7 @@ class BitStream;
 ///
 /// Finally, for more advanced applications, notifyPosted() is called when the event is posted
 /// into the send queue, notifySent() is called whenever the event is
-/// sent over the wire, in NetConnection::eventWritePacket(). notifyDelivered() is called
+/// sent over the wire, in EventConnection::eventWritePacket(). notifyDelivered() is called
 /// when the packet is finally received or (in the case of Unguaranteed packets) dropped.
 ///
 /// @note the TNL_IMPLEMENT_NETEVENT groupMask specifies which "group" of EventConnections

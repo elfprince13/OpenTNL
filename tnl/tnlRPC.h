@@ -51,36 +51,38 @@ For example, suppose you have a connection class called SimpleEventConnection:
 class SimpleEventConnection : public EventConnection
 {
 public:
-   TNL_DECLARE_RPC(rpcPrintHelloWorld, ());
+   TNL_DECLARE_RPC(rpcPrintString, (StringPtr theString, U32 messageCount));
 };
 
-TNL_IMPLEMENT_RPC(SimpleEventConnection, rpcPrintHelloWorld, (),
+TNL_IMPLEMENT_RPC(SimpleEventConnection, rpcPrintString, 
+   (StringPtr theString, messageCount), (theString, messageCount),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {
-   printf("Hello, World!");
+   for(U32 i = 0; i < messageCount; i++)
+      printf("%s", theString.getString());
 }
  
  ...
 void somefunction(SimpleEventConnection *connection)
 {
-   connection->rpcPrintHelloWorld();
+   connection->rpcPrintString("Hello World!", 5);
 }
 @endcode
 
 In this example the class SimpleEventConnection is declared to have
-a single RPC method named rpcPrintHelloWorld.  The TNL_DECLARE_RPC macro
+a single RPC method named rpcPrintString.  The TNL_DECLARE_RPC macro
 can just be viewed as a different way of declaring a class's member functions,
 with the name as the first argument and the parenthesized parameter list
 as the second.  Since RPC calls execute on a remote host, they never have
-a return value - athough a second RPC could be declared to pass messages
+a return value - although a second RPC could be declared to pass messages
 in the other direction.
 
 The body of the RPC method is declared using the TNL_IMPLEMENT_RPC macro,
-which has some additional arguments, including which NetClassMask the RPC is valid
-in, what level of data guarantee it uses, the direction it is allowed to be called
-in the connection and a version number.  The body of the function, which
-in this case prints the message "Hello, World!" to stdout, is executed on
-the remote host from which the method was originally invoked.
+which has some additional arguments: the named parameter list without the types,
+which NetClassMask the RPC is valid in, what level of data guarantee it uses, 
+the direction it is allowed to be called on the connection and a version number.  
+The body of the function, which in this case prints the passed message "Hello, World!" 5 times
+to stdout, is executed on the remote host from which the method was originally invoked.
 
 As the somefunction code demonstrates, RPC's are invoked in the same way
 as any other member function in the class.
@@ -92,7 +94,10 @@ macro used for each method that will be redefined.  The TNL_IMPLEMENT_RPC_OVERRI
 macro should be used outside the declaration of the class to implement
 the body of the new RPC.
 
-RPC methods can take the following types as arguments:
+Internally the RPC macros construct new NetEvent classes and encapsulate the
+function call arguments using the FunctorDecl template classes.  By default
+the following types are allowed as parameters to RPC methods:
+
  - S8, U8
  - S16, U16
  - S32, U32
@@ -103,11 +108,15 @@ RPC methods can take the following types as arguments:
  - SignedFloat<>
  - RangedU32<>
  - bool
- - const char *
+ - StringPtr
  - StringTableEntry
- - ByteBufferRef
- - IPAddressRef
- - Vector<> of all the preceding types except ByteBufferRef and IPAddressRef
+ - ByteBufferPtr
+ - IPAddress
+ - Vector<> of all the preceding types
+
+New types can be supported by implementing a template override for the
+Types::read and Types::write functions.  All arguments to RPCs must be
+passed by value (ie no reference or pointer types).
 
 The Int, SignedInt, Float, SignedFloat and RangedU32 template types use the
 template parameter(s) to specify the number of bits necessary to transmit that

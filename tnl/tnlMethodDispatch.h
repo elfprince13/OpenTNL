@@ -54,29 +54,43 @@ namespace Types
       ByteBufferSizeBitSize = 10,
    };
 
+   /// Reads a string from a BitStream.
    extern void read(TNL::BitStream &s, TNL::StringPtr *val);
+   /// Rrites a string into a BitStream.
    extern void write(TNL::BitStream &s, TNL::StringPtr &val);
+   /// Reads a ByteBuffer from a BitStream.
    extern void read(TNL::BitStream &s, TNL::ByteBufferPtr *val);
+   /// Writes a ByteBuffer into a BitStream.
    extern void write(TNL::BitStream &s, TNL::ByteBufferPtr &val);
+   /// Reads an IP address from a BitStream.
    extern void read(TNL::BitStream &s, TNL::IPAddress *val);
+   /// Writes an IP address into a BitStream.
    extern void write(TNL::BitStream &s, TNL::IPAddress &val);
 
+   /// Reads a StringTableEntry from a BitStream.
    inline void read(TNL::BitStream &s, TNL::StringTableEntry *val)
    {
       s.readStringTableEntry(val);
    }
+   /// Writes a StringTableEntry into a BitStream.
    inline void write(TNL::BitStream &s, TNL::StringTableEntry &val)
    {
       s.writeStringTableEntry(val);
    }
+
+   /// Reads a generic object from a BitStream.  This can be used for any
+   /// type supported by BitStream::read.
    template <typename T> inline void read(TNL::BitStream &s, T *val)
    { 
       s.read(val);
    }
+   /// Writes a generic object into a BitStream.  This can be used for any
+   /// type supported by BitStream::write.
    template <typename T> inline void write(TNL::BitStream &s, T &val)
    { 
       s.write(val);
    }
+   /// Reads a Vector of objects from a BitStream.
    template <typename T> inline void read(TNL::BitStream &s, TNL::Vector<T> *val)
    {
       TNL::U32 size = s.readInt(VectorSizeBitSize);
@@ -84,67 +98,94 @@ namespace Types
       for(TNL::S32 i = 0; i < val->size(); i++)
          read(s, &((*val)[i]));
    }
+   /// Writes a Vector of objects into a BitStream.
    template <typename T> void write(TNL::BitStream &s, TNL::Vector<T> &val)
    {
       s.writeInt(val.size(), VectorSizeBitSize);
       for(TNL::S32 i = 0; i < val.size(); i++)
          write(s, val[i]);
    }
-
+   /// Reads a bit-compressed integer from a BitStream.
    template <TNL::U32 BitCount> inline void read(TNL::BitStream &s, TNL::Int<BitCount> *val)
    {
       val->value = s.readInt(BitCount);
    }
+   /// Writes a bit-compressed integer into a BitStream.
    template <TNL::U32 BitCount> inline void write(TNL::BitStream &s,TNL::Int<BitCount> &val)
    {
       s.writeInt(val.value, BitCount);
    }
 
+   /// Reads a bit-compressed signed integer from a BitStream.
    template <TNL::U32 BitCount> inline void read(TNL::BitStream &s, TNL::SignedInt<BitCount> *val)
    {
       val->value = s.readSignedInt(BitCount);
    }
+   /// Writes a bit-compressed signed integer into a BitStream.
    template <TNL::U32 BitCount> inline void write(TNL::BitStream &s,TNL::SignedInt<BitCount> &val)
    {
       s.writeSignedInt(val.value, BitCount);
    }
 
-   template <TNL::U32 T, TNL::U32 U> inline void read(TNL::BitStream &s, TNL::RangedU32<T,U> *val)
+   /// Reads a bit-compressed RangedU32 from a BitStream.
+   template <TNL::U32 MinValue, TNL::U32 MaxValue> inline void read(TNL::BitStream &s, TNL::RangedU32<MinValue,MaxValue> *val)
    {
-      val->value = s.readRangedU32(T, U);
-   }
-   template <TNL::U32 T, TNL::U32 U> inline void write(TNL::BitStream &s,TNL::RangedU32<T,U> &val)
-   {
-      s.writeRangedU32(val.value, T, U);
+      val->value = s.readRangedU32(MinValue, MaxValue);
    }
 
-   template <TNL::U32 T> inline void read(TNL::BitStream &s, TNL::Float<T> *val)
+   /// Writes a bit-compressed RangedU32 into a BitStream.
+   template <TNL::U32 MinValue, TNL::U32 MaxValue> inline void write(TNL::BitStream &s,TNL::RangedU32<MinValue,MaxValue> &val)
    {
-      val->value = s.readFloat(T);
+      s.writeRangedU32(val.value, MinValue, MaxValue);
    }
-   template <TNL::U32 T> inline void write(TNL::BitStream &s,TNL::Float<T> &val)
+
+   /// Reads a bit-compressed SignedFloat (-1 to 1) from a BitStream.
+   template <TNL::U32 BitCount> inline void read(TNL::BitStream &s, TNL::Float<BitCount> *val)
    {
-      s.writeFloat(val.value, T);
+      val->value = s.readFloat(BitCount);
    }
-   template <TNL::U32 T> inline void read(TNL::BitStream &s, TNL::SignedFloat<T> *val)
+   /// Writes a bit-compressed SignedFloat (-1 to 1) into a BitStream.
+   template <TNL::U32 BitCount> inline void write(TNL::BitStream &s,TNL::Float<BitCount> &val)
    {
-      val->value = s.readSignedFloat(T);
+      s.writeFloat(val.value, BitCount);
    }
-   template <TNL::U32 T> inline void write(TNL::BitStream &s,TNL::SignedFloat<T> &val)
+   /// Reads a bit-compressed Float (0 to 1) from a BitStream.
+   template <TNL::U32 BitCount> inline void read(TNL::BitStream &s, TNL::SignedFloat<BitCount> *val)
    {
-      s.writeSignedFloat(val.value, T);
+      val->value = s.readSignedFloat(BitCount);
+   }
+   /// Writes a bit-compressed Float (0 to 1) into a BitStream.
+   template <TNL::U32 BitCount> inline void write(TNL::BitStream &s,TNL::SignedFloat<BitCount> &val)
+   {
+      s.writeSignedFloat(val.value, BitCount);
    }
 };
 
 namespace TNL {
 
+/// Base class for FunctorDecl template classes.  The Functor objects
+/// store the parameters and member function pointer for the invocation
+/// of some class member function.  Functor is used in TNL by the
+/// RPC mechanism, the journaling system and the ThreadQueue to store
+/// a function for later transmission and dispatch, either to a remote
+/// host, a journal file, or another thread in the process.
 struct Functor {
+   /// Construct the Functor.
    Functor() {}
+   /// Destruct the Functor.
    virtual ~Functor() {}
+   /// Reads this Functor from a BitStream.
    virtual void read(BitStream &stream) = 0;
+   /// Writes this Functor to a BitStream.
    virtual void write(BitStream &stream) = 0;
+   /// Dispatch the function represented by the Functor.
    virtual void dispatch(void *t) = 0;
 };
+
+/// FunctorDecl template class.  This class is specialized based on the
+/// member function call signature of the method it represents.  Other
+/// specializations hold specific member function pointers and slots
+/// for each of the function arguments.
 template <class T> 
 struct FunctorDecl : public Functor {
    FunctorDecl() {}
