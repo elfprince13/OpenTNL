@@ -391,6 +391,29 @@ void EditorUserInterface::renderItem(S32 index)
          glLineWidth(3);
          renderPoly(i);
          glLineWidth(1);
+         Point first = convertLevelToCanvasCoord(i.verts[0]);
+         for(S32 j = 1; j < i.verts.size(); j++)
+         {
+            Point v = convertLevelToCanvasCoord(i.verts[j]);
+            F32 width = i.width * mCurrentScale / mGridSize;
+
+            Point dir = v - first;
+            if(dir.len() > 0)
+            {
+               dir.normalize();
+               Point crs(dir.y, -dir.x);
+               crs *= width * 0.5;
+
+               glBegin(GL_LINE_LOOP);
+               glColor3f(0.5, 0.5, 1);
+               glVertex(first + crs);
+               glVertex(first - crs);
+               glVertex(v - crs);
+               glVertex(v + crs);
+               glEnd();
+            }
+            first = v;
+         }
       }
       for(S32 j = 0; j < i.verts.size(); j++)
       {
