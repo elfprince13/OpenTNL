@@ -53,6 +53,7 @@ void EditorUserInterface::setEditName(const char *name)
    mUp = mDown = mLeft = mRight = mIn = mOut = false;
    mCreatingPoly = false;
    strcpy(mEditFileName, name);
+   mOriginalItems = mItems;
 }
 
 struct GameItemRec
@@ -428,6 +429,8 @@ S32 EditorUserInterface::countSelectedVerts()
 
 void EditorUserInterface::duplicateSelection()
 {
+   mOriginalItems = mItems;
+
    S32 itemCount = mItems.size();
    for(S32 i = 0; i < itemCount; i++)
    {
@@ -470,6 +473,8 @@ void EditorUserInterface::computeSelectionMinMax(Point &min, Point &max)
 
 void EditorUserInterface::flipSelectionHorizontal()
 {
+   mOriginalItems = mItems;
+
    Point min, max;
    computeSelectionMinMax(min, max);
    for(S32 i = 0; i < mItems.size(); i++)
@@ -484,6 +489,8 @@ void EditorUserInterface::flipSelectionHorizontal()
 
 void EditorUserInterface::flipSelectionVertical()
 {
+   mOriginalItems = mItems;
+
    Point min, max;
    computeSelectionMinMax(min, max);
    for(S32 i = 0; i < mItems.size(); i++)
@@ -569,6 +576,7 @@ void EditorUserInterface::onMouseDown(S32 x, S32 y)
    mMousePos = convertWindowToCanvasCoord(Point(x,y));
    if(mCreatingPoly)
    {
+      mOriginalItems = mItems;
       if(mNewItem.verts.size() > 1)
          mItems.push_back(mNewItem);
       mNewItem.verts.clear();
@@ -778,6 +786,13 @@ void EditorUserInterface::onKeyDown(U32 key)
       case 'f':
          flipSelectionHorizontal();
          break;
+      case 26:
+         {
+            Vector<WorldItem> temp = mItems;
+            mItems = mOriginalItems;
+            mOriginalItems = temp;
+            break;
+         }
       case 'v':
          flipSelectionVertical();
          break;
