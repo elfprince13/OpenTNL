@@ -171,7 +171,7 @@ U32 Item::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
       else
          retMask = MountMask;
    }
-   return MountMask;
+   return retMask;
 }
 
 void Item::unpackUpdate(GhostConnection *connection, BitStream *stream)

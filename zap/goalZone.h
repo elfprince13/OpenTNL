@@ -50,6 +50,9 @@ class GoalZone : public GameObject
 public:
    GoalZone();
    void render();
+
+   bool isFlashing() { return mFlashCount & 1; }
+   bool didRecentlyChangeTeam() { return mFlashCount != 0; }
    S32 getRenderSortValue();
    void processArguments(S32 argc, const char **argv);
 

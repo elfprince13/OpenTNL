@@ -136,6 +136,7 @@ public:
 
    virtual bool getCollisionPoly(Vector<Point> &polyPoints);
    virtual bool getCollisionCircle(U32 stateIndex, Point &point, float &radius);
+   Rect getBounds(U32 stateIndex);
 
    const Move &getCurrentMove() { return mCurrentMove; }
    const Move &getLastMove() { return mLastMove; }

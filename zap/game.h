@@ -199,6 +199,7 @@ class ClientGame : public Game
       NumStars = 256,
    };
    Point mStars[NumStars];
+   Rect mWorldBounds;
 
    SafePtr<GameConnection> mConnectionToServer; // If this is a client game, this is the connection to the server
    bool mInCommanderMap;
@@ -213,6 +214,7 @@ public:
    bool isConnectedToServer();
 
    F32 getCommanderZoomFraction() { return mCommanderZoomDelta / F32(CommanderMapZoomTime); }
+   Point worldToScreenPoint(Point p);
    void setConnectionToServer(GameConnection *connection);
    void drawStars(F32 alphaFrac, Point cameraPos, Point visibleExtent);
    GameConnection *getConnectionToServer();
@@ -233,7 +235,7 @@ extern void hostGame(bool dedicated, Address bindAddress);
 extern void joinGame(Address remoteAddress, bool isFromMaster, bool local = false);
 extern void endGame();
 
-#define ZAP_GAME_STRING "ZAP 1.4.3"
+#define ZAP_GAME_STRING "ZAP 1.4.4"
 };
 
 #endif

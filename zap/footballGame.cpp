@@ -39,13 +39,17 @@ class ZoneControlGameType : public GameType
    typedef GameType Parent;
 
    Vector<GoalZone*> mZones;
+   SafePtr<FlagItem> mFlag;
 public:
    void shipTouchFlag(Ship *theShip, FlagItem *theFlag);
    void flagDropped(Ship *theShip, FlagItem *theFlag);
    void addZone(GoalZone *z);
+   void addFlag(FlagItem *theFlag) { mFlag = theFlag; }
    void shipTouchZone(Ship *s, GoalZone *z);
    const char *getGameTypeString() { return "Zone Control"; }
    const char *getInstructionString() { return "Carry the flag into each of the capture zones!"; }
+   void renderInterfaceOverlay(bool scoreboardVisible);
+   void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);
 
    TNL_DECLARE_CLASS(ZoneControlGameType);
 };
@@ -142,5 +146,68 @@ void ZoneControlGameType::shipTouchZone(Ship *s, GoalZone *z)
       }
    }
 }
+
+void ZoneControlGameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection)
+{
+   Parent::performProxyScopeQuery(scopeObject, connection);
+   S32 uTeam = scopeObject->getTeam();
+   if(mFlag.isValid())
+   {
+      if(mFlag->isAtHome())
+         connection->objectInScope(mFlag);
+      else
+      {
+         Ship *mount = mFlag->getMount();
+         if(mount && mount->getTeam() == uTeam)
+         {
+            connection->objectInScope(mount);
+            connection->objectInScope(mFlag);
+         }
+      }
+   }
+}
+
+void ZoneControlGameType::renderInterfaceOverlay(bool scoreboardVisible)
+{
+   Ship *u = (Ship *) gClientGame->getConnectionToServer()->getControlObject();
+   if(u)
+   {
+      if(mFlag.isValid() && mFlag->getMount() == u)
+      {
+         // the ship has the flag, so render zones not controlled by his team
+         for(S32 i = 0; i < mZones.size(); i++)
+            if(mZones[i]->getTeam() != u->getTeam())
+               renderObjectiveArrow(mZones[i], getTeamColor(mZones[i]->getTeam()));
+      }
+      else
+      {
+         if(mFlag.isValid())
+         {
+            if(!mFlag->isMounted())
+               renderObjectiveArrow(mFlag, getTeamColor(mFlag->getTeam()));
+            else
+            {
+               Ship *mount = mFlag->getMount();
+               if(mount)
+                  renderObjectiveArrow(mount, getTeamColor(mount->getTeam()));
+            }
+         }
+         for(S32 i = 0; i < mZones.size(); i++)
+         {
+            if(mZones[i]->didRecentlyChangeTeam())
+            {
+               Color c = getTeamColor(mZones[i]->getTeam());
+               if(mZones[i]->isFlashing())
+                  c *= 0.8;
+               renderObjectiveArrow(mZones[i], c);
+
+            }
+         }
+      }
+   }
+
+   Parent::renderInterfaceOverlay(scoreboardVisible);
+}
+
 
 };

@@ -177,7 +177,7 @@ static bool updateMoveInternal( Move *theMove, U32 &buttonMask )
          ControllerButtonLeftTrigger,
          ControllerButtonRightTrigger,
          0,
-         ControllerButton1,
+         0,
          ControllerButtonBack,
          0,
       };
@@ -200,7 +200,7 @@ static bool updateMoveInternal( Move *theMove, U32 &buttonMask )
          ControllerButtonRightTrigger,
          ControllerButtonBack,
          0,
-         ControllerButton1,
+         0,
          ControllerButtonStart,
       };
       U32 retMask = 0;
@@ -221,7 +221,7 @@ static bool updateMoveInternal( Move *theMove, U32 &buttonMask )
          ControllerButtonStart,
          ControllerButtonBack,
          0,
-         ControllerButton1,
+         0,
          ControllerButtonLeftTrigger,
          ControllerButtonRightTrigger,
       };

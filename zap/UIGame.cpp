@@ -131,8 +131,7 @@ void GameUserInterface::render()
       drawCenteredString(370, 20, "Press <ESC> to abort");
    }
 
-   if(gClientGame)
-      gClientGame->render();
+   gClientGame->render();
 
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();

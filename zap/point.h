@@ -53,6 +53,8 @@ struct Point
    Point operator*(const member_type f) { return Point (x * f, y * f); }
    Point &operator*=(const member_type f) { x *= f; y *= f; return *this; }
 
+   Point operator*(const Point &pt) { return Point(x * pt.x, y * pt.y); }
+
    Point &operator=(const Point &pt) { x = pt.x; y = pt.y; return *this; }
    bool operator==(const Point &pt) { return x == pt.x && y == pt.y; }
 

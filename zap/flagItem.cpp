@@ -43,8 +43,7 @@ FlagItem::FlagItem(Point pos) : Item(pos, false, 20)
 
 void FlagItem::onAddedToGame(Game *theGame)
 {
-   if(!isGhost())
-      theGame->getGameType()->addFlag(this);
+   theGame->getGameType()->addFlag(this);
 }
 
 

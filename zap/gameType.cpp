@@ -219,6 +219,75 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
    renderTalkingClients();
 }
 
+void GameType::renderObjectiveArrow(GameObject *target, Color c)
+{
+   GameConnection *gc = gClientGame->getConnectionToServer();
+   GameObject *co = NULL;
+   if(gc)
+      co = gc->getControlObject();
+   if(!co)
+      return;
+   Rect r = target->getBounds(MoveObject::RenderState);
+   Point nearestPoint = co->getRenderPos();
+
+   if(r.max.x < nearestPoint.x)
+      nearestPoint.x = r.max.x;
+   if(r.min.x > nearestPoint.x)
+      nearestPoint.x = r.min.x;
+   if(r.max.y < nearestPoint.y)
+      nearestPoint.y = r.max.y;
+   if(r.min.y > nearestPoint.y)
+      nearestPoint.y = r.min.y;
+
+   Point rp = gClientGame->worldToScreenPoint(nearestPoint);
+
+   Point center(400, 300);
+   Point arrowDir = rp - center;
+   if(rp.x > UserInterface::horizMargin && 
+      rp.x < UserInterface::canvasWidth - UserInterface::horizMargin && 
+      rp.y > UserInterface::vertMargin && 
+      rp.y < UserInterface::canvasHeight - UserInterface::vertMargin)
+      return;
+
+   Point np = rp;
+   if(rp.x < UserInterface::horizMargin)
+      rp.x = UserInterface::horizMargin;
+   if(rp.x > UserInterface::canvasWidth - UserInterface::horizMargin)
+      rp.x = UserInterface::canvasWidth - UserInterface::horizMargin;
+   if(rp.y < UserInterface::vertMargin)
+      rp.y = UserInterface::vertMargin;
+   if(rp.y > UserInterface::canvasHeight - UserInterface::vertMargin)
+      rp.y = UserInterface::canvasHeight - UserInterface::vertMargin;
+
+   F32 dist = (np - rp).len();
+
+   arrowDir.normalize();
+   Point crossVec(arrowDir.y, -arrowDir.x);
+   F32 alpha = (1 - gClientGame->getCommanderZoomFraction()) * 0.8;
+   if(!alpha)
+      return;
+
+   if(dist < 50)
+      alpha *= dist * 0.02;
+
+   glEnable(GL_BLEND);
+   glColor(c * 0.7, alpha);
+   Point p2 = rp - arrowDir * 20 + crossVec * 10;
+   Point p3 = rp - arrowDir * 20 - crossVec * 10;
+   glBegin(GL_POLYGON);
+   glVertex(rp);
+   glVertex(p2);
+   glVertex(p3);
+   glEnd();
+   glColor(c, alpha);
+   glBegin(GL_LINE_LOOP);
+   glVertex(rp);
+   glVertex(p2);
+   glVertex(p3);
+   glEnd();
+   glDisable(GL_BLEND);
+}
+
 void GameType::renderTimeLeft()
 {
    glColor3f(1,1,1);

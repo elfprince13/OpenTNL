@@ -43,8 +43,7 @@ GoalZone::GoalZone()
 
 void GoalZone::render()
 {
-   bool isFlashing = mFlashCount & 1;
-   renderGoalZone(mPolyBounds, getGame()->getGameType()->getTeamColor(getTeam()), isFlashing);
+   renderGoalZone(mPolyBounds, getGame()->getGameType()->getTeamColor(getTeam()), isFlashing());
 }
 
 S32 GoalZone::getRenderSortValue()
@@ -77,10 +76,8 @@ void GoalZone::setTeam(S32 team)
 void GoalZone::onAddedToGame(Game *theGame)
 {
    if(!isGhost())
-   {
       setScopeAlways(); 
-      theGame->getGameType()->addZone(this);
-   }
+   theGame->getGameType()->addZone(this);
 }
 
 void GoalZone::computeExtent()

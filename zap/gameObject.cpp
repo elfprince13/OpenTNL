@@ -279,6 +279,27 @@ bool GameObject::getCollisionCircle(U32 stateIndex, Point &point, float &radius)
    return false;
 }
 
+Rect GameObject::getBounds(U32 stateIndex)
+{
+   Rect ret;
+   Point p;
+   float radius;
+   Vector<Point> bounds;
+
+   if(getCollisionCircle(stateIndex, p, radius))
+   {
+      ret.max = p + Point(radius, radius);
+      ret.min = p - Point(radius, radius);
+   }
+   else if(getCollisionPoly(bounds))
+   {
+      ret.min = ret.max = bounds[0];
+      for(S32 i = 1; i < bounds.size(); i++)
+         ret.unionPoint(bounds[i]);
+   }
+   return ret;
+}
+
 void GameObject::render()
 {
 }

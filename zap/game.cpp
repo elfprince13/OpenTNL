@@ -550,6 +550,46 @@ Point ClientGame::computePlayerVisArea(Ship *player)
       return sensVis + (regVis - sensVis) * fraction;
 }
 
+Point ClientGame::worldToScreenPoint(Point p)
+{
+   GameObject *controlObject = mConnectionToServer->getControlObject();
+   Ship *u = (Ship *) controlObject;
+   Point position = u->getRenderPos();
+
+   if(mCommanderZoomDelta)
+   {
+      F32 zoomFrac = getCommanderZoomFraction();
+      Point worldCenter = mWorldBounds.getCenter();
+      Point worldExtents = mWorldBounds.getExtents();
+      worldExtents.x *= UserInterface::canvasWidth / F32(UserInterface::canvasWidth - (UserInterface::horizMargin * 2));
+      worldExtents.y *= UserInterface::canvasHeight / F32(UserInterface::canvasHeight - (UserInterface::vertMargin * 2));
+
+      F32 aspectRatio = worldExtents.x / worldExtents.y;
+      F32 screenAspectRatio = UserInterface::canvasWidth / F32(UserInterface::canvasHeight);
+      if(aspectRatio > screenAspectRatio)
+         worldExtents.y *= aspectRatio / screenAspectRatio;
+      else
+         worldExtents.x *= screenAspectRatio / aspectRatio;
+
+      Point offset = (worldCenter - position) * zoomFrac + position;
+      Point visSize = computePlayerVisArea(u) * 2;
+      Point modVisSize = (worldExtents - visSize) * zoomFrac + visSize;
+
+      Point visScale(UserInterface::canvasWidth / modVisSize.x,
+         UserInterface::canvasHeight / modVisSize.y );
+
+      Point ret = (p - offset) * visScale + Point(400, 300);
+      return ret;
+   }
+   else
+   {
+      Point visExt = computePlayerVisArea((Ship *) u);
+      Point scaleFactor(400 / visExt.x, 300 / visExt.y);
+      Point ret = (p - position) * scaleFactor + Point(400, 300);
+      return ret;
+   }
+}
+
 void ClientGame::renderCommander()
 {
    GameObject *controlObject = mConnectionToServer->getControlObject();
@@ -560,6 +600,7 @@ void ClientGame::renderCommander()
    F32 zoomFrac = getCommanderZoomFraction();
    // Set up the view to show the whole level.
    Rect worldBounds = computeWorldObjectExtents();
+   mWorldBounds = worldBounds;
 
    Point worldCenter = worldBounds.getCenter();
    Point worldExtents = worldBounds.getExtents();

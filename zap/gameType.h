@@ -143,6 +143,8 @@ public:
    virtual void changeClientTeam(GameConnection *theClient);
 
    virtual void renderInterfaceOverlay(bool scoreboardVisible);
+   void renderObjectiveArrow(GameObject *target, Color c);
+
    void renderTimeLeft();
    void renderTalkingClients();
    virtual void clientRequestLoadout(GameConnection *client, const Vector<U32> &loadout);
