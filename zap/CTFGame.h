@@ -53,17 +53,8 @@ public:
    void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
    bool objectCanDamageObject(GameObject *damager, GameObject *victim);
    void gameOverManGameOver();
+   void flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex);
 
-   enum {
-      CTFMsgReturnFlag,
-      CTFMsgCaptureFlag,
-      CTFMsgTakeFlag,
-      CTFMsgDropFlag,
-      CTFMsgGameOverTeamWin,
-      CTFMsgGameOverTie,
-   };
-
-   TNL_DECLARE_RPC(s2cCTFMessage, (U32 messageIndex, StringTableEntryRef clientName, U32 teamIndex));
    TNL_DECLARE_CLASS(CTFGameType);
 };
 

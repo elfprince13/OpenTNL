@@ -114,7 +114,7 @@ static void displayMessage(U32 colorIndex, U32 sfxEnum, const char *message)
       Color(0,0,1),
       Color(0,1,1),
       Color(1,1,0),
-      Color(0.2f, 1, 1),
+      Color(0.6f, 1, 0.8f),
    };
    gGameUserInterface.displayMessage(colors[colorIndex], "%s", message);
    if(sfxEnum != SFXNone)
