@@ -17,7 +17,7 @@ OBJECTS_CLIENT=\
 	testGame.o\
 	client.o
 
-OBJECTS_WXGUI=\
+OBJECTS_TNLTEST=\
 	testGame.o\
 	testWindow.o \
 	testGameRender.o \
@@ -32,9 +32,8 @@ default: $(OBJECTS_SERVER) $(OBJECTS_CLIENT)
 	$(CC) -o server $(OBJECTS_SERVER) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lstdc++ -lm
 	$(CC) -o client $(OBJECTS_CLIENT) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lstdc++ -lm
 
-wxgui: CFLAGS += `wx-config --cxxflags`
-wxgui: $(OBJECTS_WXGUI)
-	@echo Building WX gui...
-	$(CC) -o wxgui $(OBJECTS_WXGUI) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a `wx-config --libs --gl-libs ` -lGL
+tnltest: $(OBJECTS_TNLTEST)
+	@echo Building TNLTest gui...
+	$(CC) -o tnltest $(OBJECTS_TNLTEST) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lGL -lGLU -lglut -lm
 clean:
-	rm -f $(OBJECTS_SERVER) $(OBJECTS_CLIENT) $(OBJECTS_WXGUI) server client wxgui
+	rm -f $(OBJECTS_SERVER) $(OBJECTS_CLIENT) $(OBJECTS_TNLTEST) server client tnltest

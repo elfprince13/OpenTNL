@@ -6,6 +6,7 @@
 
 #include "testGame.h"
 #include <stdio.h>
+#include <string.h>
 
 class DedicatedServerLogConsumer : public LogConsumer
 {
@@ -22,7 +23,7 @@ int main(int argc, const char **argv)
 
    S32 port = 28999;
    if(argc == 2)
-      port = TNL::atoi(argv[1]);
+      port = atoi(argv[1]);
    TestGame* theGame = new TestGame(false, Address(IPProtocol, Address::Any, port),Address(localBroadcastAddress));
    for(;;)
       theGame->tick();
