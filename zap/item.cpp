@@ -175,7 +175,6 @@ void Item::unpackUpdate(GhostConnection *connection, BitStream *stream)
    {
       ((GameConnection *) connection)->readCompressedPoint(mMoveState[ActualState].pos, stream);
       readCompressedVelocity(mMoveState[ActualState].vel, 511, stream);
-      //posSegments.push_back(mMoveState[ActualState].pos);
       positionChanged = true;
       interpolate = !stream->readFlag();
    }

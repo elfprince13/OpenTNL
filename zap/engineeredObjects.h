@@ -128,7 +128,10 @@ public:
 class Turret : public EngineeredObject
 {
    typedef EngineeredObject Parent;
+   Timer mFireTimer;
+   F32 mCurrentAngle;
 
+public:
    enum {
       TurretAimOffset = 15,
       TurretRange = 600,
@@ -139,9 +142,6 @@ class Turret : public EngineeredObject
 
       AimMask = EngineeredObject::NextFreeMask,
    };
-
-   Timer mFireTimer;
-   F32 mCurrentAngle;
 
 public:
    Turret(S32 team = -1, Point anchorPoint = Point(), Point anchorNormal = Point(1, 0));

@@ -40,6 +40,8 @@ class FlagItem;
 class GameType : public GameObject
 {
 public:
+   virtual const char *getGameTypeString() { return "Zapmatch"; }
+   virtual const char *getInstructionString() { return "Zap as many ships as you can!"; }
    enum
    {
       RespawnDelay = 1500,
@@ -81,10 +83,14 @@ public:
       Team() { numPlayers = 0; score = 0; }
    };
    Vector<Team> mTeams;
-   U32 mThisClientName; ///< Set to the client name of this client (only on the ghost of the GameType)
+
+   StringTableEntry mLevelName;
+   StringTableEntry mLevelDescription;
+
    Timer mScoreboardUpdateTimer;
    Timer mGameTimer;
    Timer mGameTimeUpdateTimer;
+   Timer mLevelInfoDisplayTimer;
    S32 mTeamScoreLimit;
    bool mGameOver; // set to true when an end condition is met
 
@@ -92,6 +98,7 @@ public:
       MaxPing = 999,
       DefaultGameTime = 20 * 60 * 1000,
       DefaultTeamScoreLimit = 8,
+      LevelInfoDisplayTime = 6000,
    };
 
    static Vector<RangedU32<0, MaxPing> > mPingTimes; ///< Static vector used for constructing update RPCs
@@ -141,7 +148,6 @@ public:
    virtual void updateShipLoadout(GameObject *shipObject); // called from LoadoutZone when a Ship touches the zone
 
    virtual void clientRequestEngineerBuild(GameConnection *client, U32 buildObject);
-
    void setClientShipLoadout(S32 clientIndex, const Vector<U32> &loadout);
 
    Color getTeamColor(S32 team);
@@ -151,6 +157,8 @@ public:
 
    void performScopeQuery(GhostConnection *connection);
    virtual void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);
+
+   TNL_DECLARE_RPC(s2cSetLevelInfo, (StringTableEntryRef levelName, StringTableEntryRef levelDesc));
 
    TNL_DECLARE_RPC(s2cSyncMessagesComplete, (U32 sequence));
    TNL_DECLARE_RPC(c2sSyncMessagesComplete, (U32 sequence));

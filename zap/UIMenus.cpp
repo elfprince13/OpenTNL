@@ -237,7 +237,6 @@ void OptionsMenuUserInterface::render()
       gGameUserInterface.render();
       glColor4f(0, 0, 0, 0.5);
       glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glBegin(GL_POLYGON);
       glVertex2f(0, 0);
       glVertex2f(canvasWidth, 0);
@@ -245,7 +244,6 @@ void OptionsMenuUserInterface::render()
       glVertex2f(0, canvasHeight);
       glEnd();  
       glDisable(GL_BLEND); 
-      glBlendFunc(GL_ONE, GL_ZERO);
    }
    Parent::render();
 }
@@ -352,7 +350,6 @@ void GameMenuUserInterface::render()
    gGameUserInterface.render();
    glColor4f(0, 0, 0, 0.5);
    glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    glBegin(GL_POLYGON);
    glVertex2f(0, 0);
    glVertex2f(canvasWidth, 0);
@@ -360,7 +357,6 @@ void GameMenuUserInterface::render()
    glVertex2f(0, canvasHeight);
    glEnd();  
    glDisable(GL_BLEND); 
-   glBlendFunc(GL_ONE, GL_ZERO);
    Parent::render();
 }
 

@@ -1,4 +1,4 @@
-ZAP 1.3
+ ZAP 1.3
 
 Introduction
 ------------
@@ -199,6 +199,8 @@ V - flip current selection vertically
 T - construct a Teleporter at the mouse point
 G - construct a Spawn point at the mouse point
 B - construct a RepairItem at the mouse point
+Y - construct a Turret at the mouse point
+H - construct a Force Field projector at the mouse point
 
 CTRL-D - duplicate current selection
 CTRL-Z - undo last operation

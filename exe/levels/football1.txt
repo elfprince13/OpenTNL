@@ -1,4 +1,5 @@
 FootballGameType 10 40
+LevelName "Diamond"
 Team Blue 0 0 1
 Team Red 1 0 0
 GridSize 300

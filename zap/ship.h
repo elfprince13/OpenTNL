@@ -107,13 +107,12 @@ public:
 
    U32 mSparkElapsed;
    S32 mLastTrailPoint[TrailCount];
-   fxTrail mTrail[TrailCount];
+   FXTrail mTrail[TrailCount];
 
    Color color; // color of the ship
    F32 mass; // mass of ship
    bool hasExploded;
 
-   Vector<Point> posSegments;
    Vector<SafePtr<Item> > mMountedItems;
    Vector<SafePtr<GameObject> > mRepairTargets;
 

@@ -31,6 +31,7 @@
 #include "gameType.h"
 #include "gameWeapons.h"
 #include "sfx.h"
+#include "gameObjectRender.h"
 
 namespace Zap
 {
@@ -258,9 +259,9 @@ void EngineeredObject::explode()
    c = Random::readF() * 0.15 + 0.125;
    d = Random::readF() * 0.2 + 0.9;
 
-   SparkManager::emitExplosion(getActualPos(), 0.65, ShipExplosionColors, NumShipExplosionColors);
-   SparkManager::emitBurst(getActualPos(), Point(a,c) * 0.6, Color(1,1,0.25), Color(1,0,0));
-   SparkManager::emitBurst(getActualPos(), Point(b,d) * 0.6, Color(1,1,0), Color(0,1,1));
+   FXManager::emitExplosion(getActualPos(), 0.65, ShipExplosionColors, NumShipExplosionColors);
+   FXManager::emitBurst(getActualPos(), Point(a,c) * 0.6, Color(1,1,0.25), Color(1,0,0));
+   FXManager::emitBurst(getActualPos(), Point(b,d) * 0.6, Color(1,1,0), Color(0,1,1));
 
    disableCollision();
 }
@@ -464,8 +465,16 @@ void ForceField::idle(GameObject::IdleCallPath path)
    {
       if(mDownTimer.update(mCurrentMove.time))
       {
-         mFieldUp = true;
-         setMaskBits(StatusMask);
+         // do an LOS test to see if anything is in the field:
+         F32 t;
+         Point n;
+         if(!findObjectLOS(ShipType | ItemType, 0, mStart, mEnd, t, n))
+         {
+            mFieldUp = true;
+            setMaskBits(StatusMask);
+         }
+         else
+            mDownTimer.reset(10);
       }
    }
 }
@@ -568,12 +577,6 @@ void Turret::onAddedToGame(Game *theGame)
    mCurrentAngle = atan2(mAnchorNormal.y, mAnchorNormal.x);
 }
 
-
-inline void glVertex(Point p)
-{
-   glVertex2f(p.x, p.y);
-}
-
 void Turret::render()
 {
    Color c, lightColor;
@@ -583,59 +586,7 @@ void Turret::render()
    else
       c = Color(1,1,1);
 
-   glColor3f(c.r, c.g, c.b);
-
-   Point cross(mAnchorNormal.y, -mAnchorNormal.x);
-   Point aimCenter = mAnchorPoint + mAnchorNormal * TurretAimOffset;
-
-
-   glBegin(GL_LINE_STRIP);
-
-   for(S32 x = -10; x <= 10; x++)
-   {
-      F32 theta = x * FloatHalfPi * 0.1;
-      Point pos = mAnchorNormal * cos(theta) + cross * sin(theta);
-      glVertex(aimCenter + pos * 15);
-   }
-   glEnd();
-
-   glLineWidth(3);
-   glBegin(GL_LINES);
-   Point aimDelta(cos(mCurrentAngle), sin(mCurrentAngle));
-   glVertex(aimCenter + aimDelta * 15);
-   glVertex(aimCenter + aimDelta * 30);
-   glEnd();
-   glLineWidth(1);
-
-   if(isEnabled())
-      glColor3f(1,1,1);
-   else
-      glColor3f(0.6, 0.6, 0.6);
-   glBegin(GL_LINE_LOOP);
-   glVertex(mAnchorPoint + cross * 18);
-   glVertex(mAnchorPoint + cross * 18 + mAnchorNormal * TurretAimOffset);
-   glVertex(mAnchorPoint - cross * 18 + mAnchorNormal * TurretAimOffset);
-   glVertex(mAnchorPoint - cross * 18);
-   glEnd();
-
-   glColor3f(c.r, c.g, c.b);
-   U32 health = U32(28 * mHealth);
-   glBegin(GL_LINES);
-   for(S32 i = 0; i < health; i += 2)
-   {
-      Point lsegStart = mAnchorPoint - cross * (14 - i) + mAnchorNormal * 5;
-      Point lsegEnd = lsegStart + mAnchorNormal * (TurretAimOffset - 10);
-      glVertex(lsegStart);
-      glVertex(lsegEnd);
-   }
-   Point lsegStart = mAnchorPoint - cross * 14 + mAnchorNormal * 3;
-   Point lsegEnd = mAnchorPoint + cross * 14 + mAnchorNormal * 3;
-   Point n = mAnchorNormal * (TurretAimOffset - 6);
-   glVertex(lsegStart);
-   glVertex(lsegEnd);
-   glVertex(lsegStart + n);
-   glVertex(lsegEnd + n);
-   glEnd();
+   renderTurret(c, mAnchorPoint, mAnchorNormal, isEnabled(), mHealth, mCurrentAngle, TurretAimOffset);
 }
 
 U32 Turret::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)

@@ -45,6 +45,8 @@ public:
    void flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex);
    void addZone(FootballZone *z);
    void shipTouchZone(Ship *s, FootballZone *z);
+   const char *getGameTypeString() { return "Football"; }
+   const char *getInstructionString() { return "Carry the flag into each of the capture zones!"; }
 
    TNL_DECLARE_CLASS(FootballGameType);
 };

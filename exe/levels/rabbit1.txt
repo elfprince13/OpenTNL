@@ -1,4 +1,6 @@
 RabbitGameType 100 8
+LevelName "Elmer's Revenge"
+
 Team Orange 1 0.5 0
 RabbitFlagItem 10 30 4.7 4.7
 GridSize 300

@@ -39,6 +39,8 @@
 #include "gameConnection.h"
 #include "shipItems.h"
 #include "gameWeapons.h"
+#include "gameObjectRender.h"
+
 #include <stdio.h>
 
 namespace Zap
@@ -888,9 +890,9 @@ void Ship::emitShipExplosion(Point pos)
    c = Random::readF() * 0.15 + 0.125;
    d = Random::readF() * 0.2 + 0.9;
 
-   SparkManager::emitExplosion(mMoveState[ActualState].pos, 0.9, ShipExplosionColors, NumShipExplosionColors);
-   SparkManager::emitBurst(pos, Point(a,c), Color(1,1,0.25), Color(1,0,0));
-   SparkManager::emitBurst(pos, Point(b,d), Color(1,1,0), Color(0,0.75,0));
+   FXManager::emitExplosion(mMoveState[ActualState].pos, 0.9, ShipExplosionColors, NumShipExplosionColors);
+   FXManager::emitBurst(pos, Point(a,c), Color(1,1,0.25), Color(1,0,0));
+   FXManager::emitBurst(pos, Point(b,d), Color(1,1,0), Color(0,0.75,0));
 }
 
 void Ship::emitMovementSparks()
@@ -1028,7 +1030,7 @@ void Ship::emitMovementSparks()
                 F32 t = TNL::Random::readF();
                 thrust.interp(t, dim, light);
   
-                SparkManager::emitSpark(
+                FXManager::emitSpark(
                                         mMoveState[RenderState].pos - shipDirs[i] * 13,
                                         -shipDirs[i] * 100 + chaos,
                                         thrust,
@@ -1046,21 +1048,6 @@ void Ship::render()
    if(hasExploded)
       return;
 
-   if(posSegments.size())
-   {
-      glBegin(GL_LINES);
-      glColor3f(0,1,1);
-      for(S32 i = 0; i < posSegments.size() - 1; i++)
-      {
-         glVertex2f(posSegments[i].x, posSegments[i].y);
-         glVertex2f(posSegments[i+1].x, posSegments[i+1].y);
-      }
-      glEnd();
-   }
-
-   glPushMatrix();
-   glTranslatef(mMoveState[RenderState].pos.x, mMoveState[RenderState].pos.y, 0);
-
    F32 alpha = 1.0;
    if(isCloakActive())
       alpha = 1 - mCloakTimer.getFraction();
@@ -1076,12 +1063,10 @@ void Ship::render()
 
       // Make it a nice pastel
       glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glColor4f(1,1,1,0.5 * alpha);
       //glColor3f(color.r*1.2,color.g*1.2,color.b*1.2);
       UserInterface::drawString( U32( UserInterface::getStringWidth(14, buff) * -0.5), 30, 14, buff );
       glDisable(GL_BLEND);
-      glBlendFunc(GL_ONE, GL_ZERO);
    }
    else
    {
@@ -1089,12 +1074,6 @@ void Ship::render()
          alpha = 0.25;
    }
    
-   if(alpha != 1.0)
-   {
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-   }
-
    // draw thrusters
    Point velDir(mCurrentMove.right - mCurrentMove.left, mCurrentMove.down - mCurrentMove.up);
    F32 len = velDir.len();
@@ -1130,172 +1109,14 @@ void Ship::render()
       for(U32 i = 0; i < 4; i++)
          thrusts[i] *= 1.3;
    }
-
-   // first render the thrusters
-
    // an angle of 0 means the ship is heading down the +X axis
    // since we draw the ship pointing up the Y axis, we should rotate
    // by the ship's angle, - 90 degrees
+   glPushMatrix();
+   glTranslatef(mMoveState[RenderState].pos.x, mMoveState[RenderState].pos.y, 0);
    glRotatef(radiansToDegrees(mMoveState[RenderState].angle) - 90, 0, 0, 1.0);
-   
-   if(isCloakActive())
-   {
-      glColor4f(0,0,0, 1 - alpha);
-      glBegin(GL_POLYGON);
-      glVertex2f(-20, -15);
-      glVertex2f(0, 25);
-      glVertex2f(20, -15);
-      glEnd();
-   }
-
-   if(thrusts[0] > 0) // forward thrust:
-   {
-      glColor4f(1, 0, 0, alpha);
-      glBegin(GL_LINES);
-      glVertex2f(-8, -15);
-      glVertex2f(0, -15 - 20 * thrusts[0]);
-      glVertex2f(0, -15 - 20 * thrusts[0]);
-      glVertex2f(8, -15);
-      glEnd();
-      glColor4f(1, 0.5, 0, alpha);
-      glBegin(GL_LINES);
-      glVertex2f(-6, -15);
-      glVertex2f(0, -15 - 15 * thrusts[0]);
-      glVertex2f(0, -15 - 15 * thrusts[0]);
-      glVertex2f(6, -15);
-      glEnd();
-      glColor4f(1, 1, 0, alpha);
-      glBegin(GL_LINES);
-      glVertex2f(-4, -15);
-      glVertex2f(0, -15 - 8 * thrusts[0]);
-      glVertex2f(0, -15 - 8 * thrusts[0]);
-      glVertex2f(4, -15);
-      glEnd();
-   }
-   if(thrusts[1] > 0) // back thrust
-   {
-      // two jets:
-      // left and right side:
-      // from 7.5, 10 -> 12.5, 10 and from -7.5, 10 to -12.5, 10
-      glColor4f(1, 0.5, 0, alpha);
-      glBegin(GL_LINES);
-      glVertex2f(7.5, 10);
-      glVertex2f(10, 10 + thrusts[1] * 15);
-      glVertex2f(12.5, 10);
-      glVertex2f(10, 10 + thrusts[1] * 15);
-      glVertex2f(-7.5, 10);
-      glVertex2f(-10, 10 + thrusts[1] * 15);
-      glVertex2f(-12.5, 10);
-      glVertex2f(-10, 10 + thrusts[1] * 15);
-      glEnd();
-      glColor4f(1,1,0, alpha);
-      glBegin(GL_LINES);
-      glVertex2f(9, 10);
-      glVertex2f(10, 10 + thrusts[1] * 10);
-      glVertex2f(11, 10);
-      glVertex2f(10, 10 + thrusts[1] * 10);
-      glVertex2f(-9, 10);
-      glVertex2f(-10, 10 + thrusts[1] * 10);
-      glVertex2f(-11, 10);
-      glVertex2f(-10, 10 + thrusts[1] * 10);
-      glEnd();
-
-   }
-   float xThrust = -12.5;
-   if(thrusts[3] > 0)
-   {
-      xThrust = -xThrust;
-      thrusts[2] = thrusts[3];
-   }
-   if(thrusts[2] > 0)
-   {
-      glColor4f(1, 0, 0, alpha);
-      glBegin(GL_LINES);
-      glVertex2f(xThrust, 10);
-      glVertex2f(xThrust + thrusts[2] * xThrust * 1.5, 5);
-      glVertex2f(xThrust, 0);
-      glVertex2f(xThrust + thrusts[2] * xThrust * 1.5, 5);
-      glEnd();
-      glColor4f(1,0.5,0, alpha);
-      glBegin(GL_LINES);
-      glVertex2f(xThrust, 8);
-      glVertex2f(xThrust + thrusts[2] * xThrust, 5);
-      glVertex2f(xThrust, 2);
-      glVertex2f(xThrust + thrusts[2] * xThrust, 5);
-      glEnd();
-      glColor4f(1,1,0, alpha);
-      glBegin(GL_LINES);
-      glVertex2f(xThrust, 6);
-      glVertex2f(xThrust + thrusts[2] * xThrust * 0.5, 5);
-      glVertex2f(xThrust, 4);
-      glVertex2f(xThrust + thrusts[2] * xThrust * 0.5, 5);
-      glEnd();
-   }
-
-   // then render the ship:
-   glColor4f(0.5,0.5,0.5, alpha);
-   glBegin(GL_LINES);
-   glVertex2f(-12.5, 0);
-   glVertex2f(-12.5, 10);
-   glVertex2f(-12.5, 10);
-   glVertex2f(-7.5, 10);
-   glVertex2f(7.5, 10);
-   glVertex2f(12.5, 10);
-   glVertex2f(12.5, 10);
-   glVertex2f(12.5, 0);
-   glEnd();
-   
-   glColor4f(color.r,color.g,color.b, alpha);
-   glBegin(GL_LINE_LOOP);
-   glVertex2f(-12, -13);
-   glVertex2f(0, 22);
-   glVertex2f(12, -13);
-   glEnd();
-
-   U32 health = U32(14 * mHealth);
-   glBegin(GL_LINES);
-   for(U32 i = 0; i < health; i++)
-   {
-      S32 yo = i * 2;
-      glVertex2f(-2, -11 + yo);
-      glVertex2f(2, -11 + yo);
-   }
-   glEnd();
-
-   glColor4f(1,1,1, alpha);
-   glBegin(GL_LINE_LOOP);
-   glVertex2f(-20, -15);
-   glVertex2f(0, 25);
-   glVertex2f(20, -15);
-   glEnd();
-
-   // Render shield if appropriate
-   if(isShieldActive())
-   {
-      F32 shieldRadius = mRadius + 3;
-
-      glColor4f(1,1,0, alpha);
-      glBegin(GL_LINE_LOOP);
-      for(F32 theta = 0; theta <= 2 * 3.1415; theta += 0.3)
-         glVertex2f(cos(theta) * shieldRadius, sin(theta) * shieldRadius);
-      
-      glEnd();
-   }
-
-   if(hasExploded)
-   {
-      glDisable(GL_BLEND);
-      glBlendFunc(GL_ONE, GL_ZERO);
-   }
-
-
+   renderShip(color, alpha, thrusts, mHealth, mRadius, isCloakActive(), isShieldActive());
    glPopMatrix();
-
-   if(alpha != 1.0)
-   {
-      glDisable(GL_BLEND);
-      glBlendFunc(GL_ONE, GL_ZERO);
-   }
 
    for(S32 i = 0; i < mMountedItems.size(); i++)
       if(mMountedItems[i].isValid())

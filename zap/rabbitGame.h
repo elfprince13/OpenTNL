@@ -96,6 +96,8 @@ public:
    void onFlagReturned();
 
    void onClientScore(Ship *ship, S32 howMuch);
+   const char *getGameTypeString() { return "Rabbit"; }
+   const char *getInstructionString() { return "Grab the flag and hold it for as long as you can!"; }
 
    TNL_DECLARE_RPC(s2cRabbitMessage, (U32 msgIndex, StringTableEntryRef clientName));
    TNL_DECLARE_CLASS(RabbitGameType);

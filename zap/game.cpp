@@ -421,7 +421,7 @@ void ClientGame::idle(U32 timeDelta)
          SFXObject::setListenerParams(controlObject->getRenderPos(),controlObject->getRenderVel());   
    }
    processDeleteList(timeDelta);
-   SparkManager::tick((F32)timeDelta * 0.001f);
+   FXManager::tick((F32)timeDelta * 0.001f);
    SFXObject::process();
 
    mNetInterface->processConnections();
@@ -629,8 +629,8 @@ void ClientGame::renderNormal()
    for(S32 i = 0; i < renderObjects.size(); i++)
       renderObjects[i]->render(1);
 
-   SparkManager::render();
-   fxTrail::renderTrails();
+   FXManager::render();
+   FXTrail::renderTrails();
 
    glPopMatrix();
 

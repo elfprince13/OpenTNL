@@ -32,6 +32,7 @@ using namespace TNL;
 #include "sparkManager.h"
 #include "gameLoader.h"
 #include "sfx.h"
+#include "gameObjectRender.h"
 
 namespace Zap
 {
@@ -44,12 +45,13 @@ Teleporter::Teleporter(Point start, Point end)
    pos = start;
    dest = end;
    timeout = 0;
-   spinFactor = 0.f;
 
    Rect r(pos, pos);
    r.expand(Point(TeleporterRadius, TeleporterRadius));
    setExtent(r);
    mObjectTypeMask |= CommandMapVisType;
+
+   mTime = 0;
 }
 
 void Teleporter::onAddedToGame(Game *theGame)
@@ -106,14 +108,7 @@ void Teleporter::unpackUpdate(GhostConnection *connection, BitStream *stream)
    }
    if(stream->readFlag() && isGhost())
    {
-      for(F32 th = 0; th < 360.0f; th+= Random::readF() * 3.f)
-      {
-         Point off(cos(th), sin(th));
-
-         SparkManager::emitSpark(pos,               off * Random::readF() *  50.f, Color(0,1,0), 5);
-         SparkManager::emitSpark(dest + off * 100,  off * Random::readF() * -50.f, Color(0,1,0), 5);
-
-      }
+      FXManager::emitTeleportInEffect(dest);
       SFXObject::play(SFXTeleportIn, dest, Point());
       SFXObject::play(SFXTeleportOut, pos, Point());
       timeout = TeleporterDelay;
@@ -125,6 +120,7 @@ static Vector<GameObject *> fillVector2;
 void Teleporter::idle(GameObject::IdleCallPath path)
 {
    U32 deltaT = mCurrentMove.time;
+   mTime += deltaT;
    // Deal with our timeout...
    if(timeout > deltaT)
    { 
@@ -133,11 +129,6 @@ void Teleporter::idle(GameObject::IdleCallPath path)
    }
    else
       timeout = 0;
-
-   // Update our spin...
-   spinFactor += 10 * F32(deltaT)/1000.f;
-   while(spinFactor > 720.f)
-      spinFactor -= 720.f;
 
    if(path != GameObject::ServerIdleMainLoop)
       return;
@@ -172,16 +163,8 @@ void Teleporter::idle(GameObject::IdleCallPath path)
       Ship *s = (Ship*)fillVector2[i];
       if((pos - s->getActualPos()).len() < TeleporterRadius)
       {
-         Point center = s->getActualPos() - pos + dest;
-         F32 r = TNL::Random::readF();
-         F32 theta = TNL::Random::readF() * 2 * 3.145926535;
-         Point offset(cos(theta), sin(theta));
-         // square root will give a uniform distribution, but
-         // do a cube root in order to push the offset towards
-         // the extents of the disk a bit more
-         // (http://mathworld.wolfram.com/DiskPointPicking.html)
-         offset *= pow(r, 1.0f / 3) * TeleporterRadius;
-         s->setActualPos(center + offset);
+         Point newPos = s->getActualPos() - pos + dest;
+         s->setActualPos(newPos);
       }
    }
 }
@@ -202,48 +185,12 @@ void Teleporter::render()
 {
    glPushMatrix();
    glTranslatef(pos.x, pos.y, 0);
-   glRotatef(spinFactor, 0, 0, 1);
-
-   glColor3f(0.5, 1, 0.5);
-
-   F32 r = F32(TeleporterDelay - timeout) / F32(TeleporterDelay);
-
-   // Draw spirals (line segs) with three points
-   //    - point 1 a little ways out from center
-   //    - point 2 at trigger radius, rotated from 1
-   //    - point 3 at teleport radius, rotated from 2
-
-   // We'll do 7 arms...
-   for(U32 i=0; i<7; i++)
-   {
-      const F32 step = (2.f*3.14f/7.f);
-      const F32 th = F32(i) * step;
-      
-      Point in2 ( 5*r,                        th );
-      Point mid2( TeleporterTriggerRadius*r,  th + 0.8 * step);
-      Point out2( TeleporterRadius*r,         th + step);
-
-      Point in  = polarToRect(in2);
-      Point mid = polarToRect(mid2);
-      Point out = polarToRect(out2);
-
-      glBegin(GL_LINE_STRIP);
-         glColor3f(0, 0, 1);
-         glVertex2f( in.x, in.y );
-
-         glColor3f(0, 1, 1);
-         glVertex2f( mid.x, mid.y );
-
-         glColor3f(0.9, 0.9, 0.9);
-         glVertex2f( out.x, out.y );
-      glEnd();
-   }
-
-   glVertex2f(-r,  r);
-   glVertex2f(-r, -r);
-   glVertex2f( r, -r);
-   glVertex2f( r,  r);
-
+   F32 r;
+   if(timeout > TeleporterExpandTime)
+      r = (timeout - TeleporterExpandTime) / F32(TeleporterDelay - TeleporterExpandTime);
+   else
+      r = F32(TeleporterExpandTime - timeout) / F32(TeleporterExpandTime);
+   renderTeleporter(mTime, r, TeleporterRadius, 1.0);
    glPopMatrix();
 }
 

@@ -66,6 +66,7 @@ public:
    static void drawString(S32 x, S32 y, S32 size, const char *string);
    static void drawCenteredString(S32 y, S32 size, const char *string);
    static void drawStringf(S32 x, S32 y, S32 size, const char *fmt, ...);
+   static void drawCenteredStringf(S32 y, S32 size, const char *fmt, ...);
    static U32 getStringWidth(S32 size, const char *string, U32 len = 0);
    static void playBoop();
 };

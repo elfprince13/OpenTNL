@@ -1,4 +1,5 @@
 SoccerGameType 10 8
+LevelName "Hat Trick"
 
 GridSize 280
 

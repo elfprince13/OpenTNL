@@ -207,7 +207,6 @@ void GameUserInterface::renderReticle()
       Point offsetMouse = mMousePoint + Point(canvasWidth / 2, canvasHeight / 2);
 
       glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glColor4f(0,1,0, 0.7);
       glBegin(GL_LINES);
 
@@ -247,7 +246,6 @@ void GameUserInterface::renderReticle()
 
       glEnd();
       glDisable(GL_BLEND);
-      glBlendFunc(GL_ONE, GL_ZERO);
    }
 }
 

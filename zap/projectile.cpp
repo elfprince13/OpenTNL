@@ -241,7 +241,7 @@ void Projectile::explode(GameObject *hitObject, Point thePos)
    // Do some particle spew...
    if(isGhost())
    {
-      SparkManager::emitExplosion(thePos, 0.3, gProjInfo[mType].sparkColors, NumSparkColors);
+      FXManager::emitExplosion(thePos, 0.3, gProjInfo[mType].sparkColors, NumSparkColors);
 
       Ship *s = dynamic_cast<Ship*>(hitObject);
       if(s && s->isShieldActive())
@@ -543,7 +543,7 @@ void GrenadeProjectile::explode(Point pos)
       // Make us go boom!
       Color b(1,1,1);
 
-      SparkManager::emitExplosion(getRenderPos(), 0.5, gProjInfo[Projectile::Phaser].sparkColors, NumSparkColors);
+      FXManager::emitExplosion(getRenderPos(), 0.5, gProjInfo[Projectile::Phaser].sparkColors, NumSparkColors);
       SFXObject::play(SFXMineExplode, getActualPos(), Point());
    }
 

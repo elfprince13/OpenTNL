@@ -58,6 +58,7 @@ void GameType::processArguments(S32 argc, const char **argv)
 void GameType::idle(GameObject::IdleCallPath path)
 {
    U32 deltaT = mCurrentMove.time;
+   mLevelInfoDisplayTimer.update(deltaT);
    if(isGhost())
    {
       mGameTimer.update(deltaT);
@@ -100,6 +101,19 @@ void GameType::idle(GameObject::IdleCallPath path)
 
 void GameType::renderInterfaceOverlay(bool scoreboardVisible)
 {
+   if(mLevelInfoDisplayTimer.getCurrent() != 0)
+   {
+      F32 alpha = 1;
+      if(mLevelInfoDisplayTimer.getCurrent() < 1000)
+         alpha = mLevelInfoDisplayTimer.getCurrent() * 0.001f;
+
+      glEnable(GL_BLEND);
+      glColor4f(1,1,1, alpha);
+      UserInterface::drawCenteredStringf(50, 30, "%s: %s", getGameTypeString(), mLevelName.getString());
+      UserInterface::drawCenteredString(90, 20, getInstructionString());
+      UserInterface::drawCenteredString(530, 20, mLevelDescription.getString());
+      glDisable(GL_BLEND);
+   }
    if((mGameOver || scoreboardVisible) && mTeams.size() > 0)
    {
       U32 totalWidth = 780;
@@ -134,7 +148,6 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
 
          Color c = mTeams[i].color;
          glEnable(GL_BLEND);
-         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
          glColor4f(c.r, c.g, c.b, 0.6);
          glBegin(GL_POLYGON);
@@ -145,7 +158,6 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
          glEnd();
 
          glDisable(GL_BLEND);
-         glBlendFunc(GL_ONE, GL_ZERO);
 
          glColor3f(1,1,1);
          if(teamAreaHeight)
@@ -343,6 +355,10 @@ bool GameType::processLevelItem(S32 argc, const char **argv)
          constructBarriers(getGame(), barrier);
       }
    }
+   else if(!stricmp(argv[0], "LevelName") && argc > 1)
+      mLevelName.set(argv[1]);
+   else if(!stricmp(argv[0], "LevelDescription") && argc > 1)
+      mLevelDescription.set(argv[1]);
    else
       return false;
    return true;
@@ -606,6 +622,13 @@ void GameType::setTeamScore(S32 teamIndex, S32 newScore)
       gameOverManGameOver();
 }
 
+GAMETYPE_RPC_S2C(GameType, s2cSetLevelInfo, (StringTableEntryRef levelName, StringTableEntryRef levelDesc))
+{
+   mLevelName = levelName;
+   mLevelDescription = levelDesc;
+   mLevelInfoDisplayTimer.reset(LevelInfoDisplayTime);
+}
+
 GAMETYPE_RPC_S2C(GameType, s2cSetTimeRemaining, (U32 timeLeft))
 {
    mGameTimer.reset(timeLeft);
@@ -643,9 +666,6 @@ GAMETYPE_RPC_S2C(GameType, s2cAddClient, (StringTableEntryRef name, bool isMyCli
    cref.voiceSFX = new SFXObject(SFXVoice, NULL, 1, Point(), Point());
 
    mClientList.push_back(cref);
-
-   if(isMyClient)
-      mThisClientName = name;
    gGameUserInterface.displayMessage(Color(0.6f, 0.6f, 0.8f), "%s joined the game.", name.getString());
 }
 
@@ -695,6 +715,8 @@ GAMETYPE_RPC_S2C(GameType, s2cClientJoinedTeam, (StringTableEntryRef name, U32 t
 void GameType::onGhostAvailable(GhostConnection *theConnection)
 {
    NetObject::setRPCDestConnection(theConnection);
+
+   s2cSetLevelInfo(mLevelName, mLevelDescription);
 
    for(S32 i = 0; i < mTeams.size(); i++)
    {

@@ -24,8 +24,8 @@
 //
 //------------------------------------------------------------------------------------
 
-#ifndef _SPARKMANAGER_H_
-#define _SPARKMANAGER_H_
+#ifndef _FXMANAGER_H_
+#define _FXMANAGER_H_
 
 #include "point.h"
 #include "gameObject.h"
@@ -33,16 +33,17 @@
 namespace Zap
 {
 
-namespace SparkManager
+namespace FXManager
 {
    void emitSpark(Point pos, Point vel, Color color, F32 ttl=0);
    void emitExplosion(Point pos, F32 size, Color *colorArray, U32 numColors);
    void emitBurst(Point pos, Point scale, Color color1, Color color2);
+   void emitTeleportInEffect(Point pos);
    void tick( F32 dT);
    void render();
 };
 
-class fxTrail
+class FXTrail
 {
 private:
    struct TrailNode
@@ -58,17 +59,17 @@ private:
    U32 mDropFreq;
    S32 mLength;
 
-   fxTrail *mNext;
+   FXTrail *mNext;
 
    
-   static fxTrail *mHead;
+   static FXTrail *mHead;
    void registerTrail();
    void unregisterTrail();
 
 
 public:
-   fxTrail(U32 dropFrequency = 32, U32 len = 15);
-   ~fxTrail();
+   FXTrail(U32 dropFrequency = 32, U32 len = 15);
+   ~FXTrail();
 
    /// Update the point this trail is attached to.
    void update(Point pos, bool boosted = false, bool invisible = false);

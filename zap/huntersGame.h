@@ -59,6 +59,8 @@ public:
    
    void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
    void spawnShip(GameConnection *theClient);
+   const char *getGameTypeString() { return "Hunters"; }
+   const char *getInstructionString() { return "Collect flags from opposing players and bring them to the Nexus!"; }
    
    enum {
       HuntersMsgScore,

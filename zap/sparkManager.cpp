@@ -26,12 +26,15 @@
 
 #include "sparkManager.h"
 #include "glutInclude.h"
+#include "teleporter.h"
+#include "gameObjectRender.h"
+
 using namespace TNL;
 
 namespace Zap
 {
 
-namespace SparkManager
+namespace FXManager
 {
 
 struct Spark
@@ -78,6 +81,23 @@ void emitSpark(Point pos, Point vel, Color color, F32 ttl)
       s->ttl = ttl;
 }
 
+struct TeleporterEffect
+{
+   Point pos;
+   U32 time;
+   TeleporterEffect *nextEffect;
+};
+
+TeleporterEffect *teleporterEffects = NULL;
+
+void emitTeleportInEffect(Point pos)
+{
+   TeleporterEffect *e = new TeleporterEffect;
+   e->pos = pos;
+   e->time = 0;
+   e->nextEffect = teleporterEffects;
+   teleporterEffects = e;
+}
 
 void tick( F32 dT )
 {
@@ -100,13 +120,24 @@ void tick( F32 dT )
          i++;
       }
    }
+   for(TeleporterEffect **walk = &teleporterEffects; *walk; )
+   {
+      TeleporterEffect *temp = *walk;
+      temp->time += dT * 1000;
+      if(temp->time > Teleporter::TeleportInExpandTime)
+      {
+         *walk = temp->nextEffect;
+         delete temp;
+      }
+      else
+         walk = &(temp->nextEffect);
+   }
 }
 
-void SparkManager::render()
+void render()
 {
    glPointSize( 2.0f );
    glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    
    glEnableClientState(GL_COLOR_ARRAY);
    glEnableClientState(GL_VERTEX_ARRAY);
@@ -120,7 +151,17 @@ void SparkManager::render()
    glDisableClientState(GL_VERTEX_ARRAY);
 
    glDisable(GL_BLEND);
-   glBlendFunc(GL_ONE, GL_ZERO);
+   for(TeleporterEffect *walk = teleporterEffects; walk; walk = walk->nextEffect)
+   {
+      F32 radius = walk->time / F32(Teleporter::TeleportInExpandTime);
+      F32 alpha = 1.0;
+      if(radius > 0.5)
+         alpha = (1 - radius) / 0.5;
+      glPushMatrix();
+      glTranslatef(walk->pos.x, walk->pos.y, 0);
+      renderTeleporter(walk->time, radius, Teleporter::TeleportInRadius, alpha);
+      glPopMatrix();
+   }
 }
 
 void emitExplosion(Point pos, F32 size, Color *colorArray, U32 numColors)
@@ -164,19 +205,19 @@ void emitBurst(Point pos, Point scale, Color color1, Color color2)
 
 //-----------------------------------------------------------------------------
 
-fxTrail::fxTrail(U32 dropFrequency, U32 len)
+FXTrail::FXTrail(U32 dropFrequency, U32 len)
 {
    mDropFreq = dropFrequency;
    mLength   = len;
    registerTrail();
 }
 
-fxTrail::~fxTrail()
+FXTrail::~FXTrail()
 {
    unregisterTrail();
 }
 
-void fxTrail::update(Point pos, bool boosted, bool invisible)
+void FXTrail::update(Point pos, bool boosted, bool invisible)
 {
    if(mNodes.size() < mLength)
    {
@@ -198,7 +239,7 @@ void fxTrail::update(Point pos, bool boosted, bool invisible)
    }
 }
 
-void fxTrail::tick(U32 dT)
+void FXTrail::tick(U32 dT)
 {
    if(mNodes.size() == 0)
       return;
@@ -208,7 +249,7 @@ void fxTrail::tick(U32 dT)
       mNodes.pop_back();
 }
 
-void fxTrail::render()
+void FXTrail::render()
 {
    glBegin(GL_LINE_STRIP);
 
@@ -229,12 +270,12 @@ void fxTrail::render()
    glEnd();
 }
 
-void fxTrail::reset()
+void FXTrail::reset()
 {
    mNodes.clear();
 }
 
-Point fxTrail::getLastPos()
+Point FXTrail::getLastPos()
 {
    if(mNodes.size())
    {
@@ -244,19 +285,19 @@ Point fxTrail::getLastPos()
       return Point(0,0);
 }
 
-fxTrail * fxTrail::mHead = NULL;
+FXTrail * FXTrail::mHead = NULL;
 
-void fxTrail::registerTrail()
+void FXTrail::registerTrail()
 {
-  fxTrail *n = mHead;
+  FXTrail *n = mHead;
   mHead = this;
   mNext = n;
 }
 
-void fxTrail::unregisterTrail()
+void FXTrail::unregisterTrail()
 {
    // Find ourselves in the list (lame O(n) solution)
-   fxTrail *w = mHead, *p = NULL;
+   FXTrail *w = mHead, *p = NULL;
    while(w)
    {
       if(w == this)
@@ -275,12 +316,11 @@ void fxTrail::unregisterTrail()
    }
 }
 
-void fxTrail::renderTrails()
+void FXTrail::renderTrails()
 {
    glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-   fxTrail *w = mHead;
+   FXTrail *w = mHead;
    while(w)
    {
       w->render();
@@ -288,7 +328,6 @@ void fxTrail::renderTrails()
    }
 
    glDisable(GL_BLEND);
-   glBlendFunc(GL_ONE, GL_ZERO);
 }
 
 };

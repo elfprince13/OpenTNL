@@ -24,39 +24,22 @@
 //
 //------------------------------------------------------------------------------------
 
-#ifndef _CTFGAME_H_
-#define _CTFGAME_H_
+#ifndef _GAMEOBJECTRENDER_H_
+#define _GAMEOBJECTRENDER_H_
 
-#include "gameType.h"
-#include "item.h"
+#include "point.h"
+#include "tnl.h"
+using namespace TNL;
 
 namespace Zap
 {
 
-class Ship;
-class FlagItem;
+extern void renderShip(Color c, F32 alpha, F32 thrusts[], F32 health, F32 radius, bool cloakActive, bool shieldActive);
+extern void renderTeleporter(U32 time, F32 radiusFraction, F32 radius, F32 alpha);
+extern void renderTurret(Color c, Point anchor, Point normal, bool enabled, F32 health, F32 barrelAngle, F32 aimOffset);
 
-class CTFGameType : public GameType
-{
-   typedef GameType Parent;
-   enum Scores
-   {
-      KillScore    = 1,
-      ReturnScore  = 1,
-      CapScore     = 5,
-      CapTeamScore = 2,
-
-   };
-public:
-   void shipTouchFlag(Ship *theShip, FlagItem *theFlag);
-   void flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex);
-   const char *getGameTypeString() { return "Capture the Flag"; }
-   const char *getInstructionString() { return "Take the opposing team's flag and touch it to your flag!"; }
-   TNL_DECLARE_CLASS(CTFGameType);
-};
+extern void glVertex(Point p);
 
 };
-
 
 #endif
-

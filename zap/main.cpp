@@ -686,6 +686,7 @@ int main(int argc, char **argv)
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
       glTranslatef(400, 300, 0);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
       atexit(onExit);
 

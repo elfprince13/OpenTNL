@@ -1,4 +1,6 @@
 CTFGameType 10 8
+LevelName "Crossover"
+
 Team Blue 0 0 1
 Team Red 1 0 0
 GridSize 300

@@ -3,6 +3,8 @@
 GridSize 128
 
 GameType 0.33
+LevelName Intermission
+LevelDescription "Hint: Use the bouncy balls for defensive relief!"
 
 Team Blue 0 0 1
 

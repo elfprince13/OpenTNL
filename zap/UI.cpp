@@ -88,7 +88,6 @@ U32 UserInterface::getStringWidth(S32 size, const char *string, U32 len)
 
 }
 
-
 void UserInterface::drawStringf(S32 x, S32 y, S32 size, const char *format, ...)
 {
    va_list args;
@@ -97,6 +96,16 @@ void UserInterface::drawStringf(S32 x, S32 y, S32 size, const char *format, ...)
 
    dVsprintf(buffer, sizeof(buffer), format, args);
    drawString(x, y, size, buffer);
+}
+
+void UserInterface::drawCenteredStringf(S32 y, S32 size, const char *format, ...)
+{
+   va_list args;
+   va_start(args, format);
+   char buffer[2048];
+
+   dVsprintf(buffer, sizeof(buffer), format, args);
+   drawCenteredString(y, size, buffer);
 }
 
 void UserInterface::playBoop()

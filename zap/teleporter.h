@@ -39,8 +39,7 @@ public:
    Point dest;
    bool doSplash;
    U32 timeout;
-
-   F32 spinFactor;
+   U32 mTime;
 
    enum {
       InitMask     = BIT(0),
@@ -49,6 +48,9 @@ public:
       TeleporterRadius        = 75,
       TeleporterTriggerRadius = 50,
       TeleporterDelay = 1500,
+      TeleporterExpandTime = 1350,
+      TeleportInExpandTime = 750,
+      TeleportInRadius = 120,
    };
 
    Teleporter(Point center = Point(), Point exit = Point());

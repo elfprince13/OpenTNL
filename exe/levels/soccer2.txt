@@ -1,4 +1,5 @@
 SoccerGameType 10 8
+LevelName "Got Milk?'s Gambit"
 Team Blue 0 0 1
 Team Red 1 0 0
 GridSize 280
@@ -39,8 +40,8 @@ LoadoutZone 0 11.4 8.5 11.4 7.5 11.8 7.5 11.8 8.5
 LoadoutZone 0 13.2 8.5 13.2 7.5 13.6 7.5 13.6 8.5
 Teleporter 11 8 4.3 9.7
 Teleporter 14 8 7.7 9.7
-BarrierMaker 5 6 5 6.5 4.5 7 4 7
-BarrierMaker 5 10 5 9.5 4.5 9 4 9
+BarrierMaker 5.2 6.5 5 6.5 4.5 7 4 7
+BarrierMaker 5.2 9.5 5 9.5 4.5 9 4 9
 BarrierMaker 7 10 7 9.5 7.5 9 8 9
 BarrierMaker 7 6 7 6.5 7.5 7 8 7
 Turret 0 5.2 15

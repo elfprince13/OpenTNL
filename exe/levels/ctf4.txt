@@ -1,4 +1,7 @@
 CTFGameType 10 8
+LevelName "Crunchy Caverns"
+LevelDescription "Hint: Make sure to keep your flag out of enemy hands."
+
 Team Blue 0 0 1
 Team Red 1 0 0
 GridSize 300
