@@ -211,6 +211,7 @@ void PickupItem::idle(GameObject::IdleCallPath path)
 U32 PickupItem::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
    U32 retMask = Parent::packUpdate(connection, updateMask, stream);
+   stream->writeFlag(updateMask & InitialMask);
    stream->writeFlag(mIsVisible);
 
    return retMask;
@@ -219,9 +220,10 @@ U32 PickupItem::packUpdate(GhostConnection *connection, U32 updateMask, BitStrea
 void PickupItem::unpackUpdate(GhostConnection *connection, BitStream *stream)
 {
    Parent::unpackUpdate(connection, stream);
+   bool isInitial = stream->readFlag();
    bool visible = stream->readFlag();
 
-   if(!visible && mIsVisible)
+   if(!isInitial && !visible && mIsVisible)
       onClientPickup();
    mIsVisible = visible;
 }
