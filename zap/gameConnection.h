@@ -220,6 +220,8 @@ public:
 
    void onConnectTimedOut();
 
+   bool isDataToTransmit() { return true; }
+
    TNL_DECLARE_NETCONNECTION(GameConnection);
    TNL_DECLARE_RPC(c2sRequestCommanderMap, ());
    TNL_DECLARE_RPC(c2sReleaseCommanderMap, ());
