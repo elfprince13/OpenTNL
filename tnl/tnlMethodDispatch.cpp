@@ -246,15 +246,43 @@ void MethodArgList::marshall(MarshalledCall *theEvent)
          switch(argList[i].argType)
          {
             case TypeS8:
+#ifdef TNL_BIG_ENDIAN
+            if(!argList[i].isVector)
+            {
+               bstream.write(((S8 *) intArg)[3]);
+            }
+            else            
+#endif
                bstream.write(*((S8 *) intArg));
                break;
             case TypeU8:
+#ifdef TNL_BIG_ENDIAN
+            if(!argList[i].isVector)
+            {
+               bstream.write(((U8 *) intArg)[3]);
+            }
+            else            
+#endif
                bstream.write(*((U8 *) intArg));
                break;
             case TypeS16:
+#ifdef TNL_BIG_ENDIAN
+            if(!argList[i].isVector)
+            {
+               bstream.write(((S16 *) intArg)[1]);
+            }
+            else            
+#endif
                bstream.write(*((S16 *) intArg));
                break;
             case TypeU16:
+#ifdef TNL_BIG_ENDIAN
+            if(!argList[i].isVector)
+            {
+               bstream.write(((U16 *) intArg)[1]);
+            }
+            else            
+#endif
                bstream.write(*((U16 *) intArg));
                break;
             case TypeS32:
@@ -411,15 +439,43 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
          switch(argList[i].argType)
          {
             case TypeS8:
+#ifdef TNL_BIG_ENDIAN
+            if(!argList[i].isVector)
+            {
+               bstream->read(((S8 *) intArg) + 3);
+            }
+            else            
+#endif
                bstream->read((S8 *) arg);
                break;
             case TypeU8:
+#ifdef TNL_BIG_ENDIAN
+            if(!argList[i].isVector)
+            {
+               bstream->read(((U8 *) intArg) + 3);
+            }
+            else            
+#endif
                bstream->read((U8 *) arg);
                break;
             case TypeS16:
+#ifdef TNL_BIG_ENDIAN
+            if(!argList[i].isVector)
+            {
+               bstream->read(((S16 *) intArg) + 1);
+            }
+            else            
+#endif
                bstream->read((S16 *) arg);
                break;
             case TypeU16:
+#ifdef TNL_BIG_ENDIAN
+            if(!argList[i].isVector)
+            {
+               bstream->read(((U16 *) intArg) + 1);
+            }
+            else            
+#endif
                bstream->read((S16 *) arg);
                break;
             case TypeS32:
