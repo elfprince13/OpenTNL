@@ -136,33 +136,40 @@ void tick( F32 dT )
    }
 }
 
-void render()
+void render(U32 renderPass)
 {
-   glPointSize( 2.0f );
-   glEnable(GL_BLEND);
-   
-   glEnableClientState(GL_COLOR_ARRAY);
-   glEnableClientState(GL_VERTEX_ARRAY);
-
-   glVertexPointer(2, GL_FLOAT, sizeof(Spark), &gSparks[0].pos);
-   glColorPointer(4, GL_FLOAT , sizeof(Spark), &gSparks[0].color);
-   
-   glDrawArrays(GL_POINTS, 0, firstFreeIndex);
-
-   glDisableClientState(GL_COLOR_ARRAY);
-   glDisableClientState(GL_VERTEX_ARRAY);
-
-   glDisable(GL_BLEND);
-   for(TeleporterEffect *walk = teleporterEffects; walk; walk = walk->nextEffect)
+   // the teleporter effects should render under the ships and such
+   if(renderPass == 0)
    {
-      F32 radius = walk->time / F32(Teleporter::TeleportInExpandTime);
-      F32 alpha = 1.0;
-      if(radius > 0.5)
-         alpha = (1 - radius) / 0.5;
-      glPushMatrix();
-      glTranslatef(walk->pos.x, walk->pos.y, 0);
-      renderTeleporter(walk->type, Teleporter::TeleportInExpandTime - walk->time, radius, Teleporter::TeleportInRadius, alpha);
-      glPopMatrix();
+      for(TeleporterEffect *walk = teleporterEffects; walk; walk = walk->nextEffect)
+      {
+         F32 radius = walk->time / F32(Teleporter::TeleportInExpandTime);
+         F32 alpha = 1.0;
+         if(radius > 0.5)
+            alpha = (1 - radius) / 0.5;
+         glPushMatrix();
+         glTranslatef(walk->pos.x, walk->pos.y, 0);
+         renderTeleporter(walk->type, false, Teleporter::TeleportInExpandTime - walk->time, radius, Teleporter::TeleportInRadius, alpha);
+         glPopMatrix();
+      }
+   }
+   else if(renderPass == 1)
+   {
+      glPointSize( 2.0f );
+      glEnable(GL_BLEND);
+      
+      glEnableClientState(GL_COLOR_ARRAY);
+      glEnableClientState(GL_VERTEX_ARRAY);
+
+      glVertexPointer(2, GL_FLOAT, sizeof(Spark), &gSparks[0].pos);
+      glColorPointer(4, GL_FLOAT , sizeof(Spark), &gSparks[0].color);
+      
+      glDrawArrays(GL_POINTS, 0, firstFreeIndex);
+
+      glDisableClientState(GL_COLOR_ARRAY);
+      glDisableClientState(GL_VERTEX_ARRAY);
+
+      glDisable(GL_BLEND);
    }
 }
 

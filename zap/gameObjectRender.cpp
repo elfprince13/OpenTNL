@@ -217,7 +217,7 @@ void renderShip(Color c, F32 alpha, F32 thrusts[], F32 health, F32 radius, bool 
       glDisable(GL_BLEND);
 }
 
-void renderTeleporter(U32 type, S32 time, F32 radiusFraction, F32 radius, F32 alpha)
+void renderTeleporter(U32 type, bool in, S32 time, F32 radiusFraction, F32 radius, F32 alpha)
 {
    enum {
       NumColors = 6,
@@ -273,6 +273,8 @@ void renderTeleporter(U32 type, S32 time, F32 radiusFraction, F32 radius, F32 al
    glEnable(GL_BLEND);
    glBegin(GL_LINES);
    F32 arcTime = 0.5 + (1 - radiusFraction) * 0.5;
+   if(!in)
+      arcTime = -arcTime;
 
    Color tpColors[NumColors];
    Color white(1,1,1);
@@ -298,6 +300,8 @@ void renderTeleporter(U32 type, S32 time, F32 radiusFraction, F32 radius, F32 al
 
       theta -= arcTime * t.thetaP;
       d += arcTime / t.dP;
+      if(d < 0)
+         d = 0;
       Point end(cos(theta), sin(theta));
       F32 endRadius = radiusFraction * radius * d;
       end *= endRadius;

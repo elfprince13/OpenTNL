@@ -190,7 +190,7 @@ void Teleporter::render()
       r = (timeout - TeleporterExpandTime) / F32(TeleporterDelay - TeleporterExpandTime);
    else
       r = F32(TeleporterExpandTime - timeout) / F32(TeleporterExpandTime);
-   renderTeleporter(0, mTime, r, TeleporterRadius, 1.0);
+   renderTeleporter(0, true, mTime, r, TeleporterRadius, 1.0);
    glPopMatrix();
 }
 

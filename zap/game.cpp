@@ -628,10 +628,11 @@ void ClientGame::renderNormal()
 
    for(S32 i = 0; i < renderObjects.size(); i++)
       renderObjects[i]->render(0);
+   FXManager::render(0);
    for(S32 i = 0; i < renderObjects.size(); i++)
       renderObjects[i]->render(1);
+   FXManager::render(1);
 
-   FXManager::render();
    FXTrail::renderTrails();
 
    glPopMatrix();

@@ -40,7 +40,7 @@ namespace FXManager
    void emitBurst(Point pos, Point scale, Color color1, Color color2);
    void emitTeleportInEffect(Point pos, U32 type);
    void tick( F32 dT);
-   void render();
+   void render(U32 renderPass);
 };
 
 class FXTrail
