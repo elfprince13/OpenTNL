@@ -595,10 +595,16 @@ void GameUserInterface::VoiceRecorder::render()
       glVertex2f(10, 145);
       glVertex2f(10 + totalLineCount * 2, 130);
       glVertex2f(10 + totalLineCount * 2, 145);
-      glColor3f(0.8, 0.8, 0.8);
 
-      for(U32 i = 1; i < amt * totalLineCount; i++)
+      F32 halfway = totalLineCount * 0.5;
+      F32 full = amt * totalLineCount;
+      for(U32 i = 1; i < full; i++)
       {
+         if(i < halfway)
+            glColor3f(i / halfway, 1, 0);
+         else
+            glColor3f(1, 1 - (i - halfway) / halfway, 0);
+         
          glVertex2f(10 + i * 2, 130);
          glVertex2f(10 + i * 2, 145);
       }
