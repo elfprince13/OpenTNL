@@ -51,9 +51,14 @@ class CreditsScroller : public CreditsFX
    //typedef CreditsFX Parent;
    enum Credits {
       MaxCreditLen = 32,
-      CreditSpace  = 200
+      CreditSpace  = 200,
    };
-   
+
+   struct ProjectInfo {
+      char titleBuf[MaxCreditLen+1];
+      char copyBuf[MaxCreditLen+1];
+      Point currPos;
+   } mProjectInfo;
    struct CreditsInfo {
       char nameBuf[MaxCreditLen+1];
       char jobBuf[MaxCreditLen+1];

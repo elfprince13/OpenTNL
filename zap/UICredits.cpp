@@ -97,15 +97,21 @@ CreditsScroller::CreditsScroller()
 
 void CreditsScroller::updateFX(U32 delta)
 {
+   // draw the project information
+   S32 pos = mProjectInfo.currPos.x - (delta / 10);
+   if(pos < -CreditSpace)
+      pos = (UserInterface::canvasHeight * 2) + CreditSpace;
+   mProjectInfo.currPos.x = pos;
+
    // scroll the credits text from bottom to top
    //  based on time
    for(S32 i = 0; i < credits.size(); i++)
    {
-      S32 pos = credits[i].currPos.x - (delta / 10);
+      pos = credits[i].currPos.x - (delta / 10);
 
       // reached the top, reset
       if(pos < -CreditSpace)
-         pos = gCreditsUserInterface.canvasHeight + CreditSpace * 3;
+         pos = (UserInterface::canvasHeight * 2) + CreditSpace;
  
       credits[i].currPos.x = pos;
    }
@@ -113,12 +119,19 @@ void CreditsScroller::updateFX(U32 delta)
 
 void CreditsScroller::render()
 {
-   // draw the credits text
    glColor3f(1,1,1);
+   
+   // draw the project information
+   glLineWidth(10);
+   UserInterface::drawCenteredString(mProjectInfo.currPos.x, 100, mProjectInfo.titleBuf);
+   glLineWidth(1);
+   UserInterface::drawCenteredString(mProjectInfo.currPos.x + 120, 20, mProjectInfo.copyBuf);
+
+   // draw the credits text
    for(S32 i = 0; i < credits.size(); i++)
    {
-      gCreditsUserInterface.drawCenteredString(credits[i].currPos.x, 25, credits[i].jobBuf);
-      gCreditsUserInterface.drawCenteredString(credits[i].currPos.x + 50, 25, credits[i].nameBuf);
+      UserInterface::drawCenteredString(credits[i].currPos.x, 25, credits[i].jobBuf);
+      UserInterface::drawCenteredString(credits[i].currPos.x + 50, 25, credits[i].nameBuf);
    }
 }
 
@@ -129,25 +142,25 @@ void CreditsScroller::readCredits(const char *file)
    if(!f)
       return;
 
-   char name[MaxCreditLen];
-   char job[MaxCreditLen];
-   S32 pos = gCreditsUserInterface.canvasHeight + CreditSpace;
+   // read project information from the credits file
+   fgets(mProjectInfo.titleBuf, MaxCreditLen, f);
+   fgets(mProjectInfo.copyBuf, MaxCreditLen, f);
+   mProjectInfo.currPos.x = (UserInterface::canvasHeight - 100) / 2;
    
    // loop through each line in the credits file, expecting
    // the credits to be listed in this order:
    //    1) job
    //    2) name
+   S32 pos = (UserInterface::canvasHeight + CreditSpace);
    while(!feof(f))
    {
       CreditsInfo c;
 
       // get job
-      fgets(job, MaxCreditLen, f);
-      strcpy(c.jobBuf, job);
+      fgets(c.jobBuf, MaxCreditLen, f);
 
       // get name
-      fgets(name, MaxCreditLen, f);
-      strcpy(c.nameBuf, name);
+      fgets(c.nameBuf, MaxCreditLen, f);
 
       // place credit in cache
       c.currPos.x = pos;
