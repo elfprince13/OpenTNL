@@ -160,6 +160,7 @@ public:
    StringTableEntry playerName;
    static U32 currentClientId;
    U32 mClientId;
+   U32 mLastClientControlCRC;
 
    U32 firstMoveIndex;
    U32 highSendIndex[3];
@@ -179,6 +180,7 @@ public:
    void setControlObject(GameObject *theObject);
 
    GameObject *getControlObject() { return controlObject; }
+   U32 getControlCRC();
 
    void linkToClientList();
 

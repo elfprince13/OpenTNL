@@ -169,6 +169,9 @@ public:
    RefPtr<ByteBuffer> encodeBase64() const;
    /// Decode the buffer from base 64, in place. Resizes the buffer.
    RefPtr<ByteBuffer> decodeBase64() const;
+
+   /// Returns a 32 bit CRC for the buffer.
+   U32 calculateCRC(U32 start = 0, U32 end = 0xFFFFFFFF, U32 crcVal = 0xFFFFFFFF) const;
 };
 
 typedef RefPtr<ByteBuffer> ByteBufferPtr;

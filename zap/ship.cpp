@@ -140,7 +140,7 @@ void Ship::processServerMove(Move *theMove)
          lastFireTime = currentTime;
          Point dir(sin(mMoveState[ActualState].angle), cos(mMoveState[ActualState].angle) );
          Point projVel = mMoveState[ActualState].vel + dir * 500;
-         Projectile *proj = new Projectile(mMoveState[ActualState].pos + dir * 25, projVel, 1000, this);
+         Projectile *proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 1000, this);
          proj->addToGame(getGame());
       }
    }
@@ -291,9 +291,9 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
    if(stream->writeFlag(updateMask & InitialMask))
    {
       connection->packStringTableEntry(stream, mPlayerName);
-      stream->write(color.r);
-      stream->write(color.g);
-      stream->write(color.b);
+      stream->writeFloat(color.r, 8);
+      stream->writeFloat(color.g, 8);
+      stream->writeFloat(color.b, 8);
       stream->write(mass);
 
       // now write all the mounts:
@@ -330,9 +330,9 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
       {
          stream->write(mMoveState[RenderState].pos.x);
          stream->write(mMoveState[RenderState].pos.y);
-         stream->write(mMoveState[RenderState].angle);
          stream->write(mMoveState[RenderState].vel.x);
          stream->write(mMoveState[RenderState].vel.y);
+
          stream->writeFlag(updateMask & WarpPositionMask);
       }
       if(stream->writeFlag(updateMask & MoveMask))
@@ -351,9 +351,9 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
    if(stream->readFlag())
    {
       mPlayerName = connection->unpackStringTableEntry(stream);
-      stream->read(&color.r);
-      stream->read(&color.g);
-      stream->read(&color.b);
+      color.r = stream->readFloat(8);
+      color.g = stream->readFloat(8);
+      color.b = stream->readFloat(8);
       stream->read(&mass);
 
       // read mounted items:
@@ -372,7 +372,6 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
    {
       stream->read(&mMoveState[ActualState].pos.x);
       stream->read(&mMoveState[ActualState].pos.y);
-      stream->read(&mMoveState[ActualState].angle);
       stream->read(&mMoveState[ActualState].vel.x);
       stream->read(&mMoveState[ActualState].vel.y);
       //posSegments.push_back(mMoveState[ActualState].pos);
@@ -384,6 +383,8 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
       lastMove = Move();
       lastMove.unpack(stream);
    }
+   mMoveState[ActualState].angle = lastMove.angle;
+
    if(positionChanged)
    {
       lastMove.time = connection->getOneWayTime();
@@ -574,7 +575,7 @@ void Ship::render()
    glTranslatef(mMoveState[RenderState].pos.x, mMoveState[RenderState].pos.y, 0);
 
    // Render name...
-   if(OptionsMenuUserInterface::showNames)
+   if(gClientGame->getConnectionToServer()->getControlObject() != this) //OptionsMenuUserInterface::showNames)
    {
       static char buff[255];
       sprintf(buff, "%s", mPlayerName.getString());
@@ -582,7 +583,7 @@ void Ship::render()
       // Make it a nice pastel
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glColor4f(1,1,1,0.55);
+      glColor4f(1,1,1,0.5);
       //glColor3f(color.r*1.2,color.g*1.2,color.b*1.2);
       UserInterface::drawString( UserInterface::getStringWidth(14, buff) * -0.5, 30, 14, buff );
       glDisable(GL_BLEND);

@@ -45,6 +45,7 @@ GameConnection::GameConnection(Game *game)
    highSendIndex[0] = 0;
    highSendIndex[1] = 0;
    highSendIndex[2] = 0;
+   mLastClientControlCRC = 0;
    firstMoveIndex = 1;
    theGame = game;
    setTranslatesStrings();
@@ -88,6 +89,20 @@ void GameConnection::linkToClientList()
    mPrev->mNext = this;
 }
 
+U32 GameConnection::getControlCRC()
+{
+   PacketStream stream;
+   GameObject *co = getControlObject();
+
+   if(!co)
+      return 0;
+
+   stream.writeInt(getGhostIndex(co), GhostConnection::GhostIdBitSize);
+   co->writeControlState(&stream);
+   stream.zeroToByteBoundary();
+   return stream.calculateCRC(0, stream.getBytePosition());   
+}
+
 void GameConnection::writePacket(BitStream *bstream, PacketNotify *notify)
 {
    if(isConnectionToServer())
@@ -95,6 +110,8 @@ void GameConnection::writePacket(BitStream *bstream, PacketNotify *notify)
       U32 firstSendIndex = highSendIndex[0];
       if(firstSendIndex < firstMoveIndex)
          firstSendIndex = firstMoveIndex;
+
+      bstream->write(getControlCRC());
 
       bstream->write(firstSendIndex);
       U32 skipCount = firstSendIndex - firstMoveIndex;
@@ -115,13 +132,16 @@ void GameConnection::writePacket(BitStream *bstream, PacketNotify *notify)
    }
    else
    {
-      S32 ghostIndex = -1;
-      if(controlObject.isValid())
-         ghostIndex = getGhostIndex(controlObject);
-      if(bstream->writeFlag(ghostIndex != -1))
+      if(bstream->writeFlag(getControlCRC() != mLastClientControlCRC))
       {
-         bstream->writeInt(ghostIndex, GhostConnection::GhostIdBitSize);
-         controlObject->writeControlState(bstream);
+         S32 ghostIndex = -1;
+         if(controlObject.isValid())
+            ghostIndex = getGhostIndex(controlObject);
+         if(bstream->writeFlag(ghostIndex != -1))
+         {
+            bstream->writeInt(ghostIndex, GhostConnection::GhostIdBitSize);
+            controlObject->writeControlState(bstream);
+         }
       }
    }
    Parent::writePacket(bstream, notify);
@@ -131,6 +151,8 @@ void GameConnection::readPacket(BitStream *bstream)
 {
    if(isConnectionToClient())
    {
+      bstream->read(&mLastClientControlCRC);
+
       U32 firstMove;
       bstream->read(&firstMove);
       U32 count = bstream->readRangedU32(0, MaxPendingMoves);
@@ -155,13 +177,18 @@ void GameConnection::readPacket(BitStream *bstream)
    {
       if(bstream->readFlag())
       {
-         U32 ghostIndex = bstream->readInt(GhostConnection::GhostIdBitSize);
-         controlObject = (GameObject *) resolveGhost(ghostIndex);
-         controlObject->readControlState(bstream);
-         for(S32 i = 0; i < pendingMoves.size(); i++)
+         if(bstream->readFlag())
          {
-            controlObject->processClientMove(&pendingMoves[i], true);
+            U32 ghostIndex = bstream->readInt(GhostConnection::GhostIdBitSize);
+            controlObject = (GameObject *) resolveGhost(ghostIndex);
+            controlObject->readControlState(bstream);
+            for(S32 i = 0; i < pendingMoves.size(); i++)
+            {
+               controlObject->processClientMove(&pendingMoves[i], true);
+            }
          }
+         else
+            controlObject = NULL;
       }
    }
    Parent::readPacket(bstream);

@@ -113,6 +113,9 @@ public:
    /// Advances the position in the stream by numBits.
    void advanceBitPosition(const S32 numBits);
 
+   /// Pads the bits up to the next byte boundary with 0's.
+   void zeroToByteBoundary();
+
    /// Writes an unsigned integer value between 0 and 2^(bitCount - 1) into the stream.
    void writeInt(U32 value, U8 bitCount);
    /// Reads an unsigned integer value between 0 and 2^(bitCount - 1) from the stream.
@@ -288,6 +291,12 @@ inline void BitStream::setBitPosition(const U32 newBitPosition)
 inline void BitStream::advanceBitPosition(const S32 numBits)
 {
    setBitPosition(getBitPosition() + numBits);
+}
+
+inline void BitStream::zeroToByteBoundary()
+{
+   if(bitNum & 0x7)
+      writeInt(0, 8 - (bitNum & 0x7));
 }
 
 inline bool BitStream::write(const U32 in_numBytes, const void* in_pBuffer)

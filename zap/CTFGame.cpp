@@ -132,7 +132,7 @@ void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
                UserInterface::drawString(xr - (120 + UserInterface::getStringWidth(fontSize, buff)), curRowY, fontSize, buff);
                UserInterface::drawStringf(xr - 70, curRowY, fontSize, "%d", mClientList[j].ping);
                curRowY += maxHeight;
-            }           
+            }
          }
       }
    }

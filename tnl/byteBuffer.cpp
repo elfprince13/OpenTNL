@@ -48,5 +48,40 @@ RefPtr<ByteBuffer> ByteBuffer::decodeBase64() const
    return ret;
 }
 
+U32 ByteBuffer::calculateCRC(U32 start, U32 end, U32 crcVal) const
+{
+   static U32 crcTable[256];
+   static bool crcTableValid = false;
+
+   if(!crcTableValid)
+   {
+      U32 val;
+
+      for(S32 i = 0; i < 256; i++)
+      {
+         val = i;
+         for(S32 j = 0; j < 8; j++)
+         {
+            if(val & 0x01)
+               val = 0xedb88320 ^ (val >> 1);
+            else
+               val = val >> 1;
+         }
+         crcTable[i] = val;
+      }
+      crcTableValid = true;
+   }
+   
+   if(start >= mBufSize)
+      return 0;
+   if(end > mBufSize)
+      end = mBufSize;
+
+   // now calculate the crc
+   const U8 * buf = getBuffer();
+   for(U32 i = start; i < end; i++)
+      crcVal = crcTable[(crcVal ^ buf[i]) & 0xff] ^ (crcVal >> 8);
+   return(crcVal);
+}
 
 };
