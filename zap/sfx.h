@@ -37,42 +37,70 @@ using namespace TNL;
 namespace Zap
 {
 
-enum SFXProfiles {
+enum SFXProfiles 
+{
+   // Utility sounds.
    SFXVoice,
    SFXNone,
-   SFXPhaser,
+
+   // Weapon noises
+   SFXPhaserProjectile,
    SFXPhaserImpact,
+   SFXBounceProjectile,
+   SFXBounceImpact,
+   SFXTripleProjectile,
+   SFXTripleImpact,
+   SFXTurretProjectile,
+   SFXTurretImpact,
+
+   SFXMineDeploy,
+   SFXMineArm,
+   SFXMineExplode,
+
+   // Ship noises
    SFXShipExplode,
    SFXShipHeal,
    SFXShipBoost,
+
+   SFXBounceWall,
+   SFXBounceObject,
+   SFXBounceShield,
+
+   SFXShieldActive,
+   SFXSensorActive,
+   SFXRepairActive,
+   SFXCloakActive,
+
+   // Flag noises
    SFXFlagCapture,
    SFXFlagDrop,
    SFXFlagReturn,
    SFXFlagSnatch,
+
+   // Teleport noises
    SFXTeleportIn,
    SFXTeleportOut,
-   SFXBounceWall,
-   SFXBounceObject,
-   SFXBounceShield,
+
+   // Forcefield noises
+   SFXForceFieldUp,
+   SFXForceFieldDown,
+
+   // UI noises
    SFXUIBoop,
    SFXUICommUp,
    SFXUICommDown,
-   SFXForceFieldUp,
-   SFXForceFieldDown,
-   SFXMineDeploy,
-   SFXMineArm,
-   SFXMineExplode,
+
    NumSFXBuffers
 };
 
 struct SFXProfile
 {
    const char *fileName;
-   bool isRelative;
-   F32 gainScale;
-   bool isLooping;
-   F32 fullGainDistance;
-   F32 zeroGainDistance;
+   bool        isRelative;
+   F32         gainScale;
+   bool        isLooping;
+   F32         fullGainDistance;
+   F32         zeroGainDistance;
 };
 
 class SFXObject : public Object

@@ -41,17 +41,19 @@ enum {
 
 struct ProjectileInfo
 {
-   F32 damageAmount;
+   F32   damageAmount;
    Color sparkColors[NumSparkColors];
    Color projColors[2];
-   F32 scaleFactor;
+   F32   scaleFactor;
+   U32   projectileSound;
+   U32   impactSound;
 };
 
 ProjectileInfo gProjInfo[Projectile::TypeCount] = {
-   { 0.21f, { Color(1,0,1), Color(1,1,1), Color(0,0,1), Color(1,0,0) }, { Color(1, 0, 0.5), Color(0.5, 0, 1) }, 1 },
-   { 0.15f, { Color(1,1,0), Color(1,0,0), Color(1,0.5,0), Color(1,1,1) }, { Color(1, 1, 0), Color(1, 0, 0) }, 1.3 },
-   { 0.14f, { Color(0,0,1), Color(0,1,0), Color(0,0.5,1), Color(0,1,0.5) }, { Color(0, 0.5, 1), Color(0, 1, 0.5) }, 0.7 },
-   { 0.11f, { Color(0,1,1), Color(1,1,0), Color(0,1,0.5), Color(0.5,1,0) }, { Color(0.5, 1, 0), Color(0, 1, 0.5) }, 0.6 },
+   { 0.21f, { Color(1,0,1), Color(1,1,1), Color(0,0,1),   Color(1,0,0)   }, { Color(1, 0, 0.5), Color(0.5, 0, 1) }, 1,   SFXPhaserProjectile, SFXPhaserImpact },
+   { 0.15f, { Color(1,1,0), Color(1,0,0), Color(1,0.5,0), Color(1,1,1)   }, { Color(1, 1, 0),   Color(1, 0, 0)   }, 1.3, SFXBounceProjectile, SFXBounceImpact },
+   { 0.14f, { Color(0,0,1), Color(0,1,0), Color(0,0.5,1), Color(0,1,0.5) }, { Color(0, 0.5, 1), Color(0, 1, 0.5) }, 0.7, SFXTripleProjectile, SFXTripleImpact },
+   { 0.11f, { Color(0,1,1), Color(1,1,0), Color(0,1,0.5), Color(0.5,1,0) }, { Color(0.5, 1, 0), Color(0, 1, 0.5) }, 0.6, SFXTurretProjectile, SFXTurretImpact },
 };
 
 
@@ -109,7 +111,7 @@ void Projectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
       Rect newExtent(pos,pos);
       setExtent(newExtent);
       initial = true;
-      SFXObject::play(SFXPhaser, pos, velocity);
+      SFXObject::play(SFXPhaserProjectile, pos, velocity);
    }
    bool preCollided = collided;
    collided = stream->readFlag();
@@ -182,6 +184,7 @@ void Projectile::idle(GameObject::IdleCallPath path)
       {
          bool bounce = false;
          U32 typeMask = hitObject->getObjectTypeMask();
+         
          if(mType == Bounce && (typeMask & BarrierType))
             bounce = true;
          else if(typeMask & ShipType)
@@ -190,6 +193,7 @@ void Projectile::idle(GameObject::IdleCallPath path)
             if(s->isShieldActive())
                bounce = true;
          }
+
          if(bounce)
          {
             // test out reflection
@@ -521,7 +525,7 @@ void GrenadeProjectile::explode(Point pos)
       // Make us go boom!
       Color b(1,1,1);
 
-      SparkManager::emitExplosion(getRenderPos(), 0.5, &b, 1);
+      SparkManager::emitExplosion(getRenderPos(), 0.5, gProjInfo[Projectile::Phaser].sparkColors, NumSparkColors);
       SFXObject::play(SFXMineExplode, getActualPos(), Point());
    }
 

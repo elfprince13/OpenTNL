@@ -363,7 +363,6 @@ void Ship::repairTargets()
 {
    F32 totalRepair = RepairHundredthsPerSecond * 0.01 * mCurrentMove.time * 0.001f;
 
-
 //   totalRepair /= mRepairTargets.size();
 
    DamageInfo di;
@@ -496,12 +495,12 @@ void Ship::updateModuleSounds()
 {
    static S32 moduleSFXs[ModuleCount] = 
    {
-      -1,
+      SFXShieldActive,
       SFXShipBoost,
-      SFXShipBoost,
-      -1,
-      -1,
-      SFXShipBoost,
+      SFXSensorActive,
+      SFXRepairActive,
+      -1, // No engineer pack, yo!
+      SFXCloakActive,
    };
 
    for(U32 i = 0; i < ModuleCount; i++)
@@ -781,6 +780,8 @@ void Ship::setLoadout(U32 module1, U32 module2, U32 weapon1, U32 weapon2, U32 we
       static StringTableEntry msg("Ship loadout configuration updated.");
       cc->s2cDisplayMessage(GameConnection::ColorAqua, SFXUIBoop, msg);
    }
+
+   // Try to see if we can maintain the same weapon we had before.
    U32 i;
    for(i = 0; i < 3; i++)
    {
