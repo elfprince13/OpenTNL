@@ -352,7 +352,9 @@ void GrenadeProjectile::explode(Point pos)
    DamageInfo info;
    info.collisionPoint = pos;
    info.damagingObject = this;
-   info.damageAmount   = 0.5;
+
+   // If we're doing client side prediction, only shove - don't damage.
+   info.damageAmount   = isGhost() ? 0.0 : 0.5;
    info.damageType     = 1;
 
    // Check for players within range
@@ -375,7 +377,7 @@ void GrenadeProjectile::explode(Point pos)
       info.impulseVector  *= 2000.f;
 
       fillVector[i]->damageObject(&info);
-   }      
+   }
 }
 
 void GrenadeProjectile::renderItem(Point pos)

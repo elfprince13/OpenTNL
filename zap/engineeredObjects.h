@@ -29,6 +29,7 @@
 
 #include "gameObject.h"
 #include "item.h"
+#include "barrier.h"
 
 namespace Zap
 {
@@ -72,12 +73,27 @@ public:
 class ForceFieldProjector : public EngineeredObject
 {
    typedef EngineeredObject Parent;
+
+   SafePtr<Barrier>  mField;
+   Timer             mFieldDown;
+   F32               mLength;
+
 public:
    ForceFieldProjector(S32 team = -1, Point anchorPoint = Point(), Point anchorNormal = Point()) :
-      EngineeredObject(team, anchorPoint, anchorNormal) { mNetFlags.set(Ghostable); }
+      EngineeredObject(team, anchorPoint, anchorNormal) { mNetFlags.set(Ghostable); mLength = 0.1f; }
+
+   ~ForceFieldProjector();
+
+   enum Constants
+   {
+      FieldDownTime = 200,
+
+      FieldDownMask = BIT(2),
+   };
 
    bool getCollisionPoly(Vector<Point> &polyPoints);
    void render();
+   void idle(IdleCallPath path);
 
    TNL_DECLARE_CLASS(ForceFieldProjector);
 };

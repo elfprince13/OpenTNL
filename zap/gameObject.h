@@ -37,17 +37,16 @@ namespace Zap
 
 class GridDatabase;
 
-
 enum GameObjectType
 {
-   UnknownType = 1 << 0,
-   ShipType = 1 << 1,
-   BarrierType = 1 << 2,
-   MoveableType = 1 << 3,
-   ProjectileType = 1 << 4,
-   ItemType = 1 << 5,
-   ResourceItemType = 1 << 6,
-   EngineeredType = 1 << 7,
+   UnknownType       = BIT(0),
+   ShipType          = BIT(1),
+   BarrierType       = BIT(2),
+   MoveableType      = BIT(3),
+   ProjectileType    = BIT(4),
+   ItemType          = BIT(5),
+   ResourceItemType  = BIT(6),
+   EngineeredType    = BIT(7),
 
    CommandMapVisType = 1 << 31,
    AllObjectTypes = 0xFFFFFFFF,
@@ -154,7 +153,6 @@ public:
    void addToDatabase();
    void removeFromDatabase();
    bool isCollisionEnabled() { return mDisableCollisionCount == 0; }
-
 
    virtual void processArguments(S32 argc, const char**argv);
 };

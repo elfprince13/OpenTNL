@@ -206,6 +206,24 @@ void Ship::processWeaponFire()
                      proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this, true);
                   }
                break;
+               case WeaponTriple:
+                  {
+                     Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir);
+
+                     // Middle shot
+                     proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this);
+
+                     // We have to add the other two manually (they are left and right)
+                     Point velPerp(projVel.y, -projVel.x);
+                     velPerp.normalize(50.f);
+
+                     GameObject *proj2 = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel + velPerp, 500, this);
+                     GameObject *proj3 = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel - velPerp, 500, this);
+
+                     proj2->addToGame(getGame());
+                     proj3->addToGame(getGame());
+                  }
+               break;
             }
 
             if(proj)

@@ -32,6 +32,7 @@
 namespace Zap
 {
 
+static Vector<GameObject *> fillVector;
 
 void engClientCreateObject(GameConnection *connection, U32 object)
 {
@@ -213,6 +214,12 @@ void EngineeredObject::unpackUpdate(GhostConnection *connection, BitStream *stre
 
 TNL_IMPLEMENT_NETOBJECT(ForceFieldProjector);
 
+ForceFieldProjector::~ForceFieldProjector()
+{
+   if(mField.isValid())
+      getGame()->deleteObject(mField, 0);
+}
+
 bool ForceFieldProjector::getCollisionPoly(Vector<Point> &polyPoints)
 {
    Point cross(mAnchorNormal.y, -mAnchorNormal.x);
@@ -232,6 +239,69 @@ void ForceFieldProjector::render()
    for(S32 i = 0; i < p.size(); i++)
       glVertex2f(p[i].x, p[i].y);
    glEnd();
+}
+
+void ForceFieldProjector::idle(IdleCallPath path)
+{
+   if(path == ServerIdleMainLoop)
+   {
+      mFieldDown.update(mCurrentMove.time);
+
+      if(mFieldDown.getCurrent() == 0)
+      {
+         // Choose a target...
+         Point pos = mAnchorPoint;
+
+         Rect queryRect(mAnchorPoint, mAnchorPoint + mAnchorNormal * 800.f * mLength);
+         queryRect.expand(Point(20, 20));
+
+         fillVector.clear();
+         findObjects(ShipType, fillVector, queryRect);
+
+         bool foundFriendly = false;
+
+         for(S32 i=0; i<fillVector.size(); i++)
+         {
+            Ship *potential = (Ship*)fillVector[i];
+
+            // Is it dead or cloaked?
+            if(potential->isCloakActive() || potential->hasExploded)
+               continue;
+
+            // Is it on our team?
+            if(potential->getTeam() != mTeam)
+               continue;
+
+            // Is it near our field?
+
+
+            foundFriendly = true;
+         }
+
+         if(foundFriendly)
+         {
+            // Destroy the barrier...
+            if(mField.isValid())
+            {
+               getGame()->deleteObject(mField, 15);
+            }
+         }
+         else
+         {
+            if(mField.isNull())
+            {
+               Point n;
+               if(!findObjectLOS(BarrierType, 0, mAnchorPoint + mAnchorNormal * 0.1, mAnchorPoint + mAnchorNormal * 800.f, mLength, n))
+                  mLength = 1.f;
+
+               mField = new Barrier(mAnchorPoint + mAnchorNormal * 20.f, mAnchorPoint + mAnchorNormal * 800.f * mLength);
+               mField->addToGame(getGame());
+            }
+         }
+
+         mFieldDown.reset(FieldDownTime);
+      }
+   }
 }
 
 TNL_IMPLEMENT_NETOBJECT(Turret);
@@ -264,8 +334,6 @@ void Turret::render()
       glVertex2f(p[i].x, p[i].y);
    glEnd();
 }
-
-static Vector<GameObject *> fillVector;
 
 void Turret::idle(IdleCallPath path)
 {
