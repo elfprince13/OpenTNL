@@ -76,14 +76,11 @@ public:
    void writeConnectRequest(BitStream *stream);
    bool readConnectRequest(BitStream *stream, const char **errorString);
 
-   void onConnectionEstablished(bool isInitiator);
-   void onConnectionRejected(const char *reason);
+   void onConnectionEstablished();
 
-   void onDisconnect(const char *reason);
-   void onTimedOut();
-   void onConnectTimedOut();
+   void onConnectTerminated(TerminationReason r, const char *);
 
-   void onConnectionTerminated(const char *reason);
+   void onConnectionTerminated(TerminationReason r, const char *string);
 
    TNL_DECLARE_NETCONNECTION(GameConnection);
 };

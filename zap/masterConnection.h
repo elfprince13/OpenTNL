@@ -62,7 +62,7 @@ public:
    TNL_DECLARE_RPC_OVERRIDE(m2cArrangedConnectionRejected, (U32 requestId, ByteBufferRef rejectData));
 
    void writeConnectRequest(BitStream *bstream);
-   void onConnectionEstablished(bool isInitiator);
+   void onConnectionEstablished();
 
    TNL_DECLARE_NETCONNECTION(MasterServerConnection);
 };

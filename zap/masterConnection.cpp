@@ -199,7 +199,7 @@ void MasterServerConnection::writeConnectRequest(BitStream *bstream)
    }
 }
 
-void MasterServerConnection::onConnectionEstablished(bool isInitiator)
+void MasterServerConnection::onConnectionEstablished()
 {
 }
 

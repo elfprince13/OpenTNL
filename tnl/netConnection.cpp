@@ -745,11 +745,6 @@ void NetConnection::packetDropped(PacketNotify *note)
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 
-void NetConnection::onTimedOut()
-{
-
-}
-
 void NetConnection::setInterface(NetInterface *myInterface)
 {
    mInterface = myInterface;
@@ -769,6 +764,7 @@ void NetConnection::connect(NetInterface *theInterface, const Address &address, 
 {
    mConnectionParameters.mRequestKeyExchange = requestKeyExchange;
    mConnectionParameters.mRequestCertificate = requestCertificate;
+   mConnectionParameters.mIsInitiator = true;
 
    setNetAddress(address);
    setInterface(theInterface);
@@ -791,36 +787,25 @@ void NetConnection::connectArranged(NetInterface *connectionInterface, const Vec
    mInterface->startArrangedConnection(this);   
 }
 
-void NetConnection::onConnectTimedOut()
-{
-
-}
-
 void NetConnection::disconnect(const char *reason)
 {
-   mInterface->disconnect(this, reason);
+   mInterface->disconnect(this, ReasonSelfDisconnect, reason);
 }
 
-void NetConnection::onDisconnect(const char *reason)
+void NetConnection::onConnectionEstablished()
 {
-   reason;
-}
-
-void NetConnection::onConnectionRejected(const char *reason)
-{
-}
-
-void NetConnection::onConnectionEstablished(bool isInitiator)
-{
-   if(isInitiator)
+   if(isInitiator())
       setIsConnectionToServer();
    else
       setIsConnectionToClient();
 }
 
-void NetConnection::onConnectionError(const char *errorString)
+void NetConnection::onConnectionTerminated(TerminationReason, const char *)
 {
+}
 
+void NetConnection::onConnectTerminated(TerminationReason, const char *)
+{
 }
 
 void NetConnection::writeConnectRequest(BitStream *stream)
@@ -866,6 +851,8 @@ bool NetConnection::connectLocal(NetInterface *connectionInterface, NetInterface
 	   goto errorOut;
 
    client->setInterface(connectionInterface);
+   client->getConnectionParameters().mIsInitiator = true;
+
    server->setInterface(serverInterface);
 
    server->setInitialRecvSequence(client->getInitialSendSequence());
@@ -889,8 +876,8 @@ bool NetConnection::connectLocal(NetInterface *connectionInterface, NetInterface
    client->setConnectionState(NetConnection::Connected);
    server->setConnectionState(NetConnection::Connected);
 
-   client->onConnectionEstablished(true);
-   server->onConnectionEstablished(false);
+   client->onConnectionEstablished();
+   server->onConnectionEstablished();
    connectionInterface->addConnection(client);
    serverInterface->addConnection(server);
    return true;

@@ -27,12 +27,22 @@
 #ifndef _TNL_NETINTERFACE_H_
 #define _TNL_NETINTERFACE_H_
 
+#ifndef _TNL_VECTOR_H_
 #include "tnlVector.h"
+#endif
+
+#ifndef _TNL_NETBASE_H_
 #include "tnlNetBase.h"
+#endif
+
 #include "tnlClientPuzzle.h"
 
 #ifndef _TNL_NETOBJECT_H_
 #include "tnlNetObject.h"
+#endif
+
+#ifndef _TNL_NETCONNECTION_H_
+#include "tnlNetConnection.h"
 #endif
 
 namespace TNL {
@@ -305,6 +315,9 @@ protected:
 
    /// Handles an error reported while reading a packet from this remote connection.
    void handleConnectionError(NetConnection *theConnection, const char *errorString);
+
+   /// Disconnects the given connection and removes it from the NetInterface
+   void disconnect(NetConnection *conn, NetConnection::TerminationReason reason, const char *reasonString);
    /// @}
 public:
    /// @param   bindAddress    Local network address to bind this interface to.
@@ -357,9 +370,6 @@ public:
    /// Checks all connections on this interface for packet sends, and for timeouts and all valid
    /// and pending connections.
    void processConnections();
-
-   /// Disconnects the given connection and removes it from the NetInterface
-   void disconnect(NetConnection *conn, const char *reason);
 
    /// Returns the list of connections on this NetInterface.
    Vector<NetConnection *> &getConnectionList() { return mConnectionList; }

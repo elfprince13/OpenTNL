@@ -63,7 +63,7 @@ NetInterface::~NetInterface()
    while(mConnectionList.size())
    {
       NetConnection *c = mConnectionList[0];
-      disconnect(c, "Shutdown");
+      disconnect(c, NetConnection::ReasonSelfDisconnect, "Shutdown");
    }
 }
 
@@ -147,7 +147,7 @@ void NetInterface::addPendingConnection(NetConnection *connection)
    findAndRemovePendingConnection(connection->getNetAddress());
    NetConnection *temp = findConnection(connection->getNetAddress());
    if(temp)
-      disconnect(temp, "Reconnecting");
+      disconnect(temp, NetConnection::ReasonSelfDisconnect, "Reconnecting");
 
    // hang on to the connection and add it to the pending connection list
    connection->incRef();
@@ -331,7 +331,7 @@ void NetInterface::processConnections()
             if(pending->mConnectSendCount > ChallengeRetryCount)
             {
                pending->setConnectionState(NetConnection::ConnectTimedOut);
-               pending->onConnectTimedOut();
+               pending->onConnectTerminated(NetConnection::ReasonTimedOut, "Timeout");
                removePendingConnection(pending);
                continue;
             }
@@ -344,7 +344,7 @@ void NetInterface::processConnections()
             if(pending->mConnectSendCount > ConnectRetryCount)
             {
                pending->setConnectionState(NetConnection::ConnectTimedOut);
-               pending->onConnectTimedOut();
+               pending->onConnectTerminated(NetConnection::ReasonTimedOut, "Timeout");
                removePendingConnection(pending);
                continue;
             }
@@ -362,7 +362,7 @@ void NetInterface::processConnections()
             if(pending->mConnectSendCount > PunchRetryCount)
             {
                pending->setConnectionState(NetConnection::ConnectTimedOut);
-               pending->onConnectTimedOut();
+               pending->onConnectTerminated(NetConnection::ReasonTimedOut, "Timeout");
                removePendingConnection(pending);
                continue;
             }
@@ -373,7 +373,7 @@ void NetInterface::processConnections()
             time > pending->mConnectLastSendTime + PuzzleSolutionTimeout)
          {
             pending->setConnectionState(NetConnection::ConnectTimedOut);
-            pending->onConnectTimedOut();
+            pending->onConnectTerminated(NetConnection::ReasonTimedOut, "Timeout");
             removePendingConnection(pending);
          }
          i++;
@@ -385,7 +385,7 @@ void NetInterface::processConnections()
          if(mConnectionList[i]->checkTimeout(time))
          {
             mConnectionList[i]->setConnectionState(NetConnection::TimedOut);
-            mConnectionList[i]->onTimedOut();
+            mConnectionList[i]->onConnectTerminated(NetConnection::ReasonTimedOut, "Timeout");
             removeConnection(mConnectionList[i]);
          }
          else
@@ -751,7 +751,7 @@ void NetInterface::handleConnectRequest(const Address &address, BitStream *strea
    TNLLogMessageV(LogNetInterface, ("Received Connect Request %8x", theParams.mClientIdentity));
 
    if(connect)
-      disconnect(connect, "NewConnection");
+      disconnect(connect, NetConnection::ReasonSelfDisconnect, "NewConnection");
 
    char connectionClass[256];
    stream->readString(connectionClass);
@@ -779,7 +779,7 @@ void NetInterface::handleConnectRequest(const Address &address, BitStream *strea
    }
    addConnection(conn);
    conn->setConnectionState(NetConnection::Connected);
-   conn->onConnectionEstablished(false);
+   conn->onConnectionEstablished();
    sendConnectAccept(conn);
 }
 
@@ -856,7 +856,7 @@ void NetInterface::handleConnectAccept(const Address &address, BitStream *stream
    removePendingConnection(conn); // remove from the pending connection list
 
    conn->setConnectionState(NetConnection::Connected);
-   conn->onConnectionEstablished(true); // notify the connection that it has been established
+   conn->onConnectionEstablished(); // notify the connection that it has been established
    TNLLogMessageV(LogNetInterface, ("Received Connect Accept - connection established."));
 }
 
@@ -909,7 +909,7 @@ void NetInterface::handleConnectReject(const Address &address, BitStream *stream
    }
 
    conn->setConnectionState(NetConnection::ConnectRejected);
-   conn->onConnectionRejected(reason);
+   conn->onConnectTerminated(NetConnection::ReasonRemoteHostRejectedConnection, reason);
    removePendingConnection(conn);
 }
 
@@ -1172,7 +1172,7 @@ void NetInterface::handleArrangedConnectRequest(const Address &theAddress, BitSt
    TNLLogMessageV(LogNetInterface, ("Received Arranged Connect Request"));
 
    if(oldConnection)
-      disconnect(oldConnection, "");
+      disconnect(oldConnection, NetConnection::ReasonSelfDisconnect, "");
 
    conn->setNetAddress(theAddress);
    conn->setInitialRecvSequence(connectSequence);
@@ -1189,7 +1189,7 @@ void NetInterface::handleArrangedConnectRequest(const Address &theAddress, BitSt
    addConnection(conn);
    removePendingConnection(conn);
    conn->setConnectionState(NetConnection::Connected);
-   conn->onConnectionEstablished(false);
+   conn->onConnectionEstablished();
    sendConnectAccept(conn);
 }
 
@@ -1197,14 +1197,18 @@ void NetInterface::handleArrangedConnectRequest(const Address &theAddress, BitSt
 // NetInterface disconnection and handling
 //-----------------------------------------------------------------------------
 
-void NetInterface::disconnect(NetConnection *conn, const char *reason)
+void NetInterface::disconnect(NetConnection *conn, NetConnection::TerminationReason reason, const char *reasonString)
 {
    if(conn->getConnectionState() == NetConnection::AwaitingChallengeResponse ||
       conn->getConnectionState() == NetConnection::AwaitingConnectResponse)
+   {
+      conn->onConnectTerminated(reason, reasonString);
       removePendingConnection(conn);
+   }
    else if(conn->getConnectionState() == NetConnection::Connected)
    {
       conn->setConnectionState(NetConnection::Disconnected);
+      conn->onConnectionTerminated(reason, reasonString);
       if(conn->isNetworkConnection())
       {
          // send a disconnect packet...
@@ -1215,7 +1219,7 @@ void NetInterface::disconnect(NetConnection *conn, const char *reason)
          theParams.mServerNonce.write(&out);
          U32 encryptPos = out.getBytePosition();
          out.setBytePosition(encryptPos);
-         out.writeString(reason);
+         out.writeString(reasonString);
 
          if(theParams.mUsingCrypto)
          {
@@ -1257,14 +1261,13 @@ void NetInterface::handleDisconnect(const Address &address, BitStream *stream)
    stream->readString(reason);
 
    conn->setConnectionState(NetConnection::Disconnected);
-   conn->onDisconnect(reason);
+   conn->onConnectionTerminated(NetConnection::ReasonRemoteDisconnectPacket, reason);
    removeConnection(conn);
 }
 
 void NetInterface::handleConnectionError(NetConnection *theConnection, const char *errorString)
 {
-   theConnection->onConnectionError(errorString);
-   disconnect(theConnection, errorString);
+   disconnect(theConnection, NetConnection::ReasonError, errorString);
 }
 
 };

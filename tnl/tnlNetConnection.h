@@ -108,6 +108,7 @@ struct ConnectionParameters
 
    ConnectionParameters()
    {
+      mIsInitiator = false;
       mPuzzleRetried = false;
       mUsingCrypto = false;
       mIsArranged = false;
@@ -198,12 +199,20 @@ public:
    ~NetConnection();
 
 protected:
-   virtual void onTimedOut();                                ///< Called when this instance is unable to elicit a response from the remote host for the timeout period.
-   virtual void onConnectTimedOut();                         ///< Called when the attempt to connect to a remote host fails due to lack of response.
-   virtual void onDisconnect(const char *reason);            ///< Called when the remote host issues a disconnect packet to this instance.
-   virtual void onConnectionRejected(const char *reason);    ///< Called when the remote host rejects this connection.
-   virtual void onConnectionEstablished(bool isInitiator);   ///< Called when the connection is successfully established with the remote host.
-   virtual void onConnectionError(const char *errorString);  ///< Called when a connection receives a bogus packet or invalid data from the remote host
+   enum TerminationReason {
+      ReasonTimedOut,
+      ReasonFailedConnectHandshake,
+      ReasonRemoteHostRejectedConnection,
+      ReasonRemoteDisconnectPacket,
+      ReasonDuplicateConnectionAttempt,
+      ReasonSelfDisconnect,
+      ReasonError,
+   };
+
+   virtual void onConnectTerminated(TerminationReason reason, const char *rejectionString);     ///< Called when a pending connection is terminated
+   virtual void onConnectionTerminated(TerminationReason, const char *errorDisconnectString);   ///< Called when this established connection is terminated for any reason
+   virtual void onConnectionEstablished();  ///< Called when the connection is successfully established with the remote host.
+
    /// validates that the given certificate is a valid certificate for this
    /// connection.
    virtual bool validateCertficate(Certificate *theCertificate, bool isInitiator) { return true; }
@@ -396,6 +405,8 @@ protected:
 public:
    ConnectionParameters &getConnectionParameters() { return mConnectionParameters; }
 
+   /// returns true if this object initiated the connection with the remote host
+   bool isInitiator() { return mConnectionParameters.mIsInitiator; }
    void setRemoteConnectionObject(NetConnection *connection) { mRemoteConnection = connection; };
 
    U32 mConnectSendCount;    ///< Number of challenge or connect requests sent to the remote host.

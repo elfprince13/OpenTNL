@@ -364,13 +364,13 @@ void ClientGame::idle(U32 timeDelta)
    if(OptionsMenuUserInterface::joystickEnabled)
       JoystickUpdateMove(theMove);
 #endif
-   theMove->prepare();
-
    theMove->time = timeDelta;
 
    if(mConnectionToServer.isValid())
    {
       mConnectionToServer->addPendingMove(theMove);
+
+      theMove->prepare();
 
       for(S32 i = 0; i < mGameObjects.size(); i++)
       {
@@ -579,26 +579,28 @@ void ClientGame::renderNormal()
       Ship *s = dynamic_cast<Ship*>(mConnectionToServer->getControlObject());
       if(s)
       {
-         static F32 curEnergy = 0.f;
+         //static F32 curEnergy = 0.f;
 
-         curEnergy = (curEnergy + s->mEnergy) * 0.5f;
+         //curEnergy = (curEnergy + s->mEnergy) * 0.5f;
+
+         F32 energy = s->mEnergy * 100.0f / F32(Ship::EnergyMax);
 
          const F32 offset = 50;
 
          glColor3f(0.0, 0.0, 1);
          glBegin(GL_POLYGON);
          glVertex2f(15,              515 + offset);
-         glVertex2f(15 + curEnergy,  515 + offset);
-         glVertex2f(15 + curEnergy,  535 + offset);
+         glVertex2f(15 + energy,  515 + offset);
+         glVertex2f(15 + energy,  535 + offset);
          glVertex2f(15,              535 + offset);
          glEnd();
 
          // Show danger line.
-         glColor3f(1, 0, 0);
-         glBegin(GL_LINES);
-         glVertex2f(15 + 5, 512 + offset);
-         glVertex2f(15 + 5, 539 + offset);
-         glEnd();
+         //glColor3f(1, 0, 0);
+         //glBegin(GL_LINES);
+         //glVertex2f(15 + 5, 512 + offset);
+         //glVertex2f(15 + 5, 539 + offset);
+         //glEnd();
 
          // Show safety line.
          glColor3f(1, 1, 0);

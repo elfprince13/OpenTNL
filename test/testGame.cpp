@@ -389,25 +389,14 @@ TestConnection::TestConnection()
    //setIsAdaptive(); // <-- Uncomment me if you want to use adaptive rate instead of fixed rate...
 }
 
-void TestConnection::onTimedOut()
-{
-   logprintf("%s - connection to %s timed out.", getNetAddressString(), isConnectionToServer() ? "server" : "client" );
-
-   // if this is a client to server connection, set us back to pinging servers.
-   if(isConnectionToServer())
-      ((TestNetInterface *) getInterface())->pingingServers = true;
-   else
-      delete (Player*)myPlayer; // delete the client's player object.
-}
-
-void TestConnection::onConnectTimedOut()
+void TestConnection::onConnectTerminated(NetConnection::TerminationReason reason, const char *string)
 {
    ((TestNetInterface *) getInterface())->pingingServers = true;
 }
 
-void TestConnection::onDisconnect(const char *reason)
+void TestConnection::onConnectionTerminated(NetConnection::TerminationReason reason, const char *edString)
 {
-   logprintf("%s - %s disconnected.", getNetAddressString(), isConnectionToServer() ? "server" : "client" );
+   logprintf("%s - %s connection terminated - reason %d.", getNetAddressString(), isConnectionToServer() ? "server" : "client", reason);
 
    if(isConnectionToServer())
       ((TestNetInterface *) getInterface())->pingingServers = true;
@@ -415,12 +404,12 @@ void TestConnection::onDisconnect(const char *reason)
       delete (Player*)myPlayer;
 }
 
-void TestConnection::onConnectionEstablished(bool isInitiator)
+void TestConnection::onConnectionEstablished()
 {
    // call the parent's onConnectionEstablished.
    // by default this will set the initiator to be a connection
    // to "server" and the non-initiator to be a connnection to "client"
-   Parent::onConnectionEstablished(isInitiator);
+   Parent::onConnectionEstablished();
 
    // To see how this program performs with 50% packet loss,
    // Try uncommenting the next line :)

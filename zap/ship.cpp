@@ -67,20 +67,17 @@ Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, Collisio
    for(S32 i=0; i<TrailCount; i++)
       mTrail[i].reset();
 
-   mEnergy = 100.f;
+   mEnergy = EnergyMax;
    mShield = false;
    mTurbo = false;
    mCooldown = false;
-   mTurboNoise = NULL;
 }
 
-Ship::~Ship()
+void Ship::onGhostRemove()
 {
-   if(mTurboNoise.isValid())
-   {
-      mTurboNoise->setGain(0.f);
-      mTurboNoise->stop();
-   }
+   Parent::onGhostRemove();
+   mTurbo = false;
+   updateTurboNoise();
 }
 
 void Ship::processArguments(S32 argc, const char **argv)
@@ -168,59 +165,114 @@ void Ship::processServerMove(Move *theMove)
          proj->addToGame(getGame());
       }
    }
-
-   if(mTurbo != theMove->boost || mShield != theMove->shield)
-      setMaskBits(PowersMask);
-
+   bool shield = mShield, turbo = mTurbo;
    mShield = theMove->shield;
    mTurbo  = theMove->boost;
-
    burnEnergy(theMove->time);
+
+   if(mTurbo != turbo || mShield != shield)
+      setMaskBits(PowersMask);
+
    updateExtent();
+}
+
+void Ship::processClientMove(Move *theMove, bool replay)
+{
+   if(!hasExploded)
+      processMove(theMove, ActualState);
+   else
+      return;
+
+   updateInterpolation(theMove->time);
+   lastMove = *theMove;
+
+   mShield = theMove->shield;
+   mTurbo = theMove->boost;
+   burnEnergy(theMove->time);
+
+   SFXObject::setListenerParams(mMoveState[RenderState].pos, mMoveState[RenderState].vel);
+   if(!replay)
+   {
+      // Emit some particles
+      emitMovementSparks(theMove->time);
+      for(U32 i=0; i<TrailCount; i++)
+         mTrail[i].tick(theMove->time);
+      updateTurboNoise();
+   }
+}
+
+void Ship::processServer(U32 deltaT)
+{
+   lastMove.time = deltaT;
+   if(isControlled())
+      processMove(&lastMove, RenderState);
+   else
+   {
+      processMove(&lastMove, ActualState);
+      mMoveState[RenderState] = mMoveState[ActualState];
+      setMaskBits(PositionMask);
+   }
+   updateExtent();
+}
+
+void Ship::processClient(U32 deltaT)
+{
+   lastMove.time = deltaT;
+   processMove(&lastMove, ActualState);
+   updateInterpolation(deltaT);
+   // Emit some particles
+   emitMovementSparks(deltaT);
+
+   for(U32 i=0; i<TrailCount; i++)
+      mTrail[i].tick(deltaT);
+
+   // Update the turbo noise
+   updateTurboNoise();
 }
 
 void Ship::burnEnergy( U32 dT )
 {
 //   if(isGhost()) return;
 
-   F32 scaleFactor = ((F32)dT) / 1000.f;
+   F32 scaleFactor = dT * 0.001;
 
    // Update things based on available energy...
-   if(mEnergy <= 5.f || mCooldown)
+
+   if(mEnergy > EnergyCooldownThreshold)
+      mCooldown = false;
+
+   if(mCooldown)
    {
       mShield = false;
       mTurbo  = false;
-      mCooldown = true;
-   }
-
-   if(mCooldown && mEnergy >= 15.f)
-   {
-      mCooldown = false;
    }
 
    if(mShield)
-   {
-      mEnergy -= 15.0f * scaleFactor;
-   }
+      mEnergy -= EnergyShieldDrain * scaleFactor;
 
    if(mTurbo)
-   {
-      mEnergy -= 15.0f * scaleFactor;
-   }
+      mEnergy -= EnergyTurboDrain * scaleFactor;
 
+   if(!mShield && !mTurbo && mEnergy <= EnergyCooldownThreshold)
+      mCooldown = true;
 
-   if(mEnergy < 100.f)
+   if(mEnergy < EnergyMax)
    {
       // If we're not doing anything, recharge.
       if(!(mShield || mTurbo))
-         mEnergy += (F32)(dT * RechargeRate) / 1000.f;
+         mEnergy += EnergyRechargeRate * scaleFactor;
 
-      if(mEnergy < 0.f)
-         mEnergy = 0.f;
+      if(mEnergy <= 0)
+      {
+         mEnergy = 0;
+         mShield = false;
+         mTurbo = false;
+         mCooldown = true;
+      }
    }
 
-   if(mEnergy >= 100.f)
-      mEnergy = 100.f;
+   if(mEnergy >= EnergyMax)
+      mEnergy = EnergyMax;
 }
 
 void Ship::damageObject(DamageInfo *theInfo)
@@ -246,42 +298,26 @@ void Ship::damageObject(DamageInfo *theInfo)
       mHealth = 1;
 }
 
-void Ship::processClientMove(Move *theMove, bool replay)
+
+void Ship::updateTurboNoise()
 {
-   if(!hasExploded)
-      processMove(theMove, ActualState);
+   if(mTurbo)
+   {
+      if(mTurboNoise.isValid())
+         mTurboNoise->setMovementParams(mMoveState[RenderState].pos, mMoveState[RenderState].vel);
+      else
+         mTurboNoise = SFXObject::play(SFXShipTurbo, mMoveState[RenderState].pos, mMoveState[RenderState].vel);
+   }
    else
-      return;
-
-   updateInterpolation(theMove->time);
-   lastMove = *theMove;
-
-   // Emit some particles
-   emitMovementSparks(theMove->time);
-
-   for(U32 i=0; i<TrailCount; i++)
-      mTrail[i].tick(theMove->time);
-
-   SFXObject::setListenerParams(mMoveState[RenderState].pos, mMoveState[RenderState].vel);
-
-   if(mTurboNoise)
-      mTurboNoise->setMovementParams(mMoveState[RenderState].pos, mMoveState[RenderState].vel);
+   {
+      if(mTurboNoise.isValid())
+      {
+         mTurboNoise->stop();
+         mTurboNoise = 0;
+      }
+   }
 }
 
-void Ship::processClient(U32 deltaT)
-{
-   lastMove.time = deltaT;
-   processMove(&lastMove, ActualState);
-   updateInterpolation(deltaT);
-   // Emit some particles
-   emitMovementSparks(deltaT);
-
-   for(U32 i=0; i<TrailCount; i++)
-      mTrail[i].tick(deltaT);
-
-   if(mTurboNoise)
-      mTurboNoise->setMovementParams(mMoveState[RenderState].pos, mMoveState[RenderState].vel);
-}
 
 void Ship::updateInterpolation(U32 deltaT)
 {
@@ -344,21 +380,6 @@ interpDone:
    updateExtent();
 }
 
-void Ship::processServer(U32 deltaT)
-{
-   lastMove.time = deltaT;
-   if(isControlled())
-      processMove(&lastMove, RenderState);
-   else
-   {
-      processMove(&lastMove, ActualState);
-      mMoveState[RenderState] = mMoveState[ActualState];
-      setMaskBits(PositionMask);
-   }
-   burnEnergy(deltaT);
-   updateExtent();
-}
-
 void Ship::writeControlState(BitStream *stream)
 {
    stream->write(mMoveState[ActualState].pos.x);
@@ -366,9 +387,8 @@ void Ship::writeControlState(BitStream *stream)
    stream->write(mMoveState[ActualState].angle);
    stream->write(mMoveState[ActualState].vel.x);
    stream->write(mMoveState[ActualState].vel.y);
-   stream->write(mEnergy);
-   stream->writeFlag(mTurbo);
-   stream->writeFlag(mShield);
+   stream->writeRangedU32(mEnergy, 0, EnergyMax);
+   stream->writeFlag(mCooldown);
 }
 
 void Ship::readControlState(BitStream *stream)
@@ -378,9 +398,8 @@ void Ship::readControlState(BitStream *stream)
    stream->read(&mMoveState[ActualState].angle);
    stream->read(&mMoveState[ActualState].vel.x);
    stream->read(&mMoveState[ActualState].vel.y);
-   stream->read(&mEnergy);
-   mTurbo = stream->readFlag();
-   mShield = stream->readFlag();
+   mEnergy = stream->readRangedU32(0, EnergyMax);
+   mCooldown = stream->readFlag();
    
    Point delta = mMoveState[ActualState].pos - mMoveState[RenderState].pos;
    if(delta.len() > MaxControlObjectInterpDistance)
@@ -392,17 +411,7 @@ void Ship::readControlState(BitStream *stream)
    }
    else
       interpTime = 1;
-
-   // Update the turbo noise
-   if(mTurbo && mTurboNoise.isNull())
-      mTurboNoise = SFXObject::play(SFXShipTurbo, mMoveState[RenderState].pos, mMoveState[RenderState].vel);
-
-   if(!mTurbo && mTurboNoise.isValid())
-   {
-      mTurboNoise->setGain(0);
-      mTurboNoise->stop();
-      mTurboNoise = NULL;
-   }
+   logprintf("got a CU %g %g.", mMoveState[ActualState].pos.x, mMoveState[ActualState].pos.y);
 }
 
 U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
@@ -432,12 +441,6 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
    if(stream->writeFlag(updateMask & HealthMask))
       stream->writeFloat(mHealth, 6);
 
-   if(stream->writeFlag(updateMask & PowersMask))
-   {
-      stream->writeFlag(mTurbo);
-      stream->writeFlag(mShield);
-   }
-
    stream->writeFlag(hasExploded);
 
    bool shouldWritePosition = (updateMask & InitialMask) || 
@@ -445,6 +448,7 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
 
    if(!shouldWritePosition)
    {
+      stream->writeFlag(false);
       stream->writeFlag(false);
       stream->writeFlag(false);
    }
@@ -459,6 +463,11 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
       if(stream->writeFlag(updateMask & MoveMask))
       {
          lastMove.pack(stream, NULL);
+      }
+      if(stream->writeFlag(updateMask & PowersMask))
+      {
+         stream->writeFlag(mTurbo);
+         stream->writeFlag(mShield);
       }
    }
    return 0;
@@ -493,12 +502,6 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
    if(stream->readFlag())
       mHealth = stream->readFloat(6);
 
-   if(stream->readFlag())
-   {
-      mTurbo  = stream->readFlag();
-      mShield = stream->readFlag();
-   }
-
    bool explode = stream->readFlag();
 
    if(stream->readFlag())
@@ -513,6 +516,12 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
       lastMove = Move();
       lastMove.unpack(stream);
    }
+   if(stream->readFlag())
+   {
+      mTurbo  = stream->readFlag();
+      mShield = stream->readFlag();
+   }
+
    mMoveState[ActualState].angle = lastMove.angle;
 
    if(positionChanged)
@@ -542,17 +551,6 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
 
       if(!wasInitialUpdate)
          emitShipExplosion(mMoveState[ActualState].pos);
-   }
-
-   // Update the turbo noise
-   if(mTurbo && mTurboNoise.isNull())
-      mTurboNoise = SFXObject::play(SFXShipTurbo, mMoveState[RenderState].pos, mMoveState[RenderState].vel);
-
-   if(!mTurbo && mTurboNoise.isValid())
-   {
-      mTurboNoise->setGain(0);
-      mTurboNoise->stop();
-      mTurboNoise = NULL;
    }
 }
 

@@ -171,7 +171,11 @@ void ControlObjectConnection::readPacket(BitStream *bstream)
             mServerPosition = controlObject->getActualPos();
 
             for(S32 i = 0; i < pendingMoves.size(); i++)
-               controlObject->processClientMove(&pendingMoves[i], true);
+            {
+               Move theMove = pendingMoves[i];
+               theMove.prepare();
+               controlObject->processClientMove(&theMove, true);
+            }
          }
          else
             controlObject = NULL;

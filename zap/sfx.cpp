@@ -340,6 +340,9 @@ void SFXObject::queueBuffer(ByteBufferPtr p)
    if(!gSFXValid)
       return;
 
+   if(!p->getBufferSize())
+      return;
+
    mInitialBuffer = p;
    if(mSourceIndex != -1)
    {

@@ -116,13 +116,13 @@ public:
       mPrev->mNext = this;
    }
 
-   void onConnectionEstablished(bool isInitiator)
+   void onConnectionEstablished()
    {
       logprintf("connection to %s - %s established.", isInitiator ? "server" : "client", getNetAddress().toString());
 
       // If we're a server (ie, being connected to by the client) add this new connection to
       // our list of clients.
-      if(!isInitiator)
+      if(!isInitiator())
          linkToClientList();
    }
 
@@ -144,19 +144,14 @@ public:
 
    // Various things that should trigger us to try another server...
 
-   void onConnectTimedOut()
+   void onConnectTerminated(NetConnection::TerminationReason, const char *)
    {
       GameConnectionDone();
    }
 
-   void onDisconnect(const char *reason)
+   void onConnectionTerminated(NetConnection::TerminationReason, const char *reason)
    {
-      logprintf("Remote host disconnected - %s", reason);
-      GameConnectionDone();
-   }
-
-   void onTimedOut()
-   {
+      logprintf("Connection to remote host terminated - %s", reason);
       GameConnectionDone();
    }
 
@@ -356,7 +351,7 @@ public:
       }
    }
 
-   void onConnectionEstablished(bool isInitiator)
+   void onConnectionEstablished()
    {
       if(!gIsServer)
          startGameTypesQuery();

@@ -230,27 +230,22 @@ public:
    /// The player object associated with this connection.
    SafePtr<Player> myPlayer;
 
-   /// onTimedOut is called when the connection to the server or client has been
-   /// terminated due to a lack of network traffic from the remote host.
-   /// When a TestConnection to a server times out, the client's network interface
+   /// onConnectTerminated is called when the connection request to the server
+   /// is unable to complete due to server rejection, timeout or other error.
+   /// When a TestConnection connect request to a server is terminated, the client's network interface
    /// is notified so it can begin searching for another server to connect to.
-   void onTimedOut();
- 
-   /// onConnectTimedOut is called when the connection request to the server
-   /// is unable to complete due to connection timeout.
-   /// When a TestConnection connect request to a server times out, the client's network interface
-   /// is notified so it can begin searching for another server to connect to.
-   void onConnectTimedOut();
+   void onConnectTerminated(NetConnection::TerminationReason reason, const char *rejectionString);
 
-   /// onDisconnect is called when the remote host has terminated the connection.
+   /// onConnectionTerminated is called when an established connection is terminated, whether
+   /// from the local or remote hosts explicitly disconnecting, timing out or network error.
    /// When a TestConnection to a server is disconnected, the client's network interface
    /// is notified so it can begin searching for another server to connect to.
-   void onDisconnect(const char *reason);
+   void onConnectionTerminated(NetConnection::TerminationReason reason, const char *string);
 
    /// onConnectionEstablished is called on both ends of a connection when the connection is established.  
    /// On the server this will create a player for this client, and set it as the client's
    /// scope object.  On both sides this will set the proper ghosting behavior for the connection (ie server to client).
-   void onConnectionEstablished(bool isInitiator); 
+   void onConnectionEstablished(); 
 
    /// Remote function that client calls to set the position of the player on the server.
    TNL_DECLARE_RPC(rpcSetPlayerPos, (F32 x, F32 y));

@@ -129,11 +129,11 @@ checkPlayerName:
    return true;
 }
 
-void GameConnection::onConnectionEstablished(bool isInitiator)
+void GameConnection::onConnectionEstablished()
 {
-   Parent::onConnectionEstablished(isInitiator);
+   Parent::onConnectionEstablished();
 
-   if(isInitiator)
+   if(isInitiator())
    {
       setGhostFrom(false);
       setGhostTo(true);
@@ -152,9 +152,9 @@ void GameConnection::onConnectionEstablished(bool isInitiator)
    }
 }
 
-void GameConnection::onConnectionTerminated(const char *reason)
+void GameConnection::onConnectionTerminated(NetConnection::TerminationReason r, const char *reason)
 {
-   if(isConnectionToServer())
+   if(isInitiator())
    {
       gMainMenuUserInterface.activate();
    }
@@ -164,24 +164,9 @@ void GameConnection::onConnectionTerminated(const char *reason)
    }
 }
 
-void GameConnection::onConnectionRejected(const char *reason)
+void GameConnection::onConnectTerminated(TerminationReason r, const char *string)
 {
-   gMainMenuUserInterface.activate();
-}
-
-void GameConnection::onDisconnect(const char *reason)
-{
-   onConnectionTerminated(avar("Server disconnect - %s", reason));
-}
-
-void GameConnection::onTimedOut()
-{
-   onConnectionTerminated("Connection timed out.");
-}
-
-void GameConnection::onConnectTimedOut()
-{
-   if(gClientGame && this == gClientGame->getConnectionToServer())
+   if(isInitiator())
       gMainMenuUserInterface.activate();
 }
 

@@ -38,6 +38,7 @@ class Item;
 
 class Ship : public MoveObject
 {
+   typedef MoveObject Parent;
 public:
    enum {
 //      MaxVelocity = 500, // points per second
@@ -56,7 +57,11 @@ public:
       FireDelay = 100,
       MaxControlObjectInterpDistance = 200,
       TrailCount = 2,
-      RechargeRate = 6, // How many percent/second
+      EnergyMax = 100000,
+      EnergyRechargeRate = 6000, // How many percent/second
+      EnergyTurboDrain = 15000,
+      EnergyShieldDrain = 15000,
+      EnergyCooldownThreshold = 15000,
    };
 
    enum MaskBits {
@@ -72,7 +77,7 @@ public:
    U32 interpTime;
    Timer mFireTimer;
    F32 mHealth;
-   F32 mEnergy;
+   S32 mEnergy;
    StringTableEntry mPlayerName;
    bool mShield, mTurbo, mCooldown;
    SFXHandle mTurboNoise;
@@ -92,10 +97,11 @@ public:
 
    void render();
    Ship(StringTableEntry playerName="", Point p = Point(0,0), F32 m = 1.0);
-   ~Ship();
 
    F32 getHealth() { return mHealth; }
 
+   void onGhostRemove();
+   void updateTurboNoise();
    void burnEnergy(U32 dT);
    void emitMovementSparks(U32 deltaT);
    void emitShipExplosion(Point pos);
