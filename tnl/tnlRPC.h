@@ -142,8 +142,8 @@ struct NetType {
 template<U32 bitCount> struct Int : NetType
 {
    U32 value;
-   Int(U32 val) { value = val; }
-   operator U32() { return value; }
+   Int(U32 val=0) { value = val; }
+   operator U32() const { return value; }
    U32 getPrecisionBits() { return bitCount; }
 };
 
@@ -154,8 +154,8 @@ template<U32 bitCount> struct Int : NetType
 template<U32 bitCount> struct SignedInt : NetType
 {
    S32 value;
-   SignedInt(S32 val) { value = val; }
-   operator S32() { return value; }
+   SignedInt(S32 val=0) { value = val; }
+   operator S32() const { return value; }
    U32 getPrecisionBits() { return bitCount; }
 };
 
@@ -166,8 +166,8 @@ template<U32 bitCount> struct SignedInt : NetType
 template<U32 bitCount> struct Float : NetType
 {
    F32 value;
-   Float(F32 val) { value = val; }
-   operator F32() { return value; }
+   Float(F32 val=0) { value = val; }
+   operator F32() const { return value; }
    U32 getPrecisionBits() { return bitCount; }
 };
 
@@ -178,8 +178,8 @@ template<U32 bitCount> struct Float : NetType
 template<U32 bitCount> struct SignedFloat : NetType
 {
    F32 value;
-   SignedFloat(F32 val) { value = val; }
-   operator F32() { return value; }
+   SignedFloat(F32 val=0) { value = val; }
+   operator F32() const { return value; }
    U32 getPrecisionBits() { return bitCount; }
 };
 
@@ -190,8 +190,8 @@ template<U32 bitCount> struct SignedFloat : NetType
 template<U32 rangeStart, U32 rangeEnd> struct RangedU32 : NetType
 {
    U32 value;
-   RangedU32(U32 val) { TNLAssert(value >= rangeStart && value <= rangeEnd, "Out of range value!"); value = val; }
-   operator U32() { return value; }
+   RangedU32(U32 val=rangeStart) { TNLAssert(value >= rangeStart && value <= rangeEnd, "Out of range value!"); value = val; }
+   operator U32() const { return value; }
 };
 
 /// RPCArgInfo tracks an individual parameter in an RPC method parameter list

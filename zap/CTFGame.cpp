@@ -62,14 +62,120 @@ static void renderFlag(Point pos, Color c)
 
 TNL_IMPLEMENT_NETOBJECT(CTFGameType);
 
-void CTFGameType::renderInterfaceOverlay()
+void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
 {
-   for(S32 i = 0; i < mTeams.size(); i++)
+   if(scoreboardVisible)
    {
-      Point pos(750, 550 - i * 38);
-      renderFlag(pos + Point(-20, 18), mTeams[i].color);
-      glColor3f(1,1,1);
-      UserInterface::drawStringf(pos.x, pos.y, 32, "%d", mTeams[i].score);
+      U32 totalWidth = 780;
+      U32 teamWidth = totalWidth / mTeams.size();
+      U32 maxTeamPlayers = 0;
+      countTeamPlayers();
+
+      for(S32 i = 0; i < mTeams.size(); i++)
+         if(mTeams[i].numPlayers > maxTeamPlayers)
+            maxTeamPlayers = mTeams[i].numPlayers;
+
+      U32 totalHeight = 580;
+      U32 maxHeight = (totalHeight - 40) / maxTeamPlayers;
+      if(maxHeight > 30)
+         maxHeight = 30;
+
+      totalHeight = 40 + maxHeight * maxTeamPlayers;
+      U32 yt = (600 - totalHeight) / 2;
+      U32 yb = yt + totalHeight;
+
+      for(S32 i = 0; i < mTeams.size(); i++)
+      {
+         U32 xl = 10 + i * teamWidth;
+         U32 xr = xl + teamWidth - 2;
+
+         Color c = mTeams[i].color;
+         glEnable(GL_BLEND);
+         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+         glColor4f(c.r, c.g, c.b, 0.6);
+         glBegin(GL_POLYGON);
+         glVertex2f(xl, yt);
+         glVertex2f(xr, yt);
+         glVertex2f(xr, yb);
+         glVertex2f(xl, yb);
+         glEnd();
+
+         glDisable(GL_BLEND);
+         glBlendFunc(GL_ONE, GL_ZERO);
+
+         renderFlag(Point(xl + 20, yt + 18), c);
+         renderFlag(Point(xr - 20, yt + 18), c);
+
+         glColor3f(1,1,1);
+         glBegin(GL_LINES);
+         glVertex2f(xl, yt + 40);
+         glVertex2f(xr, yt + 40);
+         glEnd();
+
+         UserInterface::drawString(xl + 40, yt + 2, 30, mTeams[i].name.getString());
+         UserInterface::drawStringf(xr - 140, yt + 2, 30, "%d", mTeams[i].score);
+
+         U32 curRowY = yt + 41;
+         U32 fontSize = maxHeight * 0.8f;
+         for(S32 j = 0; j < mClientList.size(); j++)
+         {
+            if(mClientList[j].teamId == i)
+            {
+               UserInterface::drawString(xl + 40, curRowY, fontSize, mClientList[i].name.getString());
+               UserInterface::drawStringf(xr - 140, curRowY, fontSize, "%d", mClientList[i].score);
+               UserInterface::drawStringf(xr - 70, curRowY, fontSize, "%d", mClientList[i].ping);
+               curRowY += maxHeight;
+            }           
+         }
+      }
+   }
+   else
+   {
+      for(S32 i = 0; i < mTeams.size(); i++)
+      {
+         Point pos(750, 550 - i * 38);
+         renderFlag(pos + Point(-20, 18), mTeams[i].color);
+         glColor3f(1,1,1);
+         UserInterface::drawStringf(pos.x, pos.y, 32, "%d", mTeams[i].score);
+      }
+   }
+}
+
+Vector<RangedU32<0, CTFGameType::MaxPing> > CTFGameType::mPingTimes; ///< Static vector used for constructing update RPCs
+Vector<Int<9> > CTFGameType::mScores;
+
+void CTFGameType::updateClientScoreboard(S32 clientIndex)
+{
+   mPingTimes.clear();
+   mScores.clear();
+
+   for(S32 i = 0; i < mClientList.size(); i++)
+   {
+      if(mClientList[i].ping < MaxPing)
+         mPingTimes.push_back(mClientList[i].ping);
+      else
+         mPingTimes.push_back(MaxPing);
+      mScores.push_back(mClientList[i].score);
+   }
+
+   NetObject::setRPCDestConnection(mClientList[clientIndex].clientConnection);
+   s2cScoreboardUpdate(mPingTimes, mScores);
+   NetObject::setRPCDestConnection(NULL);
+}
+
+TNL_DECLARE_RPC_MEM_ENUM(CTFGameType, MaxPing);
+
+TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cScoreboardUpdate, (const Vector<RangedU32<0, CTFGameType::MaxPing> > &pingTimes, const Vector<Int<9> > &scores),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+{
+   for(S32 i = 0; i < mClientList.size(); i++)
+   {
+      if(i >= pingTimes.size())
+         break;
+
+      mClientList[i].ping = pingTimes[i];
+      mClientList[i].score = scores[i];
    }
 }
 

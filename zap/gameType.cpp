@@ -37,11 +37,27 @@ TNL_IMPLEMENT_NETOBJECT(GameType);
 GameType::GameType()
 {
    mNetFlags.set(Ghostable);
+   mTimeUntilScoreboardUpdate = 0;
 }
 
 void GameType::processArguments(S32 argc, const char **argv)
 {
 
+}
+
+void GameType::processServer(U32 deltaT)
+{
+   if(deltaT > mTimeUntilScoreboardUpdate)
+   {
+      for(S32 i = 0; i < mClientList.size(); i++)
+         mClientList[i].ping = (U32) mClientList[i].clientConnection->getRoundTripTime();
+
+      for(S32 i = 0; i < mClientList.size(); i++)
+         if(mClientList[i].wantsScoreboardUpdates)
+            updateClientScoreboard(i);
+
+      mTimeUntilScoreboardUpdate = 0;
+   }
 }
 
 void GameType::onAddedToGame(Game *theGame)
@@ -111,6 +127,15 @@ void GameType::spawnShip(GameConnection *theClient)
    theClient->setControlObject(newShip);
 }
 
+void GameType::countTeamPlayers()
+{
+   for(S32 i = 0; i < mTeams.size(); i ++)
+      mTeams[i].numPlayers = 0;
+
+   for(S32 i = 0; i < mClientList.size(); i++)
+      mTeams[mClientList[i].teamId].numPlayers++;
+}
+
 void GameType::serverAddClient(GameConnection *theClient)
 {
    ClientRef cref;
@@ -118,8 +143,11 @@ void GameType::serverAddClient(GameConnection *theClient)
    cref.name = theClient->playerName;
 
    cref.clientConnection = theClient;
+   countTeamPlayers();
+
    U32 minPlayers = mTeams[0].numPlayers;
    S32 minTeamIndex = 0;
+
    for(S32 i = 1; i < mTeams.size(); i++)
    {
       if(mTeams[i].numPlayers < minPlayers)
@@ -130,8 +158,6 @@ void GameType::serverAddClient(GameConnection *theClient)
    }
    cref.teamId = minTeamIndex;
    mClientList.push_back(cref);
-
-   mTeams[cref.teamId].numPlayers++;
 
    s2cAddClient(cref.clientId, cref.name, false);
    s2cClientJoinedTeam(cref.clientId, cref.teamId);
@@ -162,6 +188,8 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddClient, (U32 id, StringTableEntry na
    cref.clientId = id;
    cref.name = name;
    cref.teamId = 0;
+   cref.wantsScoreboardUpdates = false;
+   cref.ping = 0;
    mClientList.push_back(cref);
 
    if(isMyClient)
@@ -172,7 +200,6 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddClient, (U32 id, StringTableEntry na
 void GameType::serverRemoveClient(GameConnection *theClient)
 {
    S32 clientIndex = findClientIndexByConnection(theClient);
-   mTeams[mClientList[clientIndex].teamId].numPlayers--;
    mClientList.erase(clientIndex);
 
    GameObject *theControlObject = theClient->getControlObject();
@@ -257,6 +284,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSendChat, (bool global, const char *mes
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
 {
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
+   S32 clientIndex = findClientIndexByConnection(source);
 
    RefPtr<NetEvent> theEvent = TNL_RPC_CONSTRUCT_NETEVENT(this, 
       s2cDisplayChatMessage, (global, source->playerName, message));
@@ -264,9 +292,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSendChat, (bool global, const char *mes
    S32 teamId = 0;
    
    if(!global)
-      for(S32 i = 0; i < mClientList.size(); i++)
-         if(mClientList[i].clientId == source->mClientId)
-            teamId = mClientList[i].teamId;
+      teamId = mClientList[clientIndex].teamId;
 
    for(S32 i = 0; i < mClientList.size(); i++)
    {
@@ -284,6 +310,20 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cDisplayChatMessage, (bool global, Strin
    Color theColor = global ? gGlobalChatColor : gTeamChatColor;
 
    gGameUserInterface.displayMessage(theColor, "%s: %s", clientName.getString(), message);
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sRequestScoreboardUpdates, (bool updates),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+{
+   GameConnection *source = (GameConnection *) getRPCSourceConnection();
+   S32 clientIndex = findClientIndexByConnection(source);
+   mClientList[clientIndex].wantsScoreboardUpdates = updates;
+   if(updates)
+      updateClientScoreboard(clientIndex);
+}
+
+void GameType::updateClientScoreboard(S32 clientIndex)
+{
 }
 
 };

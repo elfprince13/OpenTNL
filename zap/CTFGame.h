@@ -40,7 +40,15 @@ class CTFGameType : public GameType
 {
 public:
    void shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag);
-   void renderInterfaceOverlay();
+   void renderInterfaceOverlay(bool scoreboardVisible);
+   void updateClientScoreboard(S32 clientIndex);
+
+   enum {
+      MaxPing = 999,
+   };
+
+   static Vector<RangedU32<0, MaxPing> > mPingTimes; ///< Static vector used for constructing update RPCs
+   static Vector<Int<9> > mScores;
 
    enum {
       CTFMsgReturnFlag,
@@ -49,6 +57,7 @@ public:
    };
 
    TNL_DECLARE_RPC(s2cCTFMessage, (U32 messageIndex, U32 clientId, U32 teamIndex));
+   TNL_DECLARE_RPC(s2cScoreboardUpdate, (const Vector<RangedU32<0, MaxPing> > &pingTimes, const Vector<Int<9> > &scores));
    TNL_DECLARE_CLASS(CTFGameType);
 };
 
@@ -69,6 +78,7 @@ public:
 
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);
+
    TNL_DECLARE_CLASS(CTFFlagItem);
 };
 

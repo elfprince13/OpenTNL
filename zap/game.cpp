@@ -163,9 +163,6 @@ ServerGame::ServerGame(const Address &theBindAddress, U32 maxPlayers, const char
    mHostName = hostName;
 
    mNetInterface->setAllowsConnections(true);
-
-   // Load a level
-   loadLevel("level1.txt");
 }
 
 void ServerGame::loadLevel(const char *fileName)

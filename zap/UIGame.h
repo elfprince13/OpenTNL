@@ -71,6 +71,7 @@ class GameUserInterface : public UserInterface
    U32 mChatCursorPos;
    bool mChatBlink;
    U32 mChatLastBlinkTime;
+   bool mInScoreboardMode;
 
 public:
    GameUserInterface();

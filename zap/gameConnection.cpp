@@ -179,8 +179,25 @@ bool GameConnection::readConnectRequest(BitStream *stream, const char **errorStr
    if(!Parent::readConnectRequest(stream, errorString))
       return false;
    char buf[256];
-
+   
    stream->readString(buf);
+   size_t len = strlen(buf);
+
+   if(len > 252)
+      len = 252;
+   U32 index = 0;
+
+checkPlayerName:
+   for(GameConnection *walk = gClientList.mNext; walk != &gClientList; walk = walk->mNext)
+   {
+      if(!strcmp(walk->playerName.getString(), buf))
+      {
+         dSprintf(buf + len, 3, ".%d", index);
+         index++;
+         goto checkPlayerName;
+      }
+   }
+
    playerName = buf;
    return true;
 }

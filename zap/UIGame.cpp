@@ -44,6 +44,7 @@ Color gTeamChatColor(0, 1, 0);
 GameUserInterface::GameUserInterface()
 {
    mCurrentMode = PlayMode;
+   mInScoreboardMode = false;
 
    mChatLastBlinkTime = 0;
    memset(mChatBuffer, 0, sizeof(mChatBuffer));
@@ -172,7 +173,7 @@ void GameUserInterface::render()
    GameType *theGameType = gClientGame->getGameType();
 
    if(theGameType)
-      theGameType->renderInterfaceOverlay();
+      theGameType->renderInterfaceOverlay(mInScoreboardMode);
 
    if(mCurrentMode == ChatMode)
    {
@@ -246,6 +247,14 @@ void GameUserInterface::onKeyDown(U32 key)
 
       switch(key)
       {
+         case '\t':
+         {
+            mInScoreboardMode = true;
+            GameType *g = gClientGame->getGameType();
+            if(g)
+               g->c2sRequestScoreboardUpdates(true);
+            break;
+         }
          case 'w':
          case 'W':
             mCurrentMove.up = 1.0;
@@ -391,6 +400,14 @@ void GameUserInterface::onKeyUp(U32 key)
    {
       switch(key)
       {
+         case '\t':
+         {
+            mInScoreboardMode = false;
+            GameType *g = gClientGame->getGameType();
+            if(g)
+               g->c2sRequestScoreboardUpdates(false);
+            break;
+         }
          case 'w':
          case 'W':
             mCurrentMove.up = 0;

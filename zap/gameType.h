@@ -41,7 +41,9 @@ public:
       StringTableEntry name;
       S32 teamId;
       U32 score;
+      bool wantsScoreboardUpdates;
       SafePtr<GameConnection> clientConnection;
+      U32 ping;
    };
 
    Vector<ClientRef> mClientList;
@@ -57,8 +59,10 @@ public:
    };
    Vector<Team> mTeams;
    U32 mThisClientId; ///< Set to the client ID of this client (only on the ghost of the GameType)
+   U32 mTimeUntilScoreboardUpdate;
 
    GameType();
+   void countTeamPlayers();
 
    S32 findClientIndexById(U32 clientId);
    S32 findClientIndexByConnection(GameConnection *theConnection);
@@ -67,6 +71,7 @@ public:
    virtual bool processLevelItem(S32 argc, const char **argv);
    void onAddedToGame(Game *theGame);
    void onGhostAvailable(GhostConnection *theConnection);
+   void processServer(U32 deltaT);
 
    virtual void serverAddClient(GameConnection *theClient);
    virtual void serverRemoveClient(GameConnection *theClient);
@@ -77,7 +82,8 @@ public:
    virtual void addClientGameMenuOptions(Vector<const char *> &menuOptions);
    virtual void processClientGameMenuOption(U32 index);
 
-   virtual void renderInterfaceOverlay() {};
+   virtual void renderInterfaceOverlay(bool scoreboardVisible) {};
+   virtual void updateClientScoreboard(S32 clientIndex);
 
    TNL_DECLARE_RPC(s2cAddTeam, (StringTableEntry teamName, F32 r, F32 g, F32 b));
    TNL_DECLARE_RPC(s2cSetTeamScore, (U32 teamIndex, U32 score));
@@ -89,6 +95,8 @@ public:
 
    TNL_DECLARE_RPC(c2sSendChat, (bool global, const char *message));
    TNL_DECLARE_RPC(s2cDisplayChatMessage, (bool global, StringTableEntry clientName, const char *message));
+
+   TNL_DECLARE_RPC(c2sRequestScoreboardUpdates, (bool updates));
 
    TNL_DECLARE_CLASS(GameType);
 };
