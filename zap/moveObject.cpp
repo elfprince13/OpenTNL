@@ -298,7 +298,7 @@ void MoveObject::computeCollisionResponseBarrier(U32 stateIndex, Point &collisio
       if(scale > 0.5f)
       {
          // Make a noise...
-         SFXObject::play(SFXBounceWall, collisionPoint, Point());
+         SFXObject::play(SFXBounceWall, collisionPoint, Point(), getMin(1.0f, scale - 0.25f));
 
          Color bumpC(scale/3, scale/3, scale);
 
@@ -338,7 +338,8 @@ void MoveObject::computeCollisionResponseMoveObject(U32 stateIndex, MoveObject *
    mMoveState[stateIndex].vel += collisionVector * (v1f - v1i);
    shipHit->mMoveState[stateIndex].vel += collisionVector * (v2f - v2i);
 
-   SFXObject::play(SFXBounceObject, shipHit->mMoveState[stateIndex].pos, Point());
+   if(v1i > 0.25)
+      SFXObject::play(SFXBounceObject, shipHit->mMoveState[stateIndex].pos, Point());
 }
 
 
