@@ -237,7 +237,7 @@ void idle()
       F64 delta = Platform::getHighPrecisionMilliseconds(currentTimer - lastMove);
       if(delta > 5)
       {
-         U32 rklen = strlen(keyBuffer);
+         U32 rklen = (U32) strlen(keyBuffer);
          // generate some random keys:
          for(S32 i = 0; i < 32; i++)
          {

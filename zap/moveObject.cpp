@@ -384,7 +384,7 @@ void MoveObject::updateInterpolation()
             vel = 0;
 
          bool hit = true;
-         float time = deltaT * 0.001;
+         float time = deltaT * 0.001f;
          if(vel * time > distance)
             goto interpDone;
 

@@ -13,6 +13,8 @@ Changes since version 1.2.1:
 - Added controller support for V-chats
 - Fixed a nasty string compression bug in BitStream/RPC
 - Added command line arguments to the journal
+- Added support for headless linux dedicated server compiles
+- Added support for GCC 2.9.x in the RPC code
 
 Controls:
 
