@@ -83,6 +83,7 @@ MasterServerConnection *Game::getConnectionToMaster()
 
 GameType *Game::getGameType()
 {
+   TNLAssert(mGameType, "Unexpected null game type!");
    return mGameType;
 }
 
@@ -289,11 +290,93 @@ void ClientGame::idle(U32 timeDelta)
    mNetInterface->processConnections();
 }
 
-void ClientGame::render()
+void ClientGame::renderCommander()
 {
-   if(!hasValidControlObject())
-      return;
+   GameObject *u = mConnectionToServer->getControlObject();
+   Point position = u->getRenderPos();
 
+   glPushMatrix();
+
+   // Set up the view to show the whole level.
+   Rect worldBounds(Point(0,0), Point(WorldSize, WorldSize));
+
+   Point worldCenter = worldBounds.getCenter();
+   Point worldExtents = worldBounds.getExtents();
+
+   glScalef(UserInterface::canvasHeight / worldExtents.x, UserInterface::canvasHeight / worldExtents.y, 0);
+   glTranslatef(-worldCenter.x, -worldCenter.y, 0);
+
+   // render the stars, but only 1/8th of them for our own sanity.
+   glPointSize( 1.0f );
+   glColor3f(0.8, 0.8, 1.0);
+
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glVertexPointer(2, GL_FLOAT, 8*sizeof(Point), &mStars[0]);
+   glDrawArrays(GL_POINTS, 0, NumStars/8);
+   glDisableClientState(GL_VERTEX_ARRAY);
+
+   // render the objects
+   Vector<GameObject *> renderObjects; 
+   Vector<Ship *>       sensorObjects; 
+   mDatabase.findObjects(AllObjectTypes, renderObjects, worldBounds);
+
+   // Deal with rendering sensor volumes
+
+   for(S32 i = 0; i < renderObjects.size(); i++)
+   {
+      // If it's a ship, add it to the list.
+      Ship * so = dynamic_cast<Ship*>(renderObjects[i]);
+
+      if(so)
+         sensorObjects.push_back(so);
+   }
+
+
+   // get info about the current player
+   S32 playerId = gClientGame->getGameType()->findClientIndexByName(((Ship*)gClientGame->getConnectionToServer()->getControlObject())->mPlayerName);
+   S32 playerTeam = gClientGame->getGameType()->mClientList[playerId].teamId;
+
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA);
+   glEnable(GL_BLEND);
+   glColor4f(0.1, 0.7, 0.2, 0.3);
+
+   for(S32 i=0; i<sensorObjects.size(); i++)
+   {
+      // Get team of this object.
+      S32 ourClientId = gClientGame->getGameType()->findClientIndexByName(sensorObjects[i]->mPlayerName);
+      S32 ourTeam     = gClientGame->getGameType()->mClientList[ourClientId].teamId;
+
+      if(ourTeam == playerTeam)
+      {
+         glPushMatrix();
+         glTranslatef(sensorObjects[i]->getRenderPos().x, sensorObjects[i]->getRenderPos().y, 0);
+
+         glBegin(GL_TRIANGLE_FAN);
+         glVertex2f(0,0);
+
+         for(F32 th=0; th<6.38f; th+=.1f)
+               glVertex2f(sin(th) * 325, cos(th) * 325);
+
+         glEnd();
+
+         glPopMatrix();
+      }
+   }
+
+   glDisable(GL_BLEND);
+
+   for(S32 i = 0; i < renderObjects.size(); i++)
+   {
+      renderObjects[i]->render();
+   }
+
+   SparkManager::render();
+
+   glPopMatrix();
+}
+
+void ClientGame::renderNormal()
+{
    GameObject *u = mConnectionToServer->getControlObject();
    Point position = u->getRenderPos();
 
@@ -304,10 +387,11 @@ void ClientGame::render()
    // render the stars
    glPointSize( 1.0f );
    glColor3f(0.8, 0.8, 1.0);
-   glBegin(GL_POINTS);
-   for(U32 i = 0; i < NumStars; i++)
-      glVertex2f(mStars[i].x, mStars[i].y);
-   glEnd();
+
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glVertexPointer(2, GL_FLOAT, sizeof(Point), &mStars[0]);
+   glDrawArrays(GL_POINTS, 0, NumStars);
+   glDisableClientState(GL_VERTEX_ARRAY);
 
    // render the objects
    Vector<GameObject *> renderObjects;
@@ -322,6 +406,17 @@ void ClientGame::render()
    SparkManager::render();
 
    glPopMatrix();
+}
+
+void ClientGame::render()
+{
+   if(!hasValidControlObject())
+      return;
+
+   if(mInCommanderMap)
+      renderCommander();
+   else
+      renderNormal();
 }
 
 };

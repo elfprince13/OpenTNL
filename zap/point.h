@@ -118,6 +118,11 @@ struct Rect
              max.x > r.min.x && max.y > r.min.y;
    }
    void expand(Point delta) { min -= delta; max += delta; }
+
+   Point getExtents()
+   {
+      return max - min;
+   }
 };
 
 };

@@ -90,6 +90,7 @@ Color(1, 1, 1),
 Color(0, 0, 1),
 Color(1, 0, 0),
 };
+
 void Projectile::handleCollision(GameObject *hitObject, Point collisionPoint)
 {
    collided = true;

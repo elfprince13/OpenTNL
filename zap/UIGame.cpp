@@ -50,7 +50,7 @@ GameUserInterface::GameUserInterface()
    memset(mChatBuffer, 0, sizeof(mChatBuffer));
    mChatBlink = false;
 
-   for(U32 i = 0; i < 4; i++)
+   for(U32 i = 0; i < MessageDisplayCount; i++)
       mDisplayMessage[i][0] = 0;
 
    mVChat = new VChatHelper();
@@ -157,8 +157,6 @@ void GameUserInterface::render()
    glEnd();
    glPopMatrix();
 
-   //glMatrixMode(GL_PROJECTION);
-   //glOrtho(0, windowWidth, windowHeight, 0, 0, 1);
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
 
@@ -310,6 +308,16 @@ void GameUserInterface::onKeyDown(U32 key)
             mVChat->show();
             mCurrentMode = VChatMode;
             break;
+         case ' ':
+            if(gClientGame->mInCommanderMap)
+               break;
+
+            UserInterface::playBoop();
+            gClientGame->mInCommanderMap = true;
+            GameConnection * conn = gClientGame->getConnectionToServer();
+            if(conn)
+               conn->c2sRequestCommanderMap();
+         break;
       }
    }
    else if(mCurrentMode == ChatMode)
@@ -447,6 +455,16 @@ void GameUserInterface::onKeyUp(U32 key)
          case 'D':
             mCurrentMove.right = 0;
             break;
+         case ' ':
+             if(!gClientGame->mInCommanderMap)
+               break;
+
+             UserInterface::playBoop();
+            gClientGame->mInCommanderMap = false;
+            GameConnection * conn = gClientGame->getConnectionToServer();
+            if(conn)
+               conn->c2sReleaseCommanderMap();
+         break;
       }
    }
    else if(mCurrentMode == ChatMode)

@@ -157,6 +157,7 @@ public:
    SafePtr<GameObject> controlObject;
    Game *theGame;
 
+   bool mInCommanderMap;
    StringTableEntry playerName;
    U32 mLastClientControlCRC;
 
@@ -214,6 +215,8 @@ public:
    void onConnectTimedOut();
 
    TNL_DECLARE_NETCONNECTION(GameConnection);
+   TNL_DECLARE_RPC(c2sRequestCommanderMap, ());
+   TNL_DECLARE_RPC(c2sReleaseCommanderMap, ());
 };
 
 };

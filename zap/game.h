@@ -165,12 +165,16 @@ class ClientGame : public Game
 public:
    ClientGame(const Address &bindAddress) : Game(bindAddress) {}
 
+   bool mInCommanderMap;
+
    bool hasValidControlObject();
    bool isConnectedToServer();
 
    void setConnectionToServer(GameConnection *connection);
    GameConnection *getConnectionToServer();
    void render();
+   void renderNormal();
+   void renderCommander();
    bool isServer() { return false; }
    void idle(U32 timeDelta);
 };

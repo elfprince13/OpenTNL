@@ -280,4 +280,14 @@ void GameConnection::onConnectTimedOut()
       gMainMenuUserInterface.activate();
 }
 
+TNL_IMPLEMENT_RPC(GameConnection, c2sRequestCommanderMap, (), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
+{
+   mInCommanderMap = true;
+}
+
+TNL_IMPLEMENT_RPC(GameConnection, c2sReleaseCommanderMap, (), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
+{
+   mInCommanderMap = false;
+}
+
 };

@@ -140,7 +140,8 @@ void idle()
          glutPostRedisplay();
    }
 
-   // Sleep a bit so we don't saturate the system.
+   // Sleep a bit so we don't saturate the system. For a non-dedicated server,
+   // sleep(0) helps reduce the impact of OpenGL on windows.
    Platform::sleep((gClientGame ? 0 : 1));
 }
 

@@ -36,8 +36,14 @@ class Item;
 
 class Ship : public MoveObject
 {
-   public:
+private:
+   // This is called when we're doing team queries...
+   void performInnerScopeQuery(GhostConnection *connection);
+
+public:
    enum {
+//      MaxVelocity = 500, // points per second
+//      Acceleration = 800, // points per second per second
       MaxVelocity = 400, // points per second
       Acceleration = 3000, // points per second per second
       InterpMaxVelocity = 900, // velocity to use to interpolate to proper position
