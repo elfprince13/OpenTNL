@@ -109,6 +109,14 @@ void NetClassRep::initialize()
             continue;
 
          qsort((void *) &dynamicTable[0], dynamicTable.size(), sizeof(NetClassRep *), ACRCompare);
+
+         TNLLogBlock(LogNetBase,
+            logprintf("Class Group: %d  Class Type: %d  count: %d",
+               group, type, dynamicTable.size());
+            for(S32 i = 0; i < dynamicTable.size(); i++)
+               logprintf("%s", dynamicTable[i]->getClassName());
+         )
+
          mClassTable[group][type] = new NetClassRep*[mNetClassCount[group][type]];
    
          for(U32 i = 0; i < mNetClassCount[group][type];i++)

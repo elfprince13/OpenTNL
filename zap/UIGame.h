@@ -68,6 +68,7 @@ class GameUserInterface : public UserInterface
    };
    enum {
       ChatBlinkTime = 100,
+      FPSAvgCount = 32,
    };
    Mode mCurrentMode;
    ChatType mCurrentChatType;
@@ -77,7 +78,11 @@ class GameUserInterface : public UserInterface
    bool mChatBlink;
    U32 mChatLastBlinkTime;
    bool mInScoreboardMode;
- 
+
+   bool mFPSVisible;
+   U32 mIdleTimeDelta[FPSAvgCount];
+   U32 mFrameIndex;
+
    VChatHelper *mVChat;
 
    struct VoiceRecorder

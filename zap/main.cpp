@@ -246,6 +246,7 @@ void display(void)
 
 TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, display, ())
 {
+   glFlush();
    if(UserInterface::current)
       UserInterface::current->render();
 
@@ -258,9 +259,7 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, display, ())
                                  gConnectStatesTable[gClientGame->getConnectionToMaster()->getConnectionState()]);
 
    }
-   glFlush();
    glutSwapBuffers();
-
 }
 
 #include <stdio.h>
@@ -387,6 +386,7 @@ int main(int argc, char **argv)
    //TNLLogEnable(LogNetConnection, true);
    TNLLogEnable(LogNetInterface, true);
    TNLLogEnable(LogPlatform, true);
+   TNLLogEnable(LogNetBase, true);
    //TNLLogEnable(LogBlah, true);
 
    bool hasClient = true;
@@ -444,11 +444,6 @@ int main(int argc, char **argv)
       {
          if(hasAdditionalArg)
             gZapJournal.load(argv[i+1]);
-      }
-      else if(!stricmp(argv[i], "-gain"))
-      {
-         if(hasAdditionalArg)
-            SFXObject::setCaptureGain(atoi(argv[i+1]));
       }
       else if(!stricmp(argv[i], "-dedicated"))
       {

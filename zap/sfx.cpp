@@ -128,11 +128,6 @@ void SFXObject::captureSamples(ByteBufferPtr buffer)
 
       captureBuffer->Unlock(buf1, count1, buf2, count2);
 
-      // Endeavour futilely to do a gain pass
-      S16 *data = (S16*)buffer->getBuffer();
-      for(U32 i=start/2; i<(start+sizeAdd)/2; i++)
-         data[i] <<= mCaptureGain;
-      
       lastReadOffset += count1 + count2;
       lastReadOffset %= BufferBytes;
    }
@@ -219,17 +214,11 @@ static ALuint gSources[NumSources];
 Point SFXObject::mListenerPosition;
 Point SFXObject::mListenerVelocity;
 F32 SFXObject::mMaxDistance = 500;
-S32 SFXObject::mCaptureGain = 0;
 
 static ALuint gBuffers[NumSFXBuffers];
 static Vector<ALuint> gVoiceFreeBuffers;
 
 static Vector<SFXHandle> gPlayList;
-
-void SFXObject::setCaptureGain(S32 amt)
-{
-   mCaptureGain = amt;
-}
 
 SFXObject::SFXObject(U32 profileIndex, ByteBufferPtr ib, F32 gain, Point position, Point velocity)
 {
@@ -318,11 +307,17 @@ static void unqueueBuffers(S32 sourceIndex)
    if(sourceIndex != -1)
    {
       ALint processed;
+      alGetError();
+
       alGetSourcei(gSources[sourceIndex], AL_BUFFERS_PROCESSED, &processed);
+      
       while(processed)
       {
          ALuint buffer;
          alSourceUnqueueBuffers(gSources[sourceIndex], 1, &buffer);
+         if(alGetError() != AL_NO_ERROR)
+            return;
+
          //logprintf("unqueued buffer %d\n", buffer);
          processed--;
          

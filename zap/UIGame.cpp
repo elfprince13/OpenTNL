@@ -49,6 +49,11 @@ GameUserInterface::GameUserInterface()
 {
    mCurrentMode = PlayMode;
    mInScoreboardMode = false;
+   mFPSVisible = false;
+
+   mFrameIndex = 0;
+   for(U32 i = 0; i < FPSAvgCount; i++)
+      mIdleTimeDelta[i] = 50;
 
    mChatLastBlinkTime = 0;
    memset(mChatBuffer, 0, sizeof(mChatBuffer));
@@ -100,6 +105,8 @@ void GameUserInterface::idle(U32 timeDelta)
       }
    }
    mVoiceRecorder.idle(timeDelta);
+   mIdleTimeDelta[mFrameIndex % FPSAvgCount] = timeDelta;
+   mFrameIndex++;
 }
 
 #ifdef TNL_OS_WIN32
@@ -249,6 +256,13 @@ void GameUserInterface::render()
    }
 #endif
 
+   if(mFPSVisible)
+   {
+      U32 sum = 0;
+      for(U32 i = 0; i < FPSAvgCount; i++)
+         sum += mIdleTimeDelta[i];
+      drawStringf(710, 10, 30, "%4.2f fps", (1000 * FPSAvgCount) / F32(sum));
+   }
    if(mVChat->isActive())
       mVChat->render();
 }
@@ -364,6 +378,9 @@ void GameUserInterface::onKeyDown(U32 key)
                g->c2sRequestScoreboardUpdates(true);
             break;
          }
+         case 'P':
+            mFPSVisible = !mFPSVisible;
+            break;
          case 'W':
             mCurrentMove.up = 1.0;
             break;
@@ -618,11 +635,14 @@ void GameUserInterface::VoiceRecorder::start()
 {
    if(!mRecordingAudio)
    {
+      mRecordingAudio = SFXObject::startRecording();
+      if(!mRecordingAudio)
+         return;
+
       mUnusedAudio = new ByteBuffer(0);
       mRecordingAudio = true;
       mMaxAudioSample = 0;
       mVoiceAudioTimer.reset(FirstVoiceAudioSampleTime);
-      SFXObject::startRecording();
 
       // trim the start of the capture buffer:
       SFXObject::captureSamples(mUnusedAudio);
@@ -635,7 +655,6 @@ void GameUserInterface::VoiceRecorder::stop()
    if(mRecordingAudio)
    {
       process();
-      SFXObject::stopRecording();
 
       mRecordingAudio = false;
       SFXObject::stopRecording();
@@ -650,6 +669,9 @@ void GameUserInterface::VoiceRecorder::process()
    SFXObject::captureSamples(mUnusedAudio);
 
    U32 sampleCount = mUnusedAudio->getBufferSize() / 2;
+   if(sampleCount == preSampleCount)
+      return;
+
    S16 *samplePtr = (S16 *) mUnusedAudio->getBuffer();
    mMaxAudioSample = 0;
 
