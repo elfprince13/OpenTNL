@@ -72,6 +72,7 @@ public:
    TNL_DECLARE_RPC(c2sReleaseCommanderMap, ());
 
    TNL_DECLARE_RPC(c2sRequestLoadout, (const Vector<U32> &loadout));
+   TNL_DECLARE_RPC(c2sRequestEngineerBuild, (U32 buildObject));
 
    static GameConnection *getClientList();
    GameConnection *getNextClient();

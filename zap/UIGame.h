@@ -63,6 +63,7 @@ class GameUserInterface : public UserInterface
       ChatMode,
       VChatMode,
       LoadoutMode,
+      EngineerBuildMode,
    };
    enum ChatType {
       GlobalChat,
@@ -88,6 +89,7 @@ class GameUserInterface : public UserInterface
 
    VChatHelper mVChat;
    LoadoutHelper mLoadout;
+   EngineerBuildHelper mEngineerBuild;
 
    struct VoiceRecorder
    {
@@ -121,6 +123,7 @@ public:
    GameUserInterface();
 
    void displayMessage(Color messageColor, const char *format, ...);
+   void displayEngineerBuildMenu();
 
    void render();
    void renderReticle();

@@ -303,6 +303,12 @@ void GameType::clientRequestLoadout(GameConnection *client, const Vector<U32> &l
       setClientShipLoadout(clientIndex, loadout);
 }
 
+void GameType::clientRequestEngineerBuild(GameConnection *client, U32 buildObject)
+{
+   logprintf("Client requested build %d", buildObject);
+}
+
+
 void GameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection)
 {
    static Vector<GameObject *> fillVector;
@@ -418,11 +424,6 @@ void GameType::controlObjectForClientKilled(GameConnection *theClient, GameObjec
    mClientList[clientIndex].respawnTimer.reset(RespawnDelay);
 }
 
-void GameType::controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject)
-{
-
-}
-
 void GameType::addClientGameMenuOptions(Vector<const char *> &menuOptions)
 {
    if(mTeams.size() > 1)
@@ -460,9 +461,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sChangeTeams, (),
 
    // destroy the old ship
    GameObject *co = source->getControlObject();
-   controlObjectForClientRemoved(source, co);
-   if(co)
-      getGame()->deleteObject(co, 0);
+   ((Ship *) co)->kill();
 
    U32 newTeamId = (mClientList[clientIndex].teamId + 1) % mTeams.size();
    mClientList[clientIndex].teamId = newTeamId;
@@ -496,9 +495,7 @@ void GameType::serverRemoveClient(GameConnection *theClient)
    mClientList.erase(clientIndex);
 
    GameObject *theControlObject = theClient->getControlObject();
-   controlObjectForClientRemoved(theClient, theControlObject);
-   if(theControlObject)
-      getGame()->deleteObject(theControlObject, 0);
+   ((Ship *) theControlObject)->kill();
 
    s2cRemoveClient(theClient->getClientName());
 }

@@ -151,9 +151,10 @@ void Projectile::idle(GameObject::IdleCallPath path)
       }
 
       GameObject *hitObject;
+      Point surfNormal;
       for(;;)
       {
-         hitObject = findObjectLOS(MoveableType | BarrierType, MoveObject::RenderState, pos, endPos, collisionTime);
+         hitObject = findObjectLOS(MoveableType | BarrierType, MoveObject::RenderState, pos, endPos, collisionTime, surfNormal);
          if(!hitObject || hitObject->collide(this))
             break;
          disableVector.push_back(hitObject);
@@ -165,8 +166,16 @@ void Projectile::idle(GameObject::IdleCallPath path)
 
       if(hitObject)
       {
-         Point collisionPoint = pos + (endPos - pos) * collisionTime;
-         handleCollision(hitObject, collisionPoint);
+         //if(hitObject->getObjectTypeMask() & BarrierType)
+         //{
+         //   // test out reflection
+         //   velocity -= surfNormal * surfNormal.dot(velocity) * 2;
+        // }
+         //else
+         //{
+            Point collisionPoint = pos + (endPos - pos) * collisionTime;
+            handleCollision(hitObject, collisionPoint);
+         //}
       }
       else
          pos = endPos;

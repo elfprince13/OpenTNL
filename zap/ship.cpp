@@ -34,6 +34,7 @@
 #include "sfx.h"
 #include "UI.h"
 #include "UIMenus.h"
+#include "UIGame.h"
 #include "gameType.h"
 #include "gameConnection.h"
 #include "shipItems.h"
@@ -250,6 +251,9 @@ void Ship::idle(GameObject::IdleCallPath path)
    // update the object in the game's extents database.
    updateExtent();
 
+   // if this is a move executing on the server and it's
+   // different from the last move, then mark the move to
+   // be updated to the ghosts.
    if(path == GameObject::ServerIdleControlFromClient && 
          !mCurrentMove.isEqualMove(&mLastMove))
       setMaskBits(MoveMask);
@@ -258,6 +262,8 @@ void Ship::idle(GameObject::IdleCallPath path)
    mSensorZoomTimer.update(mCurrentMove.time);
    mCloakTimer.update(mCurrentMove.time);
 
+   bool engineerWasActive = isEngineerActive();
+
    if(path == GameObject::ServerIdleControlFromClient ||
       path == GameObject::ClientIdleControlMain ||
       path == GameObject::ClientIdleControlReplay)
@@ -265,6 +271,31 @@ void Ship::idle(GameObject::IdleCallPath path)
       // process weapons and energy on controlled object objects
       processWeaponFire();
       processEnergy();
+   }
+
+   // if we're on the client and the user has just activated
+   // the engineering pack, notify the game user interface
+   // that it should display the buildable items list.
+   if(path == GameObject::ClientIdleControlMain &&
+      !engineerWasActive && isEngineerActive() &&
+      carryingResource())
+   {
+      // it's kind of gross to have this here... but this
+      // module behaves in a pretty non-standard way.
+      gGameUserInterface.displayEngineerBuildMenu();
+   }
+   
+   if(path == GameObject::ClientIdleMainRemote)
+   {
+      // for ghosts, find some repair targets for rendering the
+      // repair effect.
+      if(isRepairActive())
+         findRepairTargets();
+   }
+   if(path == GameObject::ServerIdleControlFromClient &&
+      isRepairActive())
+   {
+      repairTargets();
    }
 
    if(path == GameObject::ClientIdleControlMain ||
@@ -278,18 +309,49 @@ void Ship::idle(GameObject::IdleCallPath path)
    }
 }
 
-static U32 gEnergyDrain[ModuleCount] = 
+bool Ship::findRepairTargets()
 {
-   Ship::EnergyShieldDrain,
-   Ship::EnergyBoostDrain,
-   Ship::EnergySensorDrain,
-   0,
-   0,
-   Ship::EnergyCloakDrain,
-};
+   Vector<GameObject *> hitObjects;
+   Point pos = getActualPos();
+   Point extend(RepairRadius, RepairRadius);
+   Rect r(pos - extend, pos + extend);
+   findObjects(ShipType, hitObjects, r);
+
+   mRepairTargets.clear();
+   for(S32 i = 0; i < hitObjects.size(); i++)
+   {
+      Ship *s = (Ship *) hitObjects[i];
+      if(s->getHealth() < 1 && (s->getActualPos() - pos).len() < (RepairRadius + CollisionRadius))
+         mRepairTargets.push_back(s);
+   }
+   return mRepairTargets.size() != 0;
+}
+
+void Ship::repairTargets()
+{
+   F32 totalRepair = RepairHundredthsPerSecond * 0.01 * mCurrentMove.time * 0.001f;
+   totalRepair /= mRepairTargets.size();
+   DamageInfo di;
+   di.damageAmount = -totalRepair;
+   di.damagingObject = this;
+   di.damageType = 0;
+
+   for(S32 i = 0; i < mRepairTargets.size(); i++)
+      mRepairTargets[i]->damageObject(&di);
+}
 
 void Ship::processEnergy()
 {
+   static U32 gEnergyDrain[ModuleCount] = 
+   {
+      Ship::EnergyShieldDrain,
+      Ship::EnergyBoostDrain,
+      Ship::EnergySensorDrain,
+      Ship::EnergyRepairDrain,
+      0,
+      Ship::EnergyCloakDrain,
+   };
+
    bool modActive[ModuleCount];
    for(S32 i = 0; i < ModuleCount; i++)
    {
@@ -311,7 +373,9 @@ void Ship::processEnergy()
        mCurrentMove.right == 0) 
    { 
       mModuleActive[ModuleBoost] = false; 
-   } 
+   }
+   if(mModuleActive[ModuleRepair] && !findRepairTargets())
+      mModuleActive[ModuleRepair] = false;
 
    F32 scaleFactor = mCurrentMove.time * 0.001;
 
@@ -363,16 +427,18 @@ void Ship::processEnergy()
 
 void Ship::damageObject(DamageInfo *theInfo)
 {
-   if(!getGame()->getGameType()->objectCanDamageObject(theInfo->damagingObject, this))
-      return;
-
-   // Factor in shields
-   if(isShieldActive() && mEnergy >= EnergyShieldHitDrain)
+   if(theInfo->damageAmount > 0)
    {
-      mEnergy -= EnergyShieldHitDrain;
-      return;
-   }
+      if(!getGame()->getGameType()->objectCanDamageObject(theInfo->damagingObject, this))
+         return;
 
+      // Factor in shields
+      if(isShieldActive() && mEnergy >= EnergyShieldHitDrain)
+      {
+         mEnergy -= EnergyShieldHitDrain;
+         return;
+      }
+   }
    mHealth -= theInfo->damageAmount;
    setMaskBits(HealthMask);
    if(mHealth <= 0)
@@ -630,17 +696,44 @@ F32 getAngleDiff(F32 a, F32 b)
    }
 }
 
+bool Ship::carryingResource()
+{
+   for(S32 i = mMountedItems.size() - 1; i >= 0; i--)
+      if(mMountedItems[i]->getObjectTypeMask() & ResourceItemType)
+         return true;
+   return false;
+}
+
+void Ship::setModules(U32 module1, U32 module2)
+{
+   mModule[0] = module1;
+   mModule[1] = module2; 
+   setMaskBits(ModulesMask);
+
+   // drop any resources we may be carrying
+   for(S32 i = mMountedItems.size() - 1; i >= 0; i--)
+      if(mMountedItems[i]->getObjectTypeMask() & ResourceItemType)
+         mMountedItems[i]->dismount();
+}
+
+void Ship::kill()
+{
+   getGame()->deleteObject(this, KillDeleteDelay);
+   hasExploded = true;
+   setMaskBits(ExplosionMask);
+   disableCollision();
+   for(S32 i = mMountedItems.size() - 1; i >= 0; i--)
+      mMountedItems[i]->onMountDestroyed();
+}
+
 void Ship::kill(DamageInfo *theInfo)
 {
    if(isGhost())
       return;
 
-   GameConnection *controllingClient = getControllingClient();
-   getGame()->deleteObject(this, KillDeleteDelay);
-   hasExploded = true;
-   setMaskBits(ExplosionMask);
-   disableCollision();
+   kill();
 
+   GameConnection *controllingClient = getControllingClient();
    if(controllingClient)
    {
       GameType *gt = getGame()->getGameType();
@@ -1084,7 +1177,36 @@ void Ship::render()
    for(S32 i = 0; i < mMountedItems.size(); i++)
       if(mMountedItems[i].isValid())
          mMountedItems[i]->renderItem(mMoveState[RenderState].pos);
+ 
+   if(isRepairActive())
+   {
+      glLineWidth(3);
+      glColor3f(1,0,0);
+      // render repair rays to all the repairing objects
+      Point pos = mMoveState[RenderState].pos;
 
+      for(S32 i = 0; i < mRepairTargets.size(); i++)
+      {
+         if(mRepairTargets[i] == this)
+         {
+            glBegin(GL_LINE_LOOP);
+            for(F32 theta = 0; theta <= 2 * 3.1415; theta += 0.3)
+               glVertex2f(pos.x + cos(theta) * RepairDisplayRadius, 
+                          pos.y + sin(theta) * RepairDisplayRadius);
+            
+            glEnd();
+         }
+         else
+         {
+            glBegin(GL_LINES);
+            glVertex2f(pos.x, pos.y);
+            Point shipPos = mRepairTargets[i]->getRenderPos();
+            glVertex2f(shipPos.x, shipPos.y);
+            glEnd();
+         }
+      }
+      glLineWidth(1);
+   }
 }
 
 };

@@ -49,6 +49,17 @@ public:
    bool processKey(U32 key);
 };
 
+class EngineerBuildHelper
+{
+   bool mVisible;
+public:
+   EngineerBuildHelper();
+   void render();
+   void show(bool fromController);
+   bool isActive() { return mVisible; }
+   bool processKey(U32 key);
+};
+
 };
 
 #endif

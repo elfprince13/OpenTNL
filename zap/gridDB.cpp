@@ -118,7 +118,7 @@ void GridDatabase::findObjects(U32 typeMask, Vector<GameObject *> &fillVector, R
    }
 }
 
-bool PolygonLineIntersect(Point *poly, U32 vertexCount, Point p1, Point p2, float &collisionTime)
+bool PolygonLineIntersect(Point *poly, U32 vertexCount, Point p1, Point p2, float &collisionTime, Point &normal)
 {
    Point v1 = poly[vertexCount - 1];
    Point dp = p2 - p1;
@@ -165,7 +165,11 @@ bool PolygonLineIntersect(Point *poly, U32 vertexCount, Point p1, Point p2, floa
          if(s >= 0 && s <= 1 && t >= 0 && t <= 1)
          {
             if(s < currentCollisionTime)
+            {
+               normal.set(dv.y, -dv.x);
                currentCollisionTime = s;
+
+            }
          }
       }
       v1 = v2;
@@ -202,7 +206,7 @@ bool CircleLineIntersect(Point center, float radius, Point rayStart, Point rayEn
    return FindLowestRootInInterval(a, b, c, 100, collisionTime);
 }
 
-GameObject *GridDatabase::findObjectLOS(U32 typeMask, U32 stateIndex, Point rayStart, Point rayEnd, float &collisionTime)
+GameObject *GridDatabase::findObjectLOS(U32 typeMask, U32 stateIndex, Point rayStart, Point rayEnd, float &collisionTime, Point &surfaceNormal)
 {
    Rect queryRect(rayStart, rayEnd);
 
@@ -228,12 +232,14 @@ GameObject *GridDatabase::findObjectLOS(U32 typeMask, U32 stateIndex, Point rayS
 
       if(fillVector[i]->getCollisionPoly(poly))
       {
-         if(PolygonLineIntersect(&poly[0], poly.size(), rayStart, rayEnd, ct))
+         Point normal;
+         if(PolygonLineIntersect(&poly[0], poly.size(), rayStart, rayEnd, ct, normal))
          {
             if(ct < collisionTime)
             {
                collisionTime = ct;
                retObject = fillVector[i];
+               surfaceNormal = normal;
             }
          }
       }
@@ -244,11 +250,14 @@ GameObject *GridDatabase::findObjectLOS(U32 typeMask, U32 stateIndex, Point rayS
             if(ct < collisionTime)
             {
                collisionTime = ct;
+               surfaceNormal = (rayStart + (rayEnd - rayStart) * ct) - center;
                retObject = fillVector[i];
             }
          }
       }
    }
+   if(retObject)
+      surfaceNormal.normalize();
    return retObject;
 }
 

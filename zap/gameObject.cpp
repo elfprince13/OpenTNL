@@ -130,11 +130,11 @@ void GameObject::findObjects(U32 typeMask, Vector<GameObject *> &fillVector, Rec
    mGame->getGridDatabase()->findObjects(typeMask, fillVector, ext);
 }
 
-GameObject *GameObject::findObjectLOS(U32 typeMask, U32 stateIndex, Point rayStart, Point rayEnd, float &collisionTime)
+GameObject *GameObject::findObjectLOS(U32 typeMask, U32 stateIndex, Point rayStart, Point rayEnd, float &collisionTime, Point &collisionNormal)
 {
    if(!mGame)
       return NULL;
-   return mGame->getGridDatabase()->findObjectLOS(typeMask, stateIndex, rayStart, rayEnd, collisionTime);
+   return mGame->getGridDatabase()->findObjectLOS(typeMask, stateIndex, rayStart, rayEnd, collisionTime, collisionNormal);
 }
 
 void GameObject::addToDatabase()

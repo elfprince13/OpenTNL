@@ -132,15 +132,15 @@ bool LoadoutHelper::processKey(U32 key)
    else
       list = gLoadoutWeapons;
 
-   for(index = 0; gLoadoutModules[index].text; index++)
+   for(index = 0; list[index].text; index++)
    {
-      if(key == gLoadoutModules[index].key ||
-         key == gLoadoutModules[index].button)
+      if(key == list[index].key ||
+         key == list[index].button)
       {
          break;
       }
    }
-   if(!gLoadoutModules[index].text)
+   if(!list[index].text)
       return false;
 
    switch(mCurrentIndex)
@@ -191,6 +191,78 @@ bool LoadoutHelper::processKey(U32 key)
    }
    return true;
 }
+
+const char *gEngineerTitle = "Choose Object to Build:";
+
+LoadoutItem gEngineerBuildOptions[] = {
+   { '1', 0, TurretObject, "Sentry Turret" },
+   { '2', 1, ForceFieldObject, "Force Field Projector" },
+   { 0, 0, 0, NULL },
+};
+
+EngineerBuildHelper::EngineerBuildHelper()
+{
+   mVisible = false;
+}
+
+void EngineerBuildHelper::show(bool fromController)
+{
+   mVisible = true;
+}
+
+void EngineerBuildHelper::render()
+{
+   S32 curPos = 300;
+   const int fontSize = 15;
+
+   glColor3f(0.8, 1, 0.8);
+
+   UserInterface::drawStringf(20, curPos, fontSize, "%s", gEngineerTitle); 
+   curPos += fontSize + 4;
+
+   LoadoutItem *list = gEngineerBuildOptions;
+
+   for(S32 i = 0; list[i].text; i++)
+   {
+      glColor3f(0.1, 1.0, 0.1);
+
+      UserInterface::drawStringf(20, curPos, fontSize, "%c - %s", 
+         list[i].key, list[i].text);
+      curPos += fontSize + 4;
+   }
+
+}
+
+bool EngineerBuildHelper::processKey(U32 key)
+{
+   if(key == 27)
+   {
+      mVisible = false;
+      return true;
+   }
+   key = toupper(key);
+   U32 index;
+   LoadoutItem *list = gEngineerBuildOptions;
+
+   for(index = 0; list[index].text; index++)
+   {
+      if(key == list[index].key ||
+         key == list[index].button)
+      {
+         break;
+      }
+   }
+   if(!list[index].text)
+      return false;
+
+   GameConnection *gc = gClientGame->getConnectionToServer();
+   if(gc)
+      gc->c2sRequestEngineerBuild(list[index].index);
+   mVisible = false;
+   return true;
+}
+
+
 
 };
 

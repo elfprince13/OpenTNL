@@ -51,6 +51,12 @@ enum ShipWeapon
    WeaponCount,
 };
 
+enum EngineerBuildObjects
+{
+   TurretObject,
+   ForceFieldObject,
+};
+
 };
 
 #endif

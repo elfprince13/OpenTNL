@@ -64,6 +64,8 @@ public:
    void render();
    virtual void renderItem(Point pos) = 0;
 
+   virtual void onMountDestroyed();
+
    bool collide(GameObject *otherObject);
 };
 

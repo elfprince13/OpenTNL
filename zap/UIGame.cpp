@@ -157,6 +157,8 @@ void GameUserInterface::render()
       mVChat.render();
    if(mLoadout.isActive())
       mLoadout.render();
+   if(mEngineerBuild.isActive())
+      mEngineerBuild.render();
 
    GameType *theGameType = gClientGame->getGameType();
 
@@ -350,6 +352,13 @@ void GameUserInterface::enterLoadout(bool fromController)
    mCurrentMode = LoadoutMode;
 }
 
+void GameUserInterface::displayEngineerBuildMenu()
+{
+   UserInterface::playBoop();
+   mEngineerBuild.show(false);
+   mCurrentMode = EngineerBuildMode;
+}
+
 void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
 {
    if(buttonIndex == 6)
@@ -392,6 +401,10 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
       {
          mLoadout.processKey(buttonIndex);
       }
+      else if(mCurrentMode == EngineerBuildMode)
+      {
+         mEngineerBuild.processKey(buttonIndex);
+      }
    }
 }
 
@@ -430,6 +443,11 @@ void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
          if(!mLoadout.isActive())
             mCurrentMode = PlayMode;
       }
+      else if(mCurrentMode == EngineerBuildMode)
+      {
+         if(!mEngineerBuild.isActive())
+            mCurrentMode = PlayMode;
+      }
    }
 }
 
@@ -438,13 +456,18 @@ void GameUserInterface::onKeyDown(U32 key)
    if(mCurrentMode == LoadoutMode)
       if(mLoadout.processKey(key))
          return;
+   if(mCurrentMode == EngineerBuildMode)
+      if(mEngineerBuild.processKey(key))
+         return;
    
-   if(mCurrentMode == LoadoutMode || mCurrentMode == PlayMode)
+   if(mCurrentMode == EngineerBuildMode ||
+      mCurrentMode == LoadoutMode || 
+      mCurrentMode == PlayMode)
    {
       mCurrentChatType = GlobalChat;
 
       // the following keys are allowed in both play mode
-      // and in loadout mode if not used in the loadout
+      // and in loadout or engineering menu modes if not used in the menu
       // menu
       switch(toupper(key))
       {
@@ -563,7 +586,14 @@ void GameUserInterface::onKeyUp(U32 key)
       if(!mLoadout.isActive())
          mCurrentMode = PlayMode;
    }
-   if(mCurrentMode == LoadoutMode || mCurrentMode == PlayMode)
+   if(mCurrentMode == EngineerBuildMode)
+   {
+      if(!mEngineerBuild.isActive())
+         mCurrentMode = PlayMode;
+   }
+   if(mCurrentMode == EngineerBuildMode ||
+      mCurrentMode == LoadoutMode || 
+      mCurrentMode == PlayMode)
    {
       switch(toupper(key))
       {

@@ -51,10 +51,7 @@ public:
    void shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag);
    void renderInterfaceOverlay(bool scoreboardVisible);
    void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
-   void controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject);
    bool objectCanDamageObject(GameObject *damager, GameObject *victim);
-
-   U32 checkFlagDrop(GameObject *theObject);
    void gameOverManGameOver();
 
    enum {
@@ -81,6 +78,7 @@ public:
    void renderItem(Point pos);
    void sendHome();
 
+   void onMountDestroyed();
    bool collide(GameObject *hitObject);
    bool isAtHome();
    U32 getTeamIndex() { return teamIndex; }

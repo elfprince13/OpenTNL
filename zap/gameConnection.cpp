@@ -94,6 +94,12 @@ TNL_IMPLEMENT_RPC(GameConnection, c2sRequestLoadout, (const Vector<U32> &loadout
       gt->clientRequestLoadout(this, mLoadout);
 }
 
+TNL_IMPLEMENT_RPC(GameConnection, c2sRequestEngineerBuild, (U32 buildObject), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
+{
+   GameType *gt = gServerGame->getGameType();
+   if(gt)
+      gt->clientRequestEngineerBuild(this, buildObject);
+}
 
 void GameConnection::writeConnectRequest(BitStream *stream)
 {

@@ -116,7 +116,6 @@ public:
 
    virtual bool objectCanDamageObject(GameObject *damager, GameObject *victim) { return true; }
    virtual void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
-   virtual void controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject);
 
    virtual void spawnShip(GameConnection *theClient);
 
@@ -128,6 +127,8 @@ public:
    void renderTalkingClients();
    virtual void updateClientScoreboard(S32 clientIndex);
    virtual void clientRequestLoadout(GameConnection *client, const Vector<U32> &loadout);
+   virtual void clientRequestEngineerBuild(GameConnection *client, U32 buildObject);
+
    void setClientShipLoadout(S32 clientIndex, const Vector<U32> &loadout);
 
    virtual void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);

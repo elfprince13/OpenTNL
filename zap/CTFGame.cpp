@@ -198,42 +198,6 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
    }
 }
 
-U32 CTFGameType::checkFlagDrop(GameObject *theObject)
-{
-   Ship *theShip = dynamic_cast<Ship *>(theObject);
-   if(!theShip)
-      return 0;
-
-   GameConnection *controlConnection = theShip->getControllingClient();
-
-   if(!controlConnection)
-      return 0;
-
-   S32 clientIndex = findClientIndexByConnection(controlConnection);
-
-   if(clientIndex == -1)
-      return 0;
-
-   ClientRef &cl = mClientList[clientIndex];
-
-   U32 flagCount = 0;
-   // check if this client has an enemy flag mounted
-   for(S32 i = 0; i < theShip->mMountedItems.size();)
-   {
-      Item *theItem = theShip->mMountedItems[i];
-      CTFFlagItem *mountedFlag = dynamic_cast<CTFFlagItem *>(theItem);
-      if(mountedFlag)
-      {
-         s2cCTFMessage(CTFMsgDropFlag, cl.name, mountedFlag->getTeamIndex());
-         mountedFlag->dismount();
-         flagCount++;
-      }
-      else
-         i++;
-   }
-   return flagCount;
-}
-
 bool CTFGameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
 {
    GameConnection *c1 = (damager ? damager->getControllingClient() : NULL);
@@ -262,13 +226,7 @@ void CTFGameType::controlObjectForClientKilled(GameConnection *theClient, GameOb
 
       s2cKillMessage(mClientList[clientIndex].name, mClientList[killerIndex].name);
    }
-   checkFlagDrop(clientObject);
    mClientList[clientIndex].respawnTimer.reset(RespawnDelay);
-}
-
-void CTFGameType::controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject)
-{
-   checkFlagDrop(clientObject);
 }
 
 void CTFGameType::gameOverManGameOver()
@@ -399,6 +357,19 @@ bool CTFFlagItem::collide(GameObject *hitObject)
    if(theGameType)
       theGameType->shipTouchFlag((Ship *) hitObject, this);
    return false;
+}
+
+void CTFFlagItem::onMountDestroyed()
+{
+   CTFGameType *gt = dynamic_cast<CTFGameType *>(getGame()->getGameType());
+   if(!gt)
+      return;
+
+   if(!mMount.isValid())
+      return;
+
+   gt->s2cCTFMessage(CTFGameType::CTFMsgDropFlag, mMount->mPlayerName, teamIndex);
+   dismount();
 }
 
 };

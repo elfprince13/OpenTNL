@@ -46,6 +46,7 @@ enum GameObjectType
    MoveableType = 1 << 3,
    ProjectileType = 1 << 4,
    ItemType = 1 << 5,
+   ResourceItemType = 1 << 6,
 
    CommandMapVisType = 1 << 31,
    AllObjectTypes = 0xFFFFFFFF,
@@ -89,7 +90,7 @@ public:
    void setExtent(Rect &extentRect);
    Rect getExtent() { return extent; }
    void findObjects(U32 typeMask, Vector<GameObject *> &fillVector, Rect &extents);
-   GameObject *findObjectLOS(U32 typeMask, U32 stateIndex, Point rayStart, Point rayEnd, float &collisionTime);
+   GameObject *findObjectLOS(U32 typeMask, U32 stateIndex, Point rayStart, Point rayEnd, float &collisionTime, Point &collisionNormal);
 
    bool isControlled() { return mControllingClient.isValid(); }
    void setControllingClient(GameConnection *c);

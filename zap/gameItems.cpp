@@ -112,7 +112,6 @@ TNL_IMPLEMENT_NETOBJECT(RepairItem);
 
 class TestItem : public Item
 {
-   U32 teamIndex;
 public:
    TestItem() : Item(Point(0,0), true, 60, 4)
    {
@@ -154,6 +153,67 @@ public:
 
 TNL_IMPLEMENT_NETOBJECT(TestItem);
 
+class ResourceItem : public Item
+{
+public:
+   ResourceItem() : Item(Point(0,0), true, 20, 1)
+   {
+      mNetFlags.set(Ghostable);
+      mObjectTypeMask |= ResourceItemType;
+   }
+
+   void renderItem(Point pos)
+   {
+      glPushMatrix();
+      glTranslatef(pos.x, pos.y, 0);
+
+      glColor3f(1,1,1);
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(-8, 8);
+      glVertex2f(0, 20);
+      glVertex2f(8, 8);
+      glVertex2f(20, 0);
+      glVertex2f(8, -8);
+      glVertex2f(0, -20);
+      glVertex2f(-8, -8);
+      glVertex2f(-20, 0);
+      glEnd();
+
+      glPopMatrix();
+   }
+
+   bool collide(GameObject *hitObject)
+   {
+      if(isGhost() || mIsMounted)
+         return false;
+
+      if(!(hitObject->getObjectTypeMask() & ShipType))
+         return true;
+
+      Ship *ship = (Ship *) hitObject;
+      if(ship->hasExploded)
+         return false;
+
+      if(ship->hasEngineeringModule() && !ship->carryingResource())
+      {
+         mountToShip(ship);
+         return false;
+      }
+      return true;
+   }
+
+   void damageObject(DamageInfo *theInfo)
+   {
+      // compute impulse direction
+      Point dv = theInfo->impulseVector - mMoveState[ActualState].vel;
+      Point iv = mMoveState[ActualState].pos - theInfo->collisionPoint;
+      iv.normalize();
+      mMoveState[ActualState].vel += iv * dv.dot(iv) * 0.3;
+   }
+   TNL_DECLARE_CLASS(ResourceItem);
+};
+
+TNL_IMPLEMENT_NETOBJECT(ResourceItem);
 
 };
 

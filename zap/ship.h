@@ -50,6 +50,8 @@ public:
       BoostMaxVelocity = 700, // points per second
       BoostAcceleration = 5000, // points per second per second
 
+      RepairRadius = 65,
+      RepairDisplayRadius = 18,
       CollisionRadius = 24,
       VisibilityRadius = 30,
       KillDeleteDelay = 1500,
@@ -61,6 +63,7 @@ public:
       EnergyRechargeRate = 6000, // How many percent/second
       EnergyBoostDrain = 15000,
       EnergyShieldDrain = 15000,
+      EnergyRepairDrain = 15000, 
       EnergySensorDrain = 8000,
       EnergyCloakDrain = 8000,
       EnergyShieldHitDrain = 20000,
@@ -69,6 +72,7 @@ public:
       ShipModuleCount = 2,
       SensorZoomTime = 300,
       CloakFadeTime = 300,
+      RepairHundredthsPerSecond = 10,
    };
 
    enum MaskBits {
@@ -105,6 +109,7 @@ public:
 
    Vector<Point> posSegments;
    Vector<SafePtr<Item> > mMountedItems;
+   Vector<SafePtr<Ship> > mRepairTargets;
 
    void render();
    Ship(StringTableEntry playerName="", Point p = Point(0,0), F32 m = 1.0);
@@ -117,10 +122,17 @@ public:
    bool isBoostActive() { return mModuleActive[ModuleBoost]; }
    bool isCloakActive() { return mModuleActive[ModuleCloak]; }
    bool isSensorActive() { return mModuleActive[ModuleSensor]; }
+   bool isRepairActive() { return mModuleActive[ModuleRepair]; }
+   bool isEngineerActive() { return mModuleActive[ModuleEngineer]; }
+
+   bool hasEngineeringModule() { return mModule[0] == ModuleEngineer ||
+                                        mModule[1] == ModuleEngineer; }
+
+   bool carryingResource();
 
    F32 getSensorZoomFraction() { return mSensorZoomTimer.getFraction(); }
 
-   void setModules(U32 module1, U32 module2) { mModule[0] = module1; mModule[1] = module2; setMaskBits(ModulesMask); }
+   void setModules(U32 module1, U32 module2);
    void idle(IdleCallPath path);
 
    void processMove(U32 stateIndex);
@@ -128,6 +140,8 @@ public:
    void processEnergy();
    void updateModuleSounds();
    void emitMovementSparks();
+   bool findRepairTargets();
+   void repairTargets();
 
    void controlMoveReplayComplete();
 
@@ -136,6 +150,7 @@ public:
 
    virtual void damageObject(DamageInfo *theInfo);
    void kill(DamageInfo *theInfo);
+   void kill();
 
    void writeControlState(BitStream *stream);
    void readControlState(BitStream *stream);

@@ -72,6 +72,11 @@ void Item::mountToShip(Ship *theShip)
    setMaskBits(MountMask);
 }
 
+void Item::onMountDestroyed()
+{
+   dismount();
+}
+
 void Item::dismount()
 {
    if(mMount.isValid())
