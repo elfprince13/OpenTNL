@@ -231,7 +231,22 @@ void FootballGameType::shipTouchZone(Ship *s, FootballZone *z)
    S32 oldTeam = z->getTeam();
    if(oldTeam != -1)
    {
+      static StringTableEntry takeString("%e0 captured a zone from team %e1!");
+      Vector<StringTableEntry> e;
+      e.push_back(s->mPlayerName);
+      e.push_back(mTeams[oldTeam].name);
+
+      for(S32 i = 0; i < mClientList.size(); i++)
+         mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagSnatch, takeString, e);
       setTeamScore(oldTeam, mTeams[oldTeam].score - 1);
+   }
+   else
+   {
+      static StringTableEntry takeString("%e0 captured an unclaimed zone!");
+      Vector<StringTableEntry> e;
+      e.push_back(s->mPlayerName);
+      for(S32 i = 0; i < mClientList.size(); i++)
+         mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagSnatch, takeString, e);
    }
    setTeamScore(s->getTeam(), mTeams[s->getTeam()].score + 1);
    z->setTeam(s->getTeam());
@@ -243,6 +258,13 @@ void FootballGameType::shipTouchZone(Ship *s, FootballZone *z)
    
    // score another point
    setTeamScore(s->getTeam(), mTeams[s->getTeam()].score + 1);
+
+   static StringTableEntry tdString("Team %e0 scored a touchdown!");
+   Vector<StringTableEntry> e;
+   e.push_back(mTeams[s->getTeam()].name);
+   for(S32 i = 0; i < mClientList.size(); i++)
+      mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagCapture, tdString, e);
+
    for(S32 i = 0; i < mZones.size(); i++)
       mZones[i]->setTeam(-1);
    for(S32 i = 0; i < s->mMountedItems.size(); i++)
