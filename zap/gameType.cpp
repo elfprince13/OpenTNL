@@ -309,7 +309,8 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSendChat, (bool global, const char *mes
    for(S32 i = 0; i < mClientList.size(); i++)
    {
       if(global || mClientList[i].teamId == teamId)
-         mClientList[i].clientConnection->postNetEvent(theEvent);
+         if(mClientList[i].clientConnection)
+            mClientList[i].clientConnection->postNetEvent(theEvent);
    }
 }
 
