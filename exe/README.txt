@@ -62,7 +62,8 @@ or IP:www.foobar.com:24601
 -dedicated [bindAddress] starts Zap as a dedicated server
 -name [playerName] sets the client's name to the specified name 
         and skips the name entry screen.
--level [levelName] sets the specified level to load when hosting
+-levels ["level1 level2 level3 ... leveln"] sets the specified level 
+		rotation for games
 -hostname [hostname] sets the name that will appear in the server 
         browser when searching for servers.
 -maxplayers [number] sets the maximum number of players allowed 
