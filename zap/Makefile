@@ -70,5 +70,7 @@ zapded: ../exe/zapded
 	make -C ../master
 
 clean:
-	rm -f $(OBJECTS_ZAP) ../exe/zap
+	rm -f $(OBJECTS_ZAP) ../exe/zap ../exe/zapded
 
+cleano:
+	rm -f $(OBJECTS_ZAP)
