@@ -45,6 +45,7 @@ void InstructionsUserInterface::onActivate()
 const char *pageHeaders[] = {
    "CONTROLS",
    "LOADOUT SELECTION",
+   "GAME OBJECTS",
 };
 
 void InstructionsUserInterface::render()
@@ -81,6 +82,9 @@ void InstructionsUserInterface::render()
          break;
       case 2:
          renderPage2();
+         break;
+      case 3:
+         renderPage3();
          break;
    }
 }
@@ -146,11 +150,11 @@ static const char *loadoutInstructions[] = {
 };
 
 static const char *moduleDescriptions[] = {
-   "Boost - Gives the ship a boost of speed.",
-   "Shield - Reflects incoming projectiles.",
-   "Repair - Repairs self and nearby objects that are damaged.",
-   "Sensor - Boosts the screen visible distance of the player.",
-   "Cloak - Turns the ship invisible.",
+   "Boost - Boosts movement speed",
+   "Shield - Reflects incoming projectiles",
+   "Repair - Repairs self and nearby damaged objects",
+   "Sensor - Increases visible distance and reveals hidden objects",
+   "Cloak - Turns the ship invisible",
 };
 
 void InstructionsUserInterface::renderPage2()
@@ -167,7 +171,7 @@ void InstructionsUserInterface::renderPage2()
    for(S32 i = 0; i < 5; i++)
    {
       glColor3f(1,1,1);
-      drawString(120, y, 20, moduleDescriptions[i]);
+      drawString(105, y, 20, moduleDescriptions[i]);
       glPushMatrix();
       glTranslatef(60, y + 10, 0);
       glScalef(0.7, 0.7, 1);
@@ -228,6 +232,11 @@ void InstructionsUserInterface::renderPage2()
       glPopMatrix();
       y += 60;
    }
+}
+
+void InstructionsUserInterface::renderPage3()
+{
+
 }
 
 void InstructionsUserInterface::nextPage()

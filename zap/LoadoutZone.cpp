@@ -52,33 +52,7 @@ public:
 
    void render()
    {
-      F32 alpha = 0.5;
-      Color theColor = getGame()->getGameType()->mTeams[getTeam()].color;
-      glColor(theColor * 0.5);
-      glBegin(GL_POLYGON);
-      for(S32 i = 0; i < mPolyBounds.size(); i++)
-         glVertex2f(mPolyBounds[i].x, mPolyBounds[i].y);
-      glEnd();
-      glColor(theColor * 0.7);
-      glBegin(GL_LINE_LOOP);
-      for(S32 i = 0; i < mPolyBounds.size(); i++)
-         glVertex2f(mPolyBounds[i].x, mPolyBounds[i].y);
-      glEnd();
-      Rect ext = getExtent();
-
-      Point extents = ext.getExtents();
-      Point center = ext.getCenter();
-
-      glPushMatrix();
-      glTranslatef(center.x, center.y, 0);
-      if(extents.x < extents.y)
-         glRotatef(90, 0, 0, 1);
-      glColor(theColor);
-      const char *string = "LOADOUT ZONE";
-      F32 fontSize = 25;
-      F32 width = UserInterface::getStringWidth(fontSize, string);
-      UserInterface::drawString(-width * 0.5, -fontSize * 0.5, fontSize, string);
-      glPopMatrix();
+      renderLoadoutZone(getGame()->getGameType()->getTeamColor(getTeam()), mPolyBounds, getExtent());
    }
 
    S32 getRenderSortValue()

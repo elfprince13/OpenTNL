@@ -25,7 +25,7 @@
 //------------------------------------------------------------------------------------
 
 #ifndef _GAMEOBJECTRENDER_H_
-#define _GAMEOBJECTRENDER_H_
+#define _GAMEOBJECTRENDER_H_  
 
 #include "point.h"
 #include "tnl.h"
@@ -39,11 +39,12 @@ extern void glColor(Color c, float alpha = 1);
 extern void drawCircle(Point pos, F32 radius);
 extern void fillCircle(Point pos, F32 radius);
 
+extern void renderCenteredString(Point pos, U32 size, const char *string);
 extern void renderShip(Color c, F32 alpha, F32 thrusts[], F32 health, F32 radius, bool cloakActive, bool shieldActive);
 extern void renderTeleporter(U32 type, bool in, S32 time, F32 radiusFraction, F32 radius, F32 alpha);
 extern void renderTurret(Color c, Point anchor, Point normal, bool enabled, F32 health, F32 barrelAngle, F32 aimOffset);
 extern void renderFlag(Point pos, Color c);
-
+extern void renderLoadoutZone(Color c, Vector<Point> &bounds, Rect extent);
 };
 
 #endif

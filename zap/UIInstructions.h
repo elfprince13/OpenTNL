@@ -36,12 +36,13 @@ class InstructionsUserInterface : public UserInterface
 {
    U32 mCurPage;
    enum {
-      NumPages = 2,
+      NumPages = 3,
    };
 public:
    void render();
    void renderPage1();
    void renderPage2();
+   void renderPage3();
    void nextPage();
    void prevPage();
    void onSpecialKeyDown(U32 key);

@@ -491,7 +491,6 @@ void Ship::processEnergy()
          else if(i == ModuleCloak)
             mCloakTimer.reset(CloakFadeTime - mCloakTimer.getCurrent(), CloakFadeTime);
          setMaskBits(PowersMask);
-         break;
       }
    }
 }

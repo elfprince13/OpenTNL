@@ -27,6 +27,7 @@
 #include "gameObjectRender.h"
 #include "glutInclude.h"
 #include "tnlRandom.h"
+#include "UI.h"
 
 namespace Zap
 {
@@ -409,6 +410,38 @@ void renderFlag(Point pos, Color c)
    glVertex2f(-15, 15);
    glEnd();
 
+   glPopMatrix();
+}
+
+void renderCenteredString(Point pos, U32 size, const char *string)
+{
+   F32 width = UserInterface::getStringWidth(size, string);
+   UserInterface::drawString(pos.x - width * 0.5, pos.y - size * 0.5, size, string);
+}
+
+void renderLoadoutZone(Color theColor, Vector<Point> &bounds, Rect extent)
+{
+   F32 alpha = 0.5;
+   glColor(theColor * 0.5);
+   glBegin(GL_POLYGON);
+   for(S32 i = 0; i < bounds.size(); i++)
+      glVertex2f(bounds[i].x, bounds[i].y);
+   glEnd();
+   glColor(theColor * 0.7);
+   glBegin(GL_LINE_LOOP);
+   for(S32 i = 0; i < bounds.size(); i++)
+      glVertex2f(bounds[i].x, bounds[i].y);
+   glEnd();
+
+   Point extents = extent.getExtents();
+   Point center = extent.getCenter();
+
+   glPushMatrix();
+   glTranslatef(center.x, center.y, 0);
+   if(extents.x < extents.y)
+      glRotatef(90, 0, 0, 1);
+   glColor(theColor);
+   renderCenteredString(Point(0,0), 25, "LOADOUT ZONE");
    glPopMatrix();
 }
 

@@ -51,7 +51,6 @@ LoadoutItem gLoadoutModules[] = {
    { '3', 2, ModuleRepair, "Repair Module", },
    { '4', 3, ModuleSensor, "Enhanced Sensor" },
    { '5', 4, ModuleCloak, "Cloak Field Modulator" },
-   { '6', 5, ModuleEngineer, "Engineering Bay" },
    { 0, 0, 0, NULL },
 };
 
