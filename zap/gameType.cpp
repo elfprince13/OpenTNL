@@ -282,7 +282,7 @@ void GameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *c
    static Vector<GameObject *> fillVector;
    fillVector.clear();
 
-   if(connection->mInCommanderMap && mTeams.size() > 1)
+   if(connection->isInCommanderMap() && mTeams.size() > 1)
    {
       S32 teamId = mClientList[findClientIndexByConnection(connection)].teamId;
 
@@ -327,7 +327,7 @@ void GameType::countTeamPlayers()
 void GameType::serverAddClient(GameConnection *theClient)
 {
    ClientRef cref;
-   cref.name = theClient->playerName;
+   cref.name = theClient->getClientName();
 
    cref.clientConnection = theClient;
    cref.wantsScoreboardUpdates = false;
@@ -454,7 +454,7 @@ void GameType::serverRemoveClient(GameConnection *theClient)
    if(theControlObject)
       getGame()->deleteObject(theControlObject, 0);
 
-   s2cRemoveClient(theClient->playerName);
+   s2cRemoveClient(theClient->getClientName());
 }
 
 TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cRemoveClient, (StringTableEntryRef name),
@@ -519,7 +519,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSendChat, (bool global, const char *mes
    S32 clientIndex = findClientIndexByConnection(source);
 
    RefPtr<NetEvent> theEvent = TNL_RPC_CONSTRUCT_NETEVENT(this, 
-      s2cDisplayChatMessage, (global, source->playerName, message));
+      s2cDisplayChatMessage, (global, source->getClientName(), message));
 
    S32 teamId = 0;
    

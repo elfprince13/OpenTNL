@@ -200,7 +200,7 @@ void ServerGame::cycleLevel()
    while(mGameObjects.size())
       delete mGameObjects[0];
 
-   for(GameConnection *walk = GameConnection::gClientList.mNext; walk != &GameConnection::gClientList; walk = walk->mNext)
+   for(GameConnection *walk = GameConnection::getClientList(); walk ; walk = walk->getNextClient())
       walk->resetGhosting();
 
    mCurrentLevelIndex++;
@@ -214,7 +214,7 @@ void ServerGame::cycleLevel()
    }
    Vector<GameConnection *> connectionList;
 
-   for(GameConnection *walk = GameConnection::gClientList.mNext; walk != &GameConnection::gClientList; walk = walk->mNext)
+   for(GameConnection *walk = GameConnection::getClientList(); walk ; walk = walk->getNextClient())
       connectionList.push_back(walk);
 
    // now add the connections to the game type, in a random order

@@ -441,7 +441,7 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
    stream->writeFlag(hasExploded);
 
    bool shouldWritePosition = (updateMask & InitialMask) || 
-      gameConnection->controlObject != (GameObject *) this;
+      gameConnection->getControlObject() != this;
 
    if(!shouldWritePosition)
    {

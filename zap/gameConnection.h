@@ -27,212 +27,65 @@
 #ifndef _GAMECONNECTION_H_
 #define _GAMECONNECTION_H_
 
-#include "../tnl/tnl.h"
-#include "../tnl/tnlGhostConnection.h"
+#include "controlObjectConnection.h"
 
-#include "point.h"
-
-using namespace TNL;
-// some angle conversion functions:
 namespace Zap
 {
 
 static char *gConnectStatesTable[] = {
-      //NotConnected,              ///< Initial state of a NetConnection instance - not connected.
       "Not connected...",
-      //AwaitingChallengeResponse, ///< We've sent a challenge request, awaiting the response.
       "Sending challenge request.",
-      //SendingPunchPackets,       ///< The state of a pending arranged connection when both sides haven't heard from the other yet
       "Punching through firewalls.",
-      //ComputingPuzzleSolution,   ///< We've received a challenge response, and are in the process of computing a solution to its puzzle.
       "Computing puzzle solution.",
-      //AwaitingConnectResponse,   ///< We've received a challenge response and sent a connect request.
       "Sent connect request.",
-      //ConnectTimedOut,           ///< The connection timed out during the connection process.
       "Connection timed out.",
-      //ConnectRejected,           ///< The connection was rejected.
       "Connection rejected.",
-      //Connected,                 ///< We've accepted a connect request, or we've received a connect response accept.
       "Connected.",
-      //Disconnected,              ///< The connection has been disconnected.
       "Disconnected.",
-      //TimedOut,                  ///< The connection timed out.
       "Connection timed out.",
       ""
 };
 
-const F32 constantPi = 3.141592f;
-const F32 radiansToDegreesConversion = 360.0f / (2 * constantPi);
-const F32 radiansToUnitConversion = 1 / (2 * constantPi);
-const F32 unitToRadiansConversion = 2 * constantPi;
-
-inline F32 radiansToDegrees(F32 angle)
+class GameConnection : public ControlObjectConnection
 {
-   return angle * radiansToDegreesConversion;
-}
-
-inline F32 radiansToUnit(F32 angle)
-{
-   return angle * radiansToUnitConversion;
-}
-
-inline F32 unitToRadians(F32 angle)
-{
-   return angle * unitToRadiansConversion;
-}
-
-struct Move
-{
-   float left;
-   float right;
-   float up;
-   float down;
-   float angle;
-   bool fire;
-   bool boost;
-   bool shield;
-   U32 time;
-
-   enum {
-      MaxMoveTime = 127,
-   };
-
-   Move() { left = right = up = down = angle = 0; boost = shield = fire = false; time = 32; }
-
-   bool isEqualMove(Move *prev)
-   {
-      return   prev->left == left &&
-               prev->right == right &&
-               prev->up == up &&
-               prev->down == down &&
-               prev->angle == angle &&
-               prev->fire == fire &&
-               prev->boost == boost &&
-               prev->shield == shield;
-   }
-
-   void pack(BitStream *stream, Move *prev)
-   {
-      if(!stream->writeFlag(prev && isEqualMove(prev)))
-      {
-         stream->writeFloat(left, 4);
-         stream->writeFloat(right, 4);
-         stream->writeFloat(up, 4);
-         stream->writeFloat(down, 4);
-         U32 writeAngle = U32(radiansToUnit(angle) * 0xFFF);
-
-         stream->writeInt(writeAngle, 12);
-         stream->writeFlag(fire);
-         stream->writeFlag(boost);
-         stream->writeFlag(shield);
-      }
-      stream->writeRangedU32(time, 0, MaxMoveTime);
-   }
-   void unpack(BitStream *stream)
-   {
-      if(!stream->readFlag())
-      {
-         left = stream->readFloat(4);
-         right = stream->readFloat(4);
-         up = stream->readFloat(4);
-         down = stream->readFloat(4);
-         angle = unitToRadians(stream->readInt(12) / F32(0xFFF));
-         fire = stream->readFlag();
-         boost = stream->readFlag();
-         shield = stream->readFlag();
-      }
-      time = stream->readRangedU32(0, MaxMoveTime);
-   }
-   void prepare()
-   {
-      PacketStream stream;
-      pack(&stream, NULL);
-      stream.setBytePosition(0);
-      unpack(&stream);
-   }
-};
-
-class GameObject;
-class Game;
-
-class GameConnection : public GhostConnection
-{
-   typedef GhostConnection Parent;
-public:
-   // move management
-   enum {
-      MaxPendingMoves = 63,
-   };
-   Vector<Move> pendingMoves;
-   SafePtr<GameObject> controlObject;
-   Game *theGame;
-
-   bool mInCommanderMap;
-   StringTableEntry playerName;
-   U32 mLastClientControlCRC;
-   Point mServerPosition;
-   bool mCompressPointsRelative;
-
-   U32 firstMoveIndex;
-   U32 highSendIndex[3];
+   typedef ControlObjectConnection Parent;
 
    // The server maintains a linked list of clients...
    GameConnection *mNext;
    GameConnection *mPrev;
    static GameConnection gClientList;
 
-   GameConnection(Game *game = NULL);
-   ~GameConnection();
-
-   void setPlayerName(const char *string) { playerName = string; }
-   void setControlObject(GameObject *theObject);
-
-   GameObject *getControlObject() { return controlObject; }
-   U32 getControlCRC();
+   bool mInCommanderMap;
+   StringTableEntry mClientName;
 
    void linkToClientList();
+public:
+   GameConnection();
+   ~GameConnection();
 
-   void addPendingMove(Move *theMove)
-   {
-      if(pendingMoves.size() < MaxPendingMoves)
-         pendingMoves.push_back(*theMove);
-   }
+   void setClientName(const char *string) { mClientName = string; }
+   StringTableEntryRef getClientName() { return mClientName; }
 
-   struct GamePacketNotify : public GhostConnection::GhostPacketNotify
-   {
-      U32 firstUnsentMoveIndex;
-      Point lastControlObjectPosition;
-      GamePacketNotify() { firstUnsentMoveIndex =  0; }
-   };
-   PacketNotify *allocNotify() { return new GamePacketNotify; }
+   bool isInCommanderMap() { return mInCommanderMap; }
+   TNL_DECLARE_RPC(c2sRequestCommanderMap, ());
+   TNL_DECLARE_RPC(c2sReleaseCommanderMap, ());
 
-   void writePacket(BitStream *bstream, PacketNotify *notify);
-   void readPacket(BitStream *bstream);
-
-   void packetReceived(PacketNotify *notify);
-   void processMoveServer(Move *theMove);
+   static GameConnection *getClientList();
+   GameConnection *getNextClient();
 
    void writeConnectRequest(BitStream *stream);
    bool readConnectRequest(BitStream *stream, const char **errorString);
 
-   /// Adds this connection to the doubly linked list of clients.
    void onConnectionEstablished(bool isInitiator);
-
    void onConnectionRejected(const char *reason);
+
    void onDisconnect(const char *reason);
    void onTimedOut();
-   void onConnectionTerminated(const char *reason);
-
-   void writeCompressedPoint(Point &p, BitStream *stream);
-   void readCompressedPoint(Point &p, BitStream *stream);
-
    void onConnectTimedOut();
 
-   bool isDataToTransmit() { return true; }
+   void onConnectionTerminated(const char *reason);
 
    TNL_DECLARE_NETCONNECTION(GameConnection);
-   TNL_DECLARE_RPC(c2sRequestCommanderMap, ());
-   TNL_DECLARE_RPC(c2sReleaseCommanderMap, ());
 };
 
 };

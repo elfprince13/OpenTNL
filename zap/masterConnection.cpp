@@ -156,13 +156,13 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionAccepted
       Nonce nonce(connectionData.getBuffer());
       Nonce serverNonce(connectionData.getBuffer() + Nonce::NonceSize);
 
-      GameConnection *conn = new GameConnection(gClientGame);
+      GameConnection *conn = new GameConnection();
       const char *name = gNameEntryUserInterface.getText();
       if(!name[0])
          name = "Playa";
 
       conn->setSimulatedNetParams(gSimulatedPacketLoss, gSimulatedPing);
-      conn->setPlayerName(name);
+      conn->setClientName(name);
       gClientGame->setConnectionToServer(conn);
 
       conn->connectArranged(getInterface(), fullPossibleAddresses,

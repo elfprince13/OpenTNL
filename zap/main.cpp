@@ -320,14 +320,14 @@ void joinGame(Address remoteAddress, bool isFromMaster, bool local)
    }
    else
    {
-      GameConnection *theConnection = new GameConnection(gClientGame);
+      GameConnection *theConnection = new GameConnection();
       gClientGame->setConnectionToServer(theConnection);
 
       const char *name = gNameEntryUserInterface.getText();
       if(!name[0])
          name = "Playa";
 
-      theConnection->setPlayerName(name);
+      theConnection->setClientName(name);
       theConnection->setSimulatedNetParams(gSimulatedPacketLoss, gSimulatedPing);
 
       if(local)

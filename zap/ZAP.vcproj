@@ -293,6 +293,12 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath=".\controlObjectConnection.cpp">
+		</File>
+		<File
+			RelativePath=".\controlObjectConnection.h">
+		</File>
+		<File
 			RelativePath=".\game.cpp">
 		</File>
 		<File
