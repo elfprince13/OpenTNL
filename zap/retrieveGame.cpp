@@ -77,8 +77,10 @@ public:
 
       static StringTableEntry stealString("%e0 stole a flag from team %e1!");
       static StringTableEntry takeString("%e0 of team %e1 took a flag!");
+      static StringTableEntry oneFlagTakeString("%e0 of team %e1 took the flag!");
       StringTableEntry r = takeString;
-
+      if(mFlags.size() == 1)
+         r = oneFlagTakeString;
       S32 teamIndex;
 
       if(mFlagZones[flagIndex] == NULL)
@@ -93,7 +95,8 @@ public:
       e.push_back(cl->name);
       e.push_back(mTeams[teamIndex].name);
       for(S32 i = 0; i < mClientList.size(); i++)
-         mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagSnatch, r, e);
+         mClientList[i]->clientConnection->s2cDisplayMessageE(
+            GameConnection::ColorNuclearGreen, SFXFlagSnatch, r, e);
       theFlag->mountToShip(theShip);
       mFlagZones[flagIndex] = NULL;
    }
@@ -141,10 +144,13 @@ public:
          setTeamScore(cl->teamId, mTeams[cl->teamId].score + 1);
 
          static StringTableEntry capString("%e0 retrieved a flag!");
+         static StringTableEntry oneFlagCapString("%e0 retrieved the flag!");
+
          Vector<StringTableEntry> e;
          e.push_back(cl->name);
          for(S32 i = 0; i < mClientList.size(); i++)
-            mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagCapture, capString, e);
+            mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, 
+            SFXFlagCapture, (mFlags.size() == 1) ? oneFlagCapString : capString, e);
 
          // score the flag for the client's team...
          mountedFlag->dismount();
@@ -164,14 +170,14 @@ public:
             if(!mFlagZones[i] || mFlagZones[i]->getTeam() != cl->teamId)
                return;
          }
-         // ok all of them are taken...
-         // cap for the team
-         setTeamScore(cl->teamId, mTeams[cl->teamId].score + 1);
 
-         static StringTableEntry capAllString("Team %e0 retrieved all the flags!");
-         e[0] = mTeams[cl->teamId].name;
-         for(S32 i = 0; i < mClientList.size(); i++)
-            mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagCapture, capAllString, e);
+         if(mFlags.size() != 1)
+         {
+            static StringTableEntry capAllString("Team %e0 retrieved all the flags!");
+            e[0] = mTeams[cl->teamId].name;
+            for(S32 i = 0; i < mClientList.size(); i++)
+               mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagCapture, capAllString, e);
+         }
          for(S32 i = 0; i < mFlags.size(); i++)
          {
             mFlagZones[i] = NULL;

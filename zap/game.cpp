@@ -687,6 +687,16 @@ void ClientGame::renderNormal()
          F32 energy = s->mEnergy / F32(Ship::EnergyMax);
          U32 totalLineCount = 100;
 
+         F32 full = energy * totalLineCount;
+         glBegin(GL_POLYGON);
+         glColor3f(0, 0, 1);
+         glVertex2f(UserInterface::horizMargin, UserInterface::canvasHeight - UserInterface::vertMargin - 20);
+         glVertex2f(UserInterface::horizMargin, UserInterface::canvasHeight - UserInterface::vertMargin);
+         glColor3f(0, 1, 1);
+         glVertex2f(UserInterface::horizMargin + full * 2, UserInterface::canvasHeight - UserInterface::vertMargin);
+         glVertex2f(UserInterface::horizMargin + full * 2, UserInterface::canvasHeight - UserInterface::vertMargin - 20);
+         glEnd();
+
          glColor3f(1, 1 ,1);
          glBegin(GL_LINES);
          glVertex2f(UserInterface::horizMargin, UserInterface::canvasHeight - UserInterface::vertMargin - 20);
@@ -698,29 +708,6 @@ void ClientGame::renderNormal()
          F32 cutoffx = (Ship::EnergyCooldownThreshold * totalLineCount * 2) / Ship::EnergyMax;
          glVertex2f(UserInterface::horizMargin + cutoffx, UserInterface::canvasHeight - UserInterface::vertMargin - 23);
          glVertex2f(UserInterface::horizMargin + cutoffx, UserInterface::canvasHeight - UserInterface::vertMargin + 4);
-         glEnd();
-         F32 halfway = totalLineCount * 0.5;
-         F32 full = energy * totalLineCount;
-         glBegin(GL_POLYGON);
-         glColor3f(0, 0, 1);
-         glVertex2f(UserInterface::horizMargin, UserInterface::canvasHeight - UserInterface::vertMargin - 20);
-         glVertex2f(UserInterface::horizMargin, UserInterface::canvasHeight - UserInterface::vertMargin);
-         glColor3f(0, 1, 1);
-         glVertex2f(UserInterface::horizMargin + full * 2, UserInterface::canvasHeight - UserInterface::vertMargin);
-         glVertex2f(UserInterface::horizMargin + full * 2, UserInterface::canvasHeight - UserInterface::vertMargin - 20);
-         glEnd();
-         /*
-         for(U32 i = 1; i < full; i++)
-         {
-            if(i < halfway)
-               glColor3f(1 - i / halfway, 0, i / halfway);
-            else
-               glColor3f(0, (i - halfway) / halfway, 1);
-            
-            glColor3f(0, i / full, 1);
-            glVertex2f(15 + i * 2, 565);
-            glVertex2f(15 + i * 2, 585);
-         }*/
          glEnd();
       }
    }

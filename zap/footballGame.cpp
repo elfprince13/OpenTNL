@@ -123,9 +123,6 @@ void ZoneControlGameType::shipTouchZone(Ship *s, GoalZone *z)
          return;
    }
    
-   // score another point
-   setTeamScore(s->getTeam(), mTeams[s->getTeam()].score + 1);
-
    static StringTableEntry tdString("Team %e0 scored a touchdown!");
    Vector<StringTableEntry> e;
    e.push_back(mTeams[s->getTeam()].name);

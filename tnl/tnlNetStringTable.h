@@ -95,7 +95,11 @@ public:
    {
       mIndex = StringTable::insert(string, caseSensitive);
    }
-
+   inline StringTableEntry(const StringTableEntry &theString)
+   {
+      mIndex = theString.mIndex;
+      incRef();
+   }
    StringTableEntry &operator= (const StringTableEntry &s)
    {
       decRef();
