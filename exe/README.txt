@@ -15,6 +15,7 @@ Changes since version 1.1.2:
 - Added voice compression using the variable LPC10 codec from the
   excellent HawkVoice library.
 - Added more sounds
+- Added journaling capabilities for debugging purposes
 
 Controls:
 
@@ -80,6 +81,9 @@ or IP:www.foobar.com:24601
 -joystick [joystickType] enables dual analog control pad.  The
         joystickType argument can be either 0 or 1.  If the right
         stick doesn't aim shots properly with 0, try 1.
+-jsave [journalName] saves the log of the play session to the specified
+        journal file.
+-jplay [journalName] replays a saved journal.
 
 Credits:
 

@@ -165,7 +165,10 @@ void GameLoader::initGameFromFile(ServerGame *g, const char *file)
 {
    FILE *f = fopen(file, "r");
    if(!f)
+   {
+      logprintf("Unable to open level file %s!!", file);
       return;
+   }
 
    char fileData[32768];
 
