@@ -40,34 +40,26 @@ class HuntersNexusObject;
 class HuntersGameType : public GameType
 {
    typedef GameType Parent;
-   enum Scores
-   {
-      KillScore    = 100,
-      CapScore     = 200,
-      YSaleBonus   = 125,
-   };
+
    enum 
    {
       NexusCapDelay    = 15 * 1000,
       NexusReturnDelay = 60 * 1000,
-      FlagCountDelay   = 1000,
    };
    Timer mNexusReturnTimer;
    Timer mNexusCapTimer;
-   Timer mFlagCountTimer;
 
 public:
-   U32 mThisClientFlagCount;
    bool mCanNexusCap;
 
    HuntersGameType();
    void shipTouchNexus(Ship *theShip, HuntersNexusObject *theNexus);
-   void updateClientFlagCount(GameConnection *con, U32 flagCount);
 
    void onGhostAvailable(GhostConnection *theConnection);
    void idle(GameObject::IdleCallPath path);
    void renderInterfaceOverlay(bool scoreboardVisible);
    void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
+   void spawnShip(GameConnection *theClient);
    void gameOverManGameOver();
 
    enum {
@@ -77,7 +69,6 @@ public:
       HuntersMsgGameOverTie,
    };
 
-   TNL_DECLARE_RPC(s2cFlagCarryUpdate, (U32 flagCount));
    TNL_DECLARE_RPC(s2cSetNexusTimer, (U32 nexusTime, bool canCap));
    TNL_DECLARE_RPC(s2cHuntersMessage, (U32 msgIndex, StringTableEntryRef clientName, U32 flagCount));
    TNL_DECLARE_CLASS(HuntersGameType);
@@ -87,13 +78,27 @@ class HuntersFlagItem : public Item
 {
    typedef Item Parent;
 
+protected:
+   enum MaskBits {
+      FlagCountMask = Parent::FirstFreeMask << 0,
+      FirstFreeMask = Parent::FirstFreeMask << 1,
+   };
+
+   U32 mFlagCount;
+
 public:
-   bool yardSaleFlag;
    HuntersFlagItem(Point pos = Point());
 
    void renderItem(Point pos);
    void onMountDestroyed();
+   void setActualVel(Point v);
    bool collide(GameObject *hitObject);
+
+   void changeFlagCount(U32 change) { mFlagCount = change; setMaskBits(FlagCountMask); }
+   U32 getFlagCount() { return mFlagCount; }
+
+   U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
+   void unpackUpdate(GhostConnection *connection, BitStream *stream);
 
    TNL_DECLARE_CLASS(HuntersFlagItem);
 };

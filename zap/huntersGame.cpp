@@ -62,12 +62,6 @@ void renderHunterFlag(Point pos, Color c)
 
 TNL_IMPLEMENT_NETOBJECT(HuntersGameType);
 
-TNL_IMPLEMENT_NETOBJECT_RPC(HuntersGameType, s2cFlagCarryUpdate, (U32 flagCount),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
-{
-   mThisClientFlagCount = flagCount;
-}
-
 TNL_IMPLEMENT_NETOBJECT_RPC(HuntersGameType, s2cSetNexusTimer, (U32 nexusTime, bool canCap),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
@@ -110,42 +104,32 @@ TNL_IMPLEMENT_NETOBJECT_RPC(HuntersGameType, s2cHuntersMessage, (U32 msgIndex, S
 
 HuntersGameType::HuntersGameType() : GameType()
 {
-   mThisClientFlagCount = 0;
    mCanNexusCap = false;
    mNexusReturnTimer.reset(NexusReturnDelay);
    mNexusCapTimer.reset(0);
-   mFlagCountTimer.reset(FlagCountDelay);
 }
 
 void HuntersGameType::shipTouchNexus(Ship *theShip, HuntersNexusObject *theNexus)
 {
-   U32 flagCount = 0;
+   HuntersFlagItem *theFlag = NULL;
    for(S32 i = theShip->mMountedItems.size() - 1; i >= 0; i--)
    {
       Item *theItem = theShip->mMountedItems[i];
-      HuntersFlagItem *flag = dynamic_cast<HuntersFlagItem *>(theItem);
-      if(flag)
-      {
-         flagCount++;
-         S32 cIndex = findClientIndexByConnection(theShip->getControllingClient());
-         mClientList[cIndex].score += CapScore + flag->yardSaleFlag ? YSaleBonus : 0;
-         
-         flag->dismount();
-         flag->removeFromDatabase();
-         flag->deleteObject();
-         flag = NULL;
-      }
+      theFlag = dynamic_cast<HuntersFlagItem *>(theItem);
+      if(theFlag)
+         break;
    }
 
-   if(flagCount > 0)
-      s2cHuntersMessage(HuntersMsgScore, theShip->mPlayerName.getString(), flagCount);
-}
+   U32 score = 0;
+   for(U32 count = 1; count < theFlag->getFlagCount() + 1; count++)
+      score += (count * 10);
 
-void HuntersGameType::updateClientFlagCount(GameConnection *con, U32 flagCount)
-{
-   NetObject::setRPCDestConnection(con);
-   s2cFlagCarryUpdate(flagCount);
-   NetObject::setRPCDestConnection(NULL);
+   S32 cIndex = findClientIndexByConnection(theShip->getControllingClient());
+   mClientList[cIndex].score += score;
+
+   if(theFlag->getFlagCount() > 0)
+      s2cHuntersMessage(HuntersMsgScore, theShip->mPlayerName.getString(), theFlag->getFlagCount());
+   theFlag->changeFlagCount(0);
 }
 
 void HuntersGameType::onGhostAvailable(GhostConnection *theConnection)
@@ -183,45 +167,11 @@ void HuntersGameType::idle(GameObject::IdleCallPath path)
       mCanNexusCap = false;
       s2cSetNexusTimer(mNexusReturnTimer.getCurrent(), mCanNexusCap);
    }
-
-   if(mFlagCountTimer.update(deltaT))
-   {
-      mFlagCountTimer.reset();
-      for(S32 i = 0; i < mClientList.size(); i++)
-      {
-         U32 flagCount = 0;
-      
-         if(mClientList[i].clientConnection.isNull())
-            continue;
-
-         Ship *theShip = dynamic_cast<Ship *>(mClientList[i].clientConnection->getControlObject());
-         if(!theShip)
-            continue;
-
-         for(S32 i = theShip->mMountedItems.size() - 1; i >= 0; i--)
-         {
-            Item *theItem = theShip->mMountedItems[i];
-            HuntersFlagItem *theFlag = dynamic_cast<HuntersFlagItem *>(theItem);
-            if(theFlag)
-               flagCount++;
-         }
-
-         updateClientFlagCount(mClientList[i].clientConnection, flagCount);
-      }
-   }
 }
 
 void HuntersGameType::renderInterfaceOverlay(bool scoreboardVisible)
 {
    Parent::renderInterfaceOverlay(scoreboardVisible);
-
-   if(mTeams.size() > 0)
-   {
-      Point pos(750, 500);
-      renderHunterFlag(pos + Point(-20, 18), mTeams[0].color);
-      glColor3f(1,1,1);
-      UserInterface::drawStringf(U32(pos.x), U32(pos.y), 32, "%d", mThisClientFlagCount);
-   }
 
    glColor3f(1,1,1);
    U32 timeLeft = mNexusReturnTimer.getCurrent();
@@ -234,33 +184,33 @@ void HuntersGameType::controlObjectForClientKilled(GameConnection *theClient, Ga
 {
    Parent::controlObjectForClientKilled(theClient, clientObject, killerObject);
 
-   Ship *ship = dynamic_cast<Ship *>(clientObject);
-   if(!ship)
+   Ship *theShip = dynamic_cast<Ship *>(clientObject);
+   if(!theShip)
       return;
 
-   // drop at least one flag always
-   HuntersFlagItem *newFlag = new HuntersFlagItem(theClient->getControlObject()->getActualPos());
-   newFlag->addToGame(getGame());
-   newFlag->setActualPos(ship->getActualPos());
-
    // check for yard sale
-   U32 flagCount = 0;
-   for(S32 i = ship->mMountedItems.size() - 1; i >= 0; i--)
+   for(S32 i = theShip->mMountedItems.size() - 1; i >= 0; i--)
    {
-      Item *theItem = ship->mMountedItems[i];
-      HuntersFlagItem *flag = dynamic_cast<HuntersFlagItem *>(theItem);
-      if(flag)
+      Item *theItem = theShip->mMountedItems[i];
+      HuntersFlagItem *theFlag = dynamic_cast<HuntersFlagItem *>(theItem);
+      if(theFlag)
       {
-         flagCount++;
-         flag->yardSaleFlag = false;
+         if(theFlag->getFlagCount() > 2)
+            s2cHuntersMessage(HuntersMsgYardSale, theShip->mPlayerName.getString(), 0);
 
-         if(flagCount > 2)
-            flag->yardSaleFlag = true;
+         return;
       }
    }
+}
 
-   if(flagCount > 2)
-      s2cHuntersMessage(HuntersMsgYardSale, ship->mPlayerName.getString(), 0);
+void HuntersGameType::spawnShip(GameConnection *theClient)
+{
+   Parent::spawnShip(theClient);
+
+   HuntersFlagItem *newFlag = new HuntersFlagItem(theClient->getControlObject()->getActualPos());
+   newFlag->addToGame(getGame());
+   newFlag->mountToShip((Ship *) theClient->getControlObject());
+   newFlag->changeFlagCount(0);
 }
 
 void HuntersGameType::gameOverManGameOver()
@@ -291,18 +241,25 @@ HuntersFlagItem::HuntersFlagItem(Point pos) : Item(pos, true, 30, 4)
 {
    mObjectTypeMask |= CommandMapVisType;
    mNetFlags.set(Ghostable);
-   yardSaleFlag = false;
+   mFlagCount = 0;
 }
 
 void HuntersFlagItem::renderItem(Point pos)
 {
+   Point offset = pos;
+
+   if(mIsMounted)
+      offset.set(pos.x + 15, pos.y - 15);
+
    Color c;
    GameType *gt = getGame()->getGameType();
 
    c = gt->mTeams[0].color;
 
-   if(!mIsMounted)
-      renderHunterFlag(pos, c);
+   renderHunterFlag(offset, c);
+
+   if(mIsMounted)
+      UserInterface::drawStringf(offset.x - 5, offset.y - 30, 12, "%d", mFlagCount);
 }
 
 void HuntersFlagItem::onMountDestroyed()
@@ -310,19 +267,36 @@ void HuntersFlagItem::onMountDestroyed()
    if(!mMount.isValid())
       return;
 
-   F32 th = Random::readF() * 2 * 3.14;
-   F32 f = (Random::readF() * 2 - 1) * 100;
-   Point vel(cos(th) * f, sin(th) * f);
-   vel += mMount->getActualVel();
+   // drop at least one flag plus as many as the ship
+   //  carries
+   for(U32 i = 0; i < mFlagCount + 1; i++)
+   {
+      HuntersFlagItem *newFlag = new HuntersFlagItem(mMount->getActualPos());
+      newFlag->addToGame(getGame());
 
-   dismount();
-   mMoveState[ActualState].vel = vel;
-   mMoveState[RenderState].vel = vel;
+      F32 th = Random::readF() * 2 * 3.14;
+      F32 f = (Random::readF() * 2 - 1) * 100;
+      Point vel(cos(th) * f, sin(th) * f);
+      vel += mMount->getActualVel();
+      
+      newFlag->setActualVel(vel);
+   }
+   changeFlagCount(0);
+   
+   // now delete yourself
+   removeFromDatabase();
+   deleteObject();
+}
+
+void HuntersFlagItem::setActualVel(Point v)
+{
+   mMoveState[ActualState].vel = v;
+   setMaskBits(WarpPositionMask | PositionMask);
 }
 
 bool HuntersFlagItem::collide(GameObject *hitObject)
 {
-   if(isGhost() || mIsMounted)
+   if(isGhost() || mIsMounted || !mIsCollideable)
       return false;
 
    if(hitObject->getObjectTypeMask() & BarrierType)
@@ -338,8 +312,40 @@ bool HuntersFlagItem::collide(GameObject *hitObject)
    if(theShip->hasExploded)
       return false;
 
-   mountToShip(theShip);
+   // don't mount to ship, instead increase current mounted HuntersFlag
+   //  flagCount, and remove collided flag from game
+   for(S32 i = theShip->mMountedItems.size() - 1; i >= 0; i--)
+   {
+      Item *theItem = theShip->mMountedItems[i];
+      HuntersFlagItem *theFlag = dynamic_cast<HuntersFlagItem *>(theItem);
+      if(theFlag)
+      {
+         theFlag->changeFlagCount(theFlag->getFlagCount() + 1);
+         break;
+      }
+   }
+
+   mIsCollideable = false;
+   removeFromDatabase();
+   deleteObject();
    return true;
+}
+
+U32 HuntersFlagItem::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
+{
+   U32 retMask = Parent::packUpdate(connection, updateMask, stream);
+   if(stream->writeFlag(updateMask & FlagCountMask))
+      stream->write(mFlagCount);
+
+   return retMask;
+}
+
+void HuntersFlagItem::unpackUpdate(GhostConnection *connection, BitStream *stream)
+{
+   Parent::unpackUpdate(connection, stream);
+
+   if(stream->readFlag())
+      stream->read(&mFlagCount);
 }
 
 TNL_IMPLEMENT_NETOBJECT(HuntersNexusObject);
