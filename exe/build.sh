@@ -44,11 +44,11 @@ cp sfx/*.wav "$DIR"/sfx
 cp levels/*.txt "$DIR"/levels
 
 if [ "$PLATFORM" = "win32" ]; then
-   ../../upx/upx.exe --best --crp-ms=999999 --nrv2d -o "$DIR"/glut32.dll glut32.dll
-   ../../upx/upx.exe --best --crp-ms=999999 --nrv2d -o "$DIR"/zap.exe zap.exe
+   ./installer/upx.exe --best --crp-ms=999999 --nrv2d -o "$DIR"/glut32.dll glut32.dll
+   ./installer/upx.exe --best --crp-ms=999999 --nrv2d -o "$DIR"/zap.exe zap.exe
    cp OpenAL32.dll "$DIR"
    rm "$DIR"-win32.zip
-   zip -r "$DIR"-win32.zip "$DIR"
+   ./installer/makensis-bz2.exe /Dversion="$VERSION" installer/zap.nsi
 fi
 
 if [ "$PLATFORM" = "macosx" ]; then

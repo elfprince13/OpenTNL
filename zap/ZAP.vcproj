@@ -467,6 +467,9 @@
 			RelativePath="..\exe\README.txt">
 		</File>
 		<File
+			RelativePath=".\resource2.h">
+		</File>
+		<File
 			RelativePath=".\sparkManager.cpp">
 		</File>
 		<File
@@ -480,6 +483,12 @@
 		</File>
 		<File
 			RelativePath=".\winmain.cpp">
+		</File>
+		<File
+			RelativePath=".\ZAP.rc">
+		</File>
+		<File
+			RelativePath=".\zap_win_icon.ico">
 		</File>
 	</Files>
 	<Globals>
