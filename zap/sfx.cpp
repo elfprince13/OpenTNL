@@ -297,7 +297,7 @@ void SFXObject::updateGain()
       if(distance > mProfile->fullGainDistance)
       {
          if(distance < mProfile->zeroGainDistance)
-            gain *= (mProfile->fullGainDistance - distance) / 
+            gain *= 1 - (distance - mProfile->fullGainDistance) / 
                     (mProfile->zeroGainDistance - mProfile->fullGainDistance);
          else
             gain = 0.0f;

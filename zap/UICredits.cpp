@@ -32,6 +32,24 @@
 namespace Zap
 {
 
+const char *gGameCredits[] = {
+   "Z A P",
+   "(c) 2004 GarageGames.com",
+   "Lead Programmer and Level Designer",
+   "Mark Frohnmayer",
+   "Linux Programmer",
+   "John Quigley",
+   "Programmer and Sound Effects Engineer",
+   "Ben Garney",
+   "Programmer",
+   "Robert Blanchet",
+   "Internal Testers",
+   "Alex Swanson, Brian Ramage",
+   "External Testers",
+   "Clark Fagot, Joe Maruschak, #garagegames",
+   NULL,
+};
+
 CreditsUserInterface gCreditsUserInterface;
 
 void CreditsUserInterface::onActivate()
@@ -54,9 +72,6 @@ void CreditsUserInterface::onActivate()
       U32 rand = Random::readI(0, fxList.size() - 1);
       while(fxList[rand]->isActive())
       {
-         U32 value = Platform::getRealMilliseconds();
-         Random::addEntropy((U8 *) &value, sizeof(U32));
-
          rand = Random::readI(0, fxList.size() - 1);
       }
       fxList[rand]->setActive(true);
@@ -91,8 +106,33 @@ CreditsFX::CreditsFX()
 
 CreditsScroller::CreditsScroller()
 {
-   credits.clear();
-   readCredits("credits.txt");
+   mProjectInfo.titleBuf = gGameCredits[0];
+   mProjectInfo.copyBuf = gGameCredits[1];
+
+   mProjectInfo.currPos.x = (UserInterface::canvasHeight - 100) / 2;
+   
+   // loop through each line in the credits expecting
+   // the credits to be listed in this order:
+   //    1) job
+   //    2) name
+   S32 pos = (UserInterface::canvasHeight + CreditSpace);
+   S32 index = 2;
+   while(gGameCredits[index] && gGameCredits[index+1])
+   {
+      CreditsInfo c;
+
+      // get job
+      c.jobBuf = gGameCredits[index];
+      c.nameBuf = gGameCredits[index + 1];
+      index += 2;
+   
+      // place credit in cache
+      c.currPos.x = pos;
+      credits.push_back(c);
+
+      pos += CreditSpace;
+   }
+   mTotalSize = pos;
 }
 
 void CreditsScroller::updateFX(U32 delta)
@@ -100,7 +140,7 @@ void CreditsScroller::updateFX(U32 delta)
    // draw the project information
    S32 pos = mProjectInfo.currPos.x - (delta / 10);
    if(pos < -CreditSpace)
-      pos = (UserInterface::canvasHeight * 2) + CreditSpace;
+      pos += mTotalSize;
    mProjectInfo.currPos.x = pos;
 
    // scroll the credits text from bottom to top
@@ -111,7 +151,7 @@ void CreditsScroller::updateFX(U32 delta)
 
       // reached the top, reset
       if(pos < -CreditSpace)
-         pos = (UserInterface::canvasHeight * 2) + CreditSpace;
+         pos += mTotalSize;
  
       credits[i].currPos.x = pos;
    }
@@ -122,9 +162,9 @@ void CreditsScroller::render()
    glColor3f(1,1,1);
    
    // draw the project information
-   glLineWidth(10);
+   //glLineWidth(10);
    UserInterface::drawCenteredString(mProjectInfo.currPos.x, 100, mProjectInfo.titleBuf);
-   glLineWidth(1);
+   //glLineWidth(1);
    UserInterface::drawCenteredString(mProjectInfo.currPos.x + 120, 20, mProjectInfo.copyBuf);
 
    // draw the credits text
@@ -133,44 +173,6 @@ void CreditsScroller::render()
       UserInterface::drawCenteredString(credits[i].currPos.x, 25, credits[i].jobBuf);
       UserInterface::drawCenteredString(credits[i].currPos.x + 50, 25, credits[i].nameBuf);
    }
-}
-
-void CreditsScroller::readCredits(const char *file)
-{
-   // try and open the file context
-   FILE *f = fopen(file, "r");
-   if(!f)
-      return;
-
-   // read project information from the credits file
-   fgets(mProjectInfo.titleBuf, MaxCreditLen, f);
-   fgets(mProjectInfo.copyBuf, MaxCreditLen, f);
-   mProjectInfo.currPos.x = (UserInterface::canvasHeight - 100) / 2;
-   
-   // loop through each line in the credits file, expecting
-   // the credits to be listed in this order:
-   //    1) job
-   //    2) name
-   S32 pos = (UserInterface::canvasHeight + CreditSpace);
-   while(!feof(f))
-   {
-      CreditsInfo c;
-
-      // get job
-      fgets(c.jobBuf, MaxCreditLen, f);
-
-      // get name
-      fgets(c.nameBuf, MaxCreditLen, f);
-
-      // place credit in cache
-      c.currPos.x = pos;
-      credits.push_back(c);
-
-      pos += CreditSpace;
-   }
-
-   // close the file context
-   fclose(f);
 }
 
 };

@@ -102,6 +102,11 @@ public:
    virtual S32 getRenderSortValue() { return 0; }
    virtual void render();
 
+   /// render is called twice for every object that is in the
+   /// render list.  By default GameObject will call the render()
+   /// method one time (when layerIndex == 0).
+   virtual void render(U32 layerIndex);
+
    virtual bool getCollisionPoly(Vector<Point> &polyPoints);
    virtual bool getCollisionCircle(U32 stateIndex, Point &point, float &radius);
 

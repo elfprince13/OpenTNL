@@ -553,7 +553,9 @@ void ClientGame::renderCommander()
    renderObjects.sort(renderSortCompare);
 
    for(S32 i = 0; i < renderObjects.size(); i++)
-      renderObjects[i]->render();
+      renderObjects[i]->render(0);
+   for(S32 i = 0; i < renderObjects.size(); i++)
+      renderObjects[i]->render(1);
 
    glPopMatrix();
 }
@@ -582,7 +584,9 @@ void ClientGame::renderNormal()
    renderObjects.sort(renderSortCompare);
 
    for(S32 i = 0; i < renderObjects.size(); i++)
-      renderObjects[i]->render();
+      renderObjects[i]->render(0);
+   for(S32 i = 0; i < renderObjects.size(); i++)
+      renderObjects[i]->render(1);
 
    SparkManager::render();
    fxTrail::renderTrails();

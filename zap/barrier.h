@@ -65,7 +65,7 @@ public:
    void unpackUpdate(GhostConnection *connection, BitStream *stream);
 
    /// renders this barrier by drawing the render line segments,
-   void render();
+   void render(U32 layer);
 
    /// returns the collision polygon of this barrier, which is the boundary extruded from the start,end line segment.
    bool getCollisionPoly(Vector<Point> &polyPoints);

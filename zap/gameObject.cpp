@@ -184,6 +184,12 @@ void GameObject::render()
 {
 }
 
+void GameObject::render(U32 layerIndex)
+{
+   if(layerIndex == 0)
+      render();
+}
+
 void GameObject::idle(IdleCallPath path)
 {
 }

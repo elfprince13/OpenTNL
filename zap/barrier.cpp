@@ -228,41 +228,54 @@ void Barrier::clipRenderLinesToPoly(Vector<Point> &polyPoints)
    mRenderLineSegments = clippedSegments;
 }
 
-void Barrier::render()
+void Barrier::render(U32 layerIndex)
 {
-   if(mLastBarrierChangeIndex != mBarrierChangeIndex)
+   if(layerIndex == 0)
    {
-      mLastBarrierChangeIndex = mBarrierChangeIndex;
-      mRenderLineSegments.clear();
-
       Vector<Point> colPoly;
       getCollisionPoly(colPoly);
-      S32 last = colPoly.size() - 1;
+      glColor3f(0,0,0.075);
+      glBegin(GL_POLYGON);
       for(S32 i = 0; i < colPoly.size(); i++)
-      {
-         mRenderLineSegments.push_back(colPoly[last]);
-         mRenderLineSegments.push_back(colPoly[i]);
-         last = i;
-      }
-      static Vector<GameObject *> fillObjects;
-      fillObjects.clear();
-
-      Rect bounds(start, end);
-      bounds.expand(Point(BarrierWidth, BarrierWidth));
-      findObjects(BarrierType, fillObjects, bounds);
-
-      for(S32 i = 0; i < fillObjects.size(); i++)
-      {
-         colPoly.clear();
-         if(fillObjects[i] != this && fillObjects[i]->getCollisionPoly(colPoly))
-            clipRenderLinesToPoly(colPoly);
-      }
+         glVertex2f(colPoly[i].x, colPoly[i].y);
+      glEnd();
    }
-   glColor3f(0,0,1);
-   glBegin(GL_LINES);
-   for(S32 i = 0; i < mRenderLineSegments.size(); i++)
-      glVertex2f(mRenderLineSegments[i].x, mRenderLineSegments[i].y);
-   glEnd();
+   else if(layerIndex == 1)
+   {
+      if(mLastBarrierChangeIndex != mBarrierChangeIndex)
+      {
+         mLastBarrierChangeIndex = mBarrierChangeIndex;
+         mRenderLineSegments.clear();
+
+         Vector<Point> colPoly;
+         getCollisionPoly(colPoly);
+         S32 last = colPoly.size() - 1;
+         for(S32 i = 0; i < colPoly.size(); i++)
+         {
+            mRenderLineSegments.push_back(colPoly[last]);
+            mRenderLineSegments.push_back(colPoly[i]);
+            last = i;
+         }
+         static Vector<GameObject *> fillObjects;
+         fillObjects.clear();
+
+         Rect bounds(start, end);
+         bounds.expand(Point(BarrierWidth, BarrierWidth));
+         findObjects(BarrierType, fillObjects, bounds);
+
+         for(S32 i = 0; i < fillObjects.size(); i++)
+         {
+            colPoly.clear();
+            if(fillObjects[i] != this && fillObjects[i]->getCollisionPoly(colPoly))
+               clipRenderLinesToPoly(colPoly);
+         }
+      }
+      glColor3f(0,0,1);
+      glBegin(GL_LINES);
+      for(S32 i = 0; i < mRenderLineSegments.size(); i++)
+         glVertex2f(mRenderLineSegments[i].x, mRenderLineSegments[i].y);
+      glEnd();
+   }
 }
 
 };

@@ -56,17 +56,18 @@ public:
    };
 private:
    struct ProjectInfo {
-      char titleBuf[MaxCreditLen+1];
-      char copyBuf[MaxCreditLen+1];
+      const char *titleBuf;
+      const char *copyBuf;
       Point currPos;
    } mProjectInfo;
    struct CreditsInfo {
-      char nameBuf[MaxCreditLen+1];
-      char jobBuf[MaxCreditLen+1];
+      const char *nameBuf;
+      const char *jobBuf;
       Point currPos;
    };
    Vector<CreditsInfo> credits;
    void readCredits(const char *file);
+   S32 mTotalSize;
 
 public:
    CreditsScroller();
