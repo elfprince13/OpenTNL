@@ -46,7 +46,6 @@ Projectile::Projectile(U32 type, Point p, Point v, U32 t, GameObject *shooter)
    pos = p;
    velocity = v;
    mTimeRemaining = t;
-   mAliveTime = 0;
    collided = false;
    alive = true;
    mShooter = shooter;
@@ -57,20 +56,6 @@ Projectile::Projectile(U32 type, Point p, Point v, U32 t, GameObject *shooter)
    }
    mType = type;
 }
-
-enum {
-   NumSparkColors = 4,
-};
-
-struct ProjectileInfo
-{
-   F32   damageAmount;
-   Color sparkColors[NumSparkColors];
-   Color projColors[2];
-   F32   scaleFactor;
-   U32   projectileSound;
-   U32   impactSound;
-};
 
 ProjectileInfo gProjInfo[Projectile::TypeCount] = {
    { 0.21f, { Color(1,0,1), Color(1,1,1), Color(0,0,1),   Color(1,0,0)   }, { Color(1, 0, 0.5), Color(0.5, 0, 1) }, 1,   SFXPhaserProjectile, SFXPhaserImpact },
@@ -166,7 +151,8 @@ void Projectile::idle(GameObject::IdleCallPath path)
       float collisionTime;
       disableVector.clear();
 
-      if(mShooter.isValid() && mAliveTime < 750)
+      U32 aliveTime = getGame()->getCurrentTime() - getCreationTime();
+      if(mShooter.isValid() && aliveTime < 500)
       {
          disableVector.push_back(mShooter);
          mShooter->disableCollision();
@@ -222,7 +208,6 @@ void Projectile::idle(GameObject::IdleCallPath path)
       setExtent(newExtent);
    }
 
-   mAliveTime += deltaT;
    if(alive && path == GameObject::ServerIdleMainLoop)
    {
       if(mTimeRemaining <= deltaT)
@@ -256,44 +241,7 @@ void Projectile::render()
 {
    if(collided || !alive)
       return;
-
-   ProjectileInfo *pi = gProjInfo + mType;
-
-   glColor(pi->projColors[0]);
-   glPushMatrix();
-   glTranslatef(pos.x, pos.y, 0);
-   glScalef(pi->scaleFactor, pi->scaleFactor, 1);
-
-   glPushMatrix();
-   glRotatef((mAliveTime % 720) * 0.5, 0, 0, 1);
-
-   glBegin(GL_LINE_LOOP);
-   glVertex2f(-2, 2);
-   glVertex2f(0, 6);
-   glVertex2f(2, 2);
-   glVertex2f(6, 0);
-   glVertex2f(2, -2);
-   glVertex2f(0, -6);
-   glVertex2f(-2, -2);
-   glVertex2f(-6, 0);
-   glEnd();
-
-   glPopMatrix();
-
-   glRotatef(180 - (mAliveTime % 360), 0, 0, 1);
-   glColor(pi->projColors[1]);
-   glBegin(GL_LINE_LOOP);
-   glVertex2f(-2, 2);
-   glVertex2f(0, 8);
-   glVertex2f(2, 2);
-   glVertex2f(8, 0);
-   glVertex2f(2, -2);
-   glVertex2f(0, -8);
-   glVertex2f(-2, -2);
-   glVertex2f(-8, 0);
-   glEnd();
-
-   glPopMatrix();
+   renderProjectile(pos, mType, getGame()->getCurrentTime() - getCreationTime());
 }
 
 //-----------------------------------------------------------------------------
@@ -423,21 +371,8 @@ void Mine::renderItem(Point pos)
 
    if(!co)
       return;
-   F32 mod = 0.3;
-   if(co->getTeam() == getTeam() || co->isSensorActive())
-   {
-      glColor3f(0.5,0.5,0.5);
-      drawCircle(pos, SensorRadius);
-      mod = 1.0;
-   }
-   glColor3f(mod,mod,mod);
-   drawCircle(pos, 10);
-
-   if(mArmed)
-   {
-      glColor3f(mod,0,0);
-      drawCircle(pos, 6);
-   }
+   bool visible = co->getTeam() == getTeam() || co->isSensorActive();
+   renderMine(pos, mArmed, visible);
 }
 
 //-----------------------------------------------------------------------------
@@ -572,12 +507,7 @@ void GrenadeProjectile::renderItem(Point pos)
 {
    if(exploded)
       return;
-
-   glColor3f(1,1,1);
-   drawCircle(pos, 10);
-
-   glColor3f(1,0,0);
-   drawCircle(pos, 6);
+   renderGrenade(pos);
 }
 
 };

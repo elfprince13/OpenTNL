@@ -147,10 +147,7 @@ void render(U32 renderPass)
          F32 alpha = 1.0;
          if(radius > 0.5)
             alpha = (1 - radius) / 0.5;
-         glPushMatrix();
-         glTranslatef(walk->pos.x, walk->pos.y, 0);
-         renderTeleporter(walk->type, false, Teleporter::TeleportInExpandTime - walk->time, radius, Teleporter::TeleportInRadius, alpha);
-         glPopMatrix();
+         renderTeleporter(walk->pos, walk->type, false, Teleporter::TeleportInExpandTime - walk->time, radius, Teleporter::TeleportInRadius, alpha);
       }
    }
    else if(renderPass == 1)

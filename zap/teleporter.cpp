@@ -183,15 +183,12 @@ inline Point polarToRect(Point p)
 
 void Teleporter::render()
 {
-   glPushMatrix();
-   glTranslatef(pos.x, pos.y, 0);
    F32 r;
    if(timeout > TeleporterExpandTime)
       r = (timeout - TeleporterExpandTime) / F32(TeleporterDelay - TeleporterExpandTime);
    else
       r = F32(TeleporterExpandTime - timeout) / F32(TeleporterExpandTime);
-   renderTeleporter(0, true, mTime, r, TeleporterRadius, 1.0);
-   glPopMatrix();
+   renderTeleporter(pos, 0, true, mTime, r, TeleporterRadius, 1.0);
 }
 
 };

@@ -28,6 +28,7 @@
 #include "glutInclude.h"
 #include "tnlRandom.h"
 #include "UI.h"
+#include "projectile.h"
 
 namespace Zap
 {
@@ -218,7 +219,7 @@ void renderShip(Color c, F32 alpha, F32 thrusts[], F32 health, F32 radius, bool 
       glDisable(GL_BLEND);
 }
 
-void renderTeleporter(U32 type, bool in, S32 time, F32 radiusFraction, F32 radius, F32 alpha)
+void renderTeleporter(Point pos, U32 type, bool in, S32 time, F32 radiusFraction, F32 radius, F32 alpha)
 {
    enum {
       NumColors = 6,
@@ -270,9 +271,10 @@ void renderTeleporter(U32 type, bool in, S32 time, F32 radiusFraction, F32 radiu
       }
    }
 
-   glLineWidth(2);
+   glPushMatrix();
+   glTranslatef(pos.x, pos.y, 0);
+
    glEnable(GL_BLEND);
-   glBegin(GL_LINES);
    F32 arcTime = 0.5 + (1 - radiusFraction) * 0.5;
    if(!in)
       arcTime = -arcTime;
@@ -284,6 +286,8 @@ void renderTeleporter(U32 type, bool in, S32 time, F32 radiusFraction, F32 radiu
       Color c(colors[type][i][0], colors[type][i][1], colors[type][i][2]);
       tpColors[i].interp(radiusFraction, c, white);
    }
+   F32 beamWidth = 4;
+
    for(S32 i = 0; i < NumParticles; i++)
    {
       Tracker &t = particles[i];
@@ -297,38 +301,41 @@ void renderTeleporter(U32 type, bool in, S32 time, F32 radiusFraction, F32 radiu
       F32 startRadius = radiusFraction * radius * d;
 
       Point start(cos(theta), sin(theta));
-      start *= startRadius;
-
-      theta -= arcTime * t.thetaP;
+      Point n(-start.y, start.x);
+ 
+      theta -= arcTime * t.thetaP * (alphaMod + 0.05);
       d += arcTime / t.dP;
       if(d < 0)
          d = 0;
       Point end(cos(theta), sin(theta));
+
       F32 endRadius = radiusFraction * radius * d;
-      end *= endRadius;
 
+      glBegin(GL_TRIANGLE_STRIP);
       glColor(tpColors[t.ci], alpha * alphaMod);
-      glVertex(start);
 
-      F32 arcLength = (end - start).len();
-      U32 midpointCount = floor(arcLength / 10);
+      F32 arcLength = (end * endRadius - start * startRadius).len();
+      U32 vertexCount = floor(arcLength / 10) + 2;
 
-      for(U32 j = 0; j < midpointCount; j++)
+      glVertex(start * (startRadius + beamWidth * 0.3) + n * 2);
+      glVertex(start * (startRadius - beamWidth * 0.3) + n * 2);
+      for(U32 j = 0; j <= vertexCount; j++)
       {
-         F32 frac = (j + 1) / F32(midpointCount + 2);
+         F32 frac = j / F32(vertexCount);
+         F32 width = beamWidth * (1 - frac) * 0.5;
          Point p = start * (1 - frac) + end * frac;
-         p.normalize(startRadius * (1 - frac) + endRadius * frac);
-         glColor(tpColors[t.ci], alpha * alphaMod * (1 - frac));
-         glVertex(p);
-         glVertex(p);
-      }
+         p.normalize();
+         F32 rad = startRadius * (1 - frac) + endRadius * frac;
 
-      glColor(tpColors[t.ci], 0);
-      glVertex(end);
+         p.normalize();
+         glColor(tpColors[t.ci], alpha * alphaMod * (1 - frac));
+         glVertex(p * (rad + width));
+         glVertex(p * (rad - width));
+      }
+      glEnd();
    }
-   glEnd();
    glDisable(GL_BLEND);
-   glLineWidth(1);
+   glPopMatrix();
 }
 
 void renderTurret(Color c, Point anchor, Point normal, bool enabled, F32 health, F32 barrelAngle, F32 aimOffset)
@@ -443,6 +450,157 @@ void renderLoadoutZone(Color theColor, Vector<Point> &bounds, Rect extent)
    glColor(theColor);
    renderCenteredString(Point(0,0), 25, "LOADOUT ZONE");
    glPopMatrix();
+}
+
+void renderProjectile(Point pos, U32 type, U32 time)
+{                     
+   ProjectileInfo *pi = gProjInfo + type;
+
+   glColor(pi->projColors[0]);
+   glPushMatrix();
+   glTranslatef(pos.x, pos.y, 0);
+   glScalef(pi->scaleFactor, pi->scaleFactor, 1);
+
+   glPushMatrix();
+   glRotatef((time % 720) * 0.5, 0, 0, 1);
+
+   glBegin(GL_LINE_LOOP);
+   glVertex2f(-2, 2);
+   glVertex2f(0, 6);
+   glVertex2f(2, 2);
+   glVertex2f(6, 0);
+   glVertex2f(2, -2);
+   glVertex2f(0, -6);
+   glVertex2f(-2, -2);
+   glVertex2f(-6, 0);
+   glEnd();
+
+   glPopMatrix();
+
+   glRotatef(180 - (time % 360), 0, 0, 1);
+   glColor(pi->projColors[1]);
+   glBegin(GL_LINE_LOOP);
+   glVertex2f(-2, 2);
+   glVertex2f(0, 8);
+   glVertex2f(2, 2);
+   glVertex2f(8, 0);
+   glVertex2f(2, -2);
+   glVertex2f(0, -8);
+   glVertex2f(-2, -2);
+   glVertex2f(-8, 0);
+   glEnd();
+
+   glPopMatrix();
+}
+
+void renderMine(Point pos, bool armed, bool visible)
+{
+   F32 mod = 0.3;
+   if(visible)
+   {
+      glColor3f(0.5,0.5,0.5);
+      drawCircle(pos, Mine::SensorRadius);
+      mod = 1.0;
+   }
+   glColor3f(mod,mod,mod);
+   drawCircle(pos, 10);
+
+   if(armed)
+   {
+      glColor3f(mod,0,0);
+      drawCircle(pos, 6);
+   }
+}
+
+void renderGrenade(Point pos)
+{
+   glColor3f(1,1,1);
+   drawCircle(pos, 10);
+
+   glColor3f(1,0,0);
+   drawCircle(pos, 6);
+}
+
+
+void renderRepairItem(Point pos)
+{
+   glPushMatrix();
+   glTranslatef(pos.x, pos.y, 0);
+
+   glColor3f(1,1,1);
+   glBegin(GL_LINE_LOOP);
+   glVertex2f(-18, -18);
+   glVertex2f(18, -18);
+   glVertex2f(18, 18);
+   glVertex2f(-18, 18);
+   glEnd();
+
+   glColor3f(1,0,0);
+   glBegin(GL_LINE_LOOP);
+
+   float crossWidth = 4;
+   float crossLen = 14;
+
+   glVertex2f(crossWidth, crossWidth);
+   glVertex2f(crossLen, crossWidth);
+   glVertex2f(crossLen, -crossWidth);
+   glVertex2f(crossWidth, -crossWidth);
+   glVertex2f(crossWidth, -crossLen);
+   glVertex2f(-crossWidth, -crossLen);
+   glVertex2f(-crossWidth, -crossWidth);
+   glVertex2f(-crossLen, -crossWidth);
+   glVertex2f(-crossLen, crossWidth);
+   glVertex2f(-crossWidth, crossWidth);
+   glVertex2f(-crossWidth, crossLen);
+   glVertex2f(crossWidth, crossLen);
+   glEnd();
+
+   glPopMatrix();
+}
+
+void renderForceFieldProjector(Point pos, Point normal, Color c, bool enabled)
+{
+   Point cross(normal.y, -normal.x);
+   if(c.r < 0.7)
+      c.r = 0.7;
+   if(c.g < 0.7)
+      c.g = 0.7;
+   if(c.b < 0.7)
+      c.b = 0.7;
+   if(enabled)
+      glColor(c);
+   else
+      glColor(c * 0.6);
+
+   glBegin(GL_LINE_LOOP);
+   glVertex(pos + cross * 12);
+   glVertex(pos + normal * 15);
+   glVertex(pos - cross * 12);
+   glEnd();
+}
+
+void renderForceField(Point start, Point end, Color c, bool fieldUp)
+{
+   if(c.r < 0.5)
+      c.r = 0.5;
+   if(c.g < 0.5)
+      c.g = 0.5;
+   if(c.b < 0.5)
+      c.b = 0.5;
+
+   Point normal(end.y - start.y, start.x - end.x);
+   normal.normalize(2.5);
+
+   if(fieldUp)
+      glColor(c);
+   else
+      glColor(c * 0.5);
+   glBegin(GL_LINE_LOOP);
+   glVertex(start + normal);
+   glVertex(end + normal);
+   glVertex(end - normal);
+   glVertex(start - normal);
+   glEnd();
 }
 
 };

@@ -27,6 +27,7 @@
 #include "item.h"
 #include "ship.h"
 #include "glutInclude.h"
+#include "gameObjectRender.h"
 
 namespace Zap
 {
@@ -70,39 +71,7 @@ public:
    {
       if(!isVisible())
          return;
-
-      glPushMatrix();
-      glTranslatef(pos.x, pos.y, 0);
-
-      glColor3f(1,1,1);
-      glBegin(GL_LINE_LOOP);
-      glVertex2f(-18, -18);
-      glVertex2f(18, -18);
-      glVertex2f(18, 18);
-      glVertex2f(-18, 18);
-      glEnd();
-
-      glColor3f(1,0,0);
-      glBegin(GL_LINE_LOOP);
-
-      float crossWidth = 4;
-      float crossLen = 14;
-
-      glVertex2f(crossWidth, crossWidth);
-      glVertex2f(crossLen, crossWidth);
-      glVertex2f(crossLen, -crossWidth);
-      glVertex2f(crossWidth, -crossWidth);
-      glVertex2f(crossWidth, -crossLen);
-      glVertex2f(-crossWidth, -crossLen);
-      glVertex2f(-crossWidth, -crossWidth);
-      glVertex2f(-crossLen, -crossWidth);
-      glVertex2f(-crossLen, crossWidth);
-      glVertex2f(-crossWidth, crossWidth);
-      glVertex2f(-crossWidth, crossLen);
-      glVertex2f(crossWidth, crossLen);
-      glEnd();
-
-      glPopMatrix();
+      renderRepairItem(pos);
    }
 
    TNL_DECLARE_CLASS(RepairItem);

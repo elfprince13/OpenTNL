@@ -31,6 +31,8 @@
 #include "glutInclude.h"
 #include "gameObjectRender.h"
 #include "ship.h"
+#include "teleporter.h"
+#include "engineeredObjects.h"
 
 namespace Zap
 {
@@ -42,9 +44,15 @@ void InstructionsUserInterface::onActivate()
    mCurPage = 1;
 }
 
+enum {
+   NumPages = 5,
+};
+
 const char *pageHeaders[] = {
    "CONTROLS",
    "LOADOUT SELECTION",
+   "WEAPON PROJECTILES",
+   "GAME OBJECTS",
    "GAME OBJECTS",
 };
 
@@ -84,7 +92,13 @@ void InstructionsUserInterface::render()
          renderPage2();
          break;
       case 3:
-         renderPage3();
+         renderPageObjectDesc(0);
+         break;
+      case 4:
+         renderPageObjectDesc(1);
+         break;
+      case 5:
+         renderPageObjectDesc(2);
          break;
    }
 }
@@ -234,27 +248,133 @@ void InstructionsUserInterface::renderPage2()
    }
 }
 
-void InstructionsUserInterface::renderPage3()
-{
+enum {
+   GameObjectCount = 14,
+};
 
+const char *gGameObjectInfo[] = {
+ "Phaser","The default weapon",
+ "Bouncer","Bounces off walls",
+ "Triple","Fires three diverging shots",
+ "Burst","Explosive projectile",
+ "Friendly Mine","Team's mines show trigger radius",
+ "Opponent Mine","These are much harder to see",
+
+ "RepairItem","Repairs damage done to a ship", 
+ "Loadout Zone","Updates ship loadout",
+ "Neutral Turret","Repair to take team ownership", 
+ "Active Turret","Fires at enemy team", 
+ "Neutral Emitter", "Repair to take team ownership",
+ "Force Field Emitter","Allows only one team to pass",
+ "Teleporter","Warps ship to another location",
+ "Flag","Objective item in some game types",
+};
+
+void InstructionsUserInterface::renderPageObjectDesc(U32 index)
+{
+   //Point start(105, 75);
+   //Point objStart(60, 85);
+
+   U32 objectsPerPage = 6;
+   U32 startIndex = index * objectsPerPage;
+   U32 endIndex = startIndex + objectsPerPage;
+   if(endIndex > GameObjectCount)
+      endIndex = GameObjectCount;
+
+   for(U32 i = startIndex; i < endIndex; i++)
+   {
+      glColor3f(1,1,1);
+      const char *text = gGameObjectInfo[i * 2];
+      const char *desc = gGameObjectInfo[i * 2 + 1];
+      U32 index = i - startIndex;
+
+      Point objStart((index & 1) * 400, (index >> 1) * 165);
+      objStart += Point(200, 90);
+      Point start = objStart + Point(0, 55);
+
+      renderCenteredString(start, 20, text);
+      renderCenteredString(start + Point(0, 25), 20, desc);
+      //drawString(start.x, start.y, 20, text);
+
+      glPushMatrix();
+      glTranslatef(objStart.x, objStart.y, 0);
+      glScalef(0.7, 0.7, 1);
+
+      switch(i)
+      {
+         case 0:
+            renderProjectile(Point(0,0), 0, gClientGame->getCurrentTime());
+            break;
+         case 1:
+            renderProjectile(Point(0,0), 1, gClientGame->getCurrentTime());
+            break;
+         case 2:
+            renderProjectile(Point(0,0), 2, gClientGame->getCurrentTime());
+            break;
+         case 3:
+            renderGrenade(Point(0,0));
+            break;
+         case 4:
+            renderMine(Point(0,0), true, true);
+            break;
+         case 5:
+            renderMine(Point(0,0), true, false);
+            break;
+
+         case 6:
+            renderRepairItem(Point(0, 0));
+            break;
+         case 7:
+            {
+               Vector<Point> p;
+               p.push_back(Point(-150, -30));
+               p.push_back(Point(150, -30));
+               p.push_back(Point(150, 30));
+               p.push_back(Point(-150, 30));
+               Rect ext(p[0], p[2]);
+               renderLoadoutZone(Color(0,0,1), p, ext);
+            }
+            break;
+         case 8:
+            renderTurret(Color(1,1,1), Point(0, 15), Point(0, -1), false, 0, 0, Turret::TurretAimOffset);
+            break;
+         case 9:
+            renderTurret(Color(0,0,1), Point(0, 15), Point(0, -1), true, 1, 0, Turret::TurretAimOffset);
+            break;
+
+         case 10:
+            renderForceFieldProjector(Point(-7.5, 0), Point(1, 0), Color(1,1,1), false);
+            break;
+         case 11:
+            renderForceFieldProjector(Point(-50, 0), Point(1, 0), Color(1,0,0), true);
+            renderForceField(Point(-35, 0), Point(50, 0), Color(1,0,0), true);
+            break;
+         case 12:
+            renderTeleporter(Point(0, 0), 0, true, gClientGame->getCurrentTime(), 1, Teleporter::TeleporterRadius, 1);
+            break;
+         case 13:
+            renderFlag(Point(0,0), Color(1, 0, 0));
+            break;
+      }
+      glPopMatrix();
+      objStart.y += 75;
+      start.y += 75;
+   }
 }
 
 void InstructionsUserInterface::nextPage()
 {
    mCurPage++;
    if(mCurPage > NumPages)
-   {
-      if(gClientGame->isConnectedToServer())
-         gGameUserInterface.activate();
-      else
-         gMainMenuUserInterface.activate();
-   }
+      mCurPage = 1;
 }
 
 void InstructionsUserInterface::prevPage()
 {
    if(mCurPage > 1)
       mCurPage--;
+   else
+      mCurPage = NumPages;
 }
 
 void InstructionsUserInterface::onSpecialKeyDown(U32 key)
@@ -279,6 +399,7 @@ void InstructionsUserInterface::onKeyDown(U32 key)
       case ' ':
          nextPage();
          break;
+      case '\r':
       case 27:
          if(gClientGame->isConnectedToServer())
             gGameUserInterface.activate();

@@ -41,10 +41,18 @@ extern void fillCircle(Point pos, F32 radius);
 
 extern void renderCenteredString(Point pos, U32 size, const char *string);
 extern void renderShip(Color c, F32 alpha, F32 thrusts[], F32 health, F32 radius, bool cloakActive, bool shieldActive);
-extern void renderTeleporter(U32 type, bool in, S32 time, F32 radiusFraction, F32 radius, F32 alpha);
+extern void renderTeleporter(Point pos, U32 type, bool in, S32 time, F32 radiusFraction, F32 radius, F32 alpha);
 extern void renderTurret(Color c, Point anchor, Point normal, bool enabled, F32 health, F32 barrelAngle, F32 aimOffset);
 extern void renderFlag(Point pos, Color c);
 extern void renderLoadoutZone(Color c, Vector<Point> &bounds, Rect extent);
+extern void renderProjectile(Point pos, U32 type, U32 time);
+extern void renderMine(Point pos, bool armed, bool visible);
+extern void renderGrenade(Point pos);
+extern void renderRepairItem(Point pos);
+extern void renderForceFieldProjector(Point pos, Point normal, Color teamColor, bool enabled);
+extern void renderForceField(Point start, Point end, Color c, bool fieldUp);
+
+
 };
 
 #endif

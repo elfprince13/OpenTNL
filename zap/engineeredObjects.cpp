@@ -413,17 +413,7 @@ bool ForceFieldProjector::getCollisionPoly(Vector<Point> &polyPoints)
 
 void ForceFieldProjector::render()
 {
-   Vector<Point> p;
-   getCollisionPoly(p);
-   if(isEnabled())
-      glColor3f(1,1,1);
-   else
-      glColor3f(0.6, 0.6, 0.6);
-
-   glBegin(GL_LINE_LOOP);
-   for(S32 i = 0; i < p.size(); i++)
-      glVertex2f(p[i].x, p[i].y);
-   glEnd();
+   renderForceFieldProjector(mAnchorPoint, mAnchorNormal, getGame()->getGameType()->getTeamColor(getTeam()), isEnabled());
 }
 
 TNL_IMPLEMENT_NETOBJECT(ForceField);
@@ -535,26 +525,8 @@ bool ForceField::getCollisionPoly(Vector<Point> &p)
 
 void ForceField::render()
 {
-   Color c = getGame()->getGameType()->mTeams[mTeam].color;
-
-   if(c.r < 0.5)
-      c.r = 0.5;
-   if(c.g < 0.5)
-      c.g = 0.5;
-   if(c.b < 0.5)
-      c.b = 0.5;
-
-   Vector<Point> p;
-   getCollisionPoly(p);
-
-   if(mFieldUp)
-      glColor(c);
-   else
-      glColor(c * 0.5);
-   glBegin(GL_LINE_LOOP);
-   for(S32 i = 0; i < p.size(); i++)
-      glVertex2f(p[i].x, p[i].y);
-   glEnd();
+   Color c = getGame()->getGameType()->getTeamColor(mTeam);
+   renderForceField(mStart, mEnd, c, mFieldUp);
 }
 
 TNL_IMPLEMENT_NETOBJECT(Turret);

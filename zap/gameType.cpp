@@ -110,8 +110,9 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
 
       glEnable(GL_BLEND);
       glColor4f(1,1,1, alpha);
-      UserInterface::drawCenteredStringf(50, 30, "%s: %s", getGameTypeString(), mLevelName.getString());
-      UserInterface::drawCenteredString(90, 20, getInstructionString());
+      UserInterface::drawCenteredStringf(60, 30, "Level: %s", mLevelName.getString());
+      UserInterface::drawCenteredStringf(100, 30, "Game Type: %s", getGameTypeString());
+      UserInterface::drawCenteredString(140, 20, getInstructionString());
       UserInterface::drawCenteredString(530, 20, mLevelDescription.getString());
       glDisable(GL_BLEND);
    }

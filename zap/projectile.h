@@ -56,7 +56,6 @@ public:
 
    Point pos;
    Point velocity;
-   U32 mAliveTime;
    U32 mTimeRemaining;
    U32 mType;
    bool collided;
@@ -79,6 +78,23 @@ public:
    void render();
    TNL_DECLARE_CLASS(Projectile);
 };
+
+
+enum {
+   NumSparkColors = 4,
+};
+
+struct ProjectileInfo
+{
+   F32   damageAmount;
+   Color sparkColors[NumSparkColors];
+   Color projColors[2];
+   F32   scaleFactor;
+   U32   projectileSound;
+   U32   impactSound;
+};
+
+extern ProjectileInfo gProjInfo[Projectile::TypeCount];
 
 class GrenadeProjectile : public Item
 {
@@ -112,6 +128,7 @@ class Mine : public GrenadeProjectile
 {
    typedef GrenadeProjectile Parent;
 
+public:
    enum Constants
    {
       ArmedMask = GrenadeProjectile::FirstFreeMask,
@@ -121,7 +138,6 @@ class Mine : public GrenadeProjectile
       OuterBlastRadius = 100 ,
    };
 
-public:
    Mine(Point pos = Point(), Ship *owner=NULL);
    bool mArmed;
    Timer mScanTimer;
