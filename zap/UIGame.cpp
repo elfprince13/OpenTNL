@@ -151,8 +151,6 @@ void GameUserInterface::render()
       mVChat.render();
    else if(mCurrentMode == LoadoutMode)
       mLoadout.render();
-   else if(mCurrentMode == EngineerBuildMode)
-      mEngineerBuild.render();
 
    GameType *theGameType = gClientGame->getGameType();
 
@@ -342,13 +340,6 @@ void GameUserInterface::enterLoadout(bool fromController)
    mCurrentMode = LoadoutMode;
 }
 
-void GameUserInterface::displayEngineerBuildMenu()
-{
-   UserInterface::playBoop();
-   mEngineerBuild.show(false);
-   mCurrentMode = EngineerBuildMode;
-}
-
 void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
 {
    if(buttonIndex == 6)
@@ -401,10 +392,6 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
       {
          mLoadout.processKey(buttonIndex);
       }
-      else if(mCurrentMode == EngineerBuildMode)
-      {
-         mEngineerBuild.processKey(buttonIndex);
-      }
    }
 }
 
@@ -438,8 +425,7 @@ void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
 
 void GameUserInterface::onModifierKeyDown(U32 key)
 {
-   if(mCurrentMode == EngineerBuildMode ||
-      mCurrentMode == LoadoutMode || 
+   if(mCurrentMode == LoadoutMode || 
       mCurrentMode == PlayMode)
    {
       if(key == 0)
@@ -451,8 +437,7 @@ void GameUserInterface::onModifierKeyDown(U32 key)
 
 void GameUserInterface::onModifierKeyUp(U32 key)
 {
-   if(mCurrentMode == EngineerBuildMode ||
-      mCurrentMode == LoadoutMode || 
+   if(mCurrentMode == LoadoutMode || 
       mCurrentMode == PlayMode)
    {
       if(key == 0)
@@ -467,12 +452,7 @@ void GameUserInterface::onKeyDown(U32 key)
    if(mCurrentMode == LoadoutMode)
       if(mLoadout.processKey(key))
          return;
-   if(mCurrentMode == EngineerBuildMode)
-      if(mEngineerBuild.processKey(key))
-         return;
-   
-   if(mCurrentMode == EngineerBuildMode ||
-      mCurrentMode == LoadoutMode || 
+   if(mCurrentMode == LoadoutMode || 
       mCurrentMode == PlayMode)
    {
       mCurrentChatType = GlobalChat;
@@ -595,8 +575,7 @@ void GameUserInterface::onKeyDown(U32 key)
 
 void GameUserInterface::onKeyUp(U32 key)
 {
-   if(mCurrentMode == EngineerBuildMode ||
-      mCurrentMode == LoadoutMode || 
+   if(mCurrentMode == LoadoutMode || 
       mCurrentMode == PlayMode)
    {
       switch(toupper(key))

@@ -140,6 +140,7 @@ public:
    virtual void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
 
    virtual void spawnShip(GameConnection *theClient);
+   virtual void changeClientTeam(GameConnection *theClient);
 
    virtual void renderInterfaceOverlay(bool scoreboardVisible);
    void renderTimeLeft();
@@ -147,7 +148,6 @@ public:
    virtual void clientRequestLoadout(GameConnection *client, const Vector<U32> &loadout);
    virtual void updateShipLoadout(GameObject *shipObject); // called from LoadoutZone when a Ship touches the zone
 
-   virtual void clientRequestEngineerBuild(GameConnection *client, U32 buildObject);
    void setClientShipLoadout(ClientRef *cl, const Vector<U32> &loadout);
 
    Color getTeamColor(S32 team);

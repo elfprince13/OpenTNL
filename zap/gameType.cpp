@@ -28,6 +28,7 @@
 #include "ship.h"
 #include "UIGame.h"
 #include "UIMenus.h"
+#include "UINameEntry.h"
 #include "gameNetInterface.h"
 #include "flagItem.h"
 #include "glutInclude.h"
@@ -426,12 +427,6 @@ void GameType::clientRequestLoadout(GameConnection *client, const Vector<U32> &l
    //   setClientShipLoadout(clientIndex, loadout);
 }
 
-void GameType::clientRequestEngineerBuild(GameConnection *client, U32 buildObject)
-{
-   engClientCreateObject(client, buildObject);
-}
-
-
 void GameType::performScopeQuery(GhostConnection *connection)
 {
    GameConnection *gc = (GameConnection *) connection;
@@ -606,18 +601,12 @@ void GameType::addClientGameMenuOptions(Vector<MenuItem> &menuOptions)
 {
    if(mTeams.size() > 1)
       menuOptions.push_back(MenuItem("CHANGE TEAMS",1000));
-   GameConnection *gc = gClientGame->getConnectionToServer();
-   if(gc && gc->isAdmin())
-      menuOptions.push_back(MenuItem("CHANGE LEVEL",1001));
-
 }
 
 void GameType::processClientGameMenuOption(U32 index)
 {
    if(index == 1000)
       c2sChangeTeams();
-   else if(index == 1001)
-      gLevelMenuUserInterface.activate();
 }
 
 void GameType::setTeamScore(S32 teamIndex, S32 newScore)
@@ -642,10 +631,15 @@ GAMETYPE_RPC_S2C(GameType, s2cSetTimeRemaining, (U32 timeLeft))
 
 GAMETYPE_RPC_C2S(GameType, c2sChangeTeams, ())
 {
+   GameConnection *source = (GameConnection *) NetObject::getRPCSourceConnection();
+   changeClientTeam(source);
+}
+
+void GameType::changeClientTeam(GameConnection *source)
+{
    if(mTeams.size() <= 1)
       return;
 
-   GameConnection *source = (GameConnection *) NetObject::getRPCSourceConnection();
    ClientRef *cl = source->getClientRef();
 
    // destroy the old ship

@@ -39,6 +39,14 @@
 namespace Zap
 {
 
+MenuUserInterface::MenuUserInterface()
+{
+   menuTitle = "Menu";
+   menuSubTitle = "";
+   menuFooter = "UP, DOWN to choose  ENTER to select  ESC exits menu";
+   selectionIndex = 0;
+}
+
 void MenuUserInterface::render()
 {
    if(gClientGame->getConnectionToServer())
@@ -60,14 +68,30 @@ void MenuUserInterface::render()
    drawCenteredString( 45, 18, menuSubTitle);
    drawCenteredString( 570, 18, menuFooter);
 
-   U32 yStart = (canvasHeight - menuItems.size() * 45) / 2;
+   if(selectionIndex >= menuItems.size())
+      selectionIndex = 0;
+
+   S32 offset = 0;
+   S32 count = menuItems.size();
+
+   if(count > 7)
+   {
+      count = 7;
+      offset = selectionIndex - 3;
+      if(offset < 0)
+         offset = 0;
+      else if(offset + count >= menuItems.size())
+         offset = menuItems.size() - count;
+   }
+
+   U32 yStart = (canvasHeight - count * 45) / 2;
    //glColor3f(0,1,0);
 
-   for(S32 i = 0; i < menuItems.size(); i++)
+   for(S32 i = 0; i < count; i++)
    {
       U32 y = yStart + i * 45;
 
-      if(selectionIndex == i)
+      if(selectionIndex == i + offset)
       {
          glColor3f(0,0,0.4);
          glBegin(GL_POLYGON);
@@ -85,7 +109,7 @@ void MenuUserInterface::render()
          glEnd();
       }      
       glColor3f(1,1,1);
-      drawCenteredString(y, 25, menuItems[i].mText);
+      drawCenteredString(y, 25, menuItems[i+offset].mText);
    }
 }
 
@@ -95,15 +119,30 @@ void MenuUserInterface::onSpecialKeyDown(U32 key)
    {
       selectionIndex--;
       if(selectionIndex < 0)
-         selectionIndex = menuItems.size() - 1;
-
+      {
+         if(menuItems.size() > 7)
+         {
+            selectionIndex = 0;
+            return;
+         }
+         else
+            selectionIndex = menuItems.size() - 1;
+      }
       UserInterface::playBoop();
    }
    else if(key == GLUT_KEY_DOWN || key == GLUT_KEY_RIGHT)
    {
       selectionIndex++;
       if(selectionIndex >= menuItems.size())
-         selectionIndex = 0;
+      {
+         if(menuItems.size() > 7)
+         {
+            selectionIndex = menuItems.size() - 1;
+            return;
+         }
+         else
+            selectionIndex = 0;
+      }
 
       UserInterface::playBoop();
    }
@@ -265,11 +304,6 @@ void OptionsMenuUserInterface::setupMenus()
       menuItems.push_back(MenuItem("VOICE ECHO: ENABLED",3));
    else
       menuItems.push_back(MenuItem("VOICE ECHO: DISABLED",3));
-
-   if(gClientGame->getConnectionToServer())
-      menuItems.push_back(MenuItem("RETURN TO GAME",4));
-   else
-      menuItems.push_back(MenuItem("GO TO MAIN MENU",4));
 }
 
 void OptionsMenuUserInterface::processSelection(U32 index)
@@ -297,12 +331,6 @@ void OptionsMenuUserInterface::processSelection(U32 index)
    case 3:
       echoVoice = !echoVoice;
       break;
-   case 4:
-      if(gClientGame->getConnectionToServer())
-         gGameUserInterface.activate();   
-      else
-         gMainMenuUserInterface.activate();
-      break;
    };
    setupMenus();
 }
@@ -327,25 +355,29 @@ void GameMenuUserInterface::onActivate()
 {
    Parent::onActivate();
    menuItems.clear();
-   menuItems.push_back(MenuItem("RETURN TO GAME",0));
    menuItems.push_back(MenuItem("OPTIONS",1));
    menuItems.push_back(MenuItem("INSTRUCTIONS",2));
-   menuItems.push_back(MenuItem("LEAVE GAME",3));
    GameType *theGameType = gClientGame->getGameType();
    if(theGameType)
    {
       mGameType = theGameType;
       theGameType->addClientGameMenuOptions(menuItems);
    }
+   GameConnection *gc = gClientGame->getConnectionToServer();
+   if(gc)
+   {
+      if(gc->isAdmin())
+         menuItems.push_back(MenuItem("ADMIN",4));
+      else
+         menuItems.push_back(MenuItem("ENTER ADMIN PASSWORD",5));
+   }
+   menuItems.push_back(MenuItem("LEAVE GAME",3));
 }
 
 void GameMenuUserInterface::processSelection(U32 index)
 {
    switch(index)
    {
-      case 0:
-         gGameUserInterface.activate();
-         break;
       case 1:
          gOptionsMenuUserInterface.activate();
          break;
@@ -358,6 +390,12 @@ void GameMenuUserInterface::processSelection(U32 index)
             gEditorUserInterface.activate();
          else
             gMainMenuUserInterface.activate();
+         break;
+      case 4:
+         gAdminMenuUserInterface.activate();
+         break;
+      case 5:
+         gAdminPasswordEntryUserInterface.activate();
          break;
       default:
          gGameUserInterface.activate();
@@ -429,5 +467,70 @@ void LevelMenuUserInterface::onEscape()
    gGameUserInterface.activate();
 }
 
-};
+AdminMenuUserInterface gAdminMenuUserInterface;
 
+void AdminMenuUserInterface::onActivate()
+{
+   menuTitle = "ADMINISTRATOR OPTIONS:";
+   menuItems.clear();
+   menuItems.push_back(MenuItem("CHANGE LEVEL",0));
+   menuItems.push_back(MenuItem("CHANGE A PLAYER'S TEAM",1));
+   menuItems.push_back(MenuItem("KICK A PLAYER",2));
+}
+
+void AdminMenuUserInterface::onEscape()
+{
+   gGameUserInterface.activate();
+}
+
+void AdminMenuUserInterface::processSelection(U32 index)
+{
+   switch(index)
+   {
+   case 0:
+      gLevelMenuUserInterface.activate();
+      break;
+   case 1:
+      gPlayerMenuUserInterface.action = PlayerMenuUserInterface::ChangeTeam;
+      gPlayerMenuUserInterface.activate();
+      break;
+   case 2:
+      gPlayerMenuUserInterface.action = PlayerMenuUserInterface::Kick;
+      gPlayerMenuUserInterface.activate();
+      break;
+   }
+}
+
+PlayerMenuUserInterface gPlayerMenuUserInterface;
+
+void PlayerMenuUserInterface::render()
+{
+   menuItems.clear();
+   GameType *gt = gClientGame->getGameType();
+   if(gt)
+   {
+      for(S32 i = 0; i < gt->mClientList.size(); i++)
+         menuItems.push_back(MenuItem(gt->mClientList[i]->name.getString(), i));
+   }
+   if(action == Kick)
+      menuTitle = "CHOOSE PLAYER TO KICK:";
+   else if(action == ChangeTeam)
+      menuTitle = "CHOOSE PLAYER WHOSE TEAM TO CHANGE:";
+   Parent::render();
+}
+
+void PlayerMenuUserInterface::onEscape()
+{
+   gGameUserInterface.activate();
+}
+
+void PlayerMenuUserInterface::processSelection(U32 index)
+{
+   StringTableEntry e(menuItems[index].mText);
+   GameConnection *gc = gClientGame->getConnectionToServer();
+   if(gc)
+      gc->c2sAdminPlayerAction(e, action);
+   gGameUserInterface.activate();
+}
+
+};

@@ -26,34 +26,58 @@
 
 #include "UINameEntry.h"
 #include "UIMenus.h"
+#include "UIGame.h"
 #include "game.h"
+#include "gameConnection.h"
 
 #include "glutInclude.h"
 
 namespace Zap
 {
 
-NameEntryUserInterface gNameEntryUserInterface;
+void TextEntryUserInterface::onActivate()
+{
+   if(resetOnActivate)
+   {
+      buffer[0] = 0;
+      cursorPos = 0;
+   }
+}
 
-void NameEntryUserInterface::render()
+void TextEntryUserInterface::render()
 {
    glColor3f(1,1,1);
 
    U32 y = (canvasHeight / 2) - 20;
 
    drawCenteredString(y, 20, title);
-
    y += 45;
-   drawCenteredString(y, 30, buffer);
 
-   U32 width = getStringWidth(30, buffer);
+   char astbuffer[MaxTextLen+1];
+   const char *renderBuffer=buffer;
+   if(secret)
+   {
+
+      S32 i;
+      for(i = 0; i < MaxTextLen;i++)
+      {
+         if(!buffer[i])
+            break;
+         astbuffer[i] = '*';
+      } 
+      astbuffer[i] = 0;
+      renderBuffer = astbuffer;
+   }
+   drawCenteredString(y, 30, renderBuffer);
+
+   U32 width = getStringWidth(30, renderBuffer);
    U32 x = (canvasWidth - width) / 2;
 
    if(blink)
-      drawString(x + getStringWidth(30, buffer, cursorPos), y, 30, "_");
+      drawString(x + getStringWidth(30, renderBuffer, cursorPos), y, 30, "_");
 }
 
-void NameEntryUserInterface::idle(U32 t)
+void TextEntryUserInterface::idle(U32 t)
 {
    if(mBlinkTimer.update(t))
    {
@@ -62,10 +86,10 @@ void NameEntryUserInterface::idle(U32 t)
    }
 }
 
-void NameEntryUserInterface::onKeyDown(U32 key)
+void TextEntryUserInterface::onKeyDown(U32 key)
 {
    if(key == '\r')
-      onAccept();
+      onAccept(buffer);
    else if(key == 8 || key == 127)
    {
       // backspace key
@@ -82,9 +106,9 @@ void NameEntryUserInterface::onKeyDown(U32 key)
    }
    else
    {
-      for(U32 i = MaxNameLen - 1; i > cursorPos; i--)
+      for(U32 i = MaxTextLen - 1; i > cursorPos; i--)
          buffer[i] = buffer[i-1];
-      if(cursorPos < MaxNameLen-1)
+      if(cursorPos < MaxTextLen-1)
       {
          buffer[cursorPos] = key;
          cursorPos++;
@@ -92,30 +116,77 @@ void NameEntryUserInterface::onKeyDown(U32 key)
    }
 }
 
-void NameEntryUserInterface::onKeyUp(U32 key)
+void TextEntryUserInterface::onKeyUp(U32 key)
 {
 
 }
 
-void NameEntryUserInterface::onEscape()
+void TextEntryUserInterface::setText(const char *text)
 {
-}
-
-void NameEntryUserInterface::setText(const char *text)
-{
-   if(strlen(text) > MaxNameLen)
+   if(strlen(text) > MaxTextLen)
    {
-      strncpy(buffer, text, MaxNameLen);
-      buffer[MaxNameLen] = 0;
+      strncpy(buffer, text, MaxTextLen);
+      buffer[MaxTextLen] = 0;
    }
    else
       strcpy(buffer, text);
 }
 
-void NameEntryUserInterface::onAccept()
+
+NameEntryUserInterface gNameEntryUserInterface;
+
+void NameEntryUserInterface::onEscape()
+{
+}
+
+void NameEntryUserInterface::onAccept(const char *text)
 {
    gMainMenuUserInterface.activate();
 }
+
+PasswordEntryUserInterface gPasswordEntryUserInterface;
+
+void PasswordEntryUserInterface::onEscape()
+{
+   gMainMenuUserInterface.activate();
+}
+
+void PasswordEntryUserInterface::onAccept(const char *text)
+{
+   joinGame(connectAddress, false, false);
+}
+
+AdminPasswordEntryUserInterface gAdminPasswordEntryUserInterface;
+
+void AdminPasswordEntryUserInterface::render()
+{
+   gGameUserInterface.render();
+   glColor4f(0, 0, 0, 0.5);
+   glEnable(GL_BLEND);
+   glBegin(GL_POLYGON);
+   glVertex2f(0, 0);
+   glVertex2f(canvasWidth, 0);
+   glVertex2f(canvasWidth, canvasHeight);
+   glVertex2f(0, canvasHeight);
+   glEnd();  
+   glDisable(GL_BLEND); 
+   Parent::render();
+}
+
+void AdminPasswordEntryUserInterface::onEscape()
+{
+   gGameUserInterface.activate();
+}
+
+void AdminPasswordEntryUserInterface::onAccept(const char *text)
+{
+   gGameUserInterface.activate();
+   GameConnection *gc = gClientGame->getConnectionToServer();
+   if(gc)
+      gc->c2sAdminPassword(text);
+}
+
+
 
 };
 

@@ -311,18 +311,6 @@ void Ship::idle(GameObject::IdleCallPath path)
       processEnergy();
    }
 
-   // if we're on the client and the user has just activated
-   // the engineering pack, notify the game user interface
-   // that it should display the buildable items list.
-   if(path == GameObject::ClientIdleControlMain &&
-      !engineerWasActive && isEngineerActive() &&
-      carryingResource())
-   {
-      // it's kind of gross to have this here... but this
-      // module behaves in a pretty non-standard way.
-      gGameUserInterface.displayEngineerBuildMenu();
-   }
-   
    if(path == GameObject::ClientIdleMainRemote)
    {
       // for ghosts, find some repair targets for rendering the
@@ -350,8 +338,13 @@ void Ship::idle(GameObject::IdleCallPath path)
 
 bool Ship::findRepairTargets()
 {
+   // We use the render position in findRepairTargets so that
+   // ships that are moving can repair each other (server) and
+   // so that ships don't render funny repair lines to interpolating
+   // ships (client)
+
    Vector<GameObject *> hitObjects;
-   Point pos = getActualPos();
+   Point pos = getRenderPos();
    Point extend(RepairRadius, RepairRadius);
    Rect r(pos - extend, pos + extend);
    findObjects(ShipType | EngineeredType, hitObjects, r);
@@ -360,7 +353,7 @@ bool Ship::findRepairTargets()
    for(S32 i = 0; i < hitObjects.size(); i++)
    {
       GameObject *s = hitObjects[i];
-      if(!s->isDestroyed() && s->getHealth() < 1 && (s->getActualPos() - pos).len() < (RepairRadius + CollisionRadius))
+      if(!s->isDestroyed() && s->getHealth() < 1 && (s->getRenderPos() - pos).len() < (RepairRadius + CollisionRadius))
          mRepairTargets.push_back(s);
    }
    return mRepairTargets.size() != 0;

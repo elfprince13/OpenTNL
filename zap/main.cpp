@@ -59,6 +59,9 @@ U32 gSimulatedPing = 0;
 F32 gSimulatedPacketLoss = 0;
 
 const char *gMasterAddressString = "IP:master.opentnl.org:29005";
+const char *gServerPassword = NULL;
+const char *gAdminPassword = NULL;
+
 Address gMasterAddress;
 Address gConnectAddress;
 Address gBindAddress(IPProtocol, Address::Any, 28000);
@@ -558,6 +561,16 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *
             nameSet = true;
             gNameEntryUserInterface.setText(argv[i+1]);
          }
+      }
+      else if(!stricmp(argv[i], "-password"))
+      {
+         if(hasAdditionalArg)
+            gServerPassword = strdup(argv[i+1]);
+      }
+      else if(!stricmp(argv[i], "-adminpassword"))
+      {
+         if(hasAdditionalArg)
+            gAdminPassword = strdup(argv[i+1]);
       }
       else if(!stricmp(argv[i], "-levels"))
       {

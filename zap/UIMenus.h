@@ -53,13 +53,7 @@ public:
 
    S32 selectionIndex;
 
-   MenuUserInterface() 
-   {
-      menuTitle = "Menu";
-      menuSubTitle = "";
-      menuFooter = "";
-      selectionIndex = 0;
-   }
+   MenuUserInterface();
 
    void render();
    void onSpecialKeyDown(U32 key);
@@ -132,6 +126,33 @@ public:
 };
 
 extern LevelMenuUserInterface gLevelMenuUserInterface;
+
+class AdminMenuUserInterface : public MenuUserInterface
+{
+   typedef MenuUserInterface Parent;
+public:
+   void onActivate();
+   void processSelection(U32 index);
+   void onEscape();
+};
+
+extern AdminMenuUserInterface gAdminMenuUserInterface;
+
+class PlayerMenuUserInterface : public MenuUserInterface
+{
+   typedef MenuUserInterface Parent;
+public:
+   enum Action {
+      Kick,
+      ChangeTeam,
+      ActionCount,
+   } action;
+   void render();
+   void processSelection(U32 index);
+   void onEscape();
+};
+
+extern PlayerMenuUserInterface gPlayerMenuUserInterface;
 
 };
 

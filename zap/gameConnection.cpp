@@ -30,11 +30,15 @@
 
 #include "UIGame.h"
 #include "UIMenus.h"
+#include "UINameEntry.h"
 
 namespace Zap
 {
 // Global list of clients (if we're a server).
 GameConnection GameConnection::gClientList;
+
+extern const char *gServerPassword;
+extern const char *gAdminPassword;
 
 TNL_IMPLEMENT_NETCONNECTION(GameConnection, NetClassGroupGame, true);
 
@@ -87,6 +91,68 @@ ClientRef *GameConnection::getClientRef()
    return mClientRef;
 }
 
+TNL_IMPLEMENT_RPC(GameConnection, c2sAdminPassword, (const char *pass), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
+{
+   if(gAdminPassword && !strcmp(gAdminPassword, pass))
+   {
+      setIsAdmin(true);
+      static StringTableEntry msg("Administrator access granted.");
+      s2cDisplayMessage(ColorAqua, SFXIncomingMessage, msg);
+      s2cSetIsAdmin();
+   }
+}
+
+TNL_IMPLEMENT_RPC(GameConnection, c2sAdminPlayerAction, (StringTableEntryRef playerName, U32 actionIndex), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
+{
+   if(isAdmin())
+   {
+      GameConnection *theClient;
+      for(theClient = getClientList(); theClient; theClient = theClient->getNextClient())
+         if(theClient->getClientName() == playerName)
+            break;
+
+      if(!theClient)
+         return;
+
+      StringTableEntry msg;
+      static StringTableEntry kickMessage("%e0 was kicked from the game by %e1.");
+      static StringTableEntry changeTeamMessage("%e0 was team changed by %e1.");
+      Vector<StringTableEntry> e;
+      e.push_back(theClient->getClientName());
+      e.push_back(getClientName());
+
+      switch(actionIndex)
+      {
+      case PlayerMenuUserInterface::ChangeTeam:
+         msg = changeTeamMessage;
+         {
+            GameType *gt = gServerGame->getGameType();
+            gt->changeClientTeam(theClient);
+         }
+         break;
+      case PlayerMenuUserInterface::Kick:
+         msg = kickMessage;
+         if(theClient->isAdmin())
+         {
+            static StringTableEntry nokick("Administrators cannot be kicked.");
+            s2cDisplayMessage(ColorAqua, SFXIncomingMessage, nokick);
+            return;
+         }
+         theClient->disconnect("You were kicked from the game.");
+         break;
+      default:
+         return;
+      }
+      for(GameConnection *walk = getClientList(); walk; walk = walk->getNextClient())
+         walk->s2cDisplayMessageE(ColorAqua, SFXIncomingMessage, msg, e);
+   }
+}
+
+TNL_IMPLEMENT_RPC(GameConnection, s2cSetIsAdmin, (), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirServerToClient, 1)
+{
+   setIsAdmin(true);
+}
+
 TNL_IMPLEMENT_RPC(GameConnection, c2sRequestCommanderMap, (), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
 {
    mInCommanderMap = true;
@@ -103,13 +169,6 @@ TNL_IMPLEMENT_RPC(GameConnection, c2sRequestLoadout, (const Vector<U32> &loadout
    GameType *gt = gServerGame->getGameType();
    if(gt)
       gt->clientRequestLoadout(this, mLoadout);
-}
-
-TNL_IMPLEMENT_RPC(GameConnection, c2sRequestEngineerBuild, (U32 buildObject), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
-{
-   GameType *gt = gServerGame->getGameType();
-   if(gt)
-      gt->clientRequestEngineerBuild(this, buildObject);
 }
 
 TNL_DECLARE_MEMBER_ENUM(GameConnection, ColorCount);
@@ -234,7 +293,15 @@ TNL_IMPLEMENT_RPC(GameConnection, c2sRequestLevelChange, (S32 newLevelIndex), Ne
 {
    if(mIsAdmin)
    {
+      static StringTableEntry msg("%e0 changed the level to %e1.");
+      Vector<StringTableEntry> e;
+      e.push_back(getClientName());
+      e.push_back(gServerGame->getLevelName(newLevelIndex));
+
       gServerGame->cycleLevel(newLevelIndex);
+      for(GameConnection *walk = getClientList(); walk; walk = walk->getNextClient())
+         walk->s2cDisplayMessageE(ColorYellow, SFXNone, msg, e);
+
    }
 }
 
@@ -242,6 +309,7 @@ void GameConnection::writeConnectRequest(BitStream *stream)
 {
    Parent::writeConnectRequest(stream);
 
+   stream->writeString(gPasswordEntryUserInterface.getText());
    stream->writeString(mClientName.getString());
 }
 
@@ -256,8 +324,17 @@ bool GameConnection::readConnectRequest(BitStream *stream, const char **errorStr
       return false;
    }
 
+   // first read out the password.
    char buf[256];
    
+   stream->readString(buf);
+   if(gServerPassword && stricmp(buf, gServerPassword))
+   {
+      *errorString = "PASSWORD";
+      return false;
+   }
+
+   //now read the player name
    stream->readString(buf);
    size_t len = strlen(buf);
 
@@ -318,7 +395,15 @@ void GameConnection::onConnectionTerminated(NetConnection::TerminationReason r, 
 void GameConnection::onConnectTerminated(TerminationReason r, const char *string)
 {
    if(isInitiator())
-      gMainMenuUserInterface.activate();
+   {
+      if(!strcmp(string, "PASSWORD"))
+      {
+         gPasswordEntryUserInterface.setConnectServer(getNetAddress());
+         gPasswordEntryUserInterface.activate();
+      }
+      else
+         gMainMenuUserInterface.activate();
+   }
 }
 
 };

@@ -33,41 +33,91 @@
 namespace Zap
 {
 
-class NameEntryUserInterface : public UserInterface
+class TextEntryUserInterface : public UserInterface
 {
    enum {
-      MaxNameLen = 32,
+      MaxTextLen = 32,
       BlinkTime = 100,
    };
-   char buffer[MaxNameLen+1];
+   char buffer[MaxTextLen+1];
    U32 cursorPos;
    bool blink;
    Timer mBlinkTimer;
 
 protected:
    const char *title;
+   bool secret;
+   bool resetOnActivate;
 public:
-   NameEntryUserInterface() : mBlinkTimer(BlinkTime)
+   TextEntryUserInterface() : mBlinkTimer(BlinkTime)
    { 
-      title = "ENTER YOUR NAME:"; 
+      title = "ENTER TEXT:"; 
       buffer[0] = 0; 
       memset(buffer, 0, sizeof(buffer));
       blink = false;
+      secret = false;
+      cursorPos = 0;
+      resetOnActivate = true;
    }
 
+   void onActivate();
    void render();
    void idle(U32 t);
 
    void onKeyDown(U32 key);
    void onKeyUp(U32 key);
    
-   virtual void onAccept();
-   virtual void onEscape();
+   virtual void onAccept(const char *text) = 0;
+   virtual void onEscape() = 0;
    const char *getText() { return buffer; }
    void setText(const char *text);
 };
 
+class NameEntryUserInterface : public TextEntryUserInterface
+{
+public:
+   NameEntryUserInterface()
+   { 
+      title = "ENTER YOUR NAME:"; 
+      resetOnActivate = false;
+   }
+   virtual void onAccept(const char *text);
+   virtual void onEscape();
+};
+
 extern NameEntryUserInterface gNameEntryUserInterface;
+
+class PasswordEntryUserInterface : public TextEntryUserInterface
+{
+   Address connectAddress;
+public:
+   PasswordEntryUserInterface()
+   { 
+      title = "ENTER SERVER PASSWORD:";
+      secret = true;
+   }
+   void onAccept(const char *text);
+   void onEscape();
+   void setConnectServer(const Address &addr) { connectAddress = addr; }
+};
+
+extern PasswordEntryUserInterface gPasswordEntryUserInterface;
+
+class AdminPasswordEntryUserInterface : public TextEntryUserInterface
+{
+   typedef TextEntryUserInterface Parent;
+public:
+   AdminPasswordEntryUserInterface()
+   { 
+      title = "ENTER ADMIN PASSWORD:";
+      secret = true;
+   }
+   void onAccept(const char *text);
+   void onEscape();
+   void render();
+};
+
+extern AdminPasswordEntryUserInterface gAdminPasswordEntryUserInterface;
 
 };
 

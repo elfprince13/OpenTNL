@@ -138,6 +138,8 @@ or IP:www.foobar.com:24601
         browser when searching for servers.
 -maxplayers [number] sets the maximum number of players allowed 
         on the server
+-password [password] sets the password for access to the server.
+-adminpassword [password] sets the administrator password for the server.
 -joystick [joystickType] enables dual analog control pad.  The
         joystickType argument can be either 0, 1 or 2.  If the right
         stick doesn't aim shots properly with 0, try 1 or 2.

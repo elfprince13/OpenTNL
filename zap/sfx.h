@@ -91,6 +91,7 @@ enum SFXProfiles
    SFXUIBoop,
    SFXUICommUp,
    SFXUICommDown,
+   SFXIncomingMessage,
 
    NumSFXBuffers
 };

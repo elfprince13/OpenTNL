@@ -92,12 +92,15 @@ public:
 
    bool isAdmin() { return mIsAdmin; }
    void setIsAdmin(bool admin) { mIsAdmin = admin; }
+   TNL_DECLARE_RPC(c2sAdminPassword, (const char *pass));
+   TNL_DECLARE_RPC(s2cSetIsAdmin, ());
+   TNL_DECLARE_RPC(c2sAdminPlayerAction, (StringTableEntryRef playerName, U32 actionIndex));
+
    bool isInCommanderMap() { return mInCommanderMap; }
    TNL_DECLARE_RPC(c2sRequestCommanderMap, ());
    TNL_DECLARE_RPC(c2sReleaseCommanderMap, ());
 
    TNL_DECLARE_RPC(c2sRequestLoadout, (const Vector<U32> &loadout));
-   TNL_DECLARE_RPC(c2sRequestEngineerBuild, (U32 buildObject));
 
    TNL_DECLARE_RPC(s2cDisplayMessageESI, (RangedU32<0, ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString,
                    const Vector<StringTableEntry> &e, const Vector<const char *> &s, const Vector<S32> &i));

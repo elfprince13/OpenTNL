@@ -184,6 +184,7 @@ public:
    void setLevelList(const char *levelList);
    void loadLevel(const char *fileName);
    void cycleLevel(S32 newLevelIndex = -1);
+   StringTableEntry getLevelName(S32 index);
 
    void processLevelLoadLine(int argc, const char **argv);
    bool isServer() { return true; }

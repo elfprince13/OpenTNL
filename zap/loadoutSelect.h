@@ -47,15 +47,6 @@ public:
    bool processKey(U32 key);
 };
 
-class EngineerBuildHelper
-{
-public:
-   EngineerBuildHelper();
-   void render();
-   void show(bool fromController);
-   bool processKey(U32 key);
-};
-
 };
 
 #endif

@@ -227,6 +227,13 @@ void ServerGame::setLevelList(const char *levelList)
    cycleLevel();
 }
 
+StringTableEntry ServerGame::getLevelName(S32 index)
+{
+   if(index < 0 || index >= mLevelNames.size())
+      return StringTableEntry();
+   return mLevelNames[index];
+}
+
 void ServerGame::cycleLevel(S32 nextLevel)
 {
    // delete any objects on the delete list:
