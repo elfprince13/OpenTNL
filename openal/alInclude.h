@@ -27,8 +27,12 @@
 #ifndef _ALINCLUDE_H_
 #define _ALINCLUDE_H_
 
+#ifdef TNL_OS_MAC_OSX
+#include <OpenAL/alc.h>
+#include <OpenAL/alut.h>
+#else
 #include <alc.h>
 #include <alut.h>
-
+#endif
 
 #endif

@@ -28,7 +28,7 @@
 #include "tnl.h"
 #include "tnlLog.h"
 
-#if defined (TNL_OS_WIN32) || defined (TNL_OS_LINUX)
+#if defined (TNL_OS_WIN32) || defined (TNL_OS_LINUX) || defined (TNL_OS_MAC_OSX)
 
 #include "alInclude.h"
 
@@ -241,7 +241,11 @@ void SFXObject::init()
       ALvoid   *data;
       ALboolean loop;
 
+#ifdef TNL_OS_MAC_OSX
+      alutLoadWAVFile((ALbyte *) gSFXProfiles[i].fileName, &format, &data, &size, &freq);
+#else
       alutLoadWAVFile((ALbyte *) gSFXProfiles[i].fileName, &format, &data, &size, &freq, &loop);
+#endif
       if(alGetError() != AL_NO_ERROR)
          return;
       alBufferData(gBuffers[i], format, data, size, freq);

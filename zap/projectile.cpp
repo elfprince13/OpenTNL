@@ -180,17 +180,6 @@ void Projectile::processClient(U32 deltaT)
 {
    process(deltaT);
    liveTime += deltaT;
-  /* if(alive)
-   {
-      if(liveTime <= deltaT)
-      {
-         getGame()->deleteObject(this, 500);
-         liveTime = 0;
-         alive = false;
-      }
-      else
-         liveTime -= deltaT;
-   } */
 }
 
 void Projectile::render()
