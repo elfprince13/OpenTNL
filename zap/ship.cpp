@@ -484,7 +484,10 @@ void Ship::processEnergy()
       if(mModuleActive[i] != modActive[i])
       {
          if(i == ModuleSensor)
+         {
             mSensorZoomTimer.reset(SensorZoomTime - mSensorZoomTimer.getCurrent(), SensorZoomTime);
+            mSensorStartTime = getGame()->getCurrentTime();
+         }
          else if(i == ModuleCloak)
             mCloakTimer.reset(CloakFadeTime - mCloakTimer.getCurrent(), CloakFadeTime);
          setMaskBits(PowersMask);
@@ -712,7 +715,10 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
          wasActive[i] = mModuleActive[i];
          mModuleActive[i] = stream->readFlag();
          if(i == ModuleSensor && wasActive[i] != mModuleActive[i])
+         {
             mSensorZoomTimer.reset(SensorZoomTime - mSensorZoomTimer.getCurrent(), SensorZoomTime);
+            mSensorStartTime = getGame()->getCurrentTime();
+         }
          if(i == ModuleCloak && wasActive[i] != mModuleActive[i])
             mCloakTimer.reset(CloakFadeTime - mCloakTimer.getCurrent(), CloakFadeTime);
       }
@@ -1119,6 +1125,13 @@ void Ship::render()
    glRotatef(radiansToDegrees(mMoveState[RenderState].angle) - 90, 0, 0, 1.0);
    glScalef(warpInScale, warpInScale, 1);
    renderShip(color, alpha, thrusts, mHealth, mRadius, isCloakActive(), isShieldActive());
+   glColor3f(1,1,1);
+   if(isSensorActive())
+   {
+      U32 delta = getGame()->getCurrentTime() - mSensorStartTime;
+      F32 radius = (delta & 0x1FF) * 0.002;
+      drawCircle(Point(), radius * Ship::CollisionRadius + 4);
+   }
    glPopMatrix();
 
    for(S32 i = 0; i < mMountedItems.size(); i++)

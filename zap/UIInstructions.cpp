@@ -155,6 +155,7 @@ void InstructionsUserInterface::renderPage2()
       drawString(120, y, 20, moduleDescriptions[i]);
       glPushMatrix();
       glTranslatef(60, y + 10, 0);
+      glScalef(0.7, 0.7, 1);
       glRotatef(-90, 0, 0, 1);
       static F32 thrusts[4] =  { 1, 0, 0, 0 };
       static F32 thrustsBoost[4] =  { 1.3, 0, 0, 0 };
@@ -189,7 +190,11 @@ void InstructionsUserInterface::renderPage2()
             }
             break;
          case 3:
-            renderShip(Color(0,0,1), 1, thrusts, 1, Ship::CollisionRadius, false, false);
+            {
+               renderShip(Color(0,0,1), 1, thrusts, 1, Ship::CollisionRadius, false, false);
+               F32 radius = (gClientGame->getCurrentTime() & 0x1FF) * 0.002;
+               drawCircle(Point(), radius * Ship::CollisionRadius + 4);
+            }
             break;
          case 4:
             {

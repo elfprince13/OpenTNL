@@ -93,6 +93,7 @@ public:
    S32 mEnergy;
    StringTableEntry mPlayerName;
    bool mCooldown;
+   U32 mSensorStartTime;
 
    U32 mModule[ShipModuleCount];
    bool mModuleActive[ModuleCount];
