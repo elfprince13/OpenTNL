@@ -62,7 +62,17 @@ Address gMasterAddress;
 Address gConnectAddress;
 Address gBindAddress(IPProtocol, Address::Any, 28000);
 
-const char *gLevelList = "level5.txt level2.txt level3.txt level2.txt level4.txt level2.txt level1.txt level2.txt";
+const char *gLevelList = "level8.txt "
+                         "level2.txt "
+                         "level4.txt "
+                         "level2.txt "
+                         "level1.txt "
+                         "level2.txt "
+                         "level5.txt "
+                         "level2.txt "
+                         "level3.txt "
+                         "level2.txt "
+                         ;
 
 class ZapJournal : public Journal
 {
