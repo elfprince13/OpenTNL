@@ -162,7 +162,19 @@ void Barrier::clipRenderLinesToPoly(Vector<Point> &polyPoints)
    {
       Point rp1 = mRenderLineSegments[i];
       Point rp2 = mRenderLineSegments[i + 1];
-      
+
+/*      Point cp1 = polyPoints[polyPoints.size() - 1];
+      for(S32 j = 0; j < polyPoints.size(); j++)
+      {
+         Point cp2 = polyPoints[j];
+         Point ce = cp2 - cp1;
+
+         // If we're collinear, just don't clip
+
+         cp1 = cp2;
+      } */
+
+
       Point cp1 = polyPoints[polyPoints.size() - 1];
       for(S32 j = 0; j < polyPoints.size(); j++)
       {
@@ -179,7 +191,17 @@ void Barrier::clipRenderLinesToPoly(Vector<Point> &polyPoints)
          bool d1in = d1 > distToZero;
          bool d2in = d2 > distToZero;
 
-         if(!d1in && !d2in) // both points are outside this edge of the poly, so...
+         // collinearity check
+         Point a = ce;
+         Point b = rp2-rp1;
+         a.normalize();
+         b.normalize();
+         F32 v = a.dot(b);
+
+         // And locality check
+         F32 lc = getMin( getMin( (cp1 - rp1).len(), (cp1 - rp2).len() ), getMin( (cp2 - rp1).len(), (cp2 - rp2).len() ));
+
+         if(!d1in && !d2in || (v >= 1.f && lc < 0.1)) // both points are outside this edge of the poly, so...
          {
             // add them to the render poly
             clippedSegments.push_back(rp1);
@@ -207,7 +229,6 @@ void Barrier::clipRenderLinesToPoly(Vector<Point> &polyPoints)
          }
 
          // if both are in, just go to the next edge.
-
          cp1 = cp2;
       }
    }
