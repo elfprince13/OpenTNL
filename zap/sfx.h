@@ -48,6 +48,7 @@ enum SFXProfiles {
    SFXTeleportOut,
    SFXBounceWall,
    SFXBounceObject,
+   SFXUIBoop,
    NumSFXBuffers
 };
 

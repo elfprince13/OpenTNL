@@ -134,7 +134,7 @@ VChatHelper::VChatNode VChatHelper::mChatTree[] =
       {1, 'T', true, "Taunts", ""},
          {2, 'Y', false, "Yoohoo!",             "Yoohoo!"},
          {2, 'H', false, "How'd THAT feel?",    "How'd THAT feel?"},
-         {2, 'I', false, "I've had worse..."    "I've had worse..."},
+         {2, 'I', false, "I've had worse...",   "I've had worse..."},
          {2, 'M', false, "Missed me!",          "Missed me!"},
          {2, 'D', false, "Dance!",              "Dance!"},
          {2, 'C', false, "Come get some!",      "Come get some!"},
@@ -198,6 +198,7 @@ void VChatHelper::processKey(U32 key)
    // Escape...
    if(key == 27)
    {
+      UserInterface::playBoop();
       mVisible = false;
       return;
    }
@@ -221,6 +222,8 @@ void VChatHelper::processKey(U32 key)
       {
          // select it...
          mCurNode = walk;
+
+         UserInterface::playBoop();
 
          // If we're at a leaf (ie, next child down is higher or equal to us), then issue the chat and call it good...
          walk++;

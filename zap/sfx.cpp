@@ -38,17 +38,18 @@ namespace Zap
 {
 
 static SFXProfile gSFXProfiles[] = {
- {  "phaser.wav", false, 0.45f, false, 150, 600 },
- {  "phaser_impact.wav", false, 0.7f, false, 150, 600 },
- {  "ship_explode.wav", false, 1.0, false, 300, 1000 },
- {  "flag_capture.wav", true, 0.45f, false, 0, 0 },
- {  "flag_drop.wav", true, 0.45f, false, 0, 0 },
- {  "flag_return.wav", true, 0.45f, false, 0, 0 },
- {  "flag_snatch.wav", true, 0.45f, false, 0, 0 }, 
- {  "teleport_in.wav", false, 1.0, false, 200, 500 },
- {  "teleport_out.wav", false, 1.0, false, 200, 500 },
- {  "bounce_wall.wav", false, 0.7f, false, 150, 600 },
- {  "bounce_obj.wav", false, 0.7f, false, 150, 600 },
+ {  "phaser.wav",          false, 0.45f, false, 150, 600 },
+ {  "phaser_impact.wav",   false, 0.7f,  false, 150, 600 },
+ {  "ship_explode.wav",    false, 1.0,   false, 300, 1000 },
+ {  "flag_capture.wav",    true,  0.45f, false, 0,   0 },
+ {  "flag_drop.wav",       true,  0.45f, false, 0,   0 },
+ {  "flag_return.wav",     true,  0.45f, false, 0,   0 },
+ {  "flag_snatch.wav",     true,  0.45f, false, 0,   0 }, 
+ {  "teleport_in.wav",     false, 1.0,   false, 200, 500 },
+ {  "teleport_out.wav",    false, 1.0,   false, 200, 500 },
+ {  "bounce_wall.wav",     false, 0.7f,  false, 150, 600 },
+ {  "bounce_obj.wav",      false, 0.7f,  false, 150, 600 },
+ {  "boop.wav",            true,  0.4f,  false, 150, 600 },
  {  NULL, false, 0, false, 0, 0 },
 };
 

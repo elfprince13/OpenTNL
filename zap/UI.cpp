@@ -28,6 +28,7 @@
 using namespace TNL;
 
 #include "UI.h"
+#include "sfx.h"
 #include <stdarg.h>
 
 #include "glutInclude.h"
@@ -94,6 +95,10 @@ void UserInterface::drawStringf(S32 x, S32 y, S32 size, const char *format, ...)
    drawString(x, y, size, buffer);
 }
 
+void UserInterface::playBoop()
+{
+   SFXObject::play(SFXUIBoop, 1);
+}
 
 void UserInterface::render()
 {

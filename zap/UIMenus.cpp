@@ -84,12 +84,16 @@ void MenuUserInterface::onSpecialKeyDown(U32 key)
       selectionIndex--;
       if(selectionIndex < 0)
          selectionIndex = menuItems.size() - 1;
+
+      UserInterface::playBoop();
    }
    else if(key == GLUT_KEY_DOWN || key == GLUT_KEY_RIGHT)
    {
       selectionIndex++;
       if(selectionIndex >= menuItems.size())
          selectionIndex = 0;
+
+      UserInterface::playBoop();
    }
 }
 
@@ -97,11 +101,13 @@ void MenuUserInterface::onKeyDown(U32 key)
 {
    if(key == '\r')
    {
+      UserInterface::playBoop();
       processSelection(selectionIndex);
       selectionIndex = 0;
    }
    else if(key == 27)
    {
+      UserInterface::playBoop();
       selectionIndex = 0;
       onEscape();
    }

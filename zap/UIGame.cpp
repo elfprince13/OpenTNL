@@ -306,6 +306,7 @@ void GameUserInterface::onKeyDown(U32 key)
             break;
          case 'v':
          case 'V':
+            UserInterface::playBoop();
             mVChat->show();
             mCurrentMode = VChatMode;
             break;
