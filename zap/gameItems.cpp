@@ -184,7 +184,7 @@ public:
 
    bool collide(GameObject *hitObject)
    {
-      if(isGhost() || mIsMounted)
+      if(mIsMounted)
          return false;
 
       if(!(hitObject->getObjectTypeMask() & ShipType))
@@ -196,7 +196,8 @@ public:
 
       if(ship->hasEngineeringModule() && !ship->carryingResource())
       {
-         mountToShip(ship);
+         if(!isGhost())
+            mountToShip(ship);
          return false;
       }
       return true;

@@ -256,7 +256,6 @@ bool PickupItem::collide(GameObject *otherObject)
          setMaskBits(PickupMask);
          mRepopTimer.reset(getRepopDelay());
          mIsVisible = false;
-         removeFromDatabase();
       }
    }
    return false;

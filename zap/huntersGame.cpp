@@ -227,11 +227,14 @@ void HuntersGameType::controlObjectForClientKilled(GameConnection *theClient, Ga
 void HuntersGameType::spawnShip(GameConnection *theClient)
 {
    Parent::spawnShip(theClient);
+   S32 clientIndex = findClientIndexByConnection(theClient);
+   setClientShipLoadout(clientIndex, theClient->getLoadout());
 
    HuntersFlagItem *newFlag = new HuntersFlagItem(theClient->getControlObject()->getActualPos());
    newFlag->addToGame(getGame());
    newFlag->mountToShip((Ship *) theClient->getControlObject());
    newFlag->changeFlagCount(0);
+
 }
 
 void HuntersGameType::gameOverManGameOver()
@@ -283,7 +286,18 @@ void HuntersFlagItem::renderItem(Point pos)
    renderHunterFlag(offset, c);
 
    if(mIsMounted)
-      UserInterface::drawStringf(offset.x - 5, offset.y - 30, 12, "%d", mFlagCount);
+   {
+      if(mFlagCount)
+      {
+         if(mFlagCount > 20)
+            glColor3f(1, 0.5, 0.5);
+         else if(mFlagCount > 10)
+            glColor3f(1, 1, 0);
+         else
+            glColor3f(1, 1, 1);
+         UserInterface::drawStringf(offset.x - 5, offset.y - 30, 12, "%d", mFlagCount);
+      }
+   }
 }
 
 void HuntersFlagItem::onMountDestroyed()
