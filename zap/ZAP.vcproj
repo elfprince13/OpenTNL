@@ -316,6 +316,12 @@
 				RelativePath=".\gameType.h">
 			</File>
 			<File
+				RelativePath=".\huntersGame.cpp">
+			</File>
+			<File
+				RelativePath=".\huntersGame.h">
+			</File>
+			<File
 				RelativePath=".\soccerGame.cpp">
 			</File>
 			<File
