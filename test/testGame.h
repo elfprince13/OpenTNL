@@ -247,6 +247,11 @@ public:
    /// scope object.  On both sides this will set the proper ghosting behavior for the connection (ie server to client).
    void onConnectionEstablished(); 
 
+   /// isDataToTransmit is called each time the connection is ready to send a packet.  If
+   /// the NetConnection subclass has data to send it should return true.  In the case of a simulation,
+   /// this should always return true.
+   bool isDataToTransmit();
+
    /// Remote function that client calls to set the position of the player on the server.
    TNL_DECLARE_RPC(rpcSetPlayerPos, (F32 x, F32 y));
 

@@ -213,12 +213,11 @@ void NetConnection::writeRawPacket(BitStream *bstream, NetPacketType packetType)
       TNLLogMessageV(LogNetConnection, ("NetConnection %s: START %s", mNetAddress.toString(), getClassName()) );
       writePacket(bstream, note);
       TNLLogMessageV(LogNetConnection, ("NetConnection %s: END %s - %d bits", mNetAddress.toString(), getClassName(), bstream->getBitPosition() - start) );
-
-      if(!mSymmetricCipher.isNull())
-      {
-         mSymmetricCipher->setupCounter(mLastSendSeq, mLastSeqRecvd, packetType, 0);
-         bstream->hashAndEncrypt(MessageSignatureBytes, PacketHeaderByteSize, mSymmetricCipher);
-      }
+   }
+   if(!mSymmetricCipher.isNull())
+   {
+      mSymmetricCipher->setupCounter(mLastSendSeq, mLastSeqRecvd, packetType, 0);
+      bstream->hashAndEncrypt(MessageSignatureBytes, PacketHeaderByteSize, mSymmetricCipher);
    }
 }
 

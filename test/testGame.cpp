@@ -101,8 +101,12 @@ bool Player::onGhostAdd(GhostConnection *theConnection)
 void Player::performScopeQuery(GhostConnection *connection)
 {
    // find all the objects that are "in scope" - for the purposes
-   // of this test program, that is all objects in a circle of radius
+   // of this test program, all buildings are considered to be in
+   // scope always, as well as all "players" in a circle of radius
    // 0.25 around the scope object, or a radius squared of 0.0625
+
+   for(S32 i = 0; i < game->buildings.size(); i++)
+      connection->objectInScope(game->buildings[i]);
 
    for(S32 i = 0; i < game->players.size(); i++)
    {
@@ -388,6 +392,12 @@ TestConnection::TestConnection()
    //setIsAdaptive(); // <-- Uncomment me if you want to use adaptive rate instead of fixed rate...
 }
 
+bool TestConnection::isDataToTransmit()
+{
+   // we always want packets to be sent.
+   return true;
+}
+
 void TestConnection::onConnectTerminated(NetConnection::TerminationReason reason, const char *string)
 {
    ((TestNetInterface *) getInterface())->pingingServers = true;
@@ -407,7 +417,7 @@ void TestConnection::onConnectionEstablished()
 {
    // call the parent's onConnectionEstablished.
    // by default this will set the initiator to be a connection
-   // to "server" and the non-initiator to be a connnection to "client"
+   // to "server" and the non-initiator to be a connection to "client"
    Parent::onConnectionEstablished();
 
    // To see how this program performs with 50% packet loss,
