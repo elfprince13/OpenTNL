@@ -24,7 +24,7 @@
   Or go to http://www.gnu.org/copyleft/lgpl.html
 */
 
-#ifndef MACOSX
+#if !defined( MACOSX ) && !defined (__APPLE__)
 #include <malloc.h>
 #endif
 #include <stdlib.h>

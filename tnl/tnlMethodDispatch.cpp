@@ -514,7 +514,8 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
    theEvent->unmarshalledData.takeOwnership();
 
    U32 delta;
-   U8 *data = theEvent->unmarshalledData.getBuffer();
+   U8 *data;
+   data = theEvent->unmarshalledData.getBuffer();
    delta = data - rpcReadData;
 
    for(U32 i = 0; i < rpcNumOffsets; i++)
