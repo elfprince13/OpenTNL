@@ -1,21 +1,9 @@
-ZAP 1.2.0
+ZAP 1.2.1
 
 Welcome to ZAP, the retro multiplayer team action game!
 
-Changes since version 1.1.2:
-- Added shields, boost and ship energy
-- Added Soccer game type
-- Added level cycling and victory conditions
-- Added deathmatch mini level between team levels
-- Removed player particle trails and added motion trails
-- Added README
-- Added credits on exit
-- Added a new CTF level
-- Added voice recording and playback (recording on Win32 only for now)
-- Added voice compression using the variable LPC10 codec from the
-  excellent HawkVoice library.
-- Added more sounds
-- Added journaling capabilities for debugging purposes
+Changes since version 1.2.0:
+- Fixed bad crashiness.
 
 Controls:
 
