@@ -36,47 +36,48 @@ namespace Zap
 
 class EditorUserInterface : public UserInterface, public LevelLoader
 {
-   struct Poly
+   struct WorldItem
    {
+      U32 index;
+      S32 team;
       Vector<Point> verts;
+      bool selected;
+      Vector<bool> vertSelected;
    };
    struct Team
    {
       char name[256];
       Color color;
    };
-   struct Item
-   {
-      U32 index;
-      S32 team;
-      Point pos;
-   };
-
    char mGameType[256];
    Vector<const char *> mGameTypeArgs;
 
-   Vector<Poly> mPolys;
+   Vector<WorldItem> mItems;
+   Vector<WorldItem> mOriginalItems;
+
    Vector<Team> mTeams;
-   Vector<Item> mItems;
 
    Vector<Vector<const char *> > mUnknownItems;
 
    char mEditFileName[255];
 
-   Poly mOriginalPoly;
-   Poly mNewPoly;
+   WorldItem mNewItem;
    F32 mCurrentScale;
    Point mCurrentOffset;
    Point mMousePos;
    Point mMouseDownPos;
 
    bool mCreatingPoly;
-   S32 mCurrentPoly;
-   S32 mCurrentVertex;
-   S32 mCurrentEdge; // the edge hit
-   S32 mCurrentItem;
+   bool mDragSelecting;
 
    bool mUp, mDown, mLeft, mRight, mIn, mOut;
+
+   void clearSelection();
+   S32 countSelectedItems();
+   S32 countSelectedVerts();
+   void findHitVertex(Point canvasPos, S32 &hitItem, S32 &hitVertex);
+   void findHitItemAndEdge(Point canvasPos, S32 &hitItem, S32 &hitEdge);
+   void computeSelectionMinMax(Point &min, Point &max);
 
    void processLevelLoadLine(int argc, const char **argv);
 public:
@@ -84,8 +85,8 @@ public:
    void setEditName(const char *name);
 
    void render();
-   void renderPoly(Poly &p);
-   void renderItem(Item &i);
+   void renderPoly(WorldItem &p);
+   void renderItem(S32 i);
    void onMouseDown(S32 x, S32 y);
    void onMouseUp(S32 x, S32 y);
    void onMouseDragged(S32 x, S32 y);
@@ -95,10 +96,10 @@ public:
    void onKeyUp(U32 key);
    void onActivate();
    void idle(U32 timeDelta);
-   void findHitVertex(Point canvasPos);
-   void findHitPoly(Point canvasPos);
-   void findHitItem(Point canvasPos);
    void deleteSelection();
+   void duplicateSelection();
+   void flipSelectionVertical();
+   void flipSelectionHorizontal();
 
    void saveLevel();
    void testLevel();

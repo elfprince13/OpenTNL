@@ -49,9 +49,7 @@ void EditorUserInterface::setEditName(const char *name)
    }
    mCurrentOffset.set(0,0);
    mCurrentScale = 100;
-   mCurrentPoly = -1;
-   mCurrentVertex = -1;
-   mCurrentItem = -1;
+   mDragSelecting = false;
    mUp = mDown = mLeft = mRight = mIn = mOut = false;
    mCreatingPoly = false;
    strcpy(mEditFileName, name);
@@ -61,6 +59,7 @@ struct GameItemRec
 {
    const char *name;
    bool hasTeam;
+   bool isPoly;
 };
 
 extern void renderFlag(Point pos, Color c);
@@ -70,13 +69,19 @@ enum GameItems
    ItemSpawn,
    ItemSoccerBall,
    ItemCTFFlag,
+   ItemBarrierMaker,
+   ItemTeleporter,
 };
 
 GameItemRec gGameItemRecs[] = {
-   { "Spawn", true },
-   { "SoccerBallItem", false },
-   { "CTFFlagItem", true },
-   { NULL, false },
+   { "Spawn", true, false },
+   { "SoccerBallItem", false, false },
+   { "CTFFlagItem", true, false },
+   { "BarrierMaker", false, true },
+   { "Teleporter", false, true },
+   { "RepairItem", false, false },
+   { "SoccerGoalObject", true, true },
+   { NULL, false, false },
 };
 
 void EditorUserInterface::processLevelLoadLine(int argc, const char **argv)
@@ -85,25 +90,39 @@ void EditorUserInterface::processLevelLoadLine(int argc, const char **argv)
    U32 strlenCmd = (U32) strlen(argv[0]);
    for(index = 0; gGameItemRecs[index].name != NULL; index++)
    {
-      if(!strcmp(argv[0], gGameItemRecs[index].name) && 
-         ( (argc == 3 && !gGameItemRecs[index].hasTeam) ||
-           (argc == 4 && gGameItemRecs[index].hasTeam)))
-           break;
+      if(!strcmp(argv[0], gGameItemRecs[index].name))
+      {
+         S32 minArgs = 3;
+         if(gGameItemRecs[index].isPoly)
+            minArgs += 2;
+         if(gGameItemRecs[index].hasTeam)
+            minArgs++;
+         if(argc >= minArgs)
+            break;
+      }
    }
 
    if(gGameItemRecs[index].name)
    {
-      Item i;
+      WorldItem i;
       i.index = index;
+      S32 arg = 1;
+      i.team = -1;
+      i.selected = false;
       if(gGameItemRecs[index].hasTeam)
       {
-         i.team = atoi(argv[1]);
-         i.pos.read(argv + 2);
+         i.team = atoi(argv[arg]);
+         arg++;
       }
-      else
+      for(;arg < argc; arg += 2)
       {
-         i.team = -1;
-         i.pos.read(argv + 1);
+         Point p;
+         if(arg != argc - 1)
+         {
+            p.read(argv + arg);
+            i.verts.push_back(p);
+            i.vertSelected.push_back(false);
+         }
       }
       mItems.push_back(i);
    }
@@ -120,17 +139,6 @@ void EditorUserInterface::processLevelLoadLine(int argc, const char **argv)
       strcpy(t.name, argv[1]);
       t.color.read(argv + 2);
       mTeams.push_back(t);
-   }
-   else if(!strcmp(argv[0], "BarrierMaker") && (argc & 1))
-   {
-      Poly poly;
-      for(S32 i = 1; i < argc; i+= 2)
-      {
-         Point p(atof(argv[i]), atof(argv[i+1]));
-         poly.verts.push_back(p);
-      }
-      if(poly.verts.size())
-         mPolys.push_back(poly);
    }
    else
    {
@@ -218,36 +226,126 @@ void EditorUserInterface::render()
    }
 
    for(S32 i = 0; i < mItems.size(); i++)
+      renderItem(i);
+
+   if(mCreatingPoly)
    {
-      renderItem(mItems[i]);
-      if(mCurrentItem == i)
+      Point mouseVertex = snapToLevelGrid(convertCanvasToLevelCoord(mMousePos));
+      mNewItem.verts.push_back(mouseVertex);
+      glLineWidth(3);
+      glColor3f(1, 1, 0);
+      renderPoly(mNewItem);
+      glLineWidth(1);
+      mNewItem.verts.erase_fast(mNewItem.verts.size() - 1);
+   }
+   if(mDragSelecting)
+   {
+      glColor3f(1,1,1);
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(mMouseDownPos.x, mMouseDownPos.y);
+      glVertex2f(mMousePos.x, mMouseDownPos.y);
+      glVertex2f(mMousePos.x, mMousePos.y);
+      glVertex2f(mMouseDownPos.x, mMousePos.y);
+      glEnd();
+   }
+}
+
+void EditorUserInterface::renderPoly(WorldItem &p)
+{
+   glBegin(GL_LINE_STRIP);
+   for(S32 j = 0; j < p.verts.size(); j++)
+   {
+      Point v = convertLevelToCanvasCoord(p.verts[j]);
+      glVertex2f(v.x, v.y);
+   }
+   glEnd();
+}
+
+void EditorUserInterface::renderItem(S32 index)
+{
+   EditorUserInterface::WorldItem &i = mItems[index];
+   Point pos = convertLevelToCanvasCoord(i.verts[0]);
+   Color c;
+
+   if(i.index == ItemTeleporter)
+   {
+      Point dest = convertLevelToCanvasCoord(i.verts[1]);
+      glColor3f(0,1,0);
+
+      if(i.selected)
+         glLineWidth(3);
+
+      glBegin(GL_POLYGON);
+      glVertex2f(pos.x - 5, pos.y - 5);
+      glVertex2f(pos.x + 5, pos.y - 5);
+      glVertex2f(pos.x + 5, pos.y + 5);
+      glVertex2f(pos.x - 5, pos.y + 5);
+      glEnd();
+
+      glBegin(GL_LINES);
+      glVertex2f(pos.x, pos.y);
+      glVertex2f(dest.x, dest.y);
+      glVertex2f(dest.x - 5, dest.y - 5);
+      glVertex2f(dest.x + 5, dest.y + 5);
+      glVertex2f(dest.x + 5, dest.y - 5);
+      glVertex2f(dest.x - 5, dest.y + 5);
+      glEnd();
+
+      glLineWidth(1);
+
+      glColor3f(1,1,1);
+      if(i.vertSelected[0])
       {
-         Point pos = convertLevelToCanvasCoord(mItems[i].pos);
-         glColor3f(1,1,1);
          glBegin(GL_LINE_LOOP);
-         glVertex2f(pos.x - 10, pos.y - 10);
-         glVertex2f(pos.x + 10, pos.y - 10);
-         glVertex2f(pos.x + 10, pos.y + 10);
-         glVertex2f(pos.x - 10, pos.y + 10);
+         glVertex2f(pos.x - 5, pos.y - 5);
+         glVertex2f(pos.x + 5, pos.y - 5);
+         glVertex2f(pos.x + 5, pos.y + 5);
+         glVertex2f(pos.x - 5, pos.y + 5);
+         glEnd();
+      }
+      if(i.vertSelected[1])
+      {
+         glBegin(GL_LINE_LOOP);
+         glVertex2f(dest.x - 5, dest.y - 5);
+         glVertex2f(dest.x + 5, dest.y - 5);
+         glVertex2f(dest.x + 5, dest.y + 5);
+         glVertex2f(dest.x - 5, dest.y + 5);
          glEnd();
       }
    }
-
-   for(S32 i = 0; i < mPolys.size(); i++)
+   else if(gGameItemRecs[i.index].isPoly)
    {
-      Poly &p = mPolys[i];
-      if(mCurrentVertex == -1 && mCurrentPoly == i)
+      if(i.selected)
          glColor3f(1,1,0);
+      else if(gGameItemRecs[i.index].hasTeam)
+      {
+         Color c = mTeams[i.team].color;
+         glColor3f(c.r, c.g, c.b);
+      }
       else
          glColor3f(0,0,1);
 
-      glLineWidth(3);
-      renderPoly(p);
-      glLineWidth(1);
-      for(S32 j = 0; j < p.verts.size(); j++)
+      if(gGameItemRecs[i.index].hasTeam)
       {
-         Point v = convertLevelToCanvasCoord(p.verts[j]);
-         if(i == mCurrentPoly && j == mCurrentVertex)
+         // render the team ones as GL_POLYGONs
+         glBegin(GL_POLYGON);
+         for(S32 j = 0; j < i.verts.size(); j++)
+         {
+            Point v = convertLevelToCanvasCoord(i.verts[j]);
+            glVertex2f(v.x, v.y);
+         }
+         glEnd();
+      }
+      else
+      {
+         glLineWidth(3);
+         renderPoly(i);
+         glLineWidth(1);
+      }
+      for(S32 j = 0; j < i.verts.size(); j++)
+      {
+         Point v = convertLevelToCanvasCoord(i.verts[j]);
+         if(i.vertSelected[j])
             glColor3f(1,1,0);
          else
             glColor3f(1,0,0);
@@ -259,82 +357,187 @@ void EditorUserInterface::render()
          glEnd();
       }
    }
-   if(mCreatingPoly)
-   {
-      Point mouseVertex = snapToLevelGrid(convertCanvasToLevelCoord(mMousePos));
-      mNewPoly.verts.push_back(mouseVertex);
-      glLineWidth(3);
-      glColor3f(1, 1, 0);
-      renderPoly(mNewPoly);
-      glLineWidth(1);
-      mNewPoly.verts.erase_fast(mNewPoly.verts.size() - 1);
-   }
-}
-
-void EditorUserInterface::renderPoly(Poly &p)
-{
-
-   glBegin(GL_LINE_STRIP);
-   for(S32 j = 0; j < p.verts.size(); j++)
-   {
-      Point v = convertLevelToCanvasCoord(p.verts[j]);
-      glVertex2f(v.x, v.y);
-   }
-   glEnd();
-}
-
-void EditorUserInterface::renderItem(EditorUserInterface::Item &i)
-{
-   Point pos = convertLevelToCanvasCoord(i.pos);
-   Color c;
-   if(i.team == -1)
-      c = Color(0.5, 0.5, 0.5);
-   else
-      c = mTeams[i.team].color;
-
-   if(i.index == ItemCTFFlag)
-   {
-      glPushMatrix();
-      glTranslatef(pos.x, pos.y, 0);
-      glScalef(0.6, 0.6, 1);
-      renderFlag(Point(0,0), c);
-      glPopMatrix();
-   }
    else
    {
-      glColor3f(c.r, c.g, c.b);
-      glBegin(GL_POLYGON);
-      glVertex2f(pos.x - 8, pos.y - 8);
-      glVertex2f(pos.x + 8, pos.y - 8);
-      glVertex2f(pos.x + 8, pos.y + 8);
-      glVertex2f(pos.x - 8, pos.y + 8);
-      glEnd();
+      if(i.team == -1)
+         c = Color(0.5, 0.5, 0.5);
+      else
+         c = mTeams[i.team].color;
+      if(i.index == ItemCTFFlag)
+      {
+         glPushMatrix();
+         glTranslatef(pos.x, pos.y, 0);
+         glScalef(0.6, 0.6, 1);
+         renderFlag(Point(0,0), c);
+         glPopMatrix();
+      }
+      else
+      {
+         glColor3f(c.r, c.g, c.b);
+         glBegin(GL_POLYGON);
+         glVertex2f(pos.x - 8, pos.y - 8);
+         glVertex2f(pos.x + 8, pos.y - 8);
+         glVertex2f(pos.x + 8, pos.y + 8);
+         glVertex2f(pos.x - 8, pos.y + 8);
+         glEnd();
+      }
+      if(i.selected)
+      {
+         Point pos = convertLevelToCanvasCoord(i.verts[0]);
+         glColor3f(1,1,1);
+         glBegin(GL_LINE_LOOP);
+         glVertex2f(pos.x - 10, pos.y - 10);
+         glVertex2f(pos.x + 10, pos.y - 10);
+         glVertex2f(pos.x + 10, pos.y + 10);
+         glVertex2f(pos.x - 10, pos.y + 10);
+         glEnd();
+      }
+
    }
 }
 
-void EditorUserInterface::findHitVertex(Point canvasPos)
+void EditorUserInterface::clearSelection()
 {
-   for(S32 i = mPolys.size() - 1; i >= 0; i--)
+   for(S32 i = 0; i < mItems.size(); i++)
    {
-      Poly &p = mPolys[i];
+      WorldItem &itm = mItems[i];
+      itm.selected = false;
+      for(S32 j = 0; j < itm.vertSelected.size(); j++)
+         itm.vertSelected[j] = false;
+   }
+}
+
+S32 EditorUserInterface::countSelectedItems()
+{
+   S32 count = 0;
+   for(S32 i = 0; i < mItems.size(); i++)
+      if(mItems[i].selected)
+         count++;
+   return count;
+}
+
+S32 EditorUserInterface::countSelectedVerts()
+{
+   S32 count = 0;
+   for(S32 i = 0; i < mItems.size(); i++)
+      for(S32 j = 0; j < mItems[i].vertSelected.size(); j++)
+         if(mItems[i].vertSelected[j])
+            count++;
+   return count;
+}
+
+void EditorUserInterface::duplicateSelection()
+{
+   S32 itemCount = mItems.size();
+   for(S32 i = 0; i < itemCount; i++)
+   {
+      if(mItems[i].selected)
+      {
+         WorldItem newItem = mItems[i];
+         mItems[i].selected = false;
+         for(S32 j = 0; j < newItem.verts.size(); j++)
+            newItem.verts[j] += Point(0.5, 0.5);
+         mItems.push_back(newItem);
+      }
+   }
+}
+
+void EditorUserInterface::computeSelectionMinMax(Point &min, Point &max)
+{
+   min.set(1000000, 1000000);
+   max.set(-1000000, -1000000);
+
+   for(S32 i = 0; i < mItems.size(); i++)
+   {
+      if(!mItems[i].selected)
+         continue;
+      WorldItem &itm = mItems[i];
+      for(S32 j = 0; j < itm.verts.size(); j++)
+      {
+         Point v = itm.verts[j];
+
+         if(v.x < min.x)
+            min.x = v.x;
+         if(v.x > max.x)
+            max.x = v.x;
+         if(v.y < min.y)
+            min.y = v.y;
+         if(v.y > max.y)
+            max.y = v.y;
+      }
+   }
+}
+
+void EditorUserInterface::flipSelectionHorizontal()
+{
+   Point min, max;
+   computeSelectionMinMax(min, max);
+   for(S32 i = 0; i < mItems.size(); i++)
+   {
+      if(!mItems[i].selected)
+         continue;
+
+      for(S32 j = 0; j < mItems[i].verts.size(); j++)
+         mItems[i].verts[j].x = min.x + (max.x - mItems[i].verts[j].x);
+   }
+}
+
+void EditorUserInterface::flipSelectionVertical()
+{
+   Point min, max;
+   computeSelectionMinMax(min, max);
+   for(S32 i = 0; i < mItems.size(); i++)
+   {
+      if(!mItems[i].selected)
+         continue;
+
+      for(S32 j = 0; j < mItems[i].verts.size(); j++)
+         mItems[i].verts[j].y = min.y + (max.y - mItems[i].verts[j].y);
+   }
+}
+
+void EditorUserInterface::findHitVertex(Point canvasPos, S32 &hitItem, S32 &hitVertex)
+{
+   hitItem = -1;
+   hitVertex = -1;
+   for(S32 i = mItems.size() - 1; i >= 0; i--)
+   {
+      WorldItem &p = mItems[i];
+      if(!gGameItemRecs[p.index].isPoly)
+         continue;
+
       for(S32 j = p.verts.size() - 1; j >= 0; j--)
       {
          Point v = convertLevelToCanvasCoord(p.verts[j]);
          if(fabs(v.x - canvasPos.x) < 5 && fabs(v.y - canvasPos.y) < 5)
          {
-            mCurrentPoly = i;
-            mCurrentVertex = j;
+            hitItem = i;
+            hitVertex = j;
             return;
          }
       }
    }
 }
 
-void EditorUserInterface::findHitPoly(Point canvasPos)
+void EditorUserInterface::findHitItemAndEdge(Point canvasPos, S32 &hitItem, S32 &hitEdge)
 {
-   for(S32 i = mPolys.size() - 1; i >= 0; i--)
+   hitItem = -1;
+   hitEdge = -1;
+
+   for(S32 i = mItems.size() - 1; i >= 0; i--)
    {
-      Poly &p = mPolys[i];
+      WorldItem &p = mItems[i];
+
+      if(!gGameItemRecs[mItems[i].index].isPoly)
+      {
+         Point pos = convertLevelToCanvasCoord(p.verts[0]);
+         if(fabs(canvasPos.x - pos.x) < 8 && fabs(canvasPos.y - pos.y) < 8)
+         {
+            hitItem = i;
+            return;
+         }
+      }
+
       Point p1 = convertLevelToCanvasCoord(p.verts[0]);
       for(S32 j = 0; j < p.verts.size() - 1; j++)
       {
@@ -351,27 +554,12 @@ void EditorUserInterface::findHitPoly(Point canvasPos)
             float distance = (canvasPos - closest).len();
             if(distance < 5)
             {
-               mCurrentEdge = j;
-               mCurrentPoly = i;
-               mCurrentVertex = -1;
+               hitEdge = j;
+               hitItem = i;
                return;
             }
          }
          p1 = p2;
-      }
-   }
-}
-
-void EditorUserInterface::findHitItem(Point canvasPos)
-{
-   for(S32 i = 0; i < mItems.size(); i++)
-   {
-      Item &itm = mItems[i];
-      Point p = convertLevelToCanvasCoord(itm.pos);
-      if(fabs(canvasPos.x - p.x) < 8 && fabs(canvasPos.y - p.y) < 8)
-      {
-         mCurrentItem = i;
-         return;
       }
    }
 }
@@ -381,54 +569,112 @@ void EditorUserInterface::onMouseDown(S32 x, S32 y)
    mMousePos = convertWindowToCanvasCoord(Point(x,y));
    if(mCreatingPoly)
    {
-      if(mNewPoly.verts.size() > 1)
-         mPolys.push_back(mNewPoly);
-      mNewPoly.verts.clear();
+      if(mNewItem.verts.size() > 1)
+         mItems.push_back(mNewItem);
+      mNewItem.verts.clear();
       mCreatingPoly = false;
    }
 
    mMouseDownPos = mMousePos;
-   mCurrentPoly = -1;
-   mCurrentVertex = -1;
-   mCurrentItem = -1;
-   findHitVertex(mMousePos);
-   if(mCurrentPoly == -1)
+
+   // rules for mouse down:
+   // if the click has no shift- modifier, then
+   //   if the click was on something that was selected
+   //     do nothing
+   //   else
+   //     clear the selection
+   //     add what was clicked to the selection
+   //  else
+   //    toggle the selection of what was clicked
+
+   bool shiftKeyDown = glutGetModifiers() & GLUT_ACTIVE_SHIFT;
+
+   S32 vertexHit, vertexHitPoly;
+   S32 edgeHit, itemHit;
+   
+   findHitVertex(mMousePos, vertexHitPoly, vertexHit);
+   findHitItemAndEdge(mMousePos, itemHit, edgeHit);
+
+   if(!shiftKeyDown)
    {
-      findHitPoly(mMousePos);
-      if(mCurrentPoly != -1)
-         mOriginalPoly = mPolys[mCurrentPoly];
+      if(vertexHit != -1 && mItems[vertexHitPoly].selected)
+      {
+         vertexHit = -1;
+         itemHit = vertexHitPoly;
+      }
+      if(vertexHit != -1 && (itemHit == -1 || !mItems[itemHit].selected))
+      {
+         if(!mItems[vertexHitPoly].vertSelected[vertexHit])
+         {
+            clearSelection();
+            mItems[vertexHitPoly].vertSelected[vertexHit] = true;
+         }
+      }
+      else if(itemHit != -1)
+      {
+         if(!mItems[itemHit].selected)
+         {
+            clearSelection();
+            mItems[itemHit].selected = true;
+         }
+      }
       else
-         findHitItem(mMousePos);
+      {
+         mDragSelecting = true;
+         clearSelection();
+      }
    }
+   else
+   {
+      if(vertexHit != -1)
+      {
+         mItems[vertexHitPoly].vertSelected[vertexHit] = 
+            !mItems[vertexHitPoly].vertSelected[vertexHit];
+      }
+      else if(itemHit != -1)
+         mItems[itemHit].selected = !mItems[itemHit].selected;
+      else
+         mDragSelecting = true;
+   }
+   mOriginalItems = mItems;
 }
 
 void EditorUserInterface::onMouseUp(S32 x, S32 y)
 {
+   mMousePos = convertWindowToCanvasCoord(Point(x,y));
+   if(mDragSelecting)
+   {
+      Rect r(convertCanvasToLevelCoord(mMousePos),
+             convertCanvasToLevelCoord(mMouseDownPos));
+      for(S32 i = 0; i < mItems.size(); i++)
+      {
+         S32 j;
+         for(j = 0; j < mItems[i].verts.size(); j++)
+         {
+            if(!r.contains(mItems[i].verts[j]))
+               break;
+         }
+         if(j == mItems[i].verts.size())
+            mItems[i].selected = true;
+      }
+      mDragSelecting = false;
+   }
 }
 
 void EditorUserInterface::onMouseDragged(S32 x, S32 y)
 {
    mMousePos = convertWindowToCanvasCoord(Point(x,y));
-   if(mCreatingPoly)
+   if(mCreatingPoly || mDragSelecting)
       return;
+   Point delta = snapToLevelGrid(convertCanvasToLevelCoord(mMousePos) - convertCanvasToLevelCoord(mMouseDownPos));
 
-   if(mCurrentPoly != -1 && mCurrentVertex != -1)
+   for(S32 i = 0; i < mItems.size(); i++)
    {
-      Point newPos = snapToLevelGrid(convertCanvasToLevelCoord(mMousePos));
-      mPolys[mCurrentPoly].verts[mCurrentVertex] = newPos;
-   }
-   else if(mCurrentPoly != -1)
-   {
-      Point delta = convertCanvasToLevelCoord(mMousePos) - convertCanvasToLevelCoord(mMouseDownPos);
-      delta = snapToLevelGrid(delta);
-      mPolys[mCurrentPoly] = mOriginalPoly;
-      for(S32 i = 0; i < mPolys[mCurrentPoly].verts.size(); i++)
-         mPolys[mCurrentPoly].verts[i] += delta;
-   }
-   else if(mCurrentItem != -1)
-   {
-      Point newPos = snapToLevelGrid(convertCanvasToLevelCoord(mMousePos));
-      mItems[mCurrentItem].pos = newPos;
+      for(S32 j = 0; j < mItems[i].verts.size(); j++)
+      {
+         if(mItems[i].selected || mItems[i].vertSelected[j])
+            mItems[i].verts[j] = mOriginalItems[i].verts[j] + delta;
+      }
    }
 }
 
@@ -438,49 +684,103 @@ void EditorUserInterface::onRightMouseDown(S32 x, S32 y)
    if(mCreatingPoly)
    {
       Point newVertex = snapToLevelGrid(convertCanvasToLevelCoord(mMousePos));
-      mNewPoly.verts.push_back(newVertex);
+      mNewItem.verts.push_back(newVertex);
+      mNewItem.vertSelected.push_back(false);
       return;
    }
 
-   mCurrentPoly = -1;
-   findHitPoly(mMousePos);
-   if(mCurrentPoly != -1)
+   S32 edgeHit, itemHit;
+   findHitItemAndEdge(mMousePos, itemHit, edgeHit);
+
+   if(itemHit != -1 && gGameItemRecs[mItems[itemHit].index].isPoly &&
+      mItems[itemHit].index != ItemTeleporter)
    {
       Point newVertex = snapToLevelGrid(convertCanvasToLevelCoord(mMousePos));
       // insert an extra vertex at the mouse clicked point,
       // and then select it.
-      mPolys[mCurrentPoly].verts.insert(mCurrentEdge + 1);
-      mPolys[mCurrentPoly].verts[mCurrentEdge + 1] = newVertex;
-      mCurrentVertex = mCurrentEdge + 1;
+      mItems[itemHit].verts.insert(edgeHit + 1);
+      mItems[itemHit].verts[edgeHit + 1] = newVertex;
+      mItems[itemHit].vertSelected.insert(edgeHit + 1);
+      mItems[itemHit].vertSelected[edgeHit + 1] = true;
    }
    else
    {
       //london chikara kelly markling
       mCreatingPoly = true;
-      mNewPoly.verts.clear();
+      mNewItem.verts.clear();
+      mNewItem.index = ItemBarrierMaker;
+      mNewItem.team = -1;
+      mNewItem.selected = false;
+      mNewItem.vertSelected.clear();
       Point newVertex = snapToLevelGrid(convertCanvasToLevelCoord(mMousePos));
-      mNewPoly.verts.push_back(newVertex);
+      mNewItem.verts.push_back(newVertex);
+      mNewItem.vertSelected.push_back(false);
    }
 }
 
 void EditorUserInterface::onMouseMoved(S32 x, S32 y)
 {
+   glutSetCursor(GLUT_CURSOR_RIGHT_ARROW);
    mMousePos = convertWindowToCanvasCoord(Point(x,y));
+   //bool shiftKeyDown = glutGetModifiers() & GLUT_ACTIVE_SHIFT;
+
+   if(!mCreatingPoly)// && !shiftKeyDown)
+   {
+      S32 vertexHit, vertexHitPoly;
+      S32 edgeHit, itemHit;
+   
+      findHitVertex(mMousePos, vertexHitPoly, vertexHit);
+      findHitItemAndEdge(mMousePos, itemHit, edgeHit);
+      if( (vertexHit != -1 && mItems[vertexHitPoly].vertSelected[vertexHit]) ||
+          (itemHit != -1 && mItems[itemHit].selected))
+         glutSetCursor(GLUT_CURSOR_SPRAY);
+   }
 }
 
 void EditorUserInterface::deleteSelection()
 {
-   if(mCurrentPoly != -1 && mCurrentVertex != -1)
-      mPolys[mCurrentPoly].verts.erase(mCurrentVertex);
-   else if(mCurrentPoly != -1)
-      mPolys.erase(mCurrentPoly);
-   mCurrentPoly = mCurrentVertex = -1;
+   for(S32 i = 0; i < mItems.size(); )
+   {
+      if(mItems[i].selected)
+      {
+         mItems.erase(i);
+      }
+      else
+      {
+         for(S32 j = 0; j < mItems[i].verts.size(); )
+         {
+            if(mItems[i].vertSelected[j])
+            {
+               mItems[i].verts.erase(j);
+               mItems[i].vertSelected.erase(j);
+            }
+            else
+               j++;
+         }
+
+         if(mItems[i].verts.size() == 0)
+            mItems.erase(i);
+         else
+            i++;
+      }
+   }
 }
 
 void EditorUserInterface::onKeyDown(U32 key)
 {
+   bool ctrlActive = glutGetModifiers() & GLUT_ACTIVE_CTRL;
+
    switch(tolower(key))
    {
+      case 0x4: // control-d
+         duplicateSelection();
+         break;
+      case 'f':
+         flipSelectionHorizontal();
+         break;
+      case 'v':
+         flipSelectionVertical();
+         break;
       case 'r':
          mCurrentOffset.set(0,0);
          break;
@@ -539,7 +839,6 @@ void EditorUserInterface::onKeyUp(U32 key)
 
 void EditorUserInterface::idle(U32 timeDelta)
 {
-   glutSetCursor(GLUT_CURSOR_RIGHT_ARROW);
    F32 pixelsToScroll = timeDelta * 0.5f;
 
    if(mLeft && !mRight)
@@ -590,17 +889,10 @@ void EditorUserInterface::saveLevel()
    }
    for(S32 i = 0; i < mItems.size(); i++)
    {
+      WorldItem &p = mItems[i];
+      fprintf(f, "%s ", gGameItemRecs[mItems[i].index].name);
       if(gGameItemRecs[mItems[i].index].hasTeam)
-         fprintf(f, "%s %d %g %g\n", gGameItemRecs[mItems[i].index].name,
-            mItems[i].team, mItems[i].pos.x, mItems[i].pos.y);
-      else
-         fprintf(f, "%s %g %g\n", gGameItemRecs[mItems[i].index].name,
-            mItems[i].pos.x, mItems[i].pos.y);
-   }
-   for(S32 i = 0; i < mPolys.size(); i++)
-   {
-      Poly &p = mPolys[i];
-      fputs("BarrierMaker ", f);
+         fprintf(f, "%d ", mItems[i].team);
       for(S32 j = 0; j < p.verts.size(); j++)
          fprintf(f, "%g %g%c", p.verts[j].x, p.verts[j].y, (j == p.verts.size() - 1) ? '\n' : ' ');
    }

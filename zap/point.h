@@ -116,6 +116,10 @@ struct Rect
          max.y = p1.y;
       }
    }
+   bool contains(const Point &p)
+   {
+      return p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y;
+   }
 
    void unionPoint(const Point &p)
    {
