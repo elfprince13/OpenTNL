@@ -305,7 +305,7 @@ typedef unsigned long long  U64;  ///< Compiler independent unsigned 64-bit inte
 #    define TNL_SUPPORTS_VC_INLINE_X86_ASM
 #  endif
 
-#elif defined(__ppc__)
+#elif defined(__ppc__) || defined(__powerpc__) || defined (PPC)
 #  define TNL_CPU_STRING "PowerPC"
 #  define TNL_CPU_PPC
 #  define TNL_BIG_ENDIAN
