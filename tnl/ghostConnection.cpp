@@ -128,6 +128,7 @@ GhostConnection::GhostConnection()
    mGhostRefs = NULL;
    mGhostLookupTable = NULL;
    mLocalGhosts = NULL;
+   mGhostZeroUpdateIndex = 0;
 }
 
 GhostConnection::~GhostConnection()
@@ -753,6 +754,7 @@ void GhostConnection::activateGhosting()
       return;
 
    mGhostingSequence++;
+   TNLLogMessageV(LogGhostConnection, ("Ghosting activated - %d", mGhostingSequence));
    
    TNLAssert((mGhostFreeIndex == 0) && (mGhostZeroUpdateIndex == 0), "Error: ghosts in the ghost list before activate.");
    

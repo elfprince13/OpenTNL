@@ -452,9 +452,9 @@ bool NetConnection::readPacketHeader(BitStream *pstream)
    mHighestAckedSeq = pkHighestAck;
 
    // first things first...
-   // ackback any pings or accept connects
+   // ackback any pings or half-full windows
 
-   if(pkPacketType == PingPacket)
+   if(pkPacketType == PingPacket || (pkSequenceNumber - mLastRecvAckAck > (MaxPacketWindowSize >> 1)))
    {
       // send an ack to the other side
       // the ack will have the same packet sequence as our last sent packet
@@ -626,7 +626,7 @@ void NetConnection::checkPacketSend(bool force, U32 curTime)
    {
       if(!isAdaptive())
       {
-         if(curTime < mLastUpdateTime + delay - mSendDelayCredit)
+         if(curTime - mLastUpdateTime + mSendDelayCredit < delay)
             return;
       
          mSendDelayCredit = curTime - (mLastUpdateTime + delay - mSendDelayCredit);
