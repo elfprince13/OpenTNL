@@ -171,7 +171,18 @@ void Teleporter::idle(GameObject::IdleCallPath path)
    {
       Ship *s = (Ship*)fillVector2[i];
       if((pos - s->getActualPos()).len() < TeleporterRadius)
-         s->setActualPos(s->getActualPos() - pos + dest);
+      {
+         Point center = s->getActualPos() - pos + dest;
+         F32 r = TNL::Random::readF();
+         F32 theta = TNL::Random::readF() * 2 * 3.145926535;
+         Point offset(cos(theta), sin(theta));
+         // square root will give a uniform distribution, but
+         // do a cube root in order to push the offset towards
+         // the extents of the disk a bit more
+         // (http://mathworld.wolfram.com/DiskPointPicking.html)
+         offset *= pow(r, 1.0f / 3) * TeleporterRadius;
+         s->setActualPos(center + offset);
+      }
    }
 }
 
