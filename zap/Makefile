@@ -11,12 +11,16 @@ OBJECTS_ZAP=\
 	game.o\
 	gameConnection.o\
 	controlObjectConnection.o\
+	engineeredObjects.o\
+	LoadoutZone.o\
 	gameItems.o\
 	gameLoader.o\
 	gameNetInterface.o\
 	gameObject.o\
 	gameType.o\
+	gameWeapons.o\
 	gridDB.o\
+	huntersGame.o\
 	item.o\
 	loadoutSelect.o\
 	masterConnection.o\

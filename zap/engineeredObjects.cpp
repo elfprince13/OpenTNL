@@ -229,7 +229,8 @@ bool EngineeredObject::checkDeploymentPosition()
    Vector<Point> polyBounds;
    getCollisionPoly(polyBounds);
 
-   gServerGame->getGridDatabase()->findObjects(BarrierType | EngineeredType, go, getExtent());
+   Rect queryRect = getExtent();
+   gServerGame->getGridDatabase()->findObjects(BarrierType | EngineeredType, go, queryRect);
    for(S32 i = 0; i < go.size(); i++)
    {
       Vector<Point> compareBounds;
@@ -653,7 +654,8 @@ void Turret::idle(IdleCallPath path)
       if(mFireTimer.getCurrent() == 0)
       {
          bestDelta.normalize();
-         createWeaponProjectiles(WeaponTurretBlaster, bestDelta, aimPos, Point(0,0), 30.0f, this);
+         Point velocity;
+         createWeaponProjectiles(WeaponTurretBlaster, bestDelta, aimPos, velocity, 30.0f, this);
          mFireTimer.reset(TurretFireDelay);
       }
    }
