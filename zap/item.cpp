@@ -266,7 +266,10 @@ void PickupItem::idle(GameObject::IdleCallPath path)
    if(!mIsVisible && path == GameObject::ServerIdleMainLoop)
    {
       if(mRepopTimer.update(mCurrentMove.time))
+      {
+         setMaskBits(PickupMask);
          mIsVisible = true;
+      }
    }
    updateExtent();
 }
