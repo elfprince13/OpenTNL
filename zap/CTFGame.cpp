@@ -215,6 +215,7 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
                mTeams[cl.teamId].score++;
                s2cSetTeamScore(cl.teamId, mTeams[cl.teamId].score);
                s2cCTFMessage(CTFMsgCaptureFlag, cl.name, mountedFlag->getTeamIndex());
+
                // score the flag for the client's team...
                mountedFlag->dismount();
                mountedFlag->sendHome();

@@ -65,6 +65,9 @@ Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, Collisio
    lastFireTime = 0;
 
    mPlayerName = playerName;
+
+   for(S32 i=0; i<TrailCount; i++)
+      mTrail[i].reset();
 }
 
 void Ship::processArguments(S32 argc, const char **argv)
@@ -180,6 +183,10 @@ void Ship::processClientMove(Move *theMove, bool replay)
 
    // Emit some particles
    emitMovementSparks();
+
+   for(U32 i=0; i<TrailCount; i++)
+      mTrail[i].tick(theMove->time);
+
    SFXObject::setListenerParams(mMoveState[RenderState].pos, mMoveState[RenderState].vel);
 }
 
@@ -190,6 +197,9 @@ void Ship::processClient(U32 deltaT)
    updateInterpolation(deltaT);
    // Emit some particles
    emitMovementSparks();
+
+   for(U32 i=0; i<TrailCount; i++)
+      mTrail[i].tick(deltaT);
 }
 
 void Ship::updateInterpolation(U32 deltaT)
@@ -286,7 +296,12 @@ void Ship::readControlState(BitStream *stream)
 
    Point delta = mMoveState[ActualState].pos - mMoveState[RenderState].pos;
    if(delta.len() > MaxControlObjectInterpDistance)
+   {
+      for(S32 i=0; i<TrailCount; i++)
+         mTrail[i].reset();
+
       interpTime = 0;
+   }
    else
       interpTime = 1;
 }
@@ -406,6 +421,9 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
       {
          interpTime = 0;
          mMoveState[RenderState] = mMoveState[ActualState];
+
+         for(S32 i=0; i<TrailCount; i++)
+            mTrail[i].reset();
       }
    }
    if(explode && !hasExploded)
@@ -444,7 +462,7 @@ void Ship::performScopeQuery(GhostConnection *connection)
       S32 teamId = gt->mClientList[gt->findClientIndexByConnection(g)].teamId;
 
       // Scope for all ships on our team.
-      for(U32 i=0; i<gt->mClientList.size(); i++)
+      for(S32 i=0; i<gt->mClientList.size(); i++)
       {
          if(gt->mClientList[i].teamId == teamId)
          {
@@ -539,59 +557,100 @@ void Ship::emitShipExplosion(Point pos)
 
 void Ship::emitMovementSparks()
 {
-   // draw thrusters
-   Point velDir(lastMove.right - lastMove.left, lastMove.down - lastMove.up);
-   F32 len = velDir.len();
-   F32 thrusts[4];
-   for(U32 i = 0; i < 4; i++)
-      thrusts[i] = 0;
+   // Do nothing if we're under 0.001 vel
+   if(hasExploded || mMoveState[ActualState].vel.len() < 0.1)
+      return;
 
-   if(len > 0)
+   Point corners[3];
+   Point shipDirs[3];
+
+   corners[0].set(-20, -15);
+   corners[1].set(  0,  25);
+   corners[2].set( 20, -15);
+
+   F32 th = mMoveState[RenderState].angle;
+
+   F32 sinTh = sin(th);
+   F32 cosTh = cos(th);
+
+   for(S32 i=0; i<3; i++)
    {
-      if(len > 1)
-         velDir *= 1 / len;
+      shipDirs[i].x = corners[i].x * cosTh + corners[i].y * sinTh;
+      shipDirs[i].y = corners[i].y * cosTh - corners[i].x * sinTh;
+   }
 
-      Point shipDirs[4];
-      shipDirs[0].set(sin(mMoveState[RenderState].angle), cos(mMoveState[RenderState].angle) );
-      shipDirs[1].set(-shipDirs[0]);
-      shipDirs[2].set(shipDirs[0].y, -shipDirs[0].x);
-      shipDirs[3].set(-shipDirs[0].y, shipDirs[0].x);
+   Point leftVec ( mMoveState[ActualState].vel.y, -mMoveState[ActualState].vel.x);
+   Point rightVec(-mMoveState[ActualState].vel.y,  mMoveState[ActualState].vel.x);
 
-      for(U32 i = 0; i < 4; i++)
+   leftVec.normalize();
+   rightVec.normalize();
+
+   S32 bestId = -1, leftId, rightId;
+   F32 bestDot = -1;
+
+   // Find the left-wards match
+   for(S32 i = 0; i < 3; i++)
+   {
+      F32 d = leftVec.dot(shipDirs[i]);
+      if(d >= bestDot)
       {
-         thrusts[i] = shipDirs[i].dot(velDir);
-
-         if(thrusts[i] > 0.1)
-         {
-            // shoot some sparks...
-            if(thrusts[i] >= 2*TNL::Random::readF() * velDir.len())
-            {
-               Point chaos(TNL::Random::readF(),TNL::Random::readF());
-               chaos *= 5;
-
-               //interp give us some nice enginey colors...
-               Color dim(1, 0, 0);
-               Color light(1, 1, 0);
-               Color thrust;
-
-               F32 t = TNL::Random::readF();
-               thrust.interp(t, dim, light);
-
-               SparkManager::emitSpark(
-                                       mMoveState[RenderState].pos - shipDirs[i] * 13,
-                                       -shipDirs[i] * (F32)(1.f - mMoveState[RenderState].vel.len() * (1.f/(F32)MaxVelocity)) * 100 + chaos,
-                                       thrust
-                                      );
-            }
-         }
+         bestDot = d;
+         bestId = i;
       }
    }
+
+   leftId = bestId;
+   Point leftPt = mMoveState[RenderState].pos + shipDirs[bestId];
+
+   // Find the right-wards match
+   bestId = -1;
+   bestDot = -1;
+   
+   for(S32 i = 0; i < 3; i++)
+   {
+      F32 d = rightVec.dot(shipDirs[i]);
+      if(d >= bestDot)
+      {
+         bestDot = d;
+         bestId = i;
+      }      
+   }
+
+   rightId = bestId;
+   Point rightPt = mMoveState[RenderState].pos + shipDirs[bestId];
+
+   // Stitch things up if we must...
+   if(leftId == mLastTrailPoint[0] && rightId == mLastTrailPoint[1])
+   {
+      mTrail[0].update(leftPt);
+      mTrail[1].update(rightPt); 
+      mLastTrailPoint[0] = leftId;
+      mLastTrailPoint[1] = rightId;
+   }
+   else if(leftId == mLastTrailPoint[1] && rightId == mLastTrailPoint[0])
+   {
+      mTrail[1].update(leftPt);
+      mTrail[0].update(rightPt);
+      mLastTrailPoint[1] = leftId;
+      mLastTrailPoint[0] = rightId;
+   }
+   else
+   {
+      mTrail[0].update(leftPt);
+      mTrail[1].update(rightPt);
+      mLastTrailPoint[0] = leftId;
+      mLastTrailPoint[1] = rightId;
+   }
+
 }
 
 void Ship::render()
 {
    if(hasExploded)
       return;
+
+   for(U32 i=0; i<TrailCount; i++)
+      mTrail[i].render();
 
    if(posSegments.size())
    {

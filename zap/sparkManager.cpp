@@ -165,4 +165,69 @@ void emitBurst(Point pos, Point scale, Color color1, Color color2)
 
 };
 
+fxTrail::fxTrail(U32 dropFrequency, U32 len)
+{
+   mDropFreq = dropFrequency;
+   mLength   = len;
+}
+
+void fxTrail::update(Point pos)
+{
+   if(mNodes.size() < mLength)
+   {
+      TrailNode t;
+      t.pos = pos;
+      t.ttl = mDropFreq;
+
+      mNodes.push_front(t);
+   }
+   else
+      mNodes[0].pos = pos;
+}
+
+void fxTrail::tick(U32 dT)
+{
+   if(mNodes.size() == 0)
+      return;
+
+   mNodes.last().ttl -= dT;
+   if(mNodes.last().ttl <= 0)
+      mNodes.pop_back();
+}
+
+void fxTrail::render()
+{
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+   glBegin(GL_LINE_STRIP);
+
+   for(S32 i=0; i<mNodes.size(); i++)
+   {
+      F32 t = ((F32)i/(F32)mNodes.size());
+      glColor4f(1.f - 2*t, 1.f - 2*t, 1.f, 1.f-t);
+      glVertex2f(mNodes[i].pos.x, mNodes[i].pos.y);
+   }
+
+   glEnd();
+
+   glDisable(GL_BLEND);
+   glBlendFunc(GL_ONE, GL_ZERO);
+}
+
+void fxTrail::reset()
+{
+   mNodes.clear();
+}
+
+Point fxTrail::getLastPos()
+{
+   if(mNodes.size())
+   {
+      return mNodes[0].pos;
+   }
+   else
+      return Point(0,0);
+}
+
 };

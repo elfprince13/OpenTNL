@@ -43,6 +43,35 @@ namespace SparkManager
    void render();
 };
 
+class fxTrail
+{
+private:
+   struct TrailNode
+   {
+      Point pos;
+      S32   ttl;
+   };
+
+   Vector<TrailNode> mNodes;
+
+   U32 mDropFreq;
+   U32 mLength;
+
+public:
+   fxTrail(U32 dropFrequency = 32, U32 len = 15);
+
+   /// Update the point this trail is attached to.
+   void update(Point pos);
+
+   void tick(U32 dT);
+
+   void render();
+
+   void reset();
+
+   Point getLastPos();
+};
+
 };
 
 #endif

@@ -28,6 +28,7 @@
 #define _SHIP_H_
 
 #include "moveObject.h"
+#include "sparkManager.h"
 
 namespace Zap
 {
@@ -55,21 +56,25 @@ public:
       ExplosionFadeTime = 300,
       FireDelay = 100,
       MaxControlObjectInterpDistance = 200,
+      TrailCount = 2,
    };
 
    enum MaskBits {
-      InitialMask  = BIT(0),
-      PositionMask = BIT(1),
-      MoveMask     = BIT(2),
-      WarpPositionMask = BIT(3),
-      ExplosionMask = BIT(4),
-      HealthMask = BIT(5),
+      InitialMask       = BIT(0),
+      PositionMask      = BIT(1),
+      MoveMask          = BIT(2),
+      WarpPositionMask  = BIT(3),
+      ExplosionMask     = BIT(4),
+      HealthMask        = BIT(5),
    };
 
    U32 interpTime;
    U32 lastFireTime;
    F32 mHealth;
    StringTableEntry mPlayerName;
+
+   S32     mLastTrailPoint[TrailCount];
+   fxTrail mTrail[TrailCount];
 
    Color color; // color of the ship
    F32 mass; // mass of ship
