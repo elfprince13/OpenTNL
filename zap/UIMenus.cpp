@@ -167,7 +167,6 @@ OptionsMenuUserInterface gOptionsMenuUserInterface;
 
 bool OptionsMenuUserInterface::controlsRelative = false;
 bool OptionsMenuUserInterface::fullscreen = false;
-bool OptionsMenuUserInterface::showNames = false;
 
 OptionsMenuUserInterface::OptionsMenuUserInterface()
 {
@@ -193,11 +192,6 @@ void OptionsMenuUserInterface::setupMenus()
       menuItems.push_back("SET WINDOWED MODE");
    else
       menuItems.push_back("SET FULLSCREEN MODE");
-
-   if(showNames)
-      menuItems.push_back("SET NAMES HIDDEN");
-   else
-      menuItems.push_back("SET NAMES VISIBLE");
 
    if(gClientGame->getConnectionToServer())
       menuItems.push_back("RETURN TO GAME");
@@ -243,9 +237,6 @@ void OptionsMenuUserInterface::processSelection(U32 index)
       fullscreen = !fullscreen;
       break;
    case 2:
-      showNames = !showNames;
-      break;
-   case 3:
       if(gClientGame->getConnectionToServer())
          gGameUserInterface.activate();   
       else

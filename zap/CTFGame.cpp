@@ -237,6 +237,10 @@ U32 CTFGameType::checkFlagDrop(GameObject *theObject)
       return 0;
 
    GameConnection *controlConnection = theShip->getControllingClient();
+
+   if(!controlConnection)
+      return 0;
+
    S32 clientIndex = findClientIndexByConnection(controlConnection);
 
    if(clientIndex == -1)

@@ -577,7 +577,7 @@ void Ship::render()
    glTranslatef(mMoveState[RenderState].pos.x, mMoveState[RenderState].pos.y, 0);
 
    // Render name...
-   if(gClientGame->getConnectionToServer()->getControlObject() != this) //OptionsMenuUserInterface::showNames)
+   if(gClientGame->getConnectionToServer()->getControlObject() != this)
    {
       static char buff[255];
       sprintf(buff, "%s", mPlayerName.getString());

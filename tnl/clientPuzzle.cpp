@@ -157,8 +157,8 @@ bool ClientPuzzleManager::solvePuzzle(U32 *solution, Nonce &clientNonce, Nonce &
    // Until we're done...
    for(;;)
    {
-      // We do 5,000 attempts... (this valus is tweakable
-      U32 nextValue = startValue + 5000;
+      // We do 50,000 attempts... (this valus is tweakable)
+      U32 nextValue = startValue + 50000;
       for(;startValue < nextValue; startValue++)
       {
          if(checkOneSolution(startValue, clientNonce, serverNonce, puzzleDifficulty, clientIdentity))

@@ -70,6 +70,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
+				OptimizeForWindowsApplication="TRUE"
 				AdditionalIncludeDirectories="../tnl;../glut;../openal"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="4"
