@@ -74,6 +74,7 @@ class SFXObject : public Object
    static Point mListenerPosition;
    static Point mListenerVelocity;
    static F32 mMaxDistance;
+   static S32 mCaptureGain;
 
    U32 mSFXIndex;
    Point mPosition;
@@ -98,6 +99,7 @@ public:
 
    static bool startRecording();
    static void captureSamples(ByteBufferPtr sampleBuffer);
+   static void setCaptureGain(S32 amt);
    static void stopRecording();
 
    static void setMaxDistance(F32 maxDistance);

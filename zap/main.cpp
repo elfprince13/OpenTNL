@@ -317,6 +317,17 @@ int main(int argc, char **argv)
          if(hasAdditionalArg)
             gMasterAddressString = argv[i+1];
       }
+      else if(!stricmp(argv[i], "-joystick"))
+      {
+         if(hasAdditionalArg)
+            OptionsMenuUserInterface::joystickEnabled = true;
+
+      }
+      else if(!stricmp(argv[i], "-gain"))
+      {
+         if(hasAdditionalArg)
+            SFXObject::setCaptureGain(atoi(argv[i+1]));
+      }
       else if(!stricmp(argv[i], "-dedicated"))
       {
          hasClient = false;

@@ -46,6 +46,11 @@ enum {
 
 static U32 lastReadOffset = 0;
 
+void SFXObject::setCaptureGain(S32 amt)
+{
+   mCaptureGain = amt;
+}
+
 bool SFXObject::startRecording()
 {
    if(recording)
@@ -123,6 +128,11 @@ void SFXObject::captureSamples(ByteBufferPtr buffer)
 
       captureBuffer->Unlock(buf1, count1, buf2, count2);
 
+      // Endeavour futilely to do a gain pass
+      S16 *data = (S16*)buffer->getBuffer();
+      for(U32 i=start/2; i<(start+sizeAdd)/2; i++)
+         data[i] <<= mCaptureGain;
+      
       lastReadOffset += count1 + count2;
       lastReadOffset %= BufferBytes;
    }
@@ -209,6 +219,7 @@ static bool gQueuedBuffers[NumSources] = { false, };
 Point SFXObject::mListenerPosition;
 Point SFXObject::mListenerVelocity;
 F32 SFXObject::mMaxDistance = 500;
+S32 SFXObject::mCaptureGain = 0;
 
 static ALuint gBuffers[NumSFXBuffers];
 static Vector<ALuint> gVoiceFreeBuffers;
