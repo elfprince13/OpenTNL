@@ -2,31 +2,31 @@ HuntersGameType 10 1 15 5000
 Team Orange 1 0.5 0
 GridSize 300
 HuntersNexusObject 8 5.5 50 50
-Spawn 0 12.5 0.5
-Spawn 0 4.5 10.5
-Spawn 0 3.5 10.5
-Spawn 0 4.5 1.5
-Spawn 0 3.5 9.5
-Spawn 0 3.5 0.5
-Spawn 0 3.5 1.5
-Spawn 0 12.5 1.5
-Spawn 0 12.5 10.5
-Spawn 0 11.5 10.5
-Spawn 0 12.5 9.5
-Spawn 0 4.5 0.5
-Spawn 0 4.5 9.5
-Spawn 0 11.5 9.5
-Spawn 0 11.5 1.5
-Spawn 0 11.5 0.5
-Teleporter 11.1 14.1 15.6 1.4
-Teleporter 7.7 12.7 0.7 2.7
-Teleporter 5.5 -2.5 15.9 8.6
-Teleporter 8.6 -1.6 1 9.7
+Spawn 0 11.5 2
+Spawn 0 5.5 9
+Spawn 0 4.5 9
+Spawn 0 5 3.5
+Spawn 0 4.5 8
+Spawn 0 4 2.5
+Spawn 0 4 3.5
+Spawn 0 11.5 3
+Spawn 0 12 8.5
+Spawn 0 11 8.5
+Spawn 0 12 7.5
+Spawn 0 5 2.5
+Spawn 0 5.5 8
+Spawn 0 11 7.5
+Spawn 0 10.5 3
+Spawn 0 10.5 2
+Teleporter 13.5 10.5 8.5 0.5
+Teleporter 2.5 10.5 6.5 0.5
+Teleporter 2.5 0.5 9.5 10.5
+Teleporter 13.5 0.5 7.5 10.5
 RepairItem 6.5 7
 RepairItem 9.5 7
 RepairItem 6.5 4
 RepairItem 9.5 4
-BarrierMaker -0.1 10.5 -0.1 2.1 0.5 1.5 0.5 -2.5 2.5 -4.5 5.5 -4.5 7.5 -2.5 7.5 -2.5 14.6 -2.5 14.6 0.5 16.6 0.5 16.6 8.9 16 9.5 16 13.5 14 15.5 11 15.5 9 13.5 9 13.5 9 13.5 9 13.5 1.9 13.5 1.9 10.5 -0.1 10.5
+BarrierMaker 1.5 11 1.5 7 1 6.5 1 5.5 1.5 5 1.5 0 6.5 0 7 -0.5 7.5 -0.5 8 -0.5 8.5 0 14.5 0 14.5 4 15 4.5 15 5.5 14.5 6 14.5 11 9.5 11 9 11.5 8 11.5 7.5 11 1.5 11
 BarrierMaker 6.5 5 6.9 4.4 7.5 4
 BarrierMaker 7.5 4.6 8 5 8.5 4.6
 BarrierMaker 8.9 5 8.5 5.5 8.9 6
@@ -35,15 +35,15 @@ BarrierMaker 7.1 6 7.5 5.5 7.1 5
 BarrierMaker 9.5 5 9.1 4.4 8.5 4
 BarrierMaker 9.5 6 9.1 6.6 8.5 7
 BarrierMaker 6.5 6 6.9 6.6 7.5 7
-BarrierMaker 7.5 4 7.5 -2.5
-BarrierMaker 8.5 13.5 8.5 7
-BarrierMaker 16.6 5 9.5 5
-BarrierMaker 6.5 6 -0.0999996 6
-BarrierMaker 12 0 12 2
-BarrierMaker 11 1 13 1
-BarrierMaker 12 9 12 11
-BarrierMaker 11 10 13 10
-BarrierMaker 4 9 4 11
-BarrierMaker 3 10 5 10
-BarrierMaker 4 0 4 2
-BarrierMaker 3 1 5 1
+BarrierMaker 7.5 4 7.5 0
+BarrierMaker 8.5 11 8.5 7
+BarrierMaker 14.5 5 9.5 5
+BarrierMaker 6.5 6 1.5 6
+BarrierMaker 11 1.5 11 3.5
+BarrierMaker 10 2.5 12 2.5
+BarrierMaker 11.5 7 11.5 9
+BarrierMaker 10.5 8 12.5 8
+BarrierMaker 5 7.5 5 9.5
+BarrierMaker 4 8.5 6 8.5
+BarrierMaker 4.5 2 4.5 4
+BarrierMaker 3.5 3 5.5 3
