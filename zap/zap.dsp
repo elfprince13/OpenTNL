@@ -236,6 +236,10 @@ SOURCE=.\gsm_state.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\HTFGame.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\huntersGame.cpp
 # End Source File
 # Begin Source File
@@ -481,6 +485,10 @@ SOURCE=.\winJoystick.cpp
 # Begin Source File
 
 SOURCE=.\winmain.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ZAP.rc
 # End Source File
 # End Target
 # End Project
