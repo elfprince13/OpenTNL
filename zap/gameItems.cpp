@@ -35,12 +35,10 @@ class RepairItem : public PickupItem
 {
 private:
    typedef PickupItem Parent;
-   F32 spin;
 
 public:
    RepairItem(Point p = Point()) : PickupItem(p, 20)
    {
-      spin=0.f;
       mNetFlags.set(Ghostable);
    }
 
@@ -50,13 +48,17 @@ public:
          return false;
 
       DamageInfo di;
-      di.damageAmount = -0.21;
+      di.damageAmount = -0.5f;
       di.damageType = 0;
       di.damagingObject = this;
 
       theShip->damageObject(&di);
-      SFXObject::play(SFXShipHeal, getRenderPos(), getRenderVel());
       return true;
+   }
+
+   void onClientPickup()
+   {
+      SFXObject::play(SFXShipHeal, getRenderPos(), getRenderVel());
    }
 
    U32 getRepopDelay()
@@ -64,48 +66,40 @@ public:
       return 20000;
    }
 
-   static void emitVerts(F32 x, F32 y)
-   {
-      static int verts[6][2] = {
-         { 1, 0 },
-         { 2, 1 },
-         { 3, 1 },
-         { 4, 2 },
-         { 4, 3 },
-         { 3, 2 } };
-      glBegin(GL_LINE_STRIP);
-      for(S32 i = 0; i < 6; i++)
-         glVertex2f(x * verts[i][0], y * verts[i][1]);
-      for(S32 i = 5; i >= 0; i--)
-         glVertex2f(x * verts[i][1], y * verts[i][0]);
-      glEnd();
-   }
-
-   void idle(GameObject::IdleCallPath path)
-   {
-      Parent::idle(path);
-      if(path == GameObject::ClientIdleMainRemote)
-         spin += 50.f * (F32)mCurrentMove.time * 0.001f;
-   }
-
    void renderItem(Point pos)
    {
+      if(!isVisible())
+         return;
 
       glPushMatrix();
       glTranslatef(pos.x, pos.y, 0);
-      glRotatef(spin, 0, 0, 1.f);
 
-      glColor3f(1, 1, 0);
-      
-      emitVerts(-5, 5);
-      emitVerts(5, 5);
-      emitVerts(5, -5);
-      emitVerts(-5, -5);
-      glBegin(GL_LINES);
-      glVertex2f(-5, 0);
-      glVertex2f(0, -5);
-      glVertex2f(5, 0);
-      glVertex2f(0, 5);
+      glColor3f(1,1,1);
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(-18, -18);
+      glVertex2f(18, -18);
+      glVertex2f(18, 18);
+      glVertex2f(-18, 18);
+      glEnd();
+
+      glColor3f(1,0,0);
+      glBegin(GL_LINE_LOOP);
+
+      float crossWidth = 4;
+      float crossLen = 14;
+
+      glVertex2f(crossWidth, crossWidth);
+      glVertex2f(crossLen, crossWidth);
+      glVertex2f(crossLen, -crossWidth);
+      glVertex2f(crossWidth, -crossWidth);
+      glVertex2f(crossWidth, -crossLen);
+      glVertex2f(-crossWidth, -crossLen);
+      glVertex2f(-crossWidth, -crossWidth);
+      glVertex2f(-crossLen, -crossWidth);
+      glVertex2f(-crossLen, crossWidth);
+      glVertex2f(-crossWidth, crossWidth);
+      glVertex2f(-crossWidth, crossLen);
+      glVertex2f(crossWidth, crossLen);
       glEnd();
 
       glPopMatrix();

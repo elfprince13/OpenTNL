@@ -43,6 +43,7 @@ protected:
       PositionMask = BIT(1),
       WarpPositionMask = BIT(2),
       MountMask = BIT(3),
+      FirstFreeMask = BIT(4),
    };
 
    SafePtr<Ship> mMount;
@@ -71,13 +72,23 @@ class PickupItem : public Item
    typedef Item Parent;
    bool mIsVisible;
    Timer mRepopTimer;
+protected:
+   enum MaskBits {
+      PickupMask = Parent::FirstFreeMask << 0,
+      FirstFreeMask = Parent::FirstFreeMask << 1,
+   };
 public:
    PickupItem(Point p = Point(), float radius = 1);
    void idle(GameObject::IdleCallPath path);
+   bool isVisible() { return mIsVisible; }
+
+   U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
+   void unpackUpdate(GhostConnection *connection, BitStream *stream);
 
    bool collide(GameObject *otherObject);
    virtual bool pickup(Ship *theShip) = 0;
    virtual U32 getRepopDelay() = 0;
+   virtual void onClientPickup() = 0;
 };
 
 };

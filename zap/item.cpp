@@ -200,20 +200,40 @@ PickupItem::PickupItem(Point p, float radius)
 
 void PickupItem::idle(GameObject::IdleCallPath path)
 {
-   Parent::idle(path);
-   if(mRepopTimer.update(mCurrentMove.time))
+   if(!mIsVisible && path == GameObject::ServerIdleMainLoop)
    {
-      mIsVisible = true;
-      addToDatabase();
+      if(mRepopTimer.update(mCurrentMove.time))
+         mIsVisible = true;
    }
+   updateExtent();
 }
+
+U32 PickupItem::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
+{
+   U32 retMask = Parent::packUpdate(connection, updateMask, stream);
+   stream->writeFlag(mIsVisible);
+
+   return retMask;
+}
+
+void PickupItem::unpackUpdate(GhostConnection *connection, BitStream *stream)
+{
+   Parent::unpackUpdate(connection, stream);
+   bool visible = stream->readFlag();
+
+   if(!visible && mIsVisible)
+      onClientPickup();
+   mIsVisible = visible;
+}
+
 
 bool PickupItem::collide(GameObject *otherObject)
 {
-   if(!isGhost() && otherObject->getObjectTypeMask() & ShipType)
+   if(mIsVisible && !isGhost() && otherObject->getObjectTypeMask() & ShipType)
    {  
       if(pickup((Ship *) otherObject))
       {
+         setMaskBits(PickupMask);
          mRepopTimer.reset(getRepopDelay());
          mIsVisible = false;
          removeFromDatabase();
@@ -221,5 +241,6 @@ bool PickupItem::collide(GameObject *otherObject)
    }
    return false;
 }
+
 
 };
