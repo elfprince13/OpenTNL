@@ -154,6 +154,11 @@ void EngineeredObject::processArguments(S32 argc, const char **argv)
       onEnabled();
 }
 
+void EngineeredObject::setOwner(Ship *owner)
+{
+   mOwner = owner;
+}
+
 void EngineeredObject::setResource(Item *resource)
 {
    TNLAssert(resource->isMounted() == false, "Doh!");

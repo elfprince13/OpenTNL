@@ -64,6 +64,11 @@ Game::Game(const Address &theBindAddress)
    mNetInterface = new GameNetInterface(theBindAddress, this);
 }
 
+void Game::setScopeAlwaysObject(GameObject *theObject)
+{
+   mScopeAlwaysList.push_back(theObject);
+}
+
 GameNetInterface *Game::getNetInterface()
 {
    return mNetInterface;

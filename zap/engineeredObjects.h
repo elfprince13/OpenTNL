@@ -71,7 +71,7 @@ public:
 
    void explode();
    bool isDestroyed() { return mIsDestroyed; }
-   void setOwner(Ship *owner) { mOwner = owner; }
+   void setOwner(Ship *owner);
 
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);

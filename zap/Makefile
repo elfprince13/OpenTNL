@@ -13,10 +13,13 @@ OBJECTS_ZAP=\
 	controlObjectConnection.o\
 	engineeredObjects.o\
 	LoadoutZone.o\
+	footballGame.o\
+	flagItem.o\
 	gameItems.o\
 	gameLoader.o\
 	gameNetInterface.o\
 	gameObject.o\
+	gameObjectRender.o\
 	gameType.o\
 	gameWeapons.o\
 	gridDB.o\
@@ -28,6 +31,7 @@ OBJECTS_ZAP=\
 	moveObject.o\
 	UI.o\
 	UIEditor.o\
+	UIInstructions.o\
 	UIGame.o\
 	UIMenus.o\
 	UINameEntry.o\
@@ -35,6 +39,7 @@ OBJECTS_ZAP=\
 	UICredits.o\
 	projectile.o\
 	quickChat.o\
+	rabbitGame.o\
 	ship.o\
 	sfx.o\
 	soccerGame.o\
@@ -48,6 +53,8 @@ OBJECTS_ZAP=\
 	gsm_decode.o\
 	gsm_encode.o\
 	gsm_state.o\
+	input.o\
+	linuxInput.o\
 	main.o
 
 
