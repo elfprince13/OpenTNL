@@ -68,13 +68,15 @@ class Ship : public MoveObject
    U32 timeUntilRemove; // when the ship is killed, it sticks around for a while to make sure that the kill message is propagated
    bool hasExploded;
 
+   StringTableEntry mPlayerName;
+
    Move lastMove; // last client input move for this ship
 
    Vector<Point> posSegments;
    Vector<SafePtr<Item> > mMountedItems;
 
    void render();
-   Ship(Point p = Point(0,0), Color c = Color(), F32 m = 1.0);
+   Ship(StringTableEntry playerName="", Point p = Point(0,0), Color c = Color(), F32 m = 1.0);
 
    void kill();
    void emitMovementSparks();

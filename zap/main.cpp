@@ -175,6 +175,28 @@ public:
    }
 } gStdoutLogConsumer;
 
+class FileLogConsumer : public LogConsumer
+{
+private:
+   FILE *f;
+public:
+   FileLogConsumer(const char* logFile="zap.log")
+   {
+      f = fopen(logFile, "w");
+      logString("------ Zap Log File ------");
+   }
+
+   ~FileLogConsumer()
+   {
+      fclose(f);
+   }
+
+   void logString(const char *string)
+   {
+      fprintf(f, "%s\r\n", string);
+   }
+} gFileLogConsumer;
+
 void hostGame(bool dedicated, Address bindAddress)
 {
    gServerGame = new ServerGame(bindAddress, gMaxPlayers, gHostName);
@@ -184,6 +206,7 @@ void hostGame(bool dedicated, Address bindAddress)
       joinGame(Address(), false, true);
 
 }
+
 
 void joinGame(Address remoteAddress, bool isFromMaster, bool local)
 {
