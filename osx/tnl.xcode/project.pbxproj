@@ -1751,6 +1751,8 @@
 				6656DDDB0635C95C00E30126,
 				6656DDDD0635C95C00E30126,
 				DB997D2C0638AFC1002745B0,
+				DBAFF49C06471A4200683BA4,
+				DBAFF4AA06471AAE00683BA4,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1785,6 +1787,8 @@
 				6656DDDC0635C95C00E30126,
 				DB997D2A0638AFC1002745B0,
 				DB997D2B0638AFC1002745B0,
+				DBAFF49B06471A4200683BA4,
+				DBAFF4A906471AAE00683BA4,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1801,7 +1805,7 @@
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				GCC_WARN_UNKNOWN_PRAGMAS = NO;
 				HEADER_SEARCH_PATHS = "../glut ../openal";
-				INSTALL_PATH = /usr/local/bin;
+				INSTALL_PATH = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.2;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-lobjc";
@@ -1809,6 +1813,7 @@
 				PRODUCT_NAME = ZAP;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = "-Wmost";
+				WRAPPER_EXTENSION = app;
 			};
 			dependencies = (
 			);
@@ -2218,6 +2223,10 @@
 		};
 		6692C0E606247C3B00D5ADFE = {
 			children = (
+				DBAFF4A706471AAE00683BA4,
+				DBAFF4A806471AAE00683BA4,
+				DBAFF49906471A4200683BA4,
+				DBAFF49A06471A4200683BA4,
 				DB997D270638AFC1002745B0,
 				DB997D280638AFC1002745B0,
 				DB997D290638AFC1002745B0,
@@ -4062,6 +4071,66 @@
 		};
 		DB997D2C0638AFC1002745B0 = {
 			fileRef = DB997D290638AFC1002745B0;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		DBAFF49906471A4200683BA4 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = soccerGame.cpp;
+			path = ../zap/soccerGame.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		DBAFF49A06471A4200683BA4 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = soccerGame.h;
+			path = ../zap/soccerGame.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		DBAFF49B06471A4200683BA4 = {
+			fileRef = DBAFF49906471A4200683BA4;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		DBAFF49C06471A4200683BA4 = {
+			fileRef = DBAFF49A06471A4200683BA4;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		DBAFF4A706471AAE00683BA4 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = UICredits.cpp;
+			path = ../zap/UICredits.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		DBAFF4A806471AAE00683BA4 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = UICredits.h;
+			path = ../zap/UICredits.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		DBAFF4A906471AAE00683BA4 = {
+			fileRef = DBAFF4A706471AAE00683BA4;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		DBAFF4AA06471AAE00683BA4 = {
+			fileRef = DBAFF4A806471AAE00683BA4;
 			isa = PBXBuildFile;
 			settings = {
 			};
