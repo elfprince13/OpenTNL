@@ -309,6 +309,13 @@ template<class T> inline U32 Vector<T>::setSize(U32 size)
    else if(size < mElementCount)
       destroy(size, oldSize);
    mElementCount = size;
+
+   if(!mElementCount)
+   {
+      free(mArray);
+      mArray = NULL;
+      mArraySize = 0;
+   }
    return mElementCount;
 }
 
@@ -412,7 +419,7 @@ template<class T> inline const T& Vector<T>::last() const
 
 template<class T> inline void Vector<T>::clear()
 {
-   mElementCount = 0;
+   setSize(0);
 }
 
 template<class T> inline void Vector<T>::compact()
@@ -560,12 +567,21 @@ template<class T> inline void Vector<T>::set(void * addr, U32 sz)
 
 template<class T> inline bool Vector<T>::resize(U32 ecount)
 {
-#ifdef DEBUG_GUARD
-   return VectorResize(&mArraySize, &mElementCount, (void**) &mArray, ecount, sizeof(T),
-                       mFileAssociation, mLineAssociation);
-#else
-   return VectorResize(&mArraySize, &mElementCount, (void**) &mArray, ecount, sizeof(T));
-#endif
+   U32 blk = VectorBlockSize - (ecount % VectorBlockSize);
+   U32 newCount = ecount + ((blk != VectorBlockSize) ? blk : 0);
+
+   T *array = (T *) malloc(sizeof(T) * newCount);
+   
+   for(U32 i = 0; i < mElementCount; i++)
+   {
+      constructInPlace(&array[i], &mArray[i]);
+      destructInPlace(&mArray[i]);
+   }
+   free(mArray);
+   mArray = array;
+   mArraySize = newCount;
+   mElementCount = ecount;
+   return true;
 }
 
 typedef int (QSORT_CALLBACK *qsort_compare_func)(const void *, const void *);

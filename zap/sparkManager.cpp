@@ -41,94 +41,21 @@ struct Spark
    F32 alpha;
    F32 ttl;
    Point vel;
-   Spark *mNext, *mPrev;
 };
 
 enum {
    MaxSparks = 4096,
 };
 
-Spark *mFree;
-Spark *mActive;
-Spark *mActiveTail;
-
 U32 firstFreeIndex = 0;
 Spark gSparks[MaxSparks];
 
-void init()
-{
-   // Put all the sparks (from gSparks) onto the free list and mark the tail.
-   U32 i;
-   for(i=0; i<MaxSparks-1; i++)
-      gSparks[i].mNext = &gSparks[i+1];
-   gSparks[i+1].mNext = NULL;
-
-   mFree = gSparks;
-
-   // No active sparks yet.
-   mActive = NULL;
-   mActiveTail = NULL;
-}
-
-Spark *getSpark()
-{
-   // Are there any in the free list?
-   Spark *newSpark = NULL;
-
-   if(mFree)
-   {
-      newSpark = mFree;
-      mFree = mFree->mNext;
-      if(mFree) mFree->mPrev = NULL;
-   }
-   else
-   {
-      // Reuse one from the active list...
-      if(mActiveTail)
-      {
-         newSpark = mActiveTail;
-
-         if(newSpark->mPrev) newSpark->mPrev->mNext = NULL;
-         mActiveTail = newSpark->mPrev;
-      }
-      else
-         return NULL;
-   }
-
-   // Put it at the head of the active list
-   newSpark->mPrev = NULL;
-   newSpark->mNext = mActive;
-   if(mActive) mActive->mPrev = newSpark;
-   mActive = newSpark;
-
-   return newSpark;
-}
-
-void freeSpark(Spark *s)
-{
-   // Remove it safely from the list it's in...
-   if(s->mNext) s->mNext->mPrev = s->mPrev;
-   if(s->mPrev) s->mPrev->mNext = s->mNext;
-   if(s==mActive) mActive = mActive->mNext;
-
-   // Update tail info
-   if(s->mNext == NULL)
-      mActiveTail = s->mPrev;
-
-   // And add it to the free list
-   s->mNext = mFree;
-   s->mPrev = NULL;
-   if(mFree) mFree->mPrev = s;
-   mFree = s;
-
-}
-
 void emitSpark(Point pos, Point vel, Color color, F32 ttl)
 {
-   Spark *s = getSpark();
-
-   if(!s)
+   if(firstFreeIndex >= MaxSparks)
       return;
+   Spark *s = gSparks + firstFreeIndex;
+   firstFreeIndex++;
 
    s->pos = pos;
    s->vel = vel;
@@ -143,25 +70,24 @@ void emitSpark(Point pos, Point vel, Color color, F32 ttl)
 
 void tick( F32 dT )
 {
-   Spark *theSpark = mActive;
-   while(theSpark)
+   for(U32 i = 0; i < firstFreeIndex; )
    {
+      Spark *theSpark = gSparks + i;
       if(theSpark->ttl <= dT)
       {
-         Spark *t = theSpark->mNext;
-         freeSpark(theSpark);
-         theSpark = t;
-         continue; // Skip to the next one...
+         firstFreeIndex--;
+         *theSpark = gSparks[firstFreeIndex];
       }
-
+      else
+      {
       theSpark->ttl -= dT;
       theSpark->pos += theSpark->vel * dT;
       if(theSpark->ttl > 2)
          theSpark->alpha = 1;
       else
          theSpark->alpha = theSpark->ttl * 0.5;
-
-      theSpark = theSpark->mNext;
+         i++;
+      }
    }
 }
 
@@ -174,31 +100,10 @@ void SparkManager::render()
    glEnableClientState(GL_COLOR_ARRAY);
    glEnableClientState(GL_VERTEX_ARRAY);
 
-   // Prepare buffers...
-   static struct SparkRender
-   {
-      Point pos;
-      Color color;
-      F32   alpha;
-   } renderData[MaxSparks];
-
-   Spark *theSpark = mActive;
-   SparkRender *r = renderData;
-   while(theSpark)
-   {
-      r->pos   = theSpark->pos;
-      r->color = theSpark->color;
-      r->alpha = theSpark->alpha;
-
-      // Advance pointers
-      r++;
-      theSpark = theSpark->mNext;
-   }
-
-   glVertexPointer(2, GL_FLOAT, sizeof(SparkRender), &renderData[0].pos);
-   glColorPointer(4, GL_FLOAT , sizeof(SparkRender), &renderData[0].color);
+   glVertexPointer(2, GL_FLOAT, sizeof(Spark), &gSparks[0].pos);
+   glColorPointer(4, GL_FLOAT , sizeof(Spark), &gSparks[0].color);
    
-   glDrawArrays(GL_POINTS, 0, (r - renderData));
+   glDrawArrays(GL_POINTS, 0, firstFreeIndex);
 
    glDisableClientState(GL_COLOR_ARRAY);
    glDisableClientState(GL_VERTEX_ARRAY);
@@ -211,6 +116,7 @@ void emitExplosion(Point pos, F32 size)
 {
    for(U32 i = 0; i < (500.0 * size); i++)
    {
+
       F32 th = Random::readF() * 2 * 3.14;
       F32 f = (Random::readF() * 2 - 1) * 400 * size;
       F32 green = Random::readF();
@@ -223,6 +129,7 @@ void emitExplosion(Point pos, F32 size, Color *colorArray, U32 numColors)
 {
    for(U32 i = 0; i < (500.0 * size); i++)
    {
+
       F32 th = Random::readF() * 2 * 3.14;
       F32 f = (Random::readF() * 2 - 1) * 400 * size;
       F32 green = Random::readF();
@@ -238,6 +145,7 @@ void emitBurst(Point pos, Point scale, Color color1, Color color2)
 
    for(U32 i = 0; i < (250.0 * size); i++)
    {
+
       F32 th = Random::readF() * 2 * 3.14;
       F32 f = (Random::readF() * 0.1 + 0.9) * 200 * size;
       F32 t = Random::readF();
@@ -263,7 +171,6 @@ fxTrail::fxTrail(U32 dropFrequency, U32 len)
 {
    mDropFreq = dropFrequency;
    mLength   = len;
-   mNodes.clear();
    registerTrail();
 }
 
