@@ -82,7 +82,6 @@ bool BitStream::resizeBits(U32 newBits)
    if(!resize(newSize))
    {
       error = true;
-      TNLAssert(false, "Out of range write");
       return false;
    }
    maxReadBitNum = newSize << 3;

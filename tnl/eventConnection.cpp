@@ -245,9 +245,8 @@ void EventConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
    {
       if(bstream->isFull())
          break;
-      // dequeue the first event
+      // get the first event
       EventNote *ev = mUnorderedSendEventQueueHead;
-      mUnorderedSendEventQueueHead = ev->mNextEvent;
 
       bstream->writeFlag(true);
       S32 start = bstream->getBitPosition();
@@ -264,8 +263,18 @@ void EventConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
       if(mConnectionParameters.mDebugObjectSizes)
          bstream->writeIntAt(bstream->getBitPosition(), BitStreamPosBitSize, start);
 
-      // add this event onto the packet queue
+      if(bstream->getBitSpaceAvailable() < MinimumPaddingBits)
+      {
+         // rewind to before the event, and break out of the loop:
+         bstream->setBitPosition(start - 1);
+         bstream->clearError();
+         break;
+      }
+
+      // dequeue the event and add this event onto the packet queue
+      mUnorderedSendEventQueueHead = ev->mNextEvent;
       ev->mNextEvent = NULL;
+
       if(!packQueueHead)
          packQueueHead = ev;
       else
@@ -285,20 +294,12 @@ void EventConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
       if(mSendEventQueueHead->mSeqCount > mLastAckedEventSeq + 126)
          break;
 
-      // dequeue the first event
+      // get the first event
       EventNote *ev = mSendEventQueueHead;
-      mSendEventQueueHead = ev->mNextEvent;
-      
-      //Con::printf("EVT  %d: SEND - %d", getId(), ev->mSeqCount);
+      S32 eventStart = bstream->getBitPosition();
 
       bstream->writeFlag(true);
 
-      ev->mNextEvent = NULL;
-      if(!packQueueHead)
-         packQueueHead = ev;
-      else
-         packQueueTail->mNextEvent = ev;
-      packQueueTail = ev;
       if(!bstream->writeFlag(ev->mSeqCount == prevSeq + 1))
          bstream->writeInt(ev->mSeqCount, 7);
       prevSeq = ev->mSeqCount;
@@ -317,6 +318,23 @@ void EventConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
 
       if(mConnectionParameters.mDebugObjectSizes)
          bstream->writeIntAt(bstream->getBitPosition(), BitStreamPosBitSize, start - BitStreamPosBitSize);
+
+      if(bstream->getBitSpaceAvailable() < MinimumPaddingBits)
+      {
+         // rewind to before the event, and break out of the loop:
+         bstream->setBitPosition(eventStart);
+         bstream->clearError();
+         break;
+      }
+
+      // dequeue the event:
+      mSendEventQueueHead = ev->mNextEvent;      
+      ev->mNextEvent = NULL;
+      if(!packQueueHead)
+         packQueueHead = ev;
+      else
+         packQueueTail->mNextEvent = ev;
+      packQueueTail = ev;
    }
    for(EventNote *ev = packQueueHead; ev; ev = ev->mNextEvent)
       ev->mEvent->notifySent(this);

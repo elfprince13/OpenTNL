@@ -105,6 +105,9 @@ public:
    /// clears the string compression buffer.
    void clearStringBuffer() { mStringBuffer[0] = 0; }
 
+   /// clears the error state from an attempted read or write overrun
+   void clearError() { error = false; }
+
    /// Returns a pointer to the next byte in the BitStream from the current bit position
    U8*  getBytePtr();
 
@@ -121,6 +124,9 @@ public:
 
    /// Returns the maximum readable bit position
    U32 getMaxReadBitPosition() const { return maxReadBitNum; }
+
+   /// Returns the number of bits that can be written into the BitStream without resizing
+   U32 getBitSpaceAvailable() const { return maxWriteBitNum - bitNum; }
 
    /// Pads the bits up to the next byte boundary with 0's.
    void zeroToByteBoundary();

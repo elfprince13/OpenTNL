@@ -563,8 +563,7 @@ private:
    /// @}
 };
 
-
-
+static const U32 MinimumPaddingBits = 128;       ///< Padding space that is required at the end of each packet for bit flag writes and such.
 
 };
 

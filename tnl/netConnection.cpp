@@ -511,6 +511,10 @@ void NetConnection::computeNegotiatedRate()
 
    U32 maxBandwidth = getMin(mLocalRate.maxSendBandwidth, mRemoteRate.maxRecvBandwidth);
    mCurrentPacketSendSize = U32(maxBandwidth * mCurrentPacketSendPeriod * 0.001f);
+
+   // make sure we don't try to overwrite the maximum packet size
+   if(mCurrentPacketSendSize > MaxPacketDataSize)
+      mCurrentPacketSendSize = MaxPacketDataSize;
 }
 
 void NetConnection::setIsAdaptive()

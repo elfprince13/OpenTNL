@@ -313,12 +313,56 @@ void GhostConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
       GhostInfo *walk = mGhostArray[i];
 		if(walk->flags & (GhostInfo::KillingGhost | GhostInfo::Ghosting))
 		   continue;
+
+      U32 updateStart = bstream->getBitPosition();
+      U32 updateMask = walk->updateMask;
+      U32 retMask;
 		   
       bstream->writeFlag(true);
-
       bstream->writeInt(walk->index, sendSize);
-      U32 updateMask = walk->updateMask;
-      
+      if(!bstream->writeFlag(walk->flags & GhostInfo::KillGhost))
+      {
+         // this is an update of some kind:
+         bool isInitialUpdate = false;
+         if(mConnectionParameters.mDebugObjectSizes)
+            bstream->advanceBitPosition(BitStreamPosBitSize);
+
+         S32 startPos = bstream->getBitPosition();
+
+         if(walk->flags & GhostInfo::NotYetGhosted)
+         {
+            S32 classId = walk->obj->getClassId(getNetClassGroup());
+            bstream->writeClassId(classId, NetClassTypeObject, getNetClassGroup());
+            isInitialUpdate = true;
+         }
+
+         // update the object
+         retMask = walk->obj->packUpdate(this, updateMask, bstream);
+
+         if(isInitialUpdate)
+            walk->obj->getClassRep()->addInitialUpdate(bstream->getBitPosition() - startPos);
+         else
+            walk->obj->getClassRep()->addPartialUpdate(bstream->getBitPosition() - startPos);
+
+         if(mConnectionParameters.mDebugObjectSizes)
+            bstream->writeIntAt(bstream->getBitPosition(), BitStreamPosBitSize, startPos - BitStreamPosBitSize);
+
+         TNLLogMessageV(LogGhostConnection, ("GhostConnection %s GHOST %d", walk->obj->getClassName(), bstream->getBitPosition() - 16 - startPos));
+
+         TNLAssert((retMask & (~updateMask)) == 0, "Cannot set new bits in packUpdate return");
+      }
+
+      // check for packet overrun, and rewind this update if there
+      // was one:
+      if(bstream->getBitSpaceAvailable() < MinimumPaddingBits)
+      {
+         bstream->setBitPosition(updateStart);
+         bstream->clearError();
+         break;
+      }
+
+      // otherwise, create a record of this ghost update and
+      // attach it to the packet.
       GhostRef *upd = new GhostRef;
 
       upd->nextRef = updateList;
@@ -340,52 +384,22 @@ void GhostConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
          upd->mask = updateMask;
          ghostPushToZero(walk);
          upd->ghostInfoFlags = GhostInfo::KillingGhost;
-         bstream->writeFlag(true); // killing ghost
       }
-      else 
+      else
       {
-         bstream->writeFlag(false);
-         bool isInitialUpdate = false;
-
-         if(mConnectionParameters.mDebugObjectSizes)
-            bstream->advanceBitPosition(BitStreamPosBitSize);
-
-         S32 startPos = bstream->getBitPosition();
-
          if(walk->flags & GhostInfo::NotYetGhosted)
          {
-            S32 classId = walk->obj->getClassId(getNetClassGroup());
-            bstream->writeClassId(classId, NetClassTypeObject, getNetClassGroup());
-
             walk->flags &= ~GhostInfo::NotYetGhosted;
             walk->flags |= GhostInfo::Ghosting;
             upd->ghostInfoFlags = GhostInfo::Ghosting;
-            isInitialUpdate = true;
          }
-
-         // update the object
-         U32 retMask = walk->obj->packUpdate(this, updateMask, bstream);
-
-         if(isInitialUpdate)
-            walk->obj->getClassRep()->addInitialUpdate(bstream->getBitPosition() - startPos);
-         else
-            walk->obj->getClassRep()->addPartialUpdate(bstream->getBitPosition() - startPos);
-
-         if(mConnectionParameters.mDebugObjectSizes)
-            bstream->writeIntAt(bstream->getBitPosition(), BitStreamPosBitSize, startPos - BitStreamPosBitSize);
-
-         TNLLogMessageV(LogGhostConnection, ("GhostConnection %s GHOST %d", walk->obj->getClassName(), bstream->getBitPosition() - 16 - startPos));
-
-         TNLAssert((retMask & (~updateMask)) == 0, "Cannot set new bits in packUpdate return");
-
          walk->updateMask = retMask;
          if(!retMask)
             ghostPushToZero(walk);
-
          upd->mask = updateMask & ~retMask;
+         walk->updateSkipCount = 0;
+         count++;
       }
-      walk->updateSkipCount = 0;
-      count++;
    }
    // count # of ghosts have been updated,
    // mGhostZeroUpdateIndex # of ghosts remain to be updated.
