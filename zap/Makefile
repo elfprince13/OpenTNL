@@ -4,17 +4,21 @@
 # 
 # Configuration
 #
-CC=g++ -g -I../tnl #-O2
+CC=g++ -g -I../tnl -I../glut -I../openal -DTNL_DEBUG #-O2
 
 OBJECTS_ZAP=\
+	CTFGame.o\
 	game.o\
 	gameConnection.o\
 	gameLoader.o\
 	gameNetInterface.o\
 	gameObject.o\
+	gameType.o\
 	gridDB.o\
+	item.o\
 	masterConnection.o\
 	../master/masterInterface.o\
+	moveObject.o\
 	UI.o\
 	UIGame.o\
 	UIMenus.o\
@@ -22,6 +26,7 @@ OBJECTS_ZAP=\
 	UIQueryServers.o\
 	projectile.o\
 	ship.o\
+	sfx.o\
 	SweptEllipsoid.o\
 	sparkManager.o\
 	teleporter.o\
@@ -35,7 +40,7 @@ CFLAGS=
 	$(CC) -c $(CFLAGS) $<
 
 default: $(OBJECTS_ZAP)
-	$(CC) -o zap $(OBJECTS_ZAP) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lstdc++ -lGL -lGLU -lglut -lm
+	$(CC) -o zap $(OBJECTS_ZAP) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a ../openal/linux/libopenal.a -lpthread -lstdc++ -lGL -lGLU -lglut -lm
 
 ../master/masterInterface.o:
 	make -C ../master

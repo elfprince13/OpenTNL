@@ -28,7 +28,7 @@
 #include "tnl.h"
 #include "tnlLog.h"
 
-#if defined (TNL_OS_WIN32)
+#if defined (TNL_OS_WIN32) || defined (TNL_OS_LINUX)
 
 #include "alInclude.h"
 
