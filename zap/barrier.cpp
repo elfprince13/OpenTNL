@@ -40,21 +40,9 @@ TNL_IMPLEMENT_NETOBJECT(Barrier);
 
 U32 Barrier::mBarrierChangeIndex = 1;
 
-void constructBarriers(Game *theGame, const Vector<F32> &barrier, F32 width)
+void constructBarrierPoints(const Vector<Point> &vec, F32 width, Vector<Point> &barrierEnds )
 {
-   Vector<Point> vec;
-   bool loop;
-
-   for(S32 i = 1; i < barrier.size(); i += 2)
-   {
-      float x = barrier[i-1];
-      float y = barrier[i];
-      vec.push_back(Point(x,y));
-   }
-   if(vec.size() <= 1)
-      return;
-
-   loop = vec[0] == vec[vec.size() - 1];
+   bool loop = vec[0] == vec[vec.size() - 1];
 
    Vector<Point> edgeVector;
    for(S32 i = 0; i < vec.size() - 1; i++)
@@ -70,7 +58,7 @@ void constructBarriers(Game *theGame, const Vector<F32> &barrier, F32 width)
    {
       Point curEdge = edgeVector[i];
       double cosTheta = curEdge.dot(lastEdge);
-      
+
       if(cosTheta >= 0)
       {
          F32 extendAmt = width * 0.5 * tan( acos(cosTheta) / 2 );
@@ -96,7 +84,29 @@ void constructBarriers(Game *theGame, const Vector<F32> &barrier, F32 width)
 
       Point start = vec[i] - edgeVector[i] * extendBack;
       Point end = vec[i+1] + edgeVector[i] * extendForward;
-      Barrier *b = new Barrier(start, end, width);
+      barrierEnds.push_back(start);
+      barrierEnds.push_back(end);
+   }
+}
+
+void constructBarriers(Game *theGame, const Vector<F32> &barrier, F32 width)
+{
+   Vector<Point> vec;
+
+   for(S32 i = 1; i < barrier.size(); i += 2)
+   {
+      float x = barrier[i-1];
+      float y = barrier[i];
+      vec.push_back(Point(x,y));
+   }
+   if(vec.size() <= 1)
+      return;
+
+   Vector<Point> barrierEnds;
+   constructBarrierPoints(vec, width, barrierEnds);
+   for(S32 i = 0; i < barrierEnds.size(); i += 2)
+   {
+      Barrier *b = new Barrier(barrierEnds[i], barrierEnds[i+1], width);
       b->addToGame(theGame);
    }
 }

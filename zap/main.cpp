@@ -601,6 +601,7 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *
       }
       else if(!stricmp(argv[i], "-window"))
       {
+         i--;
          OptionsMenuUserInterface::fullscreen = false;
       }
       else if(!stricmp(argv[i], "-edit"))

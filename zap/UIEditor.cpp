@@ -41,6 +41,7 @@ EditorUserInterface gEditorUserInterface;
 
 void EditorUserInterface::setEditName(const char *name)
 {
+   mGridSize = Game::DefaultGridSize;
    mGameType[0] = 0;
    char fileBuffer[256];
    dSprintf(fileBuffer, sizeof(fileBuffer), "levels/%s", name);
@@ -58,7 +59,6 @@ void EditorUserInterface::setEditName(const char *name)
    mUp = mDown = mLeft = mRight = mIn = mOut = false;
    mCreatingPoly = false;
    mCurrentTeam = 0;
-   mGridSize = Game::DefaultGridSize;
 
    strcpy(mEditFileName, name);
    mOriginalItems = mItems;
@@ -168,12 +168,11 @@ void EditorUserInterface::processLevelLoadLine(int argc, const char **argv)
       t.color.read(argv + 2);
       mTeams.push_back(t);
    }
-   else if(!strcmp(argv[0], "GridSize") && argc == 2)
-   {
-      mGridSize = atof(argv[1]);
-   }
    else
    {
+      if(!strcmp(argv[0], "GridSize") && argc == 2)
+         mGridSize = atof(argv[1]);
+
       Vector<const char *> item;
       for(S32 i = 0; i < argc; i++)
          item.push_back(strdup(argv[i]));
@@ -309,6 +308,8 @@ void EditorUserInterface::renderPoly(WorldItem &p)
    glEnd();
 }
 
+extern void constructBarrierPoints(const Vector<Point> &vec, F32 width, Vector<Point> &barrierEnds );
+
 void EditorUserInterface::renderItem(S32 index)
 {
    EditorUserInterface::WorldItem &i = mItems[index];
@@ -363,17 +364,19 @@ void EditorUserInterface::renderItem(S32 index)
    }
    else if(gGameItemRecs[i.index].isPoly)
    {
+      Color theColor;
       if(i.selected)
-         glColor3f(1,1,0);
+         theColor.set(1,1,0);
       else if(i.index == ItemBarrierMaker)
-         glColor3f(0,0,1);
+         theColor.set(0,0,1);
       else if(i.team == -1)
-         glColor3f(0.7, 0.7, 0.7);
+         theColor.set(0.7, 0.7, 0.7);
       else
       {
          Color c = mTeams[i.team].color;
-         glColor(c);
+         theColor = c;
       }
+      glColor(theColor);
 
       if(i.index != ItemBarrierMaker)
       {
@@ -388,32 +391,26 @@ void EditorUserInterface::renderItem(S32 index)
       }
       else
       {
+         Vector<Point> barPoints;
+         constructBarrierPoints(i.verts, i.width / mGridSize, barPoints );
+
+         for(S32 j = 0; j < barPoints.size(); j += 2)
+         {
+            Point dir = barPoints[j+1] - barPoints[j];
+            Point crossVec(dir.y, -dir.x);
+            crossVec.normalize(i.width * 0.5 / mGridSize);
+            glBegin(GL_POLYGON);
+            glColor3f(0.5, 0.5, 1);
+            glVertex(convertLevelToCanvasCoord(barPoints[j] + crossVec));
+            glVertex(convertLevelToCanvasCoord(barPoints[j] - crossVec));
+            glVertex(convertLevelToCanvasCoord(barPoints[j+1] - crossVec));
+            glVertex(convertLevelToCanvasCoord(barPoints[j+1] + crossVec));
+            glEnd();
+         }
+         glColor(theColor);
          glLineWidth(3);
          renderPoly(i);
          glLineWidth(1);
-         Point first = convertLevelToCanvasCoord(i.verts[0]);
-         for(S32 j = 1; j < i.verts.size(); j++)
-         {
-            Point v = convertLevelToCanvasCoord(i.verts[j]);
-            F32 width = i.width * mCurrentScale / mGridSize;
-
-            Point dir = v - first;
-            if(dir.len() > 0)
-            {
-               dir.normalize();
-               Point crs(dir.y, -dir.x);
-               crs *= width * 0.5;
-
-               glBegin(GL_LINE_LOOP);
-               glColor3f(0.5, 0.5, 1);
-               glVertex(first + crs);
-               glVertex(first - crs);
-               glVertex(v - crs);
-               glVertex(v + crs);
-               glEnd();
-            }
-            first = v;
-         }
       }
       for(S32 j = 0; j < i.verts.size(); j++)
       {

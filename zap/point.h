@@ -56,7 +56,7 @@ struct Point
    Point operator*(const Point &pt) { return Point(x * pt.x, y * pt.y); }
 
    Point &operator=(const Point &pt) { x = pt.x; y = pt.y; return *this; }
-   bool operator==(const Point &pt) { return x == pt.x && y == pt.y; }
+   bool operator==(const Point &pt) const { return x == pt.x && y == pt.y; }
 
    member_type len() const { return (member_type) sqrt(x * x + y * y); }
    member_type lenSquared() const { return x * x + y * y; }
