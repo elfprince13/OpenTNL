@@ -415,7 +415,7 @@ void TestConnection::onConnectionEstablished()
    // Try uncommenting the next line :)
    //setSimulatedNetParams(0.5, 0);
    
-   if(isInitiator)
+   if(isInitiator())
    {
       setGhostFrom(false);
       setGhostTo(true);

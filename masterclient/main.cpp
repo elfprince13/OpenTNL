@@ -118,7 +118,7 @@ public:
 
    void onConnectionEstablished()
    {
-      logprintf("connection to %s - %s established.", isInitiator ? "server" : "client", getNetAddress().toString());
+      logprintf("connection to %s - %s established.", isInitiator() ? "server" : "client", getNetAddress().toString());
 
       // If we're a server (ie, being connected to by the client) add this new connection to
       // our list of clients.
