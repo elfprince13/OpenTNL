@@ -37,7 +37,11 @@ rm -rf "$DIR"
 mkdir "$DIR"
 
 cp README.txt "$DIR"
-cp -r sfx levels "$DIR"
+mkdir "$DIR"/sfx
+mkdir "$DIR"/levels
+
+cp sfx/*.wav "$DIR"/sfx
+cp levels/*.txt "$DIR"/levels
 
 if [ "$PLATFORM" = "win32" ]; then
    ../../upx/upx.exe --best --crp-ms=999999 --nrv2d -o "$DIR"/glut32.dll glut32.dll

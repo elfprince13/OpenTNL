@@ -512,7 +512,9 @@ GAMETYPE_RPC_C2S(GameType, c2sChangeTeams, ())
 
    // destroy the old ship
    GameObject *co = source->getControlObject();
-   ((Ship *) co)->kill();
+
+   if(co)
+      ((Ship *) co)->kill();
 
    U32 newTeamId = (mClientList[clientIndex].teamId + 1) % mTeams.size();
    mClientList[clientIndex].teamId = newTeamId;
@@ -545,7 +547,8 @@ void GameType::serverRemoveClient(GameConnection *theClient)
    mClientList.erase(clientIndex);
 
    GameObject *theControlObject = theClient->getControlObject();
-   ((Ship *) theControlObject)->kill();
+   if(theControlObject)
+      ((Ship *) theControlObject)->kill();
 
    s2cRemoveClient(theClient->getClientName());
 }
