@@ -112,6 +112,14 @@ SOURCE=.\CTFGame.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\engineeredObjects.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\engineeredObjects.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\game.cpp
 # End Source File
 # Begin Source File
@@ -164,6 +172,14 @@ SOURCE=.\gameType.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\gameWeapons.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\gameWeapons.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\gridDB.cpp
 # End Source File
 # Begin Source File
@@ -193,6 +209,14 @@ SOURCE=.\item.cpp
 # Begin Source File
 
 SOURCE=.\item.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\loadoutSelect.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\loadoutSelect.h
 # End Source File
 # Begin Source File
 
@@ -268,6 +292,10 @@ SOURCE=.\ship.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\shipItems.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\soccerGame.cpp
 # End Source File
 # Begin Source File
@@ -309,6 +337,14 @@ SOURCE=.\UICredits.cpp
 # Begin Source File
 
 SOURCE=.\UiCredits.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\UIEditor.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\UIEditor.h
 # End Source File
 # Begin Source File
 

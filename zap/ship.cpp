@@ -1283,7 +1283,7 @@ void Ship::render()
 
       for(S32 i = 0; i < mRepairTargets.size(); i++)
       {
-         if(mRepairTargets[i] == this)
+         if(mRepairTargets[i].getPointer() == this)
          {
             glBegin(GL_LINE_LOOP);
             for(F32 theta = 0; theta <= 2 * 3.1415; theta += 0.3)
