@@ -209,12 +209,14 @@ public:
 
    ~FileLogConsumer()
    {
-      fclose(f);
+      if(f)
+         fclose(f);
    }
 
    void logString(const char *string)
    {
-      fprintf(f, "%s\r\n", string);
+      if(f)
+         fprintf(f, "%s\r\n", string);
    }
 } gFileLogConsumer;
 

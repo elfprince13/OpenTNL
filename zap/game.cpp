@@ -76,7 +76,6 @@ MasterServerConnection *Game::getConnectionToMaster()
 
 GameType *Game::getGameType()
 {
-   TNLAssert(mGameType, "Unexpected null game type!");
    return mGameType;
 }
 
