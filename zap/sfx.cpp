@@ -147,6 +147,9 @@ void SFXObject::playOnSource()
    alSourceStop(source);
    alSourcei(source, AL_BUFFER, gBuffers[mSFXIndex]);
    alSourcei(source, AL_LOOPING, mProfile->isLooping);
+   alSourcef(source, AL_REFERENCE_DISTANCE,9000);
+   alSourcef(source, AL_ROLLOFF_FACTOR,1);
+   alSourcef(source, AL_MAX_DISTANCE, 10000);
    updateMovementParams();
 
    updateGain();
@@ -203,6 +206,7 @@ void SFXObject::stop()
 
 void SFXObject::init()
 {
+   ALint error;
    gDevice = alcOpenDevice((ALubyte *) "DirectSound3D");
    if(!gDevice)
    {
@@ -219,15 +223,17 @@ void SFXObject::init()
    gContext = alcCreateContext(gDevice, (ALCint*)contextData);
    alcMakeContextCurrent(gContext);
 
-   alGetError();
+   error = alGetError();
+
+   alGenBuffers(NumSFXBuffers, gBuffers);
+   error = alGetError();
 
    alDistanceModel(AL_NONE);
+   error = alGetError();
 
    // load up all the sound buffers
-   alGenBuffers(NumSFXBuffers, gBuffers);
-
-   if(alGetError() != AL_NO_ERROR)
-      return;
+   //if(error != AL_NO_ERROR)
+   //   return;
 
    alGenSources(NumSources, gSources);
 
