@@ -60,6 +60,7 @@ public:
 
    bool objectCanDamageObject(GameObject *damager, GameObject *victim);
    void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
+   bool shipHasFlag(Ship *ship);
 
    void onFlagGrabbed(Ship *ship, RabbitFlagItem *flag);
    void onFlagHeld(Ship *ship);
