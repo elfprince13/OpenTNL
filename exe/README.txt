@@ -1,4 +1,4 @@
- ZAP 1.4.1
+ ZAP 1.4.7
 
 Introduction
 ------------
@@ -47,6 +47,9 @@ the flag carrier or zapping other players while holding the flag.
 Zapmatch - Solo game, often of short duration between levels.  Just
 zap as many other players as you can!
 
+Pay special attention to the triangular arrows that move in an ellipse around
+the screen -- these indicate the direction to specific game objectives, including
+flags to retrieve, zones to capture and friendly or enemy players carrying flags.
 
 Ship configuration:
 Each ship can be configured with 2 modules and 3 weapons.  Pressing
@@ -95,9 +98,6 @@ Dual-Analog Controller:
 Left stick - move
 Right stick - aim and fire
 
-right trigger - activate primary module (default = boost)
-left trigger - activate secondary module (default = shield)
-
 Buttons (Logitech Wingman Cordless)
 A - cycle to next weapon
 B - toggle commander map
@@ -105,6 +105,18 @@ C - open quick chat menu
 X - select weapon and module loadout 
 Y - show scores
 Z - record voice
+right trigger - activate primary module (default = boost)
+left trigger - activate secondary module (default = shield)
+
+Logitech Dual Action
+1 - cycle to next weapon
+2 - toggle commander map
+3 - open quick chat menu
+4 - select weapon and module loadout 
+5 - activate primary module (default = boost)
+6 - activate secondary module (default = shield)
+7 - show scores
+8 - record voice
 
 Saitek P880 Dual Analog
 1 - cycle to next weapon
@@ -113,12 +125,16 @@ Saitek P880 Dual Analog
 4 - select weapon and module loadout 
 5 - show scores
 6 - record voice
+right trigger - activate primary module (default = boost)
+left trigger - activate secondary module (default = shield)
 
 PS 2 Dual Shock w/USB
 X or depress right stick - cycle to next weapon
 O - toggle commander map
 square - open quick chat menu
 triangle - select weapon and module loadout
+R1 - activate primary module (default = boost)
+L1 - activate secondary module (default = shield)
 L2 - show scores
 R2 - record voice
 
@@ -129,6 +145,8 @@ X (blue) - open quick chat menu
 Y (yellow) - select weapon and module loadout
 white - show scores
 black - record voice
+right trigger - activate primary module (default = boost)
+left trigger - activate secondary module (default = shield)
 
 In the game you can press ESC to go to the game options screen.  
 From there you can access the main options which include setting 
@@ -165,9 +183,10 @@ or IP:www.foobar.com:24601
         
         Known controllers:
 		Logitech Wingman cordless - joystick 0
-		Saitek P880 Dual Analog - joystick 1
-		PS 2 Dual Shock w/USB - joystick 2
-		XBox controller - joystick 3
+		Logitech Dual Action - joystick 1
+		Saitek P880 Dual Analog - joystick 2
+		PS 2 Dual Shock w/USB - joystick 3
+		XBox controller - joystick 4
         
 -jsave [journalName] saves the log of the play session to the specified
         journal file.
