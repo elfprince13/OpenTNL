@@ -36,7 +36,7 @@
 namespace Zap
 {
 
-TNL_IMPLEMENT_NETOBJECT_RPC(RabbitGameType, s2cRabbitMessage, (U32 msgIndex, StringTableEntryRef clientName),
+TNL_IMPLEMENT_NETOBJECT_RPC(RabbitGameType, s2cRabbitMessage, (U32 msgIndex, StringTableEntry clientName), (msgIndex, clientName),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
    switch (msgIndex)

@@ -54,13 +54,13 @@ public:
    void cancelArrangedConnectionAttempt() { mCurrentQueryId++; }
    void requestArrangedConnection(const Address &remoteAddress);
 
-   TNL_DECLARE_RPC_OVERRIDE(m2cQueryGameTypesResponse, (U32 queryId, const Vector<StringTableEntry> &gameTypes, const Vector<StringTableEntry> &missionTypes));
-   TNL_DECLARE_RPC_OVERRIDE(m2cQueryServersResponse, (U32 queryId, const Vector<IPAddress> &ipList));
-   TNL_DECLARE_RPC_OVERRIDE(m2cClientRequestedArrangedConnection, (U32 requestId, const Vector<IPAddress> &possibleAddresses,
-      ByteBufferRef connectionParameters));
-   TNL_DECLARE_RPC_OVERRIDE(m2cArrangedConnectionAccepted, (U32 requestId, const Vector<IPAddress> &possibleAddresses, ByteBufferRef connectionData));
-   TNL_DECLARE_RPC_OVERRIDE(m2cArrangedConnectionRejected, (U32 requestId, ByteBufferRef rejectData));
-   TNL_DECLARE_RPC_OVERRIDE(m2cSetMOTD, (const char *motdString));
+   TNL_DECLARE_RPC_OVERRIDE(m2cQueryGameTypesResponse, (U32 queryId, Vector<StringTableEntry> gameTypes, Vector<StringTableEntry> missionTypes));
+   TNL_DECLARE_RPC_OVERRIDE(m2cQueryServersResponse, (U32 queryId, Vector<IPAddress> ipList));
+   TNL_DECLARE_RPC_OVERRIDE(m2cClientRequestedArrangedConnection, (U32 requestId, Vector<IPAddress> possibleAddresses,
+      ByteBufferPtr connectionParameters));
+   TNL_DECLARE_RPC_OVERRIDE(m2cArrangedConnectionAccepted, (U32 requestId, Vector<IPAddress> possibleAddresses, ByteBufferPtr connectionData));
+   TNL_DECLARE_RPC_OVERRIDE(m2cArrangedConnectionRejected, (U32 requestId, ByteBufferPtr rejectData));
+   TNL_DECLARE_RPC_OVERRIDE(m2cSetMOTD, (StringPtr motdString));
 
    void writeConnectRequest(BitStream *bstream);
    void onConnectionEstablished();

@@ -50,7 +50,7 @@ void MasterServerConnection::startGameTypesQuery()
    c2mQueryGameTypes(mCurrentQueryId);
 }
 
-TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cQueryGameTypesResponse, (U32 queryId, const Vector<StringTableEntry> &gameTypes, const Vector<StringTableEntry> &missionTypes))
+TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cQueryGameTypesResponse, (U32 queryId, Vector<StringTableEntry> gameTypes, Vector<StringTableEntry> missionTypes))
 {
    // Ignore old queries...
    if(queryId != mCurrentQueryId)
@@ -76,7 +76,7 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cQueryGameTypesResponse, (U
    }
 }
 
-TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cQueryServersResponse, (U32 queryId, const Vector<IPAddress> &ipList))
+TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cQueryServersResponse, (U32 queryId, Vector<IPAddress> ipList))
 {
    // Only process results from current query...
    if(queryId != mCurrentQueryId)
@@ -96,11 +96,11 @@ void MasterServerConnection::requestArrangedConnection(const Address &remoteAddr
 
    c2mRequestArrangedConnection(mCurrentQueryId, remoteAddress.toIPAddress(),
       getInterface()->getFirstBoundInterfaceAddress().toIPAddress(),
-      ByteBuffer((U8 *) "ZAP!", 5)); 
+      new ByteBuffer((U8 *) "ZAP!", 5)); 
 }
 
-TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cClientRequestedArrangedConnection, (U32 requestId, const Vector<IPAddress> &possibleAddresses,
-   ByteBufferRef connectionParameters))
+TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cClientRequestedArrangedConnection, (U32 requestId, Vector<IPAddress> possibleAddresses,
+   ByteBufferPtr connectionParameters))
 {
    if(!mIsGameServer)
    {
@@ -122,9 +122,10 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cClientRequestedArrangedCon
    }
    // Ok, let's do the arranged connection!
    U8 data[Nonce::NonceSize * 2 + SymmetricCipher::KeySize * 2];
-   ByteBuffer b(data, sizeof(data));
    Random::read(data, sizeof(data));
    IPAddress localAddress = getInterface()->getFirstBoundInterfaceAddress().toIPAddress();
+   ByteBufferPtr b = new ByteBuffer(data, sizeof(data));
+   b->takeOwnership();
 
    c2mAcceptArrangedConnection(requestId, localAddress, b);
    GameConnection *conn = new GameConnection();
@@ -132,22 +133,23 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cClientRequestedArrangedCon
    conn->setNetAddress(fullPossibleAddresses[0]);
 
    logprintf("Accepting arranged connection from %s", Address(fullPossibleAddresses[0]).toString());
-   logprintf("  Generated shared secret data: %s", b.encodeBase64()->getBuffer());
+   logprintf("  Generated shared secret data: %s", b->encodeBase64()->getBuffer());
 
    ByteBufferPtr theSharedData = new ByteBuffer(data + 2 * Nonce::NonceSize, sizeof(data) - 2 * Nonce::NonceSize);
    Nonce nonce(data);
    Nonce serverNonce(data + Nonce::NonceSize);
+   theSharedData->takeOwnership();
 
    conn->connectArranged(getInterface(), fullPossibleAddresses,
       nonce, serverNonce, theSharedData,false);
 }
 
-TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionAccepted, (U32 requestId, const Vector<IPAddress> &possibleAddresses, ByteBufferRef connectionData))
+TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionAccepted, (U32 requestId, Vector<IPAddress> possibleAddresses, ByteBufferPtr connectionData))
 {
-   if(!mIsGameServer && requestId == mCurrentQueryId && connectionData.getBufferSize() >= Nonce::NonceSize * 2 + SymmetricCipher::KeySize * 2)
+   if(!mIsGameServer && requestId == mCurrentQueryId && connectionData->getBufferSize() >= Nonce::NonceSize * 2 + SymmetricCipher::KeySize * 2)
    {
       logprintf("Remote host accepted arranged connection.");
-      logprintf("  Shared secret data: %s", connectionData.encodeBase64()->getBuffer());
+      logprintf("  Shared secret data: %s", connectionData->encodeBase64()->getBuffer());
 
       Vector<Address> fullPossibleAddresses;
       for(S32 i = 0; i < possibleAddresses.size(); i++)
@@ -155,12 +157,12 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionAccepted
 
       ByteBufferPtr theSharedData =
                      new ByteBuffer(
-                           (U8 *) connectionData.getBuffer() + Nonce::NonceSize * 2,
-                           connectionData.getBufferSize() - Nonce::NonceSize * 2
+                           (U8 *) connectionData->getBuffer() + Nonce::NonceSize * 2,
+                           connectionData->getBufferSize() - Nonce::NonceSize * 2
                      );
 
-      Nonce nonce(connectionData.getBuffer());
-      Nonce serverNonce(connectionData.getBuffer() + Nonce::NonceSize);
+      Nonce nonce(connectionData->getBuffer());
+      Nonce serverNonce(connectionData->getBuffer() + Nonce::NonceSize);
 
       GameConnection *conn = new GameConnection();
       const char *name = gNameEntryUserInterface.getText();
@@ -176,7 +178,7 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionAccepted
    }
 }
 
-TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionRejected, (U32 requestId, ByteBufferRef rejectData))
+TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionRejected, (U32 requestId, ByteBufferPtr rejectData))
 {
    if(!mIsGameServer && requestId == mCurrentQueryId)
    {
@@ -186,7 +188,7 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionRejected
    }
 }
 
-TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cSetMOTD, (const char *motdString))
+TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cSetMOTD, (StringPtr motdString))
 {
    gMainMenuUserInterface.setMOTD(motdString);
 }

@@ -105,7 +105,7 @@ public:
    TNL_DECLARE_JOURNAL_ENTRYPOINT(specialkeyup, (S32 key));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(idle, (U32 timeDelta));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(display, ());
-   TNL_DECLARE_JOURNAL_ENTRYPOINT(startup, (const Vector<const char *> &theArgv));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(startup, (Vector<StringPtr> theArgv));
 };
 
 ZapJournal gZapJournal;
@@ -115,7 +115,8 @@ void reshape(int nw, int nh)
    gZapJournal.reshape(nw, nh); 
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, reshape, (S32 newWidth, S32 newHeight))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, reshape,
+    (S32 newWidth, S32 newHeight), (newWidth, newHeight))
 {
   UserInterface::windowWidth = newWidth;
   UserInterface::windowHeight = newHeight;
@@ -126,7 +127,8 @@ void motion(int x, int y)
    gZapJournal.motion(x, y);
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, motion, (S32 x, S32 y))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, motion,
+   (S32 x, S32 y), (x, y))
 {
    if(gIsCrazyBot)
       return;
@@ -140,7 +142,8 @@ void passivemotion(int x, int y)
    gZapJournal.passivemotion(x, y);
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, passivemotion, (S32 x, S32 y))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, passivemotion,
+   (S32 x, S32 y), (x, y))
 {
    if(gIsCrazyBot)
       return;
@@ -154,7 +157,7 @@ void key(unsigned char key, int x, int y)
    gZapJournal.key(key);
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, key, (U8 key))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, key, (U8 key), (key))
 {
    // check for ALT-ENTER
    if(key == '\r' && (glutGetModifiers() & GLUT_ACTIVE_ALT))
@@ -168,7 +171,7 @@ void keyup(unsigned char key, int x, int y)
    gZapJournal.keyup(key);
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, keyup, (U8 key))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, keyup, (U8 key), (key))
 {
    if(UserInterface::current)
       UserInterface::current->onKeyUp(key);
@@ -179,7 +182,8 @@ void mouse(int button, int state, int x, int y)
    gZapJournal.mouse(button, state, x, y);
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, mouse, (S32 button, S32 state, S32 x, S32 y))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, mouse,
+   (S32 button, S32 state, S32 x, S32 y), (button, state, x, y))
 {
    static int mouseState[2] = { 0, };
    if(!UserInterface::current)
@@ -221,7 +225,7 @@ void specialkey(int key, int x, int y)
    gZapJournal.specialkey(key);
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkey, (S32 key))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkey, (S32 key), (key))
 {
    if(UserInterface::current)
       UserInterface::current->onSpecialKeyDown(key);
@@ -232,19 +236,19 @@ void specialkeyup(int key, int x, int y)
    gZapJournal.specialkeyup(key);
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkeyup, (S32 key))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkeyup, (S32 key), (key))
 {
    if(UserInterface::current)
       UserInterface::current->onSpecialKeyUp(key);
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, modifierkey, (U32 key))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, modifierkey, (U32 key), (key))
 {
    if(UserInterface::current)
       UserInterface::current->onModifierKeyDown(key);
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, modifierkeyup, (U32 key))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, modifierkeyup, (U32 key), (key))
 {
    if(UserInterface::current)
       UserInterface::current->onModifierKeyUp(key);
@@ -370,7 +374,7 @@ void idle()
    gZapJournal.processNextJournalEntry();
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, idle, (U32 integerTime))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, idle, (U32 integerTime), (integerTime))
 {
    if(UserInterface::current)
       UserInterface::current->idle(integerTime);
@@ -393,7 +397,7 @@ void display(void)
    gZapJournal.display();
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, display, ())
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, display, (), ())
 {
    glFlush();
    UserInterface::renderCurrent();
@@ -510,7 +514,7 @@ void onExit()
    NetClassRep::logBitUsage();
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *> &argv))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (Vector<StringPtr> argv), (argv))
 {
    bool hasClient = true;
    bool hasServer = false;
@@ -670,7 +674,7 @@ int main(int argc, char **argv)
    for(S32 i = 0; i < argc;i++)
       logprintf(argv[i]);
 
-   Vector<const char *> theArgv;
+   Vector<StringPtr> theArgv;
 
    for(S32 i = 1; i < argc; i++)
    {

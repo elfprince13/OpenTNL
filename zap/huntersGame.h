@@ -85,7 +85,7 @@ public:
 
    TNL_DECLARE_RPC(s2cAddYardSaleWaypoint, (F32 x, F32 y));
    TNL_DECLARE_RPC(s2cSetNexusTimer, (U32 nexusTime, bool canCap));
-   TNL_DECLARE_RPC(s2cHuntersMessage, (U32 msgIndex, StringTableEntryRef clientName, U32 flagCount));
+   TNL_DECLARE_RPC(s2cHuntersMessage, (U32 msgIndex, StringTableEntry clientName, U32 flagCount));
    TNL_DECLARE_CLASS(HuntersGameType);
 };
 

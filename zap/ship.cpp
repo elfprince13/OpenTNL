@@ -598,7 +598,7 @@ U32  Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *st
    if(isInitialUpdate())
    {
       stream->writeFlag(getGame()->getCurrentTime() - getCreationTime() < 300);
-      connection->packStringTableEntry(stream, mPlayerName);
+      stream->writeStringTableEntry(mPlayerName);
       stream->write(mass);
       stream->writeRangedU32(mTeam + 1, 0, getGame()->getTeamCount());
 
@@ -669,7 +669,7 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
       wasInitialUpdate = true;
       playSpawnEffect = stream->readFlag();
 
-      mPlayerName = connection->unpackStringTableEntry(stream);
+      stream->readStringTableEntry(&mPlayerName);
       stream->read(&mass);
       mTeam = stream->readRangedU32(0, gClientGame->getTeamCount()) - 1;
 

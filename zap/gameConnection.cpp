@@ -92,7 +92,7 @@ ClientRef *GameConnection::getClientRef()
    return mClientRef;
 }
 
-TNL_IMPLEMENT_RPC(GameConnection, c2sAdminPassword, (const char *pass), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
+TNL_IMPLEMENT_RPC(GameConnection, c2sAdminPassword, (StringPtr pass), (pass), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
 {
    if(gAdminPassword && !strcmp(gAdminPassword, pass))
    {
@@ -103,7 +103,9 @@ TNL_IMPLEMENT_RPC(GameConnection, c2sAdminPassword, (const char *pass), NetClass
    }
 }
 
-TNL_IMPLEMENT_RPC(GameConnection, c2sAdminPlayerAction, (StringTableEntryRef playerName, U32 actionIndex), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
+TNL_IMPLEMENT_RPC(GameConnection, c2sAdminPlayerAction, 
+   (StringTableEntry playerName, U32 actionIndex), (playerName, actionIndex), 
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
 {
    if(isAdmin())
    {
@@ -156,31 +158,31 @@ TNL_IMPLEMENT_RPC(GameConnection, c2sAdminPlayerAction, (StringTableEntryRef pla
    }
 }
 
-TNL_IMPLEMENT_RPC(GameConnection, s2cSetIsAdmin, (), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirServerToClient, 1)
+TNL_IMPLEMENT_RPC(GameConnection, s2cSetIsAdmin, (), (),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirServerToClient, 1)
 {
    setIsAdmin(true);
 }
 
-TNL_IMPLEMENT_RPC(GameConnection, c2sRequestCommanderMap, (), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
+TNL_IMPLEMENT_RPC(GameConnection, c2sRequestCommanderMap, (), (),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
 {
    mInCommanderMap = true;
 }
 
-TNL_IMPLEMENT_RPC(GameConnection, c2sReleaseCommanderMap, (), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
+TNL_IMPLEMENT_RPC(GameConnection, c2sReleaseCommanderMap, (), (),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
 {
    mInCommanderMap = false;
 }
 
-TNL_IMPLEMENT_RPC(GameConnection, c2sRequestLoadout, (const Vector<U32> &loadout), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
+TNL_IMPLEMENT_RPC(GameConnection, c2sRequestLoadout, (Vector<U32> loadout), (loadout), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
 {
    mLoadout = loadout;
    GameType *gt = gServerGame->getGameType();
    if(gt)
       gt->clientRequestLoadout(this, mLoadout);
 }
-
-TNL_DECLARE_MEMBER_ENUM(GameConnection, ColorCount);
-TNL_DECLARE_ENUM(NumSFXBuffers);
 
 static void displayMessage(U32 colorIndex, U32 sfxEnum, const char *message)
 {
@@ -200,8 +202,9 @@ static void displayMessage(U32 colorIndex, U32 sfxEnum, const char *message)
 }
 
 TNL_IMPLEMENT_RPC(GameConnection, s2cDisplayMessageESI, 
-                  (RangedU32<0, GameConnection::ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString,
-                  const Vector<StringTableEntry> &e, const Vector<const char *> &s, const Vector<S32> &i),
+                  (RangedU32<0, GameConnection::ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntry formatString,
+                  Vector<StringTableEntry> e, Vector<StringPtr> s, Vector<S32> i),
+                  (color, sfx, formatString, e, s, i),
                   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirServerToClient, 1)
 {
    char outputBuffer[256];
@@ -220,7 +223,7 @@ TNL_IMPLEMENT_RPC(GameConnection, s2cDisplayMessageESI,
                break;
             case 's':
                if(index < s.size())
-                  pos += dSprintf(outputBuffer + pos, 256 - pos, "%s", s[index]);
+                  pos += dSprintf(outputBuffer + pos, 256 - pos, "%s", s[index].getString());
                break;
             case 'i':
                if(index < i.size())
@@ -240,8 +243,8 @@ TNL_IMPLEMENT_RPC(GameConnection, s2cDisplayMessageESI,
 }                 
 
 TNL_IMPLEMENT_RPC(GameConnection, s2cDisplayMessageE, 
-                  (RangedU32<0, GameConnection::ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString,
-                  const Vector<StringTableEntry> &e),
+                  (RangedU32<0, GameConnection::ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntry formatString,
+                  Vector<StringTableEntry> e), (color, sfx, formatString, e),
                   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirServerToClient, 1)
 {
    char outputBuffer[256];
@@ -272,7 +275,8 @@ TNL_IMPLEMENT_RPC(GameConnection, s2cDisplayMessageE,
 }                 
 
 TNL_IMPLEMENT_RPC(GameConnection, s2cDisplayMessage, 
-                  (RangedU32<0, GameConnection::ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString),
+                  (RangedU32<0, GameConnection::ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntry formatString),
+                  (color, sfx, formatString),
                   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirServerToClient, 1)
 {
    char outputBuffer[256];
@@ -290,14 +294,14 @@ TNL_IMPLEMENT_RPC(GameConnection, s2cDisplayMessage,
 }                 
 
 
-TNL_IMPLEMENT_RPC(GameConnection, s2cAddLevel, (StringTableEntryRef name, StringTableEntryRef type),
+TNL_IMPLEMENT_RPC(GameConnection, s2cAddLevel, (StringTableEntry name, StringTableEntry type), (name, type),
                   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirServerToClient, 1)
 {
    mLevelNames.push_back(name);
    mLevelTypes.push_back(type);
 }
 
-TNL_IMPLEMENT_RPC(GameConnection, c2sRequestLevelChange, (S32 newLevelIndex), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
+TNL_IMPLEMENT_RPC(GameConnection, c2sRequestLevelChange, (S32 newLevelIndex), (newLevelIndex), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
 {
    if(mIsAdmin)
    {

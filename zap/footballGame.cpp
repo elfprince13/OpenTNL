@@ -75,7 +75,7 @@ public:
 
 TNL_IMPLEMENT_NETOBJECT(ZoneControlGameType);
 
-GAMETYPE_RPC_S2C(ZoneControlGameType, s2cSetFlagTeam, (S32 flagTeam))
+GAMETYPE_RPC_S2C(ZoneControlGameType, s2cSetFlagTeam, (S32 flagTeam), (flagTeam))
 {
    mFlagTeam = flagTeam;
 }

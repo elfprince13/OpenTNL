@@ -39,14 +39,15 @@ namespace Zap
 TNL_IMPLEMENT_NETOBJECT(HuntersGameType);
 
 
-TNL_IMPLEMENT_NETOBJECT_RPC(HuntersGameType, s2cSetNexusTimer, (U32 nexusTime, bool canCap),
+TNL_IMPLEMENT_NETOBJECT_RPC(HuntersGameType, s2cSetNexusTimer,
+   (U32 nexusTime, bool canCap), (nexusTime, canCap),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
    mNexusReturnTimer.reset(nexusTime);
    mCanNexusCap = canCap;
 }
 
-GAMETYPE_RPC_S2C(HuntersGameType, s2cAddYardSaleWaypoint, (F32 x, F32 y))
+GAMETYPE_RPC_S2C(HuntersGameType, s2cAddYardSaleWaypoint, (F32 x, F32 y), (x, y))
 {
    YardSaleWaypoint w;
    w.timeLeft.reset(YardSaleWaypointTime);
@@ -54,7 +55,8 @@ GAMETYPE_RPC_S2C(HuntersGameType, s2cAddYardSaleWaypoint, (F32 x, F32 y))
    mYardSaleWaypoints.push_back(w);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(HuntersGameType, s2cHuntersMessage, (U32 msgIndex, StringTableEntryRef clientName, U32 flagCount),
+TNL_IMPLEMENT_NETOBJECT_RPC(HuntersGameType, s2cHuntersMessage, 
+   (U32 msgIndex, StringTableEntry clientName, U32 flagCount), (msgIndex, clientName, flagCount),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
    if(msgIndex == HuntersMsgScore)

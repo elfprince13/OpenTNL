@@ -186,11 +186,11 @@ public:
    virtual void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);
 
    void onGhostAvailable(GhostConnection *theConnection);
-   TNL_DECLARE_RPC(s2cSetLevelInfo, (StringTableEntryRef levelName, StringTableEntryRef levelDesc));
-   TNL_DECLARE_RPC(s2cAddBarriers, (const Vector<F32> &barrier, F32 width));
-   TNL_DECLARE_RPC(s2cAddTeam, (StringTableEntryRef teamName, F32 r, F32 g, F32 b));
-   TNL_DECLARE_RPC(s2cAddClient, (StringTableEntryRef clientName, bool isMyClient));
-   TNL_DECLARE_RPC(s2cClientJoinedTeam, (StringTableEntryRef clientName, U32 teamIndex));
+   TNL_DECLARE_RPC(s2cSetLevelInfo, (StringTableEntry levelName, StringTableEntry levelDesc));
+   TNL_DECLARE_RPC(s2cAddBarriers, (Vector<F32> barrier, F32 width));
+   TNL_DECLARE_RPC(s2cAddTeam, (StringTableEntry teamName, F32 r, F32 g, F32 b));
+   TNL_DECLARE_RPC(s2cAddClient, (StringTableEntry clientName, bool isMyClient));
+   TNL_DECLARE_RPC(s2cClientJoinedTeam, (StringTableEntry clientName, U32 teamIndex));
 
    TNL_DECLARE_RPC(s2cSyncMessagesComplete, (U32 sequence));
    TNL_DECLARE_RPC(c2sSyncMessagesComplete, (U32 sequence));
@@ -198,13 +198,13 @@ public:
    TNL_DECLARE_RPC(s2cSetGameOver, (bool gameOver));
    TNL_DECLARE_RPC(s2cSetTimeRemaining, (U32 timeLeft));
 
-   TNL_DECLARE_RPC(s2cRemoveClient, (StringTableEntryRef clientName));
+   TNL_DECLARE_RPC(s2cRemoveClient, (StringTableEntry clientName));
 
    void setTeamScore(S32 teamIndex, S32 newScore);
    TNL_DECLARE_RPC(s2cSetTeamScore, (U32 teamIndex, U32 score));
 
    TNL_DECLARE_RPC(c2sRequestScoreboardUpdates, (bool updates));
-   TNL_DECLARE_RPC(s2cScoreboardUpdate, (const Vector<RangedU32<0, MaxPing> > &pingTimes, const Vector<SignedInt<24> > &scores));
+   TNL_DECLARE_RPC(s2cScoreboardUpdate, (Vector<RangedU32<0, MaxPing> > pingTimes, Vector<SignedInt<24> > scores));
    virtual void updateClientScoreboard(ClientRef *theClient);
 
    TNL_DECLARE_RPC(c2sAdvanceWeapon, ());
@@ -214,24 +214,24 @@ public:
    TNL_DECLARE_RPC(c2sChangeTeams, ());
 
    void sendChatDisplayEvent(ClientRef *cl, bool global, NetEvent *theEvent);
-   TNL_DECLARE_RPC(c2sSendChat, (bool global, const char *message));
-   TNL_DECLARE_RPC(c2sSendChatSTE, (bool global, StringTableEntryRef ste));
-   TNL_DECLARE_RPC(s2cDisplayChatMessage, (bool global, StringTableEntryRef clientName, const char *message));
-   TNL_DECLARE_RPC(s2cDisplayChatMessageSTE, (bool global, StringTableEntryRef clientName, StringTableEntryRef message));
+   TNL_DECLARE_RPC(c2sSendChat, (bool global, StringPtr message));
+   TNL_DECLARE_RPC(c2sSendChatSTE, (bool global, StringTableEntry ste));
+   TNL_DECLARE_RPC(s2cDisplayChatMessage, (bool global, StringTableEntry clientName, StringPtr message));
+   TNL_DECLARE_RPC(s2cDisplayChatMessageSTE, (bool global, StringTableEntry clientName, StringTableEntry message));
 
-   TNL_DECLARE_RPC(s2cKillMessage, (StringTableEntryRef victim, StringTableEntryRef killer));
+   TNL_DECLARE_RPC(s2cKillMessage, (StringTableEntry victim, StringTableEntry killer));
 
-   TNL_DECLARE_RPC(c2sVoiceChat, (bool echo, ByteBufferRef compressedVoice));
-   TNL_DECLARE_RPC(s2cVoiceChat, (StringTableEntryRef client, ByteBufferRef compressedVoice));
+   TNL_DECLARE_RPC(c2sVoiceChat, (bool echo, ByteBufferPtr compressedVoice));
+   TNL_DECLARE_RPC(s2cVoiceChat, (StringTableEntry client, ByteBufferPtr compressedVoice));
 
    TNL_DECLARE_CLASS(GameType);
 };
 
-#define GAMETYPE_RPC_S2C(className, methodName, args) \
-   TNL_IMPLEMENT_NETOBJECT_RPC(className, methodName, args, NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+#define GAMETYPE_RPC_S2C(className, methodName, args, argNames) \
+   TNL_IMPLEMENT_NETOBJECT_RPC(className, methodName, args, argNames, NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 
-#define GAMETYPE_RPC_C2S(className, methodName, args) \
-   TNL_IMPLEMENT_NETOBJECT_RPC(className, methodName, args, NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+#define GAMETYPE_RPC_C2S(className, methodName, args, argNames) \
+   TNL_IMPLEMENT_NETOBJECT_RPC(className, methodName, args, argNames, NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
 
 
 

@@ -41,7 +41,8 @@ class SoccerBallItem;
 
 TNL_IMPLEMENT_NETOBJECT(SoccerGameType);
 
-TNL_IMPLEMENT_NETOBJECT_RPC(SoccerGameType, s2cSoccerScoreMessage, (U32 msgIndex, StringTableEntryRef clientName, U32 teamIndex),
+TNL_IMPLEMENT_NETOBJECT_RPC(SoccerGameType, s2cSoccerScoreMessage, 
+   (U32 msgIndex, StringTableEntry clientName, U32 teamIndex), (msgIndex, clientName, teamIndex),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
    if(msgIndex == SoccerMsgScoreGoal)

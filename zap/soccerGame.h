@@ -62,7 +62,7 @@ public:
    const char *getGameTypeString() { return "Soccer"; }
    virtual const char *getInstructionString() { return "Push the ball into the opposing team's goal."; }
 
-   TNL_DECLARE_RPC(s2cSoccerScoreMessage, (U32 msgIndex, StringTableEntryRef clientName, U32 teamIndex));
+   TNL_DECLARE_RPC(s2cSoccerScoreMessage, (U32 msgIndex, StringTableEntry clientName, U32 teamIndex));
    TNL_DECLARE_CLASS(SoccerGameType);
 };
 

@@ -827,7 +827,7 @@ void GameUserInterface::VoiceRecorder::process()
    {
       GameType *gt = gClientGame->getGameType();
       if(gt)
-         gt->c2sVoiceChat(OptionsMenuUserInterface::echoVoice, *(sendBuffer.getPointer()));
+         gt->c2sVoiceChat(OptionsMenuUserInterface::echoVoice, sendBuffer);
    }
 }
 

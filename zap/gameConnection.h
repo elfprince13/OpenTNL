@@ -92,22 +92,22 @@ public:
 
    bool isAdmin() { return mIsAdmin; }
    void setIsAdmin(bool admin) { mIsAdmin = admin; }
-   TNL_DECLARE_RPC(c2sAdminPassword, (const char *pass));
+   TNL_DECLARE_RPC(c2sAdminPassword, (StringPtr pass));
    TNL_DECLARE_RPC(s2cSetIsAdmin, ());
-   TNL_DECLARE_RPC(c2sAdminPlayerAction, (StringTableEntryRef playerName, U32 actionIndex));
+   TNL_DECLARE_RPC(c2sAdminPlayerAction, (StringTableEntry playerName, U32 actionIndex));
 
    bool isInCommanderMap() { return mInCommanderMap; }
    TNL_DECLARE_RPC(c2sRequestCommanderMap, ());
    TNL_DECLARE_RPC(c2sReleaseCommanderMap, ());
 
-   TNL_DECLARE_RPC(c2sRequestLoadout, (const Vector<U32> &loadout));
+   TNL_DECLARE_RPC(c2sRequestLoadout, (Vector<U32> loadout));
 
-   TNL_DECLARE_RPC(s2cDisplayMessageESI, (RangedU32<0, ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString,
-                   const Vector<StringTableEntry> &e, const Vector<const char *> &s, const Vector<S32> &i));
-   TNL_DECLARE_RPC(s2cDisplayMessageE, (RangedU32<0, ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString,
-                   const Vector<StringTableEntry> &e));
-   TNL_DECLARE_RPC(s2cDisplayMessage, (RangedU32<0, ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString));
-   TNL_DECLARE_RPC(s2cAddLevel, (StringTableEntryRef name, StringTableEntryRef type));
+   TNL_DECLARE_RPC(s2cDisplayMessageESI, (RangedU32<0, ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntry formatString,
+                   Vector<StringTableEntry> e, Vector<StringPtr> s, Vector<S32> i));
+   TNL_DECLARE_RPC(s2cDisplayMessageE, (RangedU32<0, ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntry formatString,
+                   Vector<StringTableEntry> e));
+   TNL_DECLARE_RPC(s2cDisplayMessage, (RangedU32<0, ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntry formatString));
+   TNL_DECLARE_RPC(s2cAddLevel, (StringTableEntry name, StringTableEntry type));
    TNL_DECLARE_RPC(c2sRequestLevelChange, (S32 newLevelIndex));
 
    static GameConnection *getClientList();
