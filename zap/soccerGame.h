@@ -24,8 +24,8 @@
 //
 //------------------------------------------------------------------------------------
 
-#ifndef _CTFGAME_H_
-#define _CTFGAME_H_
+#ifndef _SOCCERGAME_H_
+#define _SOCCERGAME_H_
 
 #include "gameType.h"
 #include "item.h"
@@ -34,57 +34,72 @@ namespace Zap
 {
 
 class Ship;
-class CTFFlagItem;
+class SoccerBallItem;
 
-class CTFGameType : public GameType
+class SoccerGameType : public GameType
 {
    enum Scores
    {
       KillScore    = 100,
-      ReturnScore  = 150,
-      CapScore     = 500,
-      CapTeamScore = 250,
-
+      GoalScore    = 500,
    };
 public:
-   void shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag);
    void renderInterfaceOverlay(bool scoreboardVisible);
    void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
-   void controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject);
    bool objectCanDamageObject(GameObject *damager, GameObject *victim);
-
-   U32 checkFlagDrop(GameObject *theObject);
+   void scoreGoal(StringTableEntry playerName, U32 goalTeamIndex);
 
    enum {
-      CTFMsgReturnFlag,
-      CTFMsgCaptureFlag,
-      CTFMsgTakeFlag,
-      CTFMsgDropFlag,
+      SoccerMsgScoreGoal,
    };
 
-   TNL_DECLARE_RPC(s2cCTFMessage, (U32 messageIndex, StringTableEntry clientName, U32 teamIndex));
-   TNL_DECLARE_CLASS(CTFGameType);
+   TNL_DECLARE_RPC(s2cSoccerScoreMessage, (StringTableEntry clientName, U32 teamIndex));
+   TNL_DECLARE_CLASS(SoccerGameType);
 };
 
-class CTFFlagItem : public Item
+class SoccerBallItem : public Item
 {
    typedef Item Parent;
-   U32 teamIndex;
    Point initialPos;
+   U32 sendHomeTime;
+   StringTableEntry lastPlayerTouch;
 public:
-   CTFFlagItem(Point pos = Point());
-   void processArguments(S32 argc, const char **argv);
+   SoccerBallItem(Point pos = Point());
    void renderItem(Point pos);
    void sendHome();
+   void damageObject(DamageInfo *theInfo);
+   void processServer(U32 deltaT);
+   void processArguments(S32 argc, const char **argv);
 
    bool collide(GameObject *hitObject);
-   bool isAtHome();
-   U32 getTeamIndex() { return teamIndex; }
 
-   U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
+   TNL_DECLARE_CLASS(SoccerBallItem);
+};
+
+class SoccerGoalObject : public GameObject
+{
+   typedef GameObject Parent;
+   Vector<Point> mPolyBounds;
+   U32 teamIndex;
+   enum {
+      MaxPoints = 10,
+   };
+public:
+   SoccerGoalObject();
+
+   U32 getTeamIndex() { return teamIndex; }
+   void render();
+   void processArguments(S32 argc, const char **argv);
+   void onAddedToGame(Game *theGame);
+   void computeExtent();
+   bool getCollisionPoly(Vector<Point> &polyPoints);
+
+   bool collide(GameObject *hitObject);
+
+   U32 packUpdate(GhostConnection *connection, U32 mask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);
 
-   TNL_DECLARE_CLASS(CTFFlagItem);
+   TNL_DECLARE_CLASS(SoccerGoalObject);
 };
 
 };

@@ -48,6 +48,7 @@ Teleporter::Teleporter(Point start, Point end)
    Rect r(pos, pos);
    r.expand(Point(TeleporterRadius, TeleporterRadius));
    setExtent(r);
+   mObjectTypeMask |= CommandMapVisType;
 }
 
 void Teleporter::processArguments(S32 argc, const char **argv)

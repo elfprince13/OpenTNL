@@ -71,6 +71,9 @@ public:
    U32 interpTime;
    U32 lastFireTime;
    F32 mHealth;
+   F32 mEnergy;
+   bool mShieldActive;
+
    StringTableEntry mPlayerName;
 
    S32     mLastTrailPoint[TrailCount];

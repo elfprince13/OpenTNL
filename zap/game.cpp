@@ -61,13 +61,6 @@ Game::Game(const Address &theBindAddress)
 
    mLastIdleTime = Platform::getRealMilliseconds();
 
-   // create random stars
-   for(U32 i = 0; i < NumStars; i++)
-   {
-      mStars[i].x = Random::readF() * WorldSize;
-      mStars[i].y = Random::readF() * WorldSize;
-   }
-
    mNetInterface = new GameNetInterface(theBindAddress, this);
 }
 
@@ -243,6 +236,12 @@ ClientGame::ClientGame(const Address &bindAddress)
 {
    mInCommanderMap = false;
    mCommanderZoomDelta = 0;
+   // create random stars
+   for(U32 i = 0; i < NumStars; i++)
+   {
+      mStars[i].x = Random::readF();
+      mStars[i].y = Random::readF();
+   }
 }
 
 bool ClientGame::hasValidControlObject()
@@ -337,6 +336,48 @@ void ClientGame::zoomCommanderMap()
    }
 }
 
+void ClientGame::drawStars(F32 alphaFrac, Point cameraPos, Point visibleExtent)
+{
+   F32 starChunkSize = 1024;
+
+   Point upperLeft = cameraPos - visibleExtent * 0.5f;
+   Point lowerRight = cameraPos + visibleExtent * 0.5f;
+
+   upperLeft *= 1 / starChunkSize;
+   lowerRight *= 1 / starChunkSize;
+
+   upperLeft.x = floor(upperLeft.x);
+   upperLeft.y = floor(upperLeft.y);
+
+   lowerRight.x = floor(lowerRight.x) + 0.5;
+   lowerRight.y = floor(lowerRight.y) + 0.5;
+
+   // render the stars
+   glPointSize( 1.0f );
+   glColor3f(0.8 * alphaFrac, 0.8 * alphaFrac, 1.0 * alphaFrac);
+
+   glPointSize(1);
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glVertexPointer(2, GL_FLOAT, sizeof(Point), &mStars[0]);
+
+   for(F32 xPage = upperLeft.x; xPage < lowerRight.x; xPage++)
+   {
+      for(F32 yPage = upperLeft.y; yPage < lowerRight.y; yPage++)
+      {
+         glPushMatrix();
+         glScalef(starChunkSize, starChunkSize, 1);
+         glTranslatef(xPage, yPage, 0);
+         //glTranslatef(-xPage * starChunkSize, -yPage * starChunkSize, 0);
+         glDrawArrays(GL_POINTS, 0, NumStars);
+         glPopMatrix();
+      }
+   }
+
+   glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+
+
 void ClientGame::renderCommander()
 {
    GameObject *u = mConnectionToServer->getControlObject();
@@ -367,21 +408,12 @@ void ClientGame::renderCommander()
    glScalef(visScale.x, visScale.y, 1);
    glTranslatef(-offset.x, -offset.y, 0);
 
-   //glScalef(UserInterface::canvasHeight / worldExtents.x, UserInterface::canvasHeight / worldExtents.y, 0);
-   //glTranslatef(-worldCenter.x, -worldCenter.y, 0);
-
-   // render the stars, but only 1/8th of them so the screen isn't overcrowded.
-   glPointSize( 1.0f );
-   glColor3f(0.8, 0.8, 1.0);
-
-//   glEnableClientState(GL_VERTEX_ARRAY);
-//   glVertexPointer(2, GL_FLOAT, 8*sizeof(Point), &mStars[0]);
-//   glDrawArrays(GL_POINTS, 0, NumStars/8);
-//   glDisableClientState(GL_VERTEX_ARRAY);
+   if(zoomFrac < 0.95)
+      drawStars(1 - zoomFrac, offset, modVisSize);
 
    // render the objects
    Vector<GameObject *> renderObjects;
-   mDatabase.findObjects(BarrierType | ShipType | ItemType, renderObjects, worldBounds);
+   mDatabase.findObjects( CommandMapVisType, renderObjects, worldBounds);
 
    // Deal with rendering sensor volumes
 
@@ -446,14 +478,7 @@ void ClientGame::renderNormal()
 
    glTranslatef(-position.x, -position.y, 0);
 
-   // render the stars
-   glPointSize( 1.0f );
-   glColor3f(0.8, 0.8, 1.0);
-
-   glEnableClientState(GL_VERTEX_ARRAY);
-   glVertexPointer(2, GL_FLOAT, sizeof(Point), &mStars[0]);
-   glDrawArrays(GL_POINTS, 0, NumStars);
-   glDisableClientState(GL_VERTEX_ARRAY);
+   drawStars(1.0, position, Point(PlayerHorizVisDistance * 2, PlayerVertVisDistance * 2));
 
    // render the objects
    Vector<GameObject *> renderObjects;

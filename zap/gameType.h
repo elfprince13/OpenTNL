@@ -68,6 +68,13 @@ public:
    U32 mThisClientName; ///< Set to the client name of this client (only on the ghost of the GameType)
    U32 mTimeUntilScoreboardUpdate;
 
+   enum {
+      MaxPing = 999,
+   };
+
+   static Vector<RangedU32<0, MaxPing> > mPingTimes; ///< Static vector used for constructing update RPCs
+   static Vector<Int<24> > mScores;
+
    GameType();
    void countTeamPlayers();
 
@@ -113,6 +120,9 @@ public:
 
    TNL_DECLARE_RPC(c2sSendChat, (bool global, const char *message));
    TNL_DECLARE_RPC(s2cDisplayChatMessage, (bool global, StringTableEntry clientName, const char *message));
+
+   TNL_DECLARE_RPC(s2cKillMessage, (StringTableEntry victim, StringTableEntry killer));
+   TNL_DECLARE_RPC(s2cScoreboardUpdate, (const Vector<RangedU32<0, MaxPing> > &pingTimes, const Vector<Int<24> > &scores));
 
    TNL_DECLARE_RPC(c2sRequestScoreboardUpdates, (bool updates));
 

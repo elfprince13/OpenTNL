@@ -225,6 +225,11 @@ GameObject *MoveObject::findFirstCollision(U32 stateIndex, F32 &collisionTime, P
          {
             if((cp - mMoveState[stateIndex].pos).dot(mMoveState[stateIndex].vel) > velocityEpsilon)
             {
+               bool collide1 = collide(fillVector[i]);
+               bool collide2 = fillVector[i]->collide(this);
+
+               if(!(collide1 && collide2))
+                  continue;
                collisionPoint = cp;
                delta *= collisionFraction;
                collisionTime *= collisionFraction;
@@ -254,7 +259,10 @@ GameObject *MoveObject::findFirstCollision(U32 stateIndex, F32 &collisionTime, P
             F32 R = myRadius + otherRadius;
             if(p.len() <= R)
             {
-               if(!(collide(otherShip) && otherShip->collide(this)))
+               bool collide1 = collide(otherShip);
+               bool collide2 = otherShip->collide(this);
+
+               if(!(collide1 && collide2))
                   continue;
 
                collisionTime = 0;
@@ -269,7 +277,10 @@ GameObject *MoveObject::findFirstCollision(U32 stateIndex, F32 &collisionTime, P
                F32 t;
                if(FindLowestRootInInterval(a, b, c, collisionTime, t))
                {
-                  if(!(collide(otherShip) && otherShip->collide(this)))
+                  bool collide1 = collide(otherShip);
+                  bool collide2 = otherShip->collide(this);
+
+                  if(!(collide1 && collide2))
                      continue;
 
                   collisionTime = t;

@@ -348,8 +348,48 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sRequestScoreboardUpdates, (bool updates
       updateClientScoreboard(clientIndex);
 }
 
+Vector<RangedU32<0, GameType::MaxPing> > GameType::mPingTimes; ///< Static vector used for constructing update RPCs
+Vector<Int<24> > GameType::mScores;
+
 void GameType::updateClientScoreboard(S32 clientIndex)
 {
+   mPingTimes.clear();
+   mScores.clear();
+
+   for(S32 i = 0; i < mClientList.size(); i++)
+   {
+      if(mClientList[i].ping < MaxPing)
+         mPingTimes.push_back(mClientList[i].ping);
+      else
+         mPingTimes.push_back(MaxPing);
+      mScores.push_back(mClientList[i].score);
+   }
+
+   NetObject::setRPCDestConnection(mClientList[clientIndex].clientConnection);
+   s2cScoreboardUpdate(mPingTimes, mScores);
+   NetObject::setRPCDestConnection(NULL);
+}
+
+TNL_DECLARE_RPC_MEM_ENUM(GameType, MaxPing);
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cScoreboardUpdate, (const Vector<RangedU32<0, GameType::MaxPing> > &pingTimes, const Vector<Int<24> > &scores),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+{
+   for(S32 i = 0; i < mClientList.size(); i++)
+   {
+      if(i >= pingTimes.size())
+         break;
+
+      mClientList[i].ping = pingTimes[i];
+      mClientList[i].score = scores[i];
+   }
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cKillMessage, (StringTableEntry victim, StringTableEntry killer),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+{
+   gGameUserInterface.displayMessage(Color(1.0f, 1.0f, 0.8f), 
+            "%s zapped %s", killer.getString(), victim.getString());
 }
 
 };

@@ -37,7 +37,7 @@ Item::Item(Point p, bool collideable, float radius, float mass) : MoveObject(p, 
    mIsMounted = false;
    mIsCollideable = collideable;
    mInterpTime = 0;
-   mObjectTypeMask = MoveableType | ItemType;
+   mObjectTypeMask = MoveableType | ItemType | CommandMapVisType;
 }
 
 void Item::processArguments(S32 argc, const char **argv)

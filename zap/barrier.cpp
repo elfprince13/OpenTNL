@@ -110,7 +110,7 @@ void BarrierMaker::processArguments(S32 argc, const char **argv)
 
 Barrier::Barrier(Point st, Point e)
 {
-   mObjectTypeMask = BarrierType;
+   mObjectTypeMask = BarrierType | CommandMapVisType;
    mNetFlags.set(Ghostable);
    start = st;
    end = e;

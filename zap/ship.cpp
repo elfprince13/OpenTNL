@@ -47,7 +47,7 @@ TNL_IMPLEMENT_NETOBJECT(Ship);
 
 Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, CollisionRadius)
 {
-   mObjectTypeMask = ShipType | MoveableType;
+   mObjectTypeMask = ShipType | MoveableType | CommandMapVisType;
 
    mNetFlags.set(Ghostable);
 
@@ -284,6 +284,7 @@ void Ship::writeControlState(BitStream *stream)
    stream->write(mMoveState[ActualState].angle);
    stream->write(mMoveState[ActualState].vel.x);
    stream->write(mMoveState[ActualState].vel.y);
+   stream->write(mEnergy);
 }
 
 void Ship::readControlState(BitStream *stream)
@@ -293,7 +294,8 @@ void Ship::readControlState(BitStream *stream)
    stream->read(&mMoveState[ActualState].angle);
    stream->read(&mMoveState[ActualState].vel.x);
    stream->read(&mMoveState[ActualState].vel.y);
-
+   stream->read(&mEnergy);
+   
    Point delta = mMoveState[ActualState].pos - mMoveState[RenderState].pos;
    if(delta.len() > MaxControlObjectInterpDistance)
    {

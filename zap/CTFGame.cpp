@@ -35,7 +35,7 @@
 namespace Zap
 {
 
-static void renderFlag(Point pos, Color c)
+void renderFlag(Point pos, Color c)
 {
    glPushMatrix();
    glTranslatef(pos.x, pos.y, 0);
@@ -145,43 +145,6 @@ void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
          glColor3f(1,1,1);
          UserInterface::drawStringf(pos.x, pos.y, 32, "%d", mTeams[i].score);
       }
-   }
-}
-
-Vector<RangedU32<0, CTFGameType::MaxPing> > CTFGameType::mPingTimes; ///< Static vector used for constructing update RPCs
-Vector<Int<24> > CTFGameType::mScores;
-
-void CTFGameType::updateClientScoreboard(S32 clientIndex)
-{
-   mPingTimes.clear();
-   mScores.clear();
-
-   for(S32 i = 0; i < mClientList.size(); i++)
-   {
-      if(mClientList[i].ping < MaxPing)
-         mPingTimes.push_back(mClientList[i].ping);
-      else
-         mPingTimes.push_back(MaxPing);
-      mScores.push_back(mClientList[i].score);
-   }
-
-   NetObject::setRPCDestConnection(mClientList[clientIndex].clientConnection);
-   s2cScoreboardUpdate(mPingTimes, mScores);
-   NetObject::setRPCDestConnection(NULL);
-}
-
-TNL_DECLARE_RPC_MEM_ENUM(CTFGameType, MaxPing);
-
-TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cScoreboardUpdate, (const Vector<RangedU32<0, CTFGameType::MaxPing> > &pingTimes, const Vector<Int<24> > &scores),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
-{
-   for(S32 i = 0; i < mClientList.size(); i++)
-   {
-      if(i >= pingTimes.size())
-         break;
-
-      mClientList[i].ping = pingTimes[i];
-      mClientList[i].score = scores[i];
    }
 }
 
@@ -304,39 +267,30 @@ void CTFGameType::controlObjectForClientRemoved(GameConnection *theClient, GameO
    checkFlagDrop(clientObject);
 }
 
-static const char *CTFMessages[] = 
-{
-  "%s returned the %s flag.",
-  "%s captured the %s flag!",
-  "%s took the %s flag!",
-  "%s dropped the %s flag!",
-};
-
-static U32 CTFFlagSounds[] = 
-{
-   SFXFlagReturn,
-   SFXFlagCapture,
-   SFXFlagSnatch,
-   SFXFlagDrop,
-};
-
 TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cCTFMessage, (U32 messageIndex, StringTableEntry clientName, U32 teamIndex),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
-   S32 clientIndex = findClientIndexByName(clientName);
+   static const char *CTFMessages[] = 
+   {
+      "%s returned the %s flag.",
+      "%s captured the %s flag!",
+      "%s took the %s flag!",
+      "%s dropped the %s flag!",
+   };
+
+   static U32 CTFFlagSounds[] = 
+   {
+      SFXFlagReturn,
+      SFXFlagCapture,
+      SFXFlagSnatch,
+      SFXFlagDrop,
+   };
 
    gGameUserInterface.displayMessage(Color(0.6f, 1.0f, 0.8f), 
             CTFMessages[messageIndex], 
-               mClientList[clientIndex].name.getString(),
+               clientName.getString(),
                mTeams[teamIndex].name.getString());
    SFXObject::play(CTFFlagSounds[messageIndex]);
-}
-
-TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cKillMessage, (StringTableEntry victim, StringTableEntry killer),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
-{
-   gGameUserInterface.displayMessage(Color(1.0f, 1.0f, 0.8f), 
-            "%s zapped %s", killer.getString(), victim.getString());
 }
 
 TNL_IMPLEMENT_NETOBJECT(CTFFlagItem);
@@ -345,6 +299,7 @@ CTFFlagItem::CTFFlagItem(Point pos) : Item(pos, false, 20)
 {
    teamIndex = 0;
    mNetFlags.set(Ghostable);
+   mObjectTypeMask |= CommandMapVisType;
 }
 
 void CTFFlagItem::processArguments(S32 argc, const char **argv)

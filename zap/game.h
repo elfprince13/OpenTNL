@@ -103,16 +103,9 @@ protected:
 
    SafePtr<MasterServerConnection> mConnectionToMaster;
    SafePtr<GameType> mGameType;
-
-   enum {
-      NumStars = 2048,
-   };
-   Point mStars[NumStars];
-
 public:
    enum
    {
-      WorldSize = 4096,
       DefaultGridSize = 256,
       PlayerHorizVisDistance = 600,
       PlayerVertVisDistance = 450,
@@ -170,6 +163,11 @@ public:
 
 class ClientGame : public Game
 {
+   enum {
+      NumStars = 256,
+   };
+   Point mStars[NumStars];
+
    SafePtr<GameConnection> mConnectionToServer; // If this is a client game, this is the connection to the server
    bool mInCommanderMap;
    enum {
@@ -183,6 +181,7 @@ public:
    bool isConnectedToServer();
 
    void setConnectionToServer(GameConnection *connection);
+   void drawStars(F32 alphaFrac, Point cameraPos, Point visibleExtent);
    GameConnection *getConnectionToServer();
    void render();
    void renderNormal();
@@ -200,7 +199,7 @@ extern void hostGame(bool dedicated, Address bindAddress);
 extern void joinGame(Address remoteAddress, bool isFromMaster, bool local = false);
 extern void endGame();
 
-#define ZAP_GAME_STRING "ZAP 1.1.2"
+#define ZAP_GAME_STRING "ZAP 1.1.3"
 };
 
 #endif

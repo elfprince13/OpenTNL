@@ -222,6 +222,9 @@
 			RelativePath=".\quickChat.h">
 		</File>
 		<File
+			RelativePath="..\exe\README.txt">
+		</File>
+		<File
 			RelativePath=".\sfx.cpp">
 		</File>
 		<File
@@ -232,6 +235,12 @@
 		</File>
 		<File
 			RelativePath=".\ship.h">
+		</File>
+		<File
+			RelativePath=".\soccerGame.cpp">
+		</File>
+		<File
+			RelativePath=".\soccerGame.h">
 		</File>
 		<File
 			RelativePath=".\sparkManager.cpp">

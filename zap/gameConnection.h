@@ -87,13 +87,15 @@ struct Move
    float down;
    float angle;
    bool fire;
+   bool boost;
+   bool shield;
    U32 time;
 
    enum {
       MaxMoveTime = 127,
    };
 
-   Move() { left = right = up = down = angle = 0; fire = false; time = 32; }
+   Move() { left = right = up = down = angle = 0; boost = shield = fire = false; time = 32; }
 
    bool isEqualMove(Move *prev)
    {
@@ -102,7 +104,9 @@ struct Move
                prev->up == up &&
                prev->down == down &&
                prev->angle == angle &&
-               prev->fire == fire;
+               prev->fire == fire &&
+               prev->boost == boost &&
+               prev->shield == shield;
    }
 
    void pack(BitStream *stream, Move *prev)
@@ -117,6 +121,8 @@ struct Move
 
          stream->writeInt(writeAngle, 12);
          stream->writeFlag(fire);
+         stream->writeFlag(boost);
+         stream->writeFlag(shield);
       }
       stream->writeRangedU32(time, 0, MaxMoveTime);
    }
@@ -130,6 +136,8 @@ struct Move
          down = stream->readFloat(4);
          angle = unitToRadians(stream->readInt(12) / F32(0xFFF));
          fire = stream->readFlag();
+         boost = stream->readFlag();
+         shield = stream->readFlag();
       }
       time = stream->readRangedU32(0, MaxMoveTime);
    }

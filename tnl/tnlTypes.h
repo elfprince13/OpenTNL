@@ -295,101 +295,18 @@ inline U32 getNextPow2(U32 value)
 /// So we have these...
 /// @{
 
-/// Returns the lesser of the two parameters: a & b.
-inline U32 getMin(U32 a, U32 b)
-{
-   return a>b ? b : a;
-}
+#define DeclareTemplatizedMinMax(type) \
+ inline type getMin(type a, type b) { return a > b ? b : a; } \
+ inline type getMax(type a, type b) { return a > b ? a : b; }
 
-/// Returns the lesser of the two parameters: a & b.
-inline U16 getMin(U16 a, U16 b)
-{
-   return a>b ? b : a;
-}
-
-/// Returns the lesser of the two parameters: a & b.
-inline U8 getMin(U8 a, U8 b)
-{
-   return a>b ? b : a;
-}
-
-/// Returns the lesser of the two parameters: a & b.
-inline S32 getMin(S32 a, S32 b)
-{
-   return a>b ? b : a;
-}
-
-/// Returns the lesser of the two parameters: a & b.
-inline S16 getMin(S16 a, S16 b)
-{
-   return a>b ? b : a;
-}
-
-/// Returns the lesser of the two parameters: a & b.
-inline S8 getMin(S8 a, S8 b)
-{
-   return a>b ? b : a;
-}
-
-/// Returns the lesser of the two parameters: a & b.
-inline float getMin(float a, float b)
-{
-   return a>b ? b : a;
-}
-
-/// Returns the lesser of the two parameters: a & b.
-inline double getMin(double a, double b)
-{
-   return a>b ? b : a;
-}
-
-/// Returns the greater of the two parameters: a & b.
-inline U32 getMax(U32 a, U32 b)
-{
-   return a>b ? a : b;
-}
-
-/// Returns the greater of the two parameters: a & b.
-inline U16 getMax(U16 a, U16 b)
-{
-   return a>b ? a : b;
-}
-
-/// Returns the greater of the two parameters: a & b.
-inline U8 getMax(U8 a, U8 b)
-{
-   return a>b ? a : b;
-}
-
-/// Returns the greater of the two parameters: a & b.
-inline S32 getMax(S32 a, S32 b)
-{
-   return a>b ? a : b;
-}
-
-/// Returns the greater of the two parameters: a & b.
-inline S16 getMax(S16 a, S16 b)
-{
-   return a>b ? a : b;
-}
-
-/// Returns the greater of the two parameters: a & b.
-inline S8 getMax(S8 a, S8 b)
-{
-   return a>b ? a : b;
-}
-
-/// Returns the greater of the two parameters: a & b.
-inline float getMax(float a, float b)
-{
-   return a>b ? a : b;
-}
-
-/// Returns the greater of the two parameters: a & b.
-inline double getMax(double a, double b)
-{
-   return a>b ? a : b;
-}
+DeclareTemplatizedMinMax(U32)
+DeclareTemplatizedMinMax(S32)
+DeclareTemplatizedMinMax(U16)
+DeclareTemplatizedMinMax(S16)
+DeclareTemplatizedMinMax(U8)
+DeclareTemplatizedMinMax(S8)
+DeclareTemplatizedMinMax(F32)
+DeclareTemplatizedMinMax(F64)
 
 /// @}
 

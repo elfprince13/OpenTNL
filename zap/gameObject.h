@@ -47,6 +47,7 @@ enum GameObjectType
    ProjectileType = 1 << 4,
    ItemType = 1 << 5,
 
+   CommandMapVisType = 1 << 31,
    AllObjectTypes = 0xFFFFFFFF,
 };
 

@@ -112,6 +112,18 @@ struct Rect
       }
    }
 
+   void unionPoint(const Point &p)
+   {
+      if(p.x < min.x)
+         min.x = p.x;
+      else if(p.x > max.x)
+         max.x = p.x;
+      if(p.y < min.y)
+         min.y = p.y;
+      else if(p.y > max.y)
+         max.y = p.y;
+   }
+
    void unionRect(const Rect &r)
    {
       if(r.min.x < min.x)
