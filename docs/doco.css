@@ -1,3 +1,11 @@
+.article a { color: #8D0000; font-weight: bold; text-decoration: none }
+.article a:visited { color: #AAAAAA; }
+.article a:hover	 { text-decoration: underline; }
+
+a { color: #8D0000; font-weight: bold; text-decoration: none }
+a:visited { color: #AAAAAA; }
+a:hover	 { text-decoration: underline; }
+
 a.code {
 	color: #4444EE;
 	font-weight: normal;
@@ -138,11 +146,12 @@ div.header a, div.footer a{
 }
 
 div.header a:visited, div.footer a:visited {
-	color: #436976;
+	color: #325865;
 }
 
-div.header a:hover, div.footer a:hover {
-	color: #B52010;
+div.header a:hover, div.footer a:hover, a.anchor:hover {
+	color: #A41005;
+	text-decoration: none;
 }
 
 div.index {
@@ -303,3 +312,71 @@ ul {
 	margin: 4px;
 	padding: 1px 0px 0px 8px;
 }
+
+
+/* CSS Document */
+body {
+	background-color: #FFFFFF;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Black;
+}   
+
+hr { 
+	color: #333366; 
+	background-color:transparent 
+} 
+i, em { font-style: italic; }
+b, strong { font-weight:bold; }
+.tiny { font-size: 7pt; }
+.grey { 
+	font-size: 8pt; 
+	color: #909090; 
+	background-color:transparent 
+}
+
+h1,h2,h3,h4 { color:black; background-color:transparent; font-weight:bold; margin-top:.25em;margin-bottom:.25em }
+h1 { font-size:200%; }
+h2 { font-size:150%; }
+h3 { font-size:120%; }
+h4 { font-size:100%; }
+
+
+/* Article Style ----------------*/
+/*-------------------------------*/
+.article {
+	vertical-align:top;
+	text-align:left;
+	font-size: 12px;
+	color:black;
+	background-color: #FFFFFF;
+	padding-top: 4px;
+	padding-right: 4px;
+	padding-bottom: 0px;
+	padding-left: 4px;
+}
+
+.article .title {
+  vertical-align:top;
+	background-color: #1A1B4D;
+	text-align:left;
+	font-weight: bold;
+	color: white;
+	padding:2px 2px 2px 6px;
+}
+
+.article .body {
+  text-align:left;
+	border-width:2px;
+	border-style:solid;
+	border-color:#1A1B4D;
+	background-color: white;
+	color: black;
+	padding:3px;
+}
+
+.article .freetext {
+	padding:5px;
+	font-size: 8px;
+}
+
