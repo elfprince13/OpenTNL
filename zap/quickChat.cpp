@@ -123,7 +123,7 @@ VChatHelper::VChatNode VChatHelper::mChatTree[] =
          {2, 'H', false, "Hi",              "Hi."},
          {2, 'B', false, "Bye",             "Bye!"},
          {2, 'S', false, "Sorry",           "Sorry."},
-         {2, 'W', false, "Woo-hoo!",         "Woo-hoo!"},
+         {2, 'W', false, "Woo-hoo!",        "Woo-hoo!"},
          {2, 'V', false, "Hmmmm...",        "Hmmmm..."},
          {2, 'U', false, "Yeah!",           "Yeah!"},
          {2, 'R', false, "Rawr",            "RAWR!"},

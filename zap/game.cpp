@@ -370,7 +370,7 @@ void ClientGame::renderCommander()
    //glScalef(UserInterface::canvasHeight / worldExtents.x, UserInterface::canvasHeight / worldExtents.y, 0);
    //glTranslatef(-worldCenter.x, -worldCenter.y, 0);
 
-   // render the stars, but only 1/8th of them for our own sanity.
+   // render the stars, but only 1/8th of them so the screen isn't overcrowded.
    glPointSize( 1.0f );
    glColor3f(0.8, 0.8, 1.0);
 
