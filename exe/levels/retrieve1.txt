@@ -1,4 +1,4 @@
-RetrieveGameType 10 20
+RetrieveGameType 10 15
 Team Blue 0 0 1
 Team Red 1 0 0
 LevelName "Triple Threat"

@@ -68,6 +68,7 @@ Address gBindAddress(IPProtocol, Address::Any, 28000);
 
 const char *gLevelList = "retrieve1.txt "
                          "retrieve2.txt "
+                         "retrieve3.txt "
                          "football1.txt "
                          "football2.txt "
                          "football3.txt "

@@ -1,4 +1,4 @@
-RetrieveGameType 10 20
+RetrieveGameType 10 10
 Team Blue 0 0 1
 Team Red 1 0 0
 Team Green 0 1 0

@@ -1,4 +1,4 @@
-ZoneControlGameType 10 40
+ZoneControlGameType 10 32
 LevelName "Diamond"
 Team Blue 0 0 1
 Team Red 1 0 0
