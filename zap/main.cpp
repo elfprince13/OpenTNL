@@ -367,7 +367,6 @@ int main(int argc, char **argv)
    }
    if(hasClient)
    {
-      SparkManager::init();
       SFXObject::init();
       glutInitWindowSize(800, 600);
       glutInit(&argc, argv);
