@@ -1,4 +1,4 @@
-ZAP 1.2
+ZAP 1.1.3
 
 Welcome to ZAP, the retro multiplayer team action game!
 
@@ -6,6 +6,7 @@ Changes since the last version:
 - Added shields, boost and ship energy
 - Added Soccer game type
 - Added level cycling and victory conditions
+- Added deathmatch mini level between team levels
 - Removed player particle trails and added motion trails
 - Added README
 
