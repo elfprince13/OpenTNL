@@ -60,8 +60,6 @@ public:
    void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
    void spawnShip(GameConnection *theClient);
    
-   void gameOverManGameOver();
-
    enum {
       HuntersMsgScore,
       HuntersMsgYardSale,

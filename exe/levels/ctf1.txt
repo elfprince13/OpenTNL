@@ -5,8 +5,8 @@ GridSize 300
 Ship 0.5 1 0 1 0
 Ship 1.5 0.5 0 1 1
 Ship 1 1 1 1 0
-CTFFlagItem 0 8 2
-CTFFlagItem 1 8 14
+FlagItem 0 8 2
+FlagItem 1 8 14
 LoadoutZone 0 11.2 2 11.8 2 11.7 1.7 11.3 1.7
 LoadoutZone 1 4.2 14 4.8 14 4.7 14.3 4.3 14.3
 Spawn 0 1 6

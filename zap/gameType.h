@@ -35,6 +35,8 @@
 namespace Zap
 {
 
+class FlagItem;
+
 class GameType : public GameObject
 {
 public:
@@ -117,7 +119,8 @@ public:
    void idle(GameObject::IdleCallPath path);
 
    void setTeamScore(S32 teamIndex, S32 newScore);
-   virtual void gameOverManGameOver();
+   void gameOverManGameOver();
+   virtual void onGameOver();
 
    virtual void serverAddClient(GameConnection *theClient);
    virtual void serverRemoveClient(GameConnection *theClient);
@@ -140,6 +143,11 @@ public:
    virtual void clientRequestEngineerBuild(GameConnection *client, U32 buildObject);
 
    void setClientShipLoadout(S32 clientIndex, const Vector<U32> &loadout);
+
+   Color getTeamColor(S32 team);
+   // game type flag methods for CTF, Rabbit, Football
+   virtual void flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex) {}
+   virtual void shipTouchFlag(Ship *theShip, FlagItem *theFlag) {}
 
    void performScopeQuery(GhostConnection *connection);
    virtual void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);

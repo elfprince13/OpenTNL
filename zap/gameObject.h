@@ -53,6 +53,7 @@ enum GameObjectType
    LoadoutZoneType   = BIT(9),
    MineType          = BIT(10),
    TestItemType      = BIT(11),
+   FlagType          = BIT(12),
 
    DeletedType       = BIT(30),
    CommandMapVisType = BIT(31),

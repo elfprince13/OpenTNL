@@ -255,6 +255,12 @@
 				RelativePath=".\engineeredObjects.h">
 			</File>
 			<File
+				RelativePath=".\flagItem.cpp">
+			</File>
+			<File
+				RelativePath=".\flagItem.h">
+			</File>
+			<File
 				RelativePath=".\gameItems.cpp">
 			</File>
 			<File
@@ -320,6 +326,9 @@
 			</File>
 			<File
 				RelativePath=".\CTFGame.h">
+			</File>
+			<File
+				RelativePath=".\footballGame.cpp">
 			</File>
 			<File
 				RelativePath=".\gameType.cpp">

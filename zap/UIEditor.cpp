@@ -89,7 +89,7 @@ enum GameItems
 GameItemRec gGameItemRecs[] = {
    { "Spawn", true, false },
    { "SoccerBallItem", false, false },
-   { "CTFFlagItem", true, false },
+   { "FlagItem", true, false },
    { "BarrierMaker", false, true },
    { "Teleporter", false, true },
    { "RepairItem", false, false },

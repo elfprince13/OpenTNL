@@ -34,47 +34,24 @@ namespace Zap
 {
 
 class Ship;
-class CTFFlagItem;
+class FlagItem;
 
 class CTFGameType : public GameType
 {
    typedef GameType Parent;
    enum Scores
    {
-      KillScore    = 100,
-      ReturnScore  = 150,
-      CapScore     = 500,
-      CapTeamScore = 250,
+      KillScore    = 1,
+      ReturnScore  = 1,
+      CapScore     = 5,
+      CapTeamScore = 2,
 
    };
 public:
-   void shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag);
-   void renderInterfaceOverlay(bool scoreboardVisible);
-   void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
-   void gameOverManGameOver();
+   void shipTouchFlag(Ship *theShip, FlagItem *theFlag);
    void flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex);
 
    TNL_DECLARE_CLASS(CTFGameType);
-};
-
-class CTFFlagItem : public Item
-{
-   typedef Item Parent;
-   Point initialPos;
-public:
-   CTFFlagItem(Point pos = Point());
-   void processArguments(S32 argc, const char **argv);
-   void renderItem(Point pos);
-   void sendHome();
-
-   void onMountDestroyed();
-   bool collide(GameObject *hitObject);
-   bool isAtHome();
-
-   U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
-   void unpackUpdate(GhostConnection *connection, BitStream *stream);
-
-   TNL_DECLARE_CLASS(CTFFlagItem);
 };
 
 };

@@ -28,6 +28,7 @@
 #include "ship.h"
 #include "UIGame.h"
 #include "gameNetInterface.h"
+#include "flagItem.h"
 #include "glutInclude.h"
 #include "engineeredObjects.h"
 
@@ -149,6 +150,10 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
          glColor3f(1,1,1);
          if(teamAreaHeight)
          {
+            renderFlag(Point(xl + 20, yt + 18), c);
+            renderFlag(Point(xr - 20, yt + 18), c);
+
+            glColor3f(1,1,1);
             glBegin(GL_LINES);
             glVertex2f(xl, yt + teamAreaHeight);
             glVertex2f(xr, yt + teamAreaHeight);
@@ -175,6 +180,16 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
                curRowY += maxHeight;
             }
          }
+      }
+   }
+   else if(mTeams.size() > 1)
+   {
+      for(S32 i = 0; i < mTeams.size(); i++)
+      {
+         Point pos(750, 535 - i * 38);
+         renderFlag(pos + Point(-20, 18), mTeams[i].color);
+         glColor3f(1,1,1);
+         UserInterface::drawStringf(U32(pos.x), U32(pos.y), 32, "%d", mTeams[i].score);
       }
    }
    renderTimeLeft();
@@ -215,6 +230,69 @@ void GameType::gameOverManGameOver()
    mGameOver = true;
    s2cSetGameOver(true);
    gServerGame->gameEnded();
+
+   onGameOver();
+}
+
+void GameType::onGameOver()
+{
+   static StringTableEntry tieMessage("The game ended in a tie.");
+   static StringTableEntry winMessage("%e0%e1 wins the game!");
+   static StringTableEntry teamString("Team ");
+   static StringTableEntry emptyString;
+
+   bool tied = false;
+   Vector<StringTableEntry> e;
+   if(mTeams.size() > 1)
+   {
+      S32 teamWinner = 0;
+      U32 winningScore = mTeams[0].score;
+      for(S32 i = 1; i < mTeams.size(); i++)
+      {
+         if(mTeams[i].score == winningScore)
+            tied = true;
+         else if(mTeams[i].score > winningScore)
+         {
+            teamWinner = i;
+            winningScore = mTeams[i].score;
+            tied = false;
+         }
+      }
+      if(!tied)
+      {
+         e.push_back(teamString);
+         e.push_back(mTeams[teamWinner].name);
+      }
+   }
+   else
+   {
+      ClientRef &winningClient = mClientList[0];
+      for(S32 i = 1; i < mClientList.size(); i++)
+      {
+         if(mClientList[i].score == winningClient.score)
+            tied = true;
+         else if(mClientList[i].score > winningClient.score)
+         {
+            winningClient = mClientList[i];
+            tied = false;
+         }
+      }
+      if(!tied)
+      {
+         e.push_back(emptyString);
+         e.push_back(winningClient.name);
+      }
+   }
+   if(tied)
+   {
+      for(S32 i = 0; i < mClientList.size(); i++)
+         mClientList[i].clientConnection->s2cDisplayMessage(GameConnection::ColorNuclearGreen, SFXFlagDrop, tieMessage);
+   }
+   else
+   {
+      for(S32 i = 0; i < mClientList.size(); i++)
+         mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagCapture, winMessage, e);
+   }
 }
 
 TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cSetGameOver, (bool gameOver),
@@ -421,6 +499,14 @@ void GameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *c
 
    for(S32 i = 0; i < fillVector.size(); i++)
       connection->objectInScope(fillVector[i]);
+}
+
+Color GameType::getTeamColor(S32 team)
+{
+   if(team == -1)
+      return Color(0.8, 0.8, 0.8);
+   else
+      return mTeams[team].color;
 }
 
 void GameType::countTeamPlayers()

@@ -25,6 +25,7 @@
 //------------------------------------------------------------------------------------
 
 #include "huntersGame.h"
+#include "flagItem.h"
 #include "glutInclude.h"
 #include "UIGame.h"
 #include "sfx.h"
@@ -33,32 +34,6 @@
 
 namespace Zap
 {
-
-void renderHunterFlag(Point pos, Color c)
-{
-   glPushMatrix();
-   glTranslatef(pos.x, pos.y, 0);
-
-   glColor3f(c.r, c.g, c.b);
-   glBegin(GL_LINES);
-   glVertex2f(-15, -15);
-   glVertex2f(15, -5);
-
-   glVertex2f(15, -5);
-   glVertex2f(-15, 5);
-
-   glVertex2f(-15, -10);
-   glVertex2f(10, -5);
-
-   glVertex2f(10, -5);
-   glVertex2f(-15, 0);
-   glColor3f(1,1,1);
-   glVertex2f(-15, -15);
-   glVertex2f(-15, 15);
-   glEnd();
-
-   glPopMatrix();
-}
 
 TNL_IMPLEMENT_NETOBJECT(HuntersGameType);
 
@@ -237,28 +212,6 @@ void HuntersGameType::spawnShip(GameConnection *theClient)
 
 }
 
-void HuntersGameType::gameOverManGameOver()
-{
-   Parent::gameOverManGameOver();
-   
-   bool tied = false;
-   ClientRef winningClient = mClientList[0];
-   for(S32 i = 1; i < mClientList.size(); i++)
-   {
-      if(mClientList[i].score == winningClient.score)
-         tied = true;
-      else if(mClientList[i].score > winningClient.score)
-      {
-         winningClient = mClientList[i];
-         tied = false;
-      }
-   }
-   if(tied)
-      s2cHuntersMessage(HuntersMsgGameOverTie, StringTableEntry(), 0);
-   else
-      s2cHuntersMessage(HuntersMsgGameOverWin, winningClient.name.getString(), 0);
-}
-
 TNL_IMPLEMENT_NETOBJECT(HuntersFlagItem);
 
 HuntersFlagItem::HuntersFlagItem(Point pos) : Item(pos, true, 30, 4)
@@ -283,7 +236,7 @@ void HuntersFlagItem::renderItem(Point pos)
 
    c = gt->mTeams[0].color;
 
-   renderHunterFlag(offset, c);
+   renderFlag(offset, c);
 
    if(mIsMounted)
    {

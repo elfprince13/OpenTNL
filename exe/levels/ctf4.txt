@@ -84,8 +84,8 @@ LoadoutZone 1 2.1 17.4 1.2 17.4 1.2 18 2.1 18
 Teleporter 4 14 2.5 19.5
 Teleporter 6.1 10.1 8.3 4.4
 Teleporter 6.3 6.4 4.1 12.1
-CTFFlagItem 0 9.9 -0.9
-CTFFlagItem 1 2.6 17.3
+FlagItem 0 9.9 -0.9
+FlagItem 1 2.6 17.3
 BarrierMaker 3.4 3.8 2.3 4.7 2.4 5.3 3.6 6.2 4.8 6.4 6.6 6.9 6.9 6.2 6.8 6.1 6 6
 BarrierMaker 9.1 12.7 10.2 11.8 10.1 11.2 8.9 10.3 7.7 10.1 5.9 9.6 5.6 10.3 5.7 10.4 6.5 10.5
 ForceFieldProjector 1 6.6 9.9

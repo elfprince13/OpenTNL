@@ -1,39 +1,40 @@
+//-----------------------------------------------------------------------------------
+//
+//   Torque Network Library - ZAP example multiplayer vector graphics space game
+//   Copyright (C) 2004 GarageGames.com, Inc.
+//   For more information see http://www.opentnl.org
+//
+//   This program is free software; you can redistribute it and/or modify
+//   it under the terms of the GNU General Public License as published by
+//   the Free Software Foundation; either version 2 of the License, or
+//   (at your option) any later version.
+//
+//   For use in products that are not compatible with the terms of the GNU 
+//   General Public License, alternative licensing options are available 
+//   from GarageGames.com.
+//
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU General Public License for more details.
+//
+//   You should have received a copy of the GNU General Public License
+//   along with this program; if not, write to the Free Software
+//   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+//------------------------------------------------------------------------------------
+
 #include "rabbitGame.h"
 #include "ship.h"
 #include "UIGame.h"
 #include "sfx.h"
+#include "flagItem.h"
 
 #include "glutInclude.h"
 #include <stdio.h>
 
 namespace Zap
 {
-
-void renderRabbitFlag(Point pos, Color c)
-{
-   glPushMatrix();
-   glTranslatef(pos.x, pos.y, 0);
-
-   glColor3f(c.r, c.g, c.b);
-   glBegin(GL_LINES);
-   glVertex2f(-15, -15);
-   glVertex2f(15, -5);
-
-   glVertex2f(15, -5);
-   glVertex2f(-15, 5);
-
-   glVertex2f(-15, -10);
-   glVertex2f(10, -5);
-
-   glVertex2f(10, -5);
-   glVertex2f(-15, 0);
-   glColor3f(1,1,1);
-   glVertex2f(-15, -15);
-   glVertex2f(-15, 15);
-   glEnd();
-
-   glPopMatrix();
-}
 
 TNL_IMPLEMENT_NETOBJECT_RPC(RabbitGameType, s2cRabbitMessage, (U32 msgIndex, StringTableEntryRef clientName),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
@@ -260,7 +261,7 @@ void RabbitFlagItem::renderItem(Point pos)
 
    c = gt->mTeams[getTeam()].color;
 
-   renderRabbitFlag(pos + offset, c);
+   renderFlag(pos + offset, c);
 }
 
 bool RabbitFlagItem::collide(GameObject *hitObject)

@@ -24,86 +24,36 @@
 //
 //------------------------------------------------------------------------------------
 
-#ifndef _SOCCERGAME_H_
-#define _SOCCERGAME_H_
+#ifndef _FLAGITEM_H_
+#define _FLAGITEM_H_
 
-#include "gameType.h"
 #include "item.h"
 
 namespace Zap
 {
 
-class Ship;
-class SoccerBallItem;
-
-class SoccerGameType : public GameType
-{
-   typedef GameType Parent;
-   enum Scores
-   {
-      KillScore    = 1,
-      GoalScore    = 5,
-   };
-public:
-   void scoreGoal(StringTableEntry playerName, U32 goalTeamIndex);
-
-   enum {
-      SoccerMsgScoreGoal,
-      SoccerMsgScoreOwnGoal,
-      SoccerMsgGameOverTeamWin,
-      SoccerMsgGameOverTie,
-   };
-
-   TNL_DECLARE_RPC(s2cSoccerScoreMessage, (U32 msgIndex, StringTableEntryRef clientName, U32 teamIndex));
-   TNL_DECLARE_CLASS(SoccerGameType);
-};
-
-class SoccerBallItem : public Item
+class FlagItem : public Item
 {
    typedef Item Parent;
    Point initialPos;
-   Timer mSendHomeTimer;
-   StringTableEntry lastPlayerTouch;
 public:
-   SoccerBallItem(Point pos = Point());
+   FlagItem(Point pos = Point());
+   void processArguments(S32 argc, const char **argv);
    void renderItem(Point pos);
    void sendHome();
-   void damageObject(DamageInfo *theInfo);
-   void idle(GameObject::IdleCallPath path);
-   void processArguments(S32 argc, const char **argv);
 
+   void onMountDestroyed();
    bool collide(GameObject *hitObject);
+   bool isAtHome();
 
-   TNL_DECLARE_CLASS(SoccerBallItem);
-};
-
-class SoccerGoalObject : public GameObject
-{
-   typedef GameObject Parent;
-   Vector<Point> mPolyBounds;
-   enum {
-      MaxPoints = 10,
-   };
-public:
-   SoccerGoalObject();
-
-   void render();
-   S32 getRenderSortValue() { return -1; }
-   void processArguments(S32 argc, const char **argv);
-   void onAddedToGame(Game *theGame);
-   void computeExtent();
-   bool getCollisionPoly(Vector<Point> &polyPoints);
-
-   bool collide(GameObject *hitObject);
-
-   U32 packUpdate(GhostConnection *connection, U32 mask, BitStream *stream);
+   U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);
 
-   TNL_DECLARE_CLASS(SoccerGoalObject);
+   TNL_DECLARE_CLASS(FlagItem);
 };
 
-};
+extern void renderFlag(Point pos, Color c);
 
+};
 
 #endif
-
