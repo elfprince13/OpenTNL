@@ -58,6 +58,8 @@ public:
    virtual void onKeyUp(U32 key);
    virtual void onSpecialKeyDown(U32 key);
    virtual void onSpecialKeyUp(U32 key);
+   virtual void onModifierKeyDown(U32 key);
+   virtual void onModifierKeyUp(U32 key);
    virtual void onControllerButtonDown(U32 buttonIndex) {}
    virtual void onControllerButtonUp(U32 buttonIndex) {}
 

@@ -335,4 +335,14 @@ void drawCircle(Point pos, F32 radius)
    glEnd();
 }
 
+void fillCircle(Point pos, F32 radius)
+{
+   glBegin(GL_POLYGON);
+
+   for(F32 theta = 0; theta < 2 * 3.1415; theta += 0.2)
+      glVertex2f(pos.x + cos(theta) * radius, pos.y + sin(theta) * radius);
+
+   glEnd();
+}
+
 };

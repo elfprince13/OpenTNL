@@ -81,6 +81,8 @@ void LoadoutHelper::show(bool fromController)
    mCurrentIndex = 0;
 }
 
+extern void renderControllerButton(F32 x, F32 y, U32 buttonIndex, U32 keyIndex);
+
 void LoadoutHelper::render()
 {
    S32 curPos = 300;
@@ -100,6 +102,8 @@ void LoadoutHelper::render()
 
    for(S32 i = 0; list[i].text; i++)
    {
+      renderControllerButton(20, curPos, list[i].button, list[i].key);
+
       if((mCurrentIndex == 1 && mModule[0] == i) ||
          (mCurrentIndex == 3 && mWeapon[0] == i) ||
          (mCurrentIndex == 4 && (mWeapon[0] == i || mWeapon[1] == i)))
@@ -107,9 +111,8 @@ void LoadoutHelper::render()
       else
          glColor3f(0.1, 1.0, 0.1);
 
-      UserInterface::drawStringf(20, curPos, fontSize, "%c - %s", 
-         (mFromController ? '1' + list[i].button : 
-            list[i].key), list[i].text);
+      UserInterface::drawStringf(40, curPos, fontSize, "- %s", 
+         list[i].text);
       curPos += fontSize + 4;
    }
 
@@ -117,7 +120,7 @@ void LoadoutHelper::render()
 
 bool LoadoutHelper::processKey(U32 key)
 {
-   if(key == 27)
+   if(key == 27 || key == 8)
    {
       gGameUserInterface.setPlayMode();
       return true;
@@ -221,10 +224,10 @@ void EngineerBuildHelper::render()
 
    for(S32 i = 0; list[i].text; i++)
    {
+      renderControllerButton(20, curPos, list[i].button, list[i].key);
       glColor3f(0.1, 1.0, 0.1);
 
-      UserInterface::drawStringf(20, curPos, fontSize, "%c - %s", 
-         list[i].key, list[i].text);
+      UserInterface::drawStringf(40, curPos, fontSize, "- %s", list[i].text);
       curPos += fontSize + 4;
    }
 
@@ -232,7 +235,7 @@ void EngineerBuildHelper::render()
 
 bool EngineerBuildHelper::processKey(U32 key)
 {
-   if(key == 27)
+   if(key == 27 || key == 8)
    {
       gGameUserInterface.setPlayMode();
       return true;

@@ -144,6 +144,8 @@ public:
    void onRightMouseUp(S32 x, S32 y);
    void onKeyDown(U32 key);
    void onKeyUp(U32 key);
+   void onModifierKeyDown(U32 key);
+   void onModifierKeyUp(U32 key);
    void onControllerButtonDown(U32 buttonIndex);
    void onControllerButtonUp(U32 buttonIndex);
 

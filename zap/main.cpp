@@ -72,6 +72,8 @@ public:
    TNL_DECLARE_JOURNAL_ENTRYPOINT(passivemotion, (S32 x, S32 y));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(key, (U8 key));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(keyup, (U8 key));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(modifierkey, (U32 modkey));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(modifierkeyup, (U32 modkey));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(mouse, (S32 button, S32 state, S32 x, S32 y));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(specialkey, (S32 key));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(specialkeyup, (S32 key));
@@ -207,6 +209,18 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkeyup, (S32 key))
       UserInterface::current->onSpecialKeyUp(key);
 }
 
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, modifierkey, (U32 key))
+{
+   if(UserInterface::current)
+      UserInterface::current->onModifierKeyDown(key);
+}
+
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, modifierkeyup, (U32 key))
+{
+   if(UserInterface::current)
+      UserInterface::current->onModifierKeyUp(key);
+}
+
 inline U32 RandomInt(U32 range)
 {
    return U32((U32(rand()) / (F32(RAND_MAX) + 1)) * range);
@@ -217,8 +231,40 @@ inline U32 RandomBool()
    return (U32(rand()) / (F32(RAND_MAX) + 1)) > 0.5f;
 }
 
+extern void getModifierState( bool &shiftDown, bool &controlDown, bool &altDown );
+
 void idle()
 {
+   // ok, since GLUT is L4m3 as far as modifier keys, we're going
+   // to have to do this ourselves on each platform:
+   static bool gShiftDown = false;
+   static bool gControlDown = false;
+   static bool gAltDown = false;
+
+   bool sd, cd, ad;
+   getModifierState(sd, cd, ad);
+   if(sd != gShiftDown)
+   {
+      if(sd)
+         gZapJournal.modifierkey(0);
+      else
+         gZapJournal.modifierkeyup(0);
+      gShiftDown = sd;
+   }
+   if(cd != gControlDown)
+   {
+      if(cd)
+         gZapJournal.modifierkey(1);
+      else
+         gZapJournal.modifierkeyup(1);
+   }
+   if(ad != gAltDown)
+   {
+      if(ad)
+         gZapJournal.modifierkey(2);
+      else
+         gZapJournal.modifierkeyup(2);
+   }
    static S64 lastTimer = Platform::getHighPrecisionTimerValue();
    static F64 unusedFraction = 0;
 

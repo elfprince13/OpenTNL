@@ -34,6 +34,26 @@
 namespace Zap
 {
 
+enum {
+   NumSparkColors = 4,
+};
+
+struct ProjectileInfo
+{
+   F32 damageAmount;
+   Color sparkColors[NumSparkColors];
+   Color projColors[2];
+   F32 scaleFactor;
+};
+
+ProjectileInfo gProjInfo[Projectile::TypeCount] = {
+   { 0.21f, { Color(1,0,1), Color(1,1,1), Color(0,0,1), Color(1,0,0) }, { Color(1, 0, 0.5), Color(0.5, 0, 1) }, 1 },
+   { 0.15f, { Color(1,1,0), Color(1,0,0), Color(1,0.5,0), Color(1,1,1) }, { Color(1, 1, 0), Color(1, 0, 0) }, 1.3 },
+   { 0.14f, { Color(0,0,1), Color(0,1,0), Color(0,0.5,1), Color(0,1,0.5) }, { Color(0, 0.5, 1), Color(0, 1, 0.5) }, 0.7 },
+   { 0.11f, { Color(0,1,1), Color(1,1,0), Color(0,1,0.5), Color(0.5,1,0) }, { Color(0.5, 1, 0), Color(0, 1, 0.5) }, 0.6 },
+};
+
+
 TNL_IMPLEMENT_NETOBJECT(Projectile);
 
 Projectile::Projectile(U32 type, Point p, Point v, U32 t, GameObject *shooter)
@@ -101,10 +121,6 @@ void Projectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
    }
 }
 
-enum {
-   NumSparkColors = 4,
-};
-
 void Projectile::handleCollision(GameObject *hitObject, Point collisionPoint)
 {
    collided = true;
@@ -113,7 +129,7 @@ void Projectile::handleCollision(GameObject *hitObject, Point collisionPoint)
    {
       DamageInfo theInfo;
       theInfo.collisionPoint = collisionPoint;
-      theInfo.damageAmount = 0.21;
+      theInfo.damageAmount = gProjInfo[mType].damageAmount;
       theInfo.damageType = 0;
       theInfo.damagingObject = mShooter;
       theInfo.impulseVector = velocity;
@@ -194,20 +210,6 @@ void Projectile::idle(GameObject::IdleCallPath path)
    }
 }
 
-struct ProjectileDisplayInfo
-{
-   Color sparkColors[NumSparkColors];
-   Color projColors[2];
-   F32 scaleFactor;
-};
-
-ProjectileDisplayInfo gProjInfo[Projectile::TypeCount] = {
-   { { Color(1,0,1), Color(1,1,1), Color(0,0,1), Color(1,0,0) }, { Color(1, 0, 0.5), Color(0.5, 0, 1) }, 1 },
-   { { Color(1,1,0), Color(1,0,0), Color(1,0.5,0), Color(1,1,1) }, { Color(1, 1, 0), Color(1, 0, 0) }, 1.3 },
-   { { Color(0,0,1), Color(0,1,0), Color(0,0.5,1), Color(0,1,0.5) }, { Color(0, 0.5, 1), Color(0, 1, 0.5) }, 0.7 },
-   { { Color(0,1,1), Color(1,1,0), Color(0,1,0.5), Color(0.5,1,0) }, { Color(0.5, 1, 0), Color(0, 1, 0.5) }, 0.6 },
-};
-
 void Projectile::explode(GameObject *hitObject, Point thePos)
 {
    // Do some particle spew...
@@ -228,7 +230,7 @@ void Projectile::render()
    if(collided || !alive)
       return;
 
-   ProjectileDisplayInfo *pi = gProjInfo + mType;
+   ProjectileInfo *pi = gProjInfo + mType;
 
    glColor3f(pi->projColors[0].r,pi->projColors[0].g,pi->projColors[0].b);
    glPushMatrix();

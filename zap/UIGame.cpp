@@ -398,6 +398,9 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
             case 5:
                mVoiceRecorder.start();
                break;
+            default:
+               logprintf("button down: %d", buttonIndex);
+               break;
          }
       }
       else if(mCurrentMode == VChatMode)
@@ -427,7 +430,7 @@ void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
       {
          switch(buttonIndex)
          {
-            case 5:
+            case 4:
             {
                mInScoreboardMode = false;
                GameType *g = gClientGame->getGameType();
@@ -435,10 +438,36 @@ void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
                   g->c2sRequestScoreboardUpdates(false);
                break;
             }
-            case 6:
+            case 5:
                mVoiceRecorder.stop();
                break;
          }
+      }
+   }
+}
+
+void GameUserInterface::onModifierKeyDown(U32 key)
+{
+   if(mCurrentMode == EngineerBuildMode ||
+      mCurrentMode == LoadoutMode || 
+      mCurrentMode == PlayMode)
+   {
+      if(key == 0)
+      {
+         mCurrentMove.module[1] = true;
+      }
+   }
+}
+
+void GameUserInterface::onModifierKeyUp(U32 key)
+{
+   if(mCurrentMode == EngineerBuildMode ||
+      mCurrentMode == LoadoutMode || 
+      mCurrentMode == PlayMode)
+   {
+      if(key == 0)
+      {
+         mCurrentMove.module[1] = false;
       }
    }
 }
@@ -474,26 +503,22 @@ void GameUserInterface::onKeyDown(U32 key)
          case 'P':
             mFPSVisible = !mFPSVisible;
             break;
-         case 'E':
+         case 'W':
             mCurrentMove.up = 1.0;
             break;
-         case 'S':
+         case 'A':
             mCurrentMove.left = 1.0;
             break;
-         case 'D':
+         case 'S':
             mCurrentMove.down = 1.0;
             break;
-         case 'F':
+         case 'D':
             mCurrentMove.right = 1.0;
             break;
          case ' ':
             mCurrentMove.module[0] = true;
             break;
-         case 'A':
-            mCurrentMove.module[1] = true;
-            break;
-
-         case 'W':
+         case 'E':
             {
                GameType *g = gClientGame->getGameType();
                if(g)
@@ -594,24 +619,21 @@ void GameUserInterface::onKeyUp(U32 key)
                g->c2sRequestScoreboardUpdates(false);
             break;
          }
-         case 'E':
+         case 'W':
             mCurrentMove.up = 0;
             break;
-         case 'S':
+         case 'A':
             mCurrentMove.left = 0;
             break;
-         case 'D':
+         case 'S':
             mCurrentMove.down = 0;
             break;
-         case 'F':
+         case 'D':
             mCurrentMove.right = 0;
             break;
 
          case ' ':
             mCurrentMove.module[0] = false;
-            break;
-         case 'A':
-            mCurrentMove.module[1] = false;
             break;
          case 'R':
             mVoiceRecorder.stop();

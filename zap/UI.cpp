@@ -164,4 +164,14 @@ void UserInterface::onSpecialKeyUp(U32 key)
 
 }
 
+void UserInterface::onModifierKeyDown(U32 key)
+{
+
+}
+
+void UserInterface::onModifierKeyUp(U32 key)
+{
+
+}
+
 };

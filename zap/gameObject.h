@@ -172,6 +172,7 @@ public:
 };
 
 extern void drawCircle(Point pos, F32 radius);
+extern void fillCircle(Point pos, F32 radius);
 
 };
 

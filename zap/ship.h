@@ -63,6 +63,7 @@ public:
       EnergyRepairDrain = 15000, 
       EnergySensorDrain = 8000,
       EnergyCloakDrain = 8000,
+      EnergyEngineerCost = 75000,
       EnergyShieldHitDrain = 20000,
       EnergyCooldownThreshold = 15000,
       ShipModuleCount = 2,
@@ -128,10 +129,18 @@ public:
    bool isSensorActive() { return mModuleActive[ModuleSensor]; }
    bool isRepairActive() { return mModuleActive[ModuleRepair]; }
    bool isEngineerActive() { return mModuleActive[ModuleEngineer]; }
+   bool engineerBuildObject()
+   {
+      if(mEnergy < EnergyEngineerCost)
+         return false;
+      mEnergy -= EnergyEngineerCost;
+      return true;
+   }
 
    bool hasEngineeringModule() { return mModule[0] == ModuleEngineer ||
                                         mModule[1] == ModuleEngineer; }
 
+   bool areItemsMounted() { return mMountedItems.size() != 0; }
    bool carryingResource();
    Item *unmountResource();
 

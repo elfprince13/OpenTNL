@@ -1,17 +1,75 @@
 ZAP 1.3
 
-Welcome to ZAP, the retro multiplayer team action game!
+Introduction
+------------
+
+Welcome to ZAP, the retro multiplayer team action game!  Zap is a
+game of action and strategy.  In Zap, the goal of the game varies
+from level to level, from the following game types:
+
+Capture the Flag - Team game where the objective is to take the
+enemy's flag and return it to your flag.  Each capture earns your
+team one point.  Take care to defend your flag from the enemy -- 
+you can only score if it is at home!
+
+Soccer - Team game where the objective is to move the white circle
+(the ball) into the goal of the opponent's color.
+
+Hunters - Solo game where the objective is to collect flags from
+other players and return them to the Nexus for points.  Each player
+starts with one flag, and drops it if he or she is zapped.  Scoring
+in Hunters is based on how many flags the player is carrying when
+touching the open Nexus.  The first flag is worth one point, the
+second is worth two, the third 3, and so on.  So the total value
+of capturing 5 flags would be 5 + 4 + 3 + 2 + 1 = 15 points.  If
+the Nexus is dark, it is closed -- the upper timer in the lower
+right corner counts down to when it will next be open.
+
+Zapmatch - Solo game, often of short duration between levels.  Just
+zap as many other players as you can!
+
+
+Ship configuration:
+Each ship can be configured with 2 modules and 3 weapons.  Pressing
+the loadout select screen allows the player to choose the next loadout
+for his or her ship.  This loadout will not become available until the
+player either flies over a resupply area (team-color-coded patch), or
+respawns (only if there are no resupply areas on the level).
+
+Modules are special powers that can be activated by pressing the appropriate
+module activation key.  The modules in Zap, and their function are:
+
+1. Boost - Gives the ship a boost of speed
+2. Shield - Creates a defensive barrier around the ship that absorbs shots
+3. Repair - Repairs self and nearby teammates that are damaged
+4. Sensor - Boosts the screen visible distance of the player
+5. Cloak - Turns the ship invisible
+6. Engineer - Allows the ship to turn Resource items into base defense objects
+
+The Engineering bay allows the ship to pick up and use the white star
+"Resources".  Ships can only carry one resource at a time.  Using
+the engineering bay while carrying a resource will bring up a menu
+of items that can be built.  All constructed objects must be built
+on a wall of the level.
+
 
 Changes since version 1.2.2:
+----------------------------
 - Added built-in level editor!
 - Added custom ship modules
+- Added Hunters game type
+- Added many new maps
+- Added different weapon types
+- Added deployable objects
+- Added support for more controllers
+- Fixed many bugs
 
 Controls:
 
-E - move up
-D - move down
-S - move left
-F - move right
+w - move up
+S - move down
+A - move left
+D - move right
 
 T - chat to team
 G - chat global
@@ -20,11 +78,11 @@ R - record voice chat
 
 C - toggle commander map
 SPACE - activate primary module (default = boost)
-A - activate secondary module (default = shield)
+SHIFT - activate secondary module (default = shield)
 
 TAB - show scores
 
-W - next weapon
+E - next weapon
 Q - select weapon and module loadout
 
 Mouse:
@@ -40,12 +98,12 @@ Right stick - aim and fire
 right trigger - activate primary module (default = boost)
 left trigger - activate secondary module (default = shield)
 
-button 1 - record voice chat
-button 2 - select weapon and module loadout
-button 3 - toggle commander map
-button 4 - show scores
-button 5 - next weapon
-button 6 - open quick chat menu
+button 1 - cycle to next weapon
+button 2 - toggle commander map
+button 3 - open quick chat menu
+button 4 - select weapon and module loadout 
+button 5 - show scores
+button 6 - record voice
 
 In the game you can press ESC to go to the game options screen.  
 From there you can access the main options which include setting 

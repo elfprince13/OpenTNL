@@ -28,6 +28,7 @@
 #include "UIGame.h"
 #include "glutInclude.h"
 #include "gameType.h"
+#include "UIMenus.h"
 #include <ctype.h>
 namespace Zap
 {
@@ -36,15 +37,15 @@ VChatHelper::VChatNode VChatHelper::mChatTree[] =
 {
    // Root node
    {0, ' ', -1, true, "", ""},
-      {1, 'V', 5, true, "Quick", ""},
-         {2, 'V', 5, true, "Help!", "Help!" },
-         {2, 'G', 4, true, "Going offense", "Going offense."},
-         {2, 'E', 3, true, "Regroup", "Regroup."},
-         {2, 'Z', 2, true, "Move out", "Move out."},
-         {2, 'W', 1, true, "Wait for signal", "Wait for my signal to attack."},
-         {2, 'A', 0, true, "Attack!", "Attack!"},
-         {2, 'O', -1, true, "Go on the offensive", "Go on the offensive."},
-         {2, 'J', -1, true, "Capture the objective", "Capture the objective."},
+      {1, 'G', 5, true, "Global", ""},
+         {2, 'Z', 5, false, "Doh", "Doh!"},
+         {2, 'S', 4, false, "Shazbot", "Shazbot!"},
+         {2, 'D', 3, false, "Damnit", "Dammit!"},
+         {2, 'C', -1, false, "Crap", "Ah Crap!"},
+         {2, 'E', 2, false, "Duh", "Duh."},
+         {2, 'X', -1, false, "You idiot!", "You idiot!"},
+         {2, 'T', 1, false, "Thanks", "Thanks."},
+         {2, 'A', 0, false, "No Problem", "No Problemo."},
       {1, 'D', 4, true, "Defense", ""},
          {2, 'A', -1, true, "Attacked", "We are being attacked."},
          {2, 'E', 5, true, "Enemy Attacking Base", "The enemy is attacking our base."},
@@ -67,15 +68,15 @@ VChatHelper::VChatNode VChatHelper::mChatTree[] =
          {2, 'D', -1, true, "Incoming West",     "*** INCOMING WEST  ***"},
          {2, 'A', -1, true, "Incoming East",     "*** INCOMING EAST  ***"},
          {2, 'S', -1, true, "Incoming South",    "*** INCOMING SOUTH ***"},
-      {1, 'G', 2, true, "Global", ""},
-         {2, 'Z', 5, false, "Doh", "Doh!"},
-         {2, 'S', 4, false, "Shazbot", "Shazbot!"},
-         {2, 'D', 3, false, "Damnit", "Dammit!"},
-         {2, 'C', -1, false, "Crap", "Ah Crap!"},
-         {2, 'E', 2, false, "Duh", "Duh."},
-         {2, 'X', -1, false, "You idiot!", "You idiot!"},
-         {2, 'T', 1, false, "Thanks", "Thanks."},
-         {2, 'A', 0, false, "No Problem", "No Problemo."},
+      {1, 'V', 2, true, "Quick", ""},
+         {2, 'Z', 5, true, "Move out", "Move out."},
+         {2, 'G', 4, true, "Going offense", "Going offense."},
+         {2, 'E', 3, true, "Regroup", "Regroup."},
+         {2, 'V', 2, true, "Help!", "Help!" },
+         {2, 'W', 1, true, "Wait for signal", "Wait for my signal to attack."},
+         {2, 'A', 0, true, "Attack!", "Attack!"},
+         {2, 'O', -1, true, "Go on the offensive", "Go on the offensive."},
+         {2, 'J', -1, true, "Capture the objective", "Capture the objective."},
       {1, 'R', 1, true, "Reponses", ""},
          {2, 'D', 5, true, "Dont know", "I don't know."},
          {2, 'T', 4, true, "Thanks", "Thanks."},
@@ -95,6 +96,44 @@ VChatHelper::VChatNode VChatHelper::mChatTree[] =
    // Terminate
    {0, ' ', false, "", ""}
 };
+
+extern void drawCircle(Point pos, F32 radius);
+void renderControllerButton(F32 x, F32 y, U32 buttonIndex, U32 keyIndex)
+{
+   S32 joy = OptionsMenuUserInterface::joystickType;
+
+   if(joy == -1)
+      UserInterface::drawStringf(x, y, 15, "%c", keyIndex);
+   else if(joy == 0)
+   {
+      glColor3f(1,1,1);
+      const char buttons[] = "ABCXYZ";
+      drawCircle(Point(x + 8, y + 8), 8);
+      UserInterface::drawStringf(x + 4, y + 2, 12, "%c", buttons[buttonIndex]);
+   }
+   else if(joy == 1)
+   {
+      glColor3f(1,1,1);
+      const char buttons[] = "123456";
+      drawCircle(Point(x + 8, y + 8), 8);
+      UserInterface::drawStringf(x + 4, y + 2, 12, "%c", buttons[buttonIndex]);
+   }
+   else if(joy == 2)
+   {
+      UserInterface::drawStringf(x, y, 15, "%c", buttonIndex + '1');
+   }
+   else if(joy == 3)
+   {
+      static F32 color[6][3] = { { 0, 0, 1 }, { 0, 1, 0 }, { 1, 1, 1 }, { 1, 1, 0 }, { 1, 0, 0}, { 0, 0, 0} };
+      glColor3f(color[buttonIndex][0] * 0.8f,color[buttonIndex][1] * 0.8f,color[buttonIndex][2] * 0.8f);
+      fillCircle(Point(x + 8, y + 8), 8);
+      const char buttons[] = "XA YB ";
+      glColor3f(1,1,1);
+      drawCircle(Point(x + 8, y + 8), 8);
+      glColor3f(color[buttonIndex][0],color[buttonIndex][1],color[buttonIndex][2]);
+      UserInterface::drawStringf(x + 4, y + 2, 12, "%c", buttons[buttonIndex]);
+   }
+}
 
 VChatHelper::VChatHelper()
 {
@@ -123,12 +162,15 @@ void VChatHelper::render()
 
    S32 curPos = 300;
    const int fontSize = 15;
-   glColor3f(0.3, 1.0, 0.3);
 
    for(S32 i = 0; i < renderNodes.size(); i++)
    {
-      UserInterface::drawStringf(20, curPos, fontSize, "%c - %s", 
-         (mFromController ? '1' + renderNodes[i]->buttonIndex : renderNodes[i]->trigger), renderNodes[i]->caption);
+      glColor3f(0.3, 1.0, 0.3);
+      renderControllerButton(20, curPos, renderNodes[i]->buttonIndex, renderNodes[i]->trigger);
+
+      glColor3f(0.3, 1.0, 0.3);
+      UserInterface::drawStringf(40, curPos, fontSize, "- %s", 
+         renderNodes[i]->caption);
       curPos += fontSize + 4;
    }
 }
@@ -136,26 +178,23 @@ void VChatHelper::render()
 void VChatHelper::show(bool fromController)
 {
    mCurNode = &mChatTree[0];
-   mFromController = fromController;
+   mFromController = OptionsMenuUserInterface::joystickType != -1;
 }
 
 void VChatHelper::processKey(U32 key)
 {
-   if(!mFromController)
+   // Escape...
+   if(key == 8 || key == 27)
    {
-      // Escape...
-      if(key == 27)
-      {
-         UserInterface::playBoop();
-         gGameUserInterface.setPlayMode();
-         return;
-      }
-
-      // Try to find a match if we can...
-
-      // work in upper case...
-      key = toupper(key);
+      UserInterface::playBoop();
+      gGameUserInterface.setPlayMode();
+      return;
    }
+
+   // Try to find a match if we can...
+
+   // work in upper case...
+   key = toupper(key);
 
    // Set up walk...
    VChatNode *walk = mCurNode;

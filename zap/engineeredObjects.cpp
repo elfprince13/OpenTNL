@@ -84,6 +84,14 @@ void engClientCreateObject(GameConnection *connection, U32 object)
       delete deployedObject;
       return;
    }
+   if(!ship->engineerBuildObject())
+   {
+      static StringTableEntry message("Not enough energy to build object.");
+
+      connection->s2cDisplayMessage(GameConnection::ColorAqua, SFXNone, message);
+      delete deployedObject;
+      return;
+   }
    deployedObject->addToGame(gServerGame);
    Item *theItem = ship->unmountResource();
 
@@ -108,7 +116,8 @@ void EngineeredObject::setResource(Item *resource)
 
 void EngineeredObject::damageObject(DamageInfo *di)
 {
-   mHealth -= di->damageAmount * .5f;
+   if(di->damageAmount > 0)
+      mHealth -= di->damageAmount * .25f;
 
    setMaskBits(HealthMask);
 
@@ -254,6 +263,7 @@ U32 EngineeredObject::packUpdate(GhostConnection *connection, U32 updateMask, Bi
    if(stream->writeFlag(updateMask & HealthMask))
    {
       stream->writeFloat(mHealth, 6);
+      stream->writeFlag(mHealth == 0);
    }
    return 0;
 }
@@ -272,7 +282,7 @@ void EngineeredObject::unpackUpdate(GhostConnection *connection, BitStream *stre
    if(stream->readFlag())
    {
       mHealth = stream->readFloat(6);
-      if(!mHealth)
+      if(stream->readFlag())
          explode();
    }
 }
@@ -478,24 +488,18 @@ inline void glVertex(Point p)
 
 void Turret::render()
 {
-   Color c;
+   Color c, lightColor;
 
    if(gClientGame->getGameType())
       c = gClientGame->getGameType()->mTeams[mTeam].color;
    else
       c = Color(1,0,1);
 
-   if(c.r < 0.5)
-      c.r = 0.5;
-   if(c.g < 0.5)
-      c.g = 0.5;
-   if(c.b < 0.5)
-      c.b = 0.5;
-
-
    glColor3f(c.r, c.g, c.b);
+
    Point cross(mAnchorNormal.y, -mAnchorNormal.x);
    Point aimCenter = mAnchorPoint + mAnchorNormal * TurretAimOffset;
+
 
    glBegin(GL_LINE_STRIP);
 
@@ -507,13 +511,6 @@ void Turret::render()
    }
    glEnd();
 
-   glBegin(GL_LINE_LOOP);
-   glVertex(mAnchorPoint + cross * 18);
-   glVertex(mAnchorPoint + cross * 18 + mAnchorNormal * TurretAimOffset);
-   glVertex(mAnchorPoint - cross * 18 + mAnchorNormal * TurretAimOffset);
-   glVertex(mAnchorPoint - cross * 18);
-   glEnd();
-
    glLineWidth(3);
    glBegin(GL_LINES);
    Point aimDelta(cos(mCurrentAngle), sin(mCurrentAngle));
@@ -521,6 +518,33 @@ void Turret::render()
    glVertex(aimCenter + aimDelta * 30);
    glEnd();
    glLineWidth(1);
+
+   glColor3f(1,1,1);
+   glBegin(GL_LINE_LOOP);
+   glVertex(mAnchorPoint + cross * 18);
+   glVertex(mAnchorPoint + cross * 18 + mAnchorNormal * TurretAimOffset);
+   glVertex(mAnchorPoint - cross * 18 + mAnchorNormal * TurretAimOffset);
+   glVertex(mAnchorPoint - cross * 18);
+   glEnd();
+
+   glColor3f(c.r, c.g, c.b);
+   U32 health = U32(28 * mHealth);
+   glBegin(GL_LINES);
+   for(S32 i = 0; i < health; i += 2)
+   {
+      Point lsegStart = mAnchorPoint - cross * (14 - i) + mAnchorNormal * 5;
+      Point lsegEnd = lsegStart + mAnchorNormal * (TurretAimOffset - 10);
+      glVertex(lsegStart);
+      glVertex(lsegEnd);
+   }
+   Point lsegStart = mAnchorPoint - cross * 14 + mAnchorNormal * 3;
+   Point lsegEnd = mAnchorPoint + cross * 14 + mAnchorNormal * 3;
+   Point n = mAnchorNormal * (TurretAimOffset - 6);
+   glVertex(lsegStart);
+   glVertex(lsegEnd);
+   glVertex(lsegStart + n);
+   glVertex(lsegEnd + n);
+   glEnd();
 }
 
 U32 Turret::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
@@ -573,7 +597,7 @@ void Turret::idle(IdleCallPath path)
       Ship *potential = (Ship*)fillVector[i];
 
       // Is it dead or cloaked?
-      if(potential->isCloakActive() || potential->hasExploded)
+      if((potential->isCloakActive() && !potential->areItemsMounted()) || potential->hasExploded)
          continue;
 
       // Is it on our team?
