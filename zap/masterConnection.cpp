@@ -116,10 +116,11 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cClientRequestedArrangedCon
 
       c2mAcceptArrangedConnection(requestId, localAddress, b);
       GameConnection *conn = new GameConnection();
-
       Vector<Address> fullPossibleAddresses;
       for(S32 i = 0; i < possibleAddresses.size(); i++)
          fullPossibleAddresses.push_back(Address(possibleAddresses[i]));
+
+      conn->setNetAddress(fullPossibleAddresses[0]);
 
       logprintf("Accepting arranged connection from %s", Address(fullPossibleAddresses[0]).toString());
       logprintf("  Generated shared secret data: %s", b.encodeBase64()->getBuffer());

@@ -49,7 +49,7 @@ bool gQuit = false;
 bool gIsServer = false;
 const char *gHostName = "ZAP Game";
 U32 gMaxPlayers = 128;
-const char *gMasterAddressString = "IP:master.garagegames.com:29002";
+const char *gMasterAddressString = "IP:master.opentnl.org:29002";
 Address gMasterAddress;
 
 void reshape(int nw, int nh)
