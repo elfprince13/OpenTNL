@@ -32,6 +32,7 @@
 #include "gameType.h"
 #include "lpc10.h"
 #include "tnlEndian.h"
+#include "ship.h"
 
 #include <stdarg.h>
 #include "glutInclude.h"
@@ -108,6 +109,14 @@ void GameUserInterface::idle(U32 timeDelta)
    mVoiceRecorder.idle(timeDelta);
    mIdleTimeDelta[mFrameIndex % FPSAvgCount] = timeDelta;
    mFrameIndex++;
+
+   // check if the shield mode should be on:
+   if(gClientGame->isConnectedToServer())
+   {
+      Ship *s = dynamic_cast<Ship *>(gClientGame->getConnectionToServer()->getControlObject());
+      if(s && mCurrentMove.shield && s->shouldToggleShieldOff())
+         mCurrentMove.shield = false;
+   }
 }
 
 #ifdef TNL_OS_WIN32

@@ -99,7 +99,7 @@ public:
 
    void onGhostRemove();
 
-
+   bool shouldToggleShieldOff() { return !mShield && mEnergy < EnergyCooldownThreshold; }
    void idle(IdleCallPath path);
 
    void processMove(U32 stateIndex);
