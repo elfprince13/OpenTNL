@@ -94,30 +94,6 @@ void GameUserInterface::idle(U32 timeDelta)
    }
 }
 
-static char * connectStates[] = {
-      //NotConnected,              ///< Initial state of a NetConnection instance - not connected.
-      "Not connected...",
-      //AwaitingChallengeResponse, ///< We've sent a challenge request, awaiting the response.
-      "Sending challenge request.",
-      //SendingPunchPackets,       ///< The state of a pending arranged connection when both sides haven't heard from the other yet
-      "Punching through firewalls.",
-      //ComputingPuzzleSolution,   ///< We've received a challenge response, and are in the process of computing a solution to its puzzle.
-      "Computing puzzle solution.",
-      //AwaitingConnectResponse,   ///< We've received a challenge response and sent a connect request.
-      "Sent connect request.",
-      //ConnectTimedOut,           ///< The connection timed out during the connection process.
-      "Connection timed out.",
-      //ConnectRejected,           ///< The connection was rejected.
-      "Connection rejected.",
-      //Connected,                 ///< We've accepted a connect request, or we've received a connect response accept.
-      "Connected.",
-      //Disconnected,              ///< The connection has been disconnected.
-      "Disconnected.",
-      //TimedOut,                  ///< The connection timed out.
-      "Connection timed out.",
-      ""
-};
-
 void GameUserInterface::render()
 {
    glMatrixMode(GL_MODELVIEW);
@@ -134,7 +110,7 @@ void GameUserInterface::render()
       drawCenteredString(290, 30, "Connecting to server...");
 
       if(gClientGame->getConnectionToServer())
-         drawCenteredString(330, 16, connectStates[gClientGame->getConnectionToServer()->getConnectionState()]);
+         drawCenteredString(330, 16, gConnectStatesTable[gClientGame->getConnectionToServer()->getConnectionState()]);
       drawCenteredString(370, 20, "Press <ESC> to abort");
    }
 

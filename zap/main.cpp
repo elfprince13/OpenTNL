@@ -153,6 +153,12 @@ void display(void)
    if(UserInterface::current)
       UserInterface::current->render();
 
+   // Render master connection state...
+   if(gClientGame && gClientGame->getConnectionToMaster() 
+      && gClientGame->getConnectionToMaster()->getConnectionState() != NetConnection::Connected)
+      UserInterface::drawStringf(10, 550, 15, "Master Server - %s", 
+                                 gConnectStatesTable[gClientGame->getConnectionToMaster()->getConnectionState()]);
+
    glFlush();
    glutSwapBuffers();
 

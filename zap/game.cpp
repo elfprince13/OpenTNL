@@ -259,6 +259,7 @@ void ClientGame::idle(U32 timeDelta)
    mNetInterface->checkIncomingPackets();
 
    Game::checkConnectionToMaster(timeDelta);
+
    // only update at most MaxMoveTime milliseconds;
    if(timeDelta > Move::MaxMoveTime)
       timeDelta = Move::MaxMoveTime;

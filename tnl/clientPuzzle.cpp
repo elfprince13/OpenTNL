@@ -157,8 +157,8 @@ bool ClientPuzzleManager::solvePuzzle(U32 *solution, Nonce &clientNonce, Nonce &
    // Until we're done...
    for(;;)
    {
-      // We do 100,000 attempts...
-      U32 nextValue = startValue + 100000;
+      // We do 5,000 attempts... (this valus is tweakable
+      U32 nextValue = startValue + 5000;
       for(;startValue < nextValue; startValue++)
       {
          if(checkOneSolution(startValue, clientNonce, serverNonce, puzzleDifficulty, clientIdentity))
@@ -167,6 +167,7 @@ bool ClientPuzzleManager::solvePuzzle(U32 *solution, Nonce &clientNonce, Nonce &
             return true;
          }
       }
+
       // Then we check to see if we're out of time...
       if(Platform::getRealMilliseconds() - startTime > MaxSolutionComputeFragment)
       {
