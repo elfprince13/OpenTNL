@@ -1,7 +1,7 @@
-RetrieveGameType 10 40
+RetrieveGameType 10 20
 Team Blue 0 0 1
 Team Red 1 0 0
-LevelName Diamond
+LevelName "Triple Threat"
 GridSize 300
 FlagItem -1 -1.5 1.5
 LoadoutZone 1 4.3 9.2 3.9 9.2 3.9 7.8 4.3 7.8
