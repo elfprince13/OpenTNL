@@ -80,11 +80,12 @@ void Ship::processArguments(S32 argc, const char **argv)
    if(argc != 5)
       return;
 
-   mMoveState[0].pos.read(argv);
-
-   for(U32 i = 1; i < MoveStateCount; i++)
+   Point pos;
+   pos.read(argv);
+   pos *= getGame()->getGridSize();
+   for(U32 i = 0; i < MoveStateCount; i++)
    {
-      mMoveState[i].pos = mMoveState[0].pos;
+      mMoveState[i].pos = pos;
       mMoveState[i].angle = 0;
    }
 
@@ -751,7 +752,8 @@ void Ship::render()
    glTranslatef(mMoveState[RenderState].pos.x, mMoveState[RenderState].pos.y, 0);
 
    // Render name...
-   if(gClientGame->getConnectionToServer()->getControlObject() != this)
+   GameConnection *conn = gClientGame->getConnectionToServer();
+   if(conn && conn->getControlObject() != this)
    {
       static char buff[255];
       sprintf(buff, "%s", mPlayerName.getString());
