@@ -190,7 +190,7 @@ template<U32 bitCount> struct SignedFloat : NetType
 template<U32 rangeStart, U32 rangeEnd> struct RangedU32 : NetType
 {
    U32 value;
-   RangedU32(U32 val=rangeStart) { TNLAssert(value >= rangeStart && value <= rangeEnd, "Out of range value!"); value = val; }
+   RangedU32(U32 val=rangeStart) { TNLAssert(val >= rangeStart && val <= rangeEnd, "Out of range value!"); value = val; }
    operator U32() const { return value; }
 };
 
