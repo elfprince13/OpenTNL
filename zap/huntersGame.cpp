@@ -267,6 +267,9 @@ HuntersFlagItem::HuntersFlagItem(Point pos) : Item(pos, true, 30, 4)
 
 void HuntersFlagItem::renderItem(Point pos)
 {
+   if(mMount.isValid() && mMount->isCloakActive())
+      return;
+
    Point offset = pos;
 
    if(mIsMounted)
@@ -305,6 +308,7 @@ void HuntersFlagItem::onMountDestroyed()
    changeFlagCount(0);
    
    // now delete yourself
+   dismount();
    removeFromDatabase();
    deleteObject();
 }
