@@ -84,10 +84,11 @@ void keyup(unsigned char key, int x, int y)
 
 void mouse(int button, int state, int x, int y)
 {
-   static int mouseState=0;
+   // This is pretty gross. We need a trigger system. - BJG
+   static int mouseState = 0;
 
-   logprintf("button=%d state=%d", button, state);
-   if(UserInterface::current)
+   if(UserInterface::current && button == 0)
+   {
       if(state==1 && !mouseState)
       {
          UserInterface::current->onMouseUp(x, y);
@@ -98,6 +99,7 @@ void mouse(int button, int state, int x, int y)
          mouseState = state;
          UserInterface::current->onMouseDown(x, y);
       }
+   }
 }
 
 void specialkey(int key, int x, int y)
