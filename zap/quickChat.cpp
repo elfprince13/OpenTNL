@@ -144,6 +144,13 @@ void VChatHelper::show(bool fromController)
 {
    mCurNode = &mChatTree[0];
    mFromController = OptionsMenuUserInterface::joystickType != -1;
+   mIdleTimer.reset(MenuTimeout);
+}
+
+void VChatHelper::idle(U32 delta)
+{
+   if(mIdleTimer.update(delta))
+      gGameUserInterface.setPlayMode();
 }
 
 void VChatHelper::processKey(U32 key)
@@ -175,6 +182,7 @@ void VChatHelper::processKey(U32 key)
                    (mFromController && key == walk->buttonIndex);
       if(match && walk->depth == matchLevel)
       {
+         mIdleTimer.reset(MenuTimeout);
          // select it...
          mCurNode = walk;
 

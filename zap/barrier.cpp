@@ -203,7 +203,7 @@ void Barrier::clipRenderLinesToPoly(Vector<Point> &polyPoints)
 
 void Barrier::render(U32 layerIndex)
 {
-   Color b(0,0,0.075), f(0,0,1);
+   Color b(0,0,0.15), f(0,0,1);
    //Color b(0.0,0.0,0.075), f(.3 ,0.3,0.8);
 
    if(layerIndex == 0)

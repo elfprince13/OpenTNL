@@ -30,6 +30,7 @@
 #include "tnlNetBase.h"
 #include "UI.h"
 #include "tnlNetStringTable.h"
+#include "timer.h"
 
 namespace Zap
 {
@@ -51,10 +52,15 @@ private:
 
    bool mFromController;
    VChatNode *mCurNode;
+   Timer mIdleTimer;
+   enum {
+      MenuTimeout = 3500,
+   };
 
 public:
    VChatHelper();
 
+   void idle(U32 delta);
    void render();
    void show(bool fromController);
    void processKey(U32 key);

@@ -110,6 +110,10 @@ void GameUserInterface::idle(U32 timeDelta)
          mChatLastBlinkTime = 0;
       }
    }
+   else if(mCurrentMode == VChatMode)
+      mVChat.idle(timeDelta);
+   else if(mCurrentMode == LoadoutMode)
+      mLoadout.idle(timeDelta);
    mVoiceRecorder.idle(timeDelta);
    mIdleTimeDelta[mFrameIndex % FPSAvgCount] = timeDelta;
    mFrameIndex++;

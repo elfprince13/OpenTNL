@@ -29,6 +29,7 @@
 
 #include "tnlTypes.h"
 using namespace TNL;
+#include "timer.h"
 
 namespace Zap
 {
@@ -39,10 +40,15 @@ class LoadoutHelper
    U32 mModule[2];
    U32 mWeapon[3];
    U32 mCurrentIndex;
+   Timer mIdleTimer;
+   enum {
+      MenuTimeout = 3500,
+   };
 public:
    LoadoutHelper();
 
    void render();
+   void idle(U32 delta);
    void show(bool fromController);
    bool processKey(U32 key);
 };

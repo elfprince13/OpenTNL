@@ -79,6 +79,7 @@ void LoadoutHelper::show(bool fromController)
 {
    mFromController = fromController;
    mCurrentIndex = 0;
+   mIdleTimer.reset(MenuTimeout);
 }
 
 extern void renderControllerButton(F32 x, F32 y, U32 buttonIndex, U32 keyIndex);
@@ -121,6 +122,12 @@ void LoadoutHelper::render()
 
 }
 
+void LoadoutHelper::idle(U32 delta)
+{
+   if(mIdleTimer.update(delta))
+      gGameUserInterface.setPlayMode();
+}
+
 bool LoadoutHelper::processKey(U32 key)
 {
    if(key == 27 || key == 8)
@@ -147,6 +154,7 @@ bool LoadoutHelper::processKey(U32 key)
    }
    if(!list[index].text)
       return false;
+   mIdleTimer.reset(MenuTimeout);
 
    switch(mCurrentIndex)
    {
