@@ -111,8 +111,22 @@ bool RabbitGameType::objectCanDamageObject(GameObject *damager, GameObject *vict
    //only hunters can hurt rabbits and only rabbits can hurt hunters
    Ship *damnShip = dynamic_cast<Ship *>(damager);
    Ship *victimShip = dynamic_cast<Ship *>(victim);
-   if ( (bool)(damnShip->mMountedItems.size()) != (bool)(victimShip->mMountedItems.size()) )
+   if ( shipHasFlag(damnShip) != shipHasFlag(victimShip) )
       return true;
+
+   return false;
+}
+
+bool RabbitGameType::shipHasFlag(Ship *ship)
+{
+   if (!ship)
+      return false;
+
+   for (S32 k = 0; k < ship->mMountedItems.size(); k++)
+   {
+      if (RabbitFlagItem *flag = dynamic_cast<RabbitFlagItem *>(ship->mMountedItems[k].getPointer()))
+         return true;
+   }
 
    return false;
 }
@@ -140,12 +154,12 @@ void RabbitGameType::controlObjectForClientKilled(GameConnection *theClient, Gam
 
    if (killerShip)
    {
-      if (killerShip->mMountedItems.size())
+      if (shipHasFlag(killerShip))
       {
          //rabbit killed another person
          onFlaggerKill(killerShip);
       }
-      else if (victimShip && victimShip->mMountedItems.size())
+      else if (shipHasFlag(victimShip))
       {
          //someone killed the rabbit!  Poor rabbit!
          onFlaggerDead(killerShip);
