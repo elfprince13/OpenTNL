@@ -92,6 +92,9 @@ Left-click - select and move.  Clicking on vertices allows movement
 		of verts, clicking on edges allows movement of the entire barrier border.
 		To move a vertex or border, click and hold as you drag the object around.
 		Left click also completes a new barrier border.
+		If no object is under the mouse, left-clicking will create a 
+		drag selection box for selecting multiple objects.  Holding down
+		the shift key also allows multiple selection of objects.
 
 Right-click - add barrier vertex.  If right clicking on an existing barrier edge,
 		this will insert a new vertex along that edge at the click point.  Otherwise
@@ -107,6 +110,10 @@ D - scroll map right
 C - zoom out
 E - zoom in
 R - reset view to 0,0 in the top left corner
+F - flip current selection horizontally
+V - flip current selection vertically
+CTRL-D - duplicate current selection
+CTRL-Z - undo last operation
 
 ESC - bring up editor menu
 
