@@ -284,6 +284,13 @@ typedef unsigned long long  U64;  ///< Compiler independent unsigned 64-bit inte
 #  define TNL_SUPPORTS_NASM
 
 #  if defined (__GNUC__)
+#    if __GNUC__ == 2
+#      define TNL_GCC_2
+#    elif __GNUC__ == 3
+#      define TNL_GCC_3
+#    else
+#      error "TNL: Unsupported version of GCC (see tnlMethodDispatch.cpp)"
+#    endif
 #    define TNL_SUPPORTS_GCC_INLINE_X86_ASM
 #  else
 #    define TNL_SUPPORTS_VC_INLINE_X86_ASM
