@@ -22,6 +22,7 @@ OBJECTS_ZAP=\
 	gameObjectRender.o\
 	gameType.o\
 	gameWeapons.o\
+	goalZone.o\
 	gridDB.o\
 	huntersGame.o\
 	item.o\
@@ -40,6 +41,7 @@ OBJECTS_ZAP=\
 	projectile.o\
 	quickChat.o\
 	rabbitGame.o\
+	retrieveGame.o\
 	ship.o\
 	sfx.o\
 	soccerGame.o\
