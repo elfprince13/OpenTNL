@@ -189,6 +189,9 @@
 			RelativePath="..\exe\level3.txt">
 		</File>
 		<File
+			RelativePath="..\exe\level4.txt">
+		</File>
+		<File
 			RelativePath=".\main.cpp">
 		</File>
 		<File

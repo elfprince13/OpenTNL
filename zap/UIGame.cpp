@@ -228,13 +228,17 @@ void GameUserInterface::render()
    }
 
 #if 0
-   // some code for outputting the RTT for the connection
-   // useful for testing lag code
+   // some code for outputting the position of the ship for finding good spawns
    GameConnection *con = gClientGame->getConnectionToServer();
 
    if(con)
    {
-      drawStringf(10, 550, 30, "%0.2g", con->getRoundTripTime());
+      GameObject *co = con->getControlObject();
+      if(co)
+      {
+         Point pos = co->getActualPos() * F32(1 / 300.0f);
+         drawStringf(10, 550, 30, "%0.2g, %0.2g", pos.x, pos.y);
+      }
    }
 #endif
 

@@ -10,6 +10,7 @@ Changes since version 1.1.2:
 - Removed player particle trails and added motion trails
 - Added README
 - Added credits on exit
+- Added a new CTF level
 
 Controls:
 
