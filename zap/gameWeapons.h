@@ -53,6 +53,17 @@ enum WeaponConsts
 
 struct ShipWeaponInfo
 {
+   ShipWeaponInfo(StringTableEntry _name, U32 _fireDelay, U32 _minEnergy, U32 _drainEnergy, U32 _projVelocity, U32 _projLiveTime, U32 _projectileType)
+   {
+      name = _name;
+      fireDelay = _fireDelay;
+      minEnergy = _minEnergy;
+      drainEnergy = _drainEnergy;
+      projVelocity = _projVelocity;
+      projLiveTime = _projLiveTime;
+      projectileType = _projectileType;
+   }
+
    StringTableEntry name; // Display name of the weapon.
    U32 fireDelay;    // Delay between shots.
    U32 minEnergy;    // Minimum energy to fire.
@@ -64,6 +75,45 @@ struct ShipWeaponInfo
 
 extern ShipWeaponInfo gWeapons[WeaponCount];
 extern void createWeaponProjectiles(U32 weapon, Point &dir, Point &shooterPos, Point &shooterVel, F32 shooterRadius, GameObject *shooter);
+
+enum {
+   NumSparkColors = 4,
+};
+
+enum ProjectileType
+{
+   ProjectilePhaser,
+   ProjectileBounce,
+   ProjectileTriple,
+   ProjectileTurret,
+   ProjectileTypeCount,
+};
+
+struct ProjectileInfo
+{
+   ProjectileInfo(F32 _damageAmount, Color _sparkColor1, Color _sparkColor2, Color _sparkColor3, Color _sparkColor4, Color _projColor1, Color _projColor2, F32 _scaleFactor, U32 _projectileSound, U32 _impactSound )
+   {
+      damageAmount = _damageAmount;
+      sparkColors[0] = _sparkColor1;
+      sparkColors[1] = _sparkColor2;
+      sparkColors[2] = _sparkColor3;
+      sparkColors[3] = _sparkColor4;
+      projColors[0] = _projColor1;
+      projColors[1] = _projColor2;
+      scaleFactor = _scaleFactor;
+      projectileSound = _projectileSound;
+      impactSound = _impactSound;
+   }
+
+   F32   damageAmount;
+   Color sparkColors[NumSparkColors];
+   Color projColors[2];
+   F32   scaleFactor;
+   U32   projectileSound;
+   U32   impactSound;
+};
+
+extern ProjectileInfo gProjInfo[ProjectileTypeCount];
 
 };
 

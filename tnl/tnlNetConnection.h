@@ -198,7 +198,6 @@ public:
    NetConnection();
    ~NetConnection();
 
-protected:
    enum TerminationReason {
       ReasonTimedOut,
       ReasonFailedConnectHandshake,
@@ -208,6 +207,8 @@ protected:
       ReasonSelfDisconnect,
       ReasonError,
    };
+
+protected:
 
    virtual void onConnectTerminated(TerminationReason reason, const char *rejectionString);     ///< Called when a pending connection is terminated
    virtual void onConnectionTerminated(TerminationReason, const char *errorDisconnectString);   ///< Called when this established connection is terminated for any reason

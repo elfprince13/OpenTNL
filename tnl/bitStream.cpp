@@ -287,12 +287,12 @@ F32 BitStream::readFloat(U8 bitCount)
 
 void BitStream::writeSignedFloat(F32 f, U8 bitCount)
 {
-   writeSignedInt(S32(((f + 1) * .5f) * ((1 << bitCount) - 1)), bitCount);
+   writeSignedInt(S32(f * ((1 << (bitCount - 1)) - 1)), bitCount);
 }
 
 F32 BitStream::readSignedFloat(U8 bitCount)
 {
-   return readSignedInt(bitCount) * 2 / F32((1 << bitCount) - 1) - 1.0f;
+   return readSignedInt(bitCount) / F32((1 << (bitCount - 1)) - 1);
 }
 
 void BitStream::writeSignedInt(S32 value, U8 bitCount)

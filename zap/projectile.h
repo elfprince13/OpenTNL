@@ -30,7 +30,7 @@
 #include "gameType.h"
 #include "gameObject.h"
 #include "item.h"
-
+#include "gameWeapons.h"
 namespace Zap
 {
 
@@ -45,15 +45,6 @@ public:
       ExplodedMask = BIT(1),
    };
 
-   enum ProjectileType
-   {
-      Phaser,
-      Bounce,
-      Triple,
-      Turret,
-      TypeCount,
-   };
-
    Point pos;
    Point velocity;
    U32 mTimeRemaining;
@@ -62,7 +53,7 @@ public:
    bool alive;
    SafePtr<GameObject> mShooter;
 
-   Projectile(U32 type = Phaser, Point pos = Point(), Point vel = Point(), U32 liveTime = 0, GameObject *shooter = NULL);
+   Projectile(U32 type = ProjectilePhaser, Point pos = Point(), Point vel = Point(), U32 liveTime = 0, GameObject *shooter = NULL);
 
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);
@@ -78,23 +69,6 @@ public:
    void render();
    TNL_DECLARE_CLASS(Projectile);
 };
-
-
-enum {
-   NumSparkColors = 4,
-};
-
-struct ProjectileInfo
-{
-   F32   damageAmount;
-   Color sparkColors[NumSparkColors];
-   Color projColors[2];
-   F32   scaleFactor;
-   U32   projectileSound;
-   U32   impactSound;
-};
-
-extern ProjectileInfo gProjInfo[Projectile::TypeCount];
 
 class GrenadeProjectile : public Item
 {

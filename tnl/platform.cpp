@@ -174,7 +174,11 @@ void Platform::sleep(U32 msCount)
 
 bool Platform::checkHeap()
 {
+#ifdef TNL_COMPILER_VISUALC
    return _heapchk() == _HEAPOK;
+#else
+   return true;
+#endif
 }
 
 void Platform::outputDebugString(const char *string)

@@ -37,12 +37,19 @@ namespace Zap
 
 ShipWeaponInfo gWeapons[] =
 {
-   {StringTableEntry("Phaser"),   100,  500,   500,   600, 1000, Projectile::Phaser },
-   {StringTableEntry("Bouncer"),  100,  1800,  1800,  540, 1500, Projectile::Bounce },
-   {StringTableEntry("Triple"),   200,  2100,  2100,  550, 850,  Projectile::Triple },
-   {StringTableEntry("Burst"),    700,  5000,  5000,  500, 1000, 0 },
-   {StringTableEntry("Mine"),     900,  65000, 65000, 500, 1000, 0 },
-   {StringTableEntry("Turret"),   0,    0,     0,     800, 800,  Projectile::Turret },
+   ShipWeaponInfo(StringTableEntry("Phaser"),   100,  500,   500,   600, 1000, ProjectilePhaser ),
+   ShipWeaponInfo(StringTableEntry("Bouncer"),  100,  1800,  1800,  540, 1500, ProjectileBounce ),
+   ShipWeaponInfo(StringTableEntry("Triple"),   200,  2100,  2100,  550, 850,  ProjectileTriple ),
+   ShipWeaponInfo(StringTableEntry("Burst"),    700,  5000,  5000,  500, 1000, 0 ),
+   ShipWeaponInfo(StringTableEntry("Mine"),     900,  65000, 65000, 500, 1000, 0 ),
+   ShipWeaponInfo(StringTableEntry("Turret"),   0,    0,     0,     800, 800,  ProjectileTurret ),
+};
+
+ProjectileInfo gProjInfo[ProjectileTypeCount] = {
+   ProjectileInfo( .21f, Color(1,0,1), Color(1,1,1), Color(0,0,1), Color(1,0,0), Color(1, 0, 0.5), Color(0.5, 0, 1), 1, SFXPhaserProjectile, SFXPhaserImpact ),
+   ProjectileInfo( 0.15f,Color(1,1,0), Color(1,0,0), Color(1,0.5,0), Color(1,1,1), Color(1, 1, 0), Color(1, 0, 0), 1.3, SFXBounceProjectile, SFXBounceImpact ),
+   ProjectileInfo( .14f, Color(0,0,1), Color(0,1,0), Color(0,0.5,1), Color(0,1,0.5), Color(0, 0.5, 1), Color(0, 1, 0.5), 0.7, SFXTripleProjectile, SFXTripleImpact ),
+   ProjectileInfo( .11f, Color(0,1,1), Color(1,1,0), Color(0,1,0.5), Color(0.5,1,0), Color(0.5, 1, 0), Color(0, 1, 0.5), 0.6, SFXTurretProjectile, SFXTurretImpact ),
 };
 
 void createWeaponProjectiles(U32 weapon, Point &dir, Point &shooterPos, Point &shooterVel, F32 shooterRadius, GameObject *shooter)

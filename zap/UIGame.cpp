@@ -51,8 +51,11 @@ GameUserInterface::GameUserInterface()
 {
    mCurrentMode = PlayMode;
    mInScoreboardMode = false;
+#ifdef TNL_OS_XBOX
+   mFPSVisible = true;
+#else
    mFPSVisible = false;
-
+#endif
    mFrameIndex = 0;
    for(U32 i = 0; i < FPSAvgCount; i++)
       mIdleTimeDelta[i] = 50;
@@ -145,7 +148,10 @@ void GameUserInterface::render()
       U32 sum = 0;
       for(U32 i = 0; i < FPSAvgCount; i++)
          sum += mIdleTimeDelta[i];
-      drawStringf(710, 10, 30, "%4.2f fps", (1000 * FPSAvgCount) / F32(sum));
+      drawStringf(canvasWidth - horizMargin - 170, vertMargin, 30, 
+            "%0.2g %0.2g %4.2f fps", mCurrentMove.right - mCurrentMove.left,
+                               mCurrentMove.down - mCurrentMove.up, 
+                               (1000 * FPSAvgCount) / F32(sum));
    }
    if(mCurrentMode == VChatMode)
       mVChat.render();

@@ -24,13 +24,13 @@
 //
 //------------------------------------------------------------------------------------
 
+#include "gameWeapons.h"
 #include "projectile.h"
 #include "ship.h"
 #include "sparkManager.h"
 #include "sfx.h"
 #include "gameObject.h"
 #include "gameObjectRender.h"
-
 #include "glutInclude.h"
 
 namespace Zap
@@ -57,14 +57,6 @@ Projectile::Projectile(U32 type, Point p, Point v, U32 t, GameObject *shooter)
    mType = type;
 }
 
-ProjectileInfo gProjInfo[Projectile::TypeCount] = {
-   { 0.21f, { Color(1,0,1), Color(1,1,1), Color(0,0,1),   Color(1,0,0)   }, { Color(1, 0, 0.5), Color(0.5, 0, 1) }, 1,   SFXPhaserProjectile, SFXPhaserImpact },
-   { 0.15f, { Color(1,1,0), Color(1,0,0), Color(1,0.5,0), Color(1,1,1)   }, { Color(1, 1, 0),   Color(1, 0, 0)   }, 1.3, SFXBounceProjectile, SFXBounceImpact },
-   { 0.14f, { Color(0,0,1), Color(0,1,0), Color(0,0.5,1), Color(0,1,0.5) }, { Color(0, 0.5, 1), Color(0, 1, 0.5) }, 0.7, SFXTripleProjectile, SFXTripleImpact },
-   { 0.11f, { Color(0,1,1), Color(1,1,0), Color(0,1,0.5), Color(0.5,1,0) }, { Color(0.5, 1, 0), Color(0, 1, 0.5) }, 0.6, SFXTurretProjectile, SFXTurretImpact },
-};
-
-
 U32 Projectile::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
    if(stream->writeFlag(updateMask & InitialMask))
@@ -72,7 +64,7 @@ U32 Projectile::packUpdate(GhostConnection *connection, U32 updateMask, BitStrea
       ((GameConnection *) connection)->writeCompressedPoint(pos, stream);
       writeCompressedVelocity(velocity, CompressedVelocityMax, stream);
 
-      stream->writeEnum(mType, TypeCount);
+      stream->writeEnum(mType, ProjectileTypeCount);
 
       S32 index = -1;
       if(mShooter.isValid())
@@ -94,7 +86,7 @@ void Projectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
       ((GameConnection *) connection)->readCompressedPoint(pos, stream);
       readCompressedVelocity(velocity, CompressedVelocityMax, stream);
 
-      mType = stream->readEnum(TypeCount);
+      mType = stream->readEnum(ProjectileTypeCount);
 
       if(stream->readFlag())
          mShooter = (Ship *) connection->resolveGhost(stream->readInt(GhostConnection::GhostIdBitSize));
@@ -177,7 +169,7 @@ void Projectile::idle(GameObject::IdleCallPath path)
          bool bounce = false;
          U32 typeMask = hitObject->getObjectTypeMask();
          
-         if(mType == Bounce && (typeMask & BarrierType))
+         if(mType == ProjectileBounce && (typeMask & BarrierType))
             bounce = true;
          else if(typeMask & ShipType)
          {
@@ -479,7 +471,7 @@ void GrenadeProjectile::explode(Point pos)
       // Make us go boom!
       Color b(1,1,1);
 
-      FXManager::emitExplosion(getRenderPos(), 0.5, gProjInfo[Projectile::Phaser].sparkColors, NumSparkColors);
+      FXManager::emitExplosion(getRenderPos(), 0.5, gProjInfo[ProjectilePhaser].sparkColors, NumSparkColors);
       SFXObject::play(SFXMineExplode, getActualPos(), Point());
    }
 
