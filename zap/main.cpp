@@ -69,7 +69,7 @@ Address gBindAddress(IPProtocol, Address::Any, 28000);
 
 const char *gLevelList = "retrieve1.txt "
                          "retrieve2.txt "
-                         "htf1.txt "
+                         "retrieve3.txt "
                          "football1.txt "
                          "football2.txt "
                          "football3.txt "
@@ -77,7 +77,6 @@ const char *gLevelList = "retrieve1.txt "
                          "football5.txt "
                          "rabbit1.txt "
                          "soccer1.txt "
-                         "soccer2.txt "
                          "ctf1.txt "
                          "ctf2.txt "
                          "ctf3.txt "
@@ -153,7 +152,10 @@ void key(unsigned char key, int x, int y)
 
 TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, key, (U8 key))
 {
-   if(UserInterface::current)
+   // check for ALT-ENTER
+   if(key == '\r' && (glutGetModifiers() & GLUT_ACTIVE_ALT))
+      gOptionsMenuUserInterface.toggleFullscreen();
+   else if(UserInterface::current)
       UserInterface::current->onKeyDown(key);
 }
 

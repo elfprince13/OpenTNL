@@ -29,6 +29,7 @@
 #include "game.h"
 #include "UIGame.h"
 #include "UIMenus.h"
+#include "UIInstructions.h"
 #include "gameType.h"
 #include "lpc10.h"
 #include "tnlEndian.h"
@@ -450,6 +451,12 @@ void GameUserInterface::onModifierKeyUp(U32 key)
          mCurrentMove.module[1] = false;
       }
    }
+}
+
+void GameUserInterface::onSpecialKeyDown(U32 key)
+{
+   if(key == GLUT_KEY_F1)
+      gInstructionsUserInterface.activate();
 }
 
 void GameUserInterface::onKeyDown(U32 key)

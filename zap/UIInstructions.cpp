@@ -411,6 +411,14 @@ void InstructionsUserInterface::prevPage()
       mCurPage = NumPages;
 }
 
+void InstructionsUserInterface::exitInstructions()
+{
+   if(gClientGame->isConnectedToServer())
+      gGameUserInterface.activate();
+   else
+      gMainMenuUserInterface.activate();
+}
+
 void InstructionsUserInterface::onSpecialKeyDown(U32 key)
 {
    switch(key)
@@ -420,6 +428,9 @@ void InstructionsUserInterface::onSpecialKeyDown(U32 key)
          break;
       case GLUT_KEY_RIGHT:
          nextPage();
+         break;
+      case GLUT_KEY_F1:
+         exitInstructions();
          break;
    }
 }
@@ -433,10 +444,7 @@ void InstructionsUserInterface::onKeyDown(U32 key)
          break;
       case '\r':
       case 27:
-         if(gClientGame->isConnectedToServer())
-            gGameUserInterface.activate();
-         else
-            gMainMenuUserInterface.activate();
+         exitInstructions();
          break;
    }
 }

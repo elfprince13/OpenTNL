@@ -40,7 +40,21 @@ class ZoneControlGameType : public GameType
 
    Vector<GoalZone*> mZones;
    SafePtr<FlagItem> mFlag;
+   S32 mFlagTeam;
 public:
+   ZoneControlGameType()
+   {
+      mFlagTeam = -1;
+   }
+
+   void onGhostAvailable(GhostConnection *theConnection)
+   {
+      Parent::onGhostAvailable(theConnection);
+      NetObject::setRPCDestConnection(theConnection);
+      s2cSetFlagTeam(mFlagTeam);
+      NetObject::setRPCDestConnection(NULL);
+   }
+
    void shipTouchFlag(Ship *theShip, FlagItem *theFlag);
    void flagDropped(Ship *theShip, FlagItem *theFlag);
    void addZone(GoalZone *z);
@@ -55,11 +69,16 @@ public:
    void renderInterfaceOverlay(bool scoreboardVisible);
    void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);
 
+   TNL_DECLARE_RPC(s2cSetFlagTeam, (S32 newFlagTeam));
    TNL_DECLARE_CLASS(ZoneControlGameType);
 };
 
 TNL_IMPLEMENT_NETOBJECT(ZoneControlGameType);
 
+GAMETYPE_RPC_S2C(ZoneControlGameType, s2cSetFlagTeam, (S32 flagTeam))
+{
+   mFlagTeam = flagTeam;
+}
 
 void ZoneControlGameType::shipTouchFlag(Ship *theShip, FlagItem *theFlag)
 {
@@ -75,10 +94,13 @@ void ZoneControlGameType::shipTouchFlag(Ship *theShip, FlagItem *theFlag)
    for(S32 i = 0; i < mClientList.size(); i++)
       mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagSnatch, takeString, e);
    theFlag->mountToShip(theShip);
+   mFlagTeam = theShip->getTeam();
+   s2cSetFlagTeam(mFlagTeam);
 }
 
 void ZoneControlGameType::flagDropped(Ship *theShip, FlagItem *theFlag)
 {
+   s2cSetFlagTeam(-1);
    static StringTableEntry dropString("%e0 dropped the flag!");
    Vector<StringTableEntry> e;
    e.push_back(theShip->mPlayerName);
@@ -149,6 +171,8 @@ void ZoneControlGameType::shipTouchZone(Ship *s, GoalZone *z)
          mountedFlag->sendHome();
       }
    }
+   mFlagTeam = -1;
+   s2cSetFlagTeam(-1);
 }
 
 void ZoneControlGameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection)
@@ -178,35 +202,37 @@ void ZoneControlGameType::renderInterfaceOverlay(bool scoreboardVisible)
    if(!u)
       return;
 
-   if(mFlag.isValid() && mFlag->getMount() == u)
+   bool hasFlag = mFlag.isValid() && mFlag->getMount() == u;
+
+   // first render all zones that are not yet taken by the flag holding team
+   if(mFlagTeam != -1)
    {
-      // the ship has the flag, so render zones not controlled by his team
       for(S32 i = 0; i < mZones.size(); i++)
-         if(mZones[i]->getTeam() != u->getTeam())
-            renderObjectiveArrow(mZones[i], getTeamColor(mZones[i]->getTeam()));
+      {
+         if(mZones[i]->getTeam() != mFlagTeam)
+            renderObjectiveArrow(mZones[i], getTeamColor(mZones[i]), hasFlag ? 1.0 : 0.4);
+         else if(mZones[i]->didRecentlyChangeTeam() && mZones[i]->getTeam() != -1 && u->getTeam() != mFlagTeam)
+         {
+            // render a blinky arrow for a recently taken zone
+            Color c = getTeamColor(mZones[i]);
+            if(mZones[i]->isFlashing())
+               c *= 0.7;
+            renderObjectiveArrow(mZones[i], c);
+         }
+      }
+
    }
-   else
+   if(!hasFlag)
    {
       if(mFlag.isValid())
       {
          if(!mFlag->isMounted())
-            renderObjectiveArrow(mFlag, getTeamColor(mFlag->getTeam()));
+            renderObjectiveArrow(mFlag, getTeamColor(mFlag));
          else
          {
             Ship *mount = mFlag->getMount();
             if(mount)
-               renderObjectiveArrow(mount, getTeamColor(mount->getTeam()));
-         }
-      }
-      for(S32 i = 0; i < mZones.size(); i++)
-      {
-         if(mZones[i]->didRecentlyChangeTeam() && mZones[i]->getTeam() != -1)
-         {
-            Color c = getTeamColor(mZones[i]->getTeam());
-            if(mZones[i]->isFlashing())
-               c *= 0.8;
-            renderObjectiveArrow(mZones[i], c);
-
+               renderObjectiveArrow(mount, getTeamColor(mount));
          }
       }
    }

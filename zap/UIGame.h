@@ -143,6 +143,7 @@ public:
    void onKeyUp(U32 key);
    void onModifierKeyDown(U32 key);
    void onModifierKeyUp(U32 key);
+   void onSpecialKeyDown(U32 key);
    void onControllerButtonDown(U32 buttonIndex);
    void onControllerButtonUp(U32 buttonIndex);
 

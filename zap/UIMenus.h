@@ -95,6 +95,7 @@ public:
    void onEscape();
    void setupMenus();
    void onActivate();
+   void toggleFullscreen();
 };
 
 extern OptionsMenuUserInterface gOptionsMenuUserInterface;

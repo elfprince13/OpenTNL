@@ -309,6 +309,18 @@ void OptionsMenuUserInterface::setupMenus()
       menuItems.push_back(MenuItem("VOICE ECHO: DISABLED",3));
 }
 
+void OptionsMenuUserInterface::toggleFullscreen()
+{
+   if(fullscreen)
+   {
+      glutPositionWindow(100, 100);
+      glutReshapeWindow(800, 600);
+   }
+   else
+      glutFullScreen();
+   fullscreen = !fullscreen;
+}
+
 void OptionsMenuUserInterface::processSelection(U32 index)
 {
    switch(index)
@@ -317,14 +329,7 @@ void OptionsMenuUserInterface::processSelection(U32 index)
       controlsRelative = !controlsRelative;
       break;
    case 1:
-      if(fullscreen)
-      {
-         glutPositionWindow(100, 100);
-         glutReshapeWindow(800, 600);
-      }
-      else
-         glutFullScreen();
-      fullscreen = !fullscreen;
+      toggleFullscreen();
       break;
    case 2:
       joystickType++;

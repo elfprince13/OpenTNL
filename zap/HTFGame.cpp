@@ -256,6 +256,8 @@ public:
                S32 k;
                for(k = 0; k < mFlags.size(); k++)
                {
+                  if(!mFlags[k].isValid())
+                     continue;
                   if(mFlags[k]->getZone() == mZones[j])
                      break;
                }

@@ -220,7 +220,7 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
    renderTalkingClients();
 }
 
-void GameType::renderObjectiveArrow(GameObject *target, Color c)
+void GameType::renderObjectiveArrow(GameObject *target, Color c, F32 alphaMod)
 {
    GameConnection *gc = gClientGame->getConnectionToServer();
    GameObject *co = NULL;
@@ -275,7 +275,7 @@ void GameType::renderObjectiveArrow(GameObject *target, Color c)
 
    arrowDir.normalize();
    Point crossVec(arrowDir.y, -arrowDir.x);
-   F32 alpha = (1 - gClientGame->getCommanderZoomFraction()) * 0.6;
+   F32 alpha = (1 - gClientGame->getCommanderZoomFraction()) * 0.6 * alphaMod;
    if(!alpha)
       return;
 
@@ -661,6 +661,11 @@ Color GameType::getTeamColor(S32 team)
       return Color(0.8, 0.8, 0.8);
    else
       return mTeams[team].color;
+}
+
+Color GameType::getTeamColor(GameObject *theObject)
+{
+   return getTeamColor(theObject->getTeam());
 }
 
 Color GameType::getShipColor(Ship *s)

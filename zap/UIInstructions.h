@@ -45,6 +45,7 @@ public:
    void onSpecialKeyDown(U32 key);
    void onKeyDown(U32 key);
    void onActivate();
+   void exitInstructions();
 };
 
 extern InstructionsUserInterface gInstructionsUserInterface;
