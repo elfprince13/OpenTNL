@@ -36,7 +36,7 @@ namespace Zap
 
 TNL_IMPLEMENT_NETOBJECT(Projectile);
 
-Projectile::Projectile(Point p, Point v, U32 t, Ship *shooter, bool bouncy)
+Projectile::Projectile(U32 type, Point p, Point v, U32 t, GameObject *shooter)
 {
    mNetFlags.set(Ghostable);
    pos = p;
@@ -45,7 +45,7 @@ Projectile::Projectile(Point p, Point v, U32 t, Ship *shooter, bool bouncy)
    collided = false;
    alive = true;
    mShooter = shooter;
-   isBouncy = bouncy;
+   mType = type;
 }
 
 U32 Projectile::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
@@ -55,7 +55,7 @@ U32 Projectile::packUpdate(GhostConnection *connection, U32 updateMask, BitStrea
       ((GameConnection *) connection)->writeCompressedPoint(pos, stream);
       writeCompressedVelocity(velocity, CompressedVelocityMax, stream);
 
-      stream->writeFlag(isBouncy);
+      stream->writeEnum(mType, TypeCount);
 
       S32 index = -1;
       if(mShooter.isValid())
@@ -77,7 +77,7 @@ void Projectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
       ((GameConnection *) connection)->readCompressedPoint(pos, stream);
       readCompressedVelocity(velocity, CompressedVelocityMax, stream);
 
-      isBouncy = stream->readFlag();
+      mType = stream->readEnum(TypeCount);
 
       if(stream->readFlag())
          mShooter = (Ship *) connection->resolveGhost(stream->readInt(GhostConnection::GhostIdBitSize));
@@ -105,13 +105,6 @@ enum {
    NumSparkColors = 4,
 };
 
-Color SparkColors[NumSparkColors] = {
-Color(1, 0, 1),
-Color(1, 1, 1),
-Color(0, 0, 1),
-Color(1, 0, 0),
-};
-
 void Projectile::handleCollision(GameObject *hitObject, Point collisionPoint)
 {
    collided = true;
@@ -130,21 +123,6 @@ void Projectile::handleCollision(GameObject *hitObject, Point collisionPoint)
 
    liveTime = 0;
    explode(hitObject, collisionPoint);
-}
-
-void Projectile::explode(GameObject *hitObject, Point thePos)
-{
-   // Do some particle spew...
-   if(isGhost())
-   {
-      SparkManager::emitExplosion(thePos, 0.3, SparkColors, NumSparkColors);
-
-      Ship *s = dynamic_cast<Ship*>(hitObject);
-      if(s && s->isShieldActive())
-         SFXObject::play(SFXBounceShield, thePos, velocity);
-      else
-         SFXObject::play(SFXPhaserImpact, thePos, velocity);
-   }
 }
 
 void Projectile::idle(GameObject::IdleCallPath path)
@@ -182,7 +160,7 @@ void Projectile::idle(GameObject::IdleCallPath path)
 
       if(hitObject)
       {
-         if(isBouncy && hitObject->getObjectTypeMask() & BarrierType)
+         if(mType == Bounce && hitObject->getObjectTypeMask() & BarrierType)
          {
             // test out reflection
             velocity -= surfNormal * surfNormal.dot(velocity) * 2;
@@ -216,14 +194,46 @@ void Projectile::idle(GameObject::IdleCallPath path)
    }
 }
 
+struct ProjectileDisplayInfo
+{
+   Color sparkColors[NumSparkColors];
+   Color projColors[2];
+   F32 scaleFactor;
+};
+
+ProjectileDisplayInfo gProjInfo[Projectile::TypeCount] = {
+   { { Color(1,0,1), Color(1,1,1), Color(0,0,1), Color(1,0,0) }, { Color(1, 0, 0.5), Color(0.5, 0, 1) }, 1 },
+   { { Color(1,1,0), Color(1,0,0), Color(1,0.5,0), Color(1,1,1) }, { Color(1, 1, 0), Color(1, 0, 0) }, 1.3 },
+   { { Color(0,0,1), Color(0,1,0), Color(0,0.5,1), Color(0,1,0.5) }, { Color(0, 0.5, 1), Color(0, 1, 0.5) }, 0.7 },
+   { { Color(0,1,1), Color(1,1,0), Color(0,1,0.5), Color(0.5,1,0) }, { Color(0.5, 1, 0), Color(0, 1, 0.5) }, 0.6 },
+};
+
+void Projectile::explode(GameObject *hitObject, Point thePos)
+{
+   // Do some particle spew...
+   if(isGhost())
+   {
+      SparkManager::emitExplosion(thePos, 0.3, gProjInfo[mType].sparkColors, NumSparkColors);
+
+      Ship *s = dynamic_cast<Ship*>(hitObject);
+      if(s && s->isShieldActive())
+         SFXObject::play(SFXBounceShield, thePos, velocity);
+      else
+         SFXObject::play(SFXPhaserImpact, thePos, velocity);
+   }
+}
+
 void Projectile::render()
 {
    if(collided || !alive)
       return;
 
-   glColor3f(1,0,0.5);
+   ProjectileDisplayInfo *pi = gProjInfo + mType;
+
+   glColor3f(pi->projColors[0].r,pi->projColors[0].g,pi->projColors[0].b);
    glPushMatrix();
    glTranslatef(pos.x, pos.y, 0);
+   glScalef(pi->scaleFactor, pi->scaleFactor, 1);
 
    glPushMatrix();
    glRotatef((liveTime % 720) * 0.5, 0, 0, 1);
@@ -242,7 +252,7 @@ void Projectile::render()
    glPopMatrix();
 
    glRotatef(180 - (liveTime % 360), 0, 0, 1);
-   glColor3f(0.5,0,1);
+   glColor3f(pi->projColors[1].r,pi->projColors[1].g,pi->projColors[1].b);
    glBegin(GL_LINE_LOOP);
    glVertex2f(-2, 2);
    glVertex2f(0, 8);
@@ -259,7 +269,7 @@ void Projectile::render()
 
 TNL_IMPLEMENT_NETOBJECT(GrenadeProjectile);
 
-GrenadeProjectile::GrenadeProjectile(Point pos, Point vel, U32 liveTime, Ship *shooter)
+GrenadeProjectile::GrenadeProjectile(Point pos, Point vel, U32 liveTime, GameObject *shooter)
  : Item(pos, true, 7.f, 1.f)
 {
    mObjectTypeMask = MoveableType;

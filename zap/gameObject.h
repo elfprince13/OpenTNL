@@ -79,6 +79,7 @@ protected:
    U32 mObjectTypeMask;
    Move mLastMove; ///< the move for the previous update
    Move mCurrentMove; ///< The move for the current update
+   S32 mTeam;
 public:
 
    GameObject();
@@ -94,6 +95,7 @@ public:
    bool isInDatabase() { return mInDatabase; }
    void setExtent(Rect &extentRect);
    Rect getExtent() { return extent; }
+   S32 getTeam() { return mTeam; }
    void findObjects(U32 typeMask, Vector<GameObject *> &fillVector, Rect &extents);
    GameObject *findObjectLOS(U32 typeMask, U32 stateIndex, Point rayStart, Point rayEnd, float &collisionTime, Point &collisionNormal);
 

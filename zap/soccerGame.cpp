@@ -321,7 +321,7 @@ bool SoccerBallItem::collide(GameObject *hitObject)
       if(goal && !mSendHomeTimer.getCurrent())
       {
          SoccerGameType *g = (SoccerGameType *) getGame()->getGameType();
-         g->scoreGoal(lastPlayerTouch, goal->getTeamIndex());
+         g->scoreGoal(lastPlayerTouch, goal->getTeam());
          mSendHomeTimer.reset(1500);
       }
    }
@@ -332,7 +332,7 @@ TNL_IMPLEMENT_NETOBJECT(SoccerGoalObject);
 
 SoccerGoalObject::SoccerGoalObject()
 {
-   teamIndex = 0;
+   mTeam = 0;
    mObjectTypeMask |= CommandMapVisType;
    mNetFlags.set(Ghostable);
 }
@@ -349,7 +349,7 @@ void SoccerGoalObject::onAddedToGame(Game *theGame)
 void SoccerGoalObject::render()
 {
    F32 alpha = 0.5;
-   Color theColor = getGame()->getGameType()->mTeams[teamIndex].color;
+   Color theColor = getGame()->getGameType()->mTeams[getTeam()].color;
    glColor3f(theColor.r * alpha, theColor.g * alpha, theColor.b * alpha);
    glBegin(GL_POLYGON);
    for(S32 i = 0; i < mPolyBounds.size(); i++)
@@ -369,7 +369,7 @@ void SoccerGoalObject::processArguments(S32 argc, const char **argv)
    if(argc < 7)
       return;
 
-   teamIndex = atoi(argv[0]);
+   mTeam = atoi(argv[0]);
    for(S32 i = 1; i < argc; i += 2)
    {
       Point p;
@@ -395,7 +395,7 @@ bool SoccerGoalObject::collide(GameObject *hitObject)
 
 U32 SoccerGoalObject::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
-   stream->write(teamIndex);
+   stream->write(mTeam);
    stream->writeRangedU32(mPolyBounds.size(), 0, MaxPoints);
    for(S32 i = 0; i < mPolyBounds.size(); i++)
    {
@@ -407,7 +407,7 @@ U32 SoccerGoalObject::packUpdate(GhostConnection *connection, U32 updateMask, Bi
 
 void SoccerGoalObject::unpackUpdate(GhostConnection *connection, BitStream *stream)
 {
-   stream->read(&teamIndex);
+   stream->read(&mTeam);
    S32 size = stream->readRangedU32(0, MaxPoints);
    for(S32 i = 0; i < size; i++)
    {

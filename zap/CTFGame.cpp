@@ -163,14 +163,14 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
 
    ClientRef &cl = mClientList[clientIndex];
 
-   if(cl.teamId == theFlag->getTeamIndex())
+   if(cl.teamId == theFlag->getTeam())
    {
       if(!theFlag->isAtHome())
       {
          static StringTableEntry returnString("%e0 returned the %e1 flag.");
          Vector<StringTableEntry> e;
          e.push_back(cl.name);
-         e.push_back(mTeams[theFlag->getTeamIndex()].name);
+         e.push_back(mTeams[theFlag->getTeam()].name);
          for(S32 i = 0; i < mClientList.size(); i++)
             mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagReturn, returnString, e);
 
@@ -191,7 +191,7 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
                static StringTableEntry capString("%e0 captured the %e1 flag!");
                Vector<StringTableEntry> e;
                e.push_back(cl.name);
-               e.push_back(mTeams[mountedFlag->getTeamIndex()].name);
+               e.push_back(mTeams[mountedFlag->getTeam()].name);
                for(S32 i = 0; i < mClientList.size(); i++)
                   mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagCapture, capString, e);
 
@@ -208,7 +208,7 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
       static StringTableEntry takeString("%e0 took the %e1 flag!");
       Vector<StringTableEntry> e;
       e.push_back(cl.name);
-      e.push_back(mTeams[theFlag->getTeamIndex()].name);
+      e.push_back(mTeams[theFlag->getTeam()].name);
       for(S32 i = 0; i < mClientList.size(); i++)
          mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagSnatch, takeString, e);
       theFlag->mountToShip(theShip);
@@ -293,7 +293,7 @@ TNL_IMPLEMENT_NETOBJECT(CTFFlagItem);
 
 CTFFlagItem::CTFFlagItem(Point pos) : Item(pos, false, 20)
 {
-   teamIndex = 0;
+   mTeam = 0;
    mNetFlags.set(Ghostable);
    mObjectTypeMask |= CommandMapVisType;
 }
@@ -303,7 +303,7 @@ void CTFFlagItem::processArguments(S32 argc, const char **argv)
    if(argc < 3)
       return;
 
-   teamIndex = atoi(argv[0]);
+   mTeam = atoi(argv[0]);
    Parent::processArguments(argc-1, argv+1);
    initialPos = mMoveState[ActualState].pos;
 }
@@ -311,14 +311,14 @@ void CTFFlagItem::processArguments(S32 argc, const char **argv)
 U32 CTFFlagItem::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
    if(stream->writeFlag(updateMask & InitialMask))
-      stream->writeInt(teamIndex, 4);
+      stream->writeInt(mTeam, 4);
    return Parent::packUpdate(connection, updateMask, stream);
 }
 
 void CTFFlagItem::unpackUpdate(GhostConnection *connection, BitStream *stream)
 {
    if(stream->readFlag())
-      teamIndex = stream->readInt(4);
+      mTeam = stream->readInt(4);
    Parent::unpackUpdate(connection, stream);
 }
 
@@ -344,7 +344,7 @@ void CTFFlagItem::renderItem(Point pos)
    Color c;
    GameType *gt = getGame()->getGameType();
 
-   c = gt->mTeams[teamIndex].color;
+   c = gt->mTeams[getTeam()].color;
 
    renderFlag(pos + offset, c);
 }
@@ -375,7 +375,7 @@ void CTFFlagItem::onMountDestroyed()
    if(!mMount.isValid())
       return;
 
-   gt->flagDropped(mMount->mPlayerName, teamIndex);
+   gt->flagDropped(mMount->mPlayerName, getTeam());
    dismount();
 }
 

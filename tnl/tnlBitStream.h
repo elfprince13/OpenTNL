@@ -143,6 +143,11 @@ public:
    /// Reads an unsigned integer value in the range rangeStart to rangeEnd inclusive.
    U32  readRangedU32(U32 rangeStart, U32 rangeEnd);
 
+   /// Writes an enumeration value in the range of 0 ... enumRange - 1.
+   void writeEnum(U32 enumValue, U32 enumRange);
+   /// Reads an enumeration value in the range 0 ... enumRange - 1.
+   U32 readEnum(U32 enumRange);
+
    /// Writes a float from 0 to 1 inclusive, using bitCount bits of precision.
    void writeFloat(F32 f, U8 bitCount);
    /// Reads a float from 0 to 1 inclusive, using bitCount bits of precision.
@@ -365,6 +370,16 @@ inline U32 BitStream::readRangedU32(U32 rangeStart, U32 rangeEnd)
 
    U32 val = U32(readInt(S32(rangeBits)));
    return val + rangeStart;
+}
+
+inline void BitStream::writeEnum(U32 enumValue, U32 enumRange)
+{
+   writeInt(enumValue, getNextBinLog2(enumRange));
+}
+
+inline U32 BitStream::readEnum(U32 enumRange)
+{
+   return U32(readInt(getNextBinLog2(enumRange)));
 }
 
 };

@@ -36,6 +36,7 @@ namespace Zap
 GameObject::GameObject()
 {
    mGame = NULL;
+   mTeam = -1;
    mLastQueryId = 0;
    mObjectTypeMask = UnknownType;
    mDisableCollisionCount = 0;

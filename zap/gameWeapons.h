@@ -28,17 +28,21 @@
 #define _GAMEWEAPONS_H_
 
 #include "tnlPlatform.h"
+#include "point.h"
+#include "gameObject.h"
 
 using namespace TNL;
+namespace Zap
+{
 
 enum WeaponTypes
 {
    WeaponPhaser = 0,
-   WeaponGrenade,
    WeaponBounce,
    WeaponTriple,
    WeaponBurst,
    WeaponMineLayer,
+   WeaponTurretBlaster,
    WeaponCount,
 };
 
@@ -53,8 +57,14 @@ struct ShipWeaponInfo
    U32 fireDelay;    // Delay between shots.
    U32 minEnergy;    // Minimum energy to fire.
    U32 drainEnergy;  // Amount of energy to drain per shot.
+   U32 projVelocity;
+   U32 projLiveTime;
+   U32 projectileType;
 };
 
 extern ShipWeaponInfo gWeapons[WeaponCount];
+extern void createWeaponProjectiles(U32 weapon, Point &dir, Point &shooterPos, Point &shooterVel, F32 shooterRadius, GameObject *shooter);
+
+};
 
 #endif

@@ -106,7 +106,6 @@ public:
    U32 mSparkElapsed;
    S32 mLastTrailPoint[TrailCount];
    fxTrail mTrail[TrailCount];
-   S32 mTeam;
 
    Color color; // color of the ship
    F32 mass; // mass of ship
@@ -135,8 +134,6 @@ public:
 
    bool carryingResource();
    Item *unmountResource();
-
-   S32 getTeam() { return mTeam; }
 
    F32 getSensorZoomFraction() { return mSensorZoomTimer.getFraction(); }
    Point getAimVector();

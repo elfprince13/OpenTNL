@@ -41,7 +41,6 @@ class EngineeredObject : public GameObject
    typedef GameObject Parent;
 protected:
    F32 mHealth;
-   S32 mTeam;
    Color mTeamColor;
    SafePtr<Item> mResource;
    SafePtr<Ship> mOwner;
@@ -61,7 +60,6 @@ public:
    void computeExtent();
    virtual void onDestroyed();
 
-   S32 getTeam() { return mTeam; }
    void setOwner(Ship *owner) { mOwner = owner; }
 
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
@@ -74,7 +72,6 @@ public:
 class ForceField : public GameObject
 {
    Point mStart, mEnd;
-   S32 mTeam;
    Timer mDownTimer;
    bool mFieldUp;
 

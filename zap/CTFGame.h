@@ -61,7 +61,6 @@ public:
 class CTFFlagItem : public Item
 {
    typedef Item Parent;
-   U32 teamIndex;
    Point initialPos;
 public:
    CTFFlagItem(Point pos = Point());
@@ -72,7 +71,6 @@ public:
    void onMountDestroyed();
    bool collide(GameObject *hitObject);
    bool isAtHome();
-   U32 getTeamIndex() { return teamIndex; }
 
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);

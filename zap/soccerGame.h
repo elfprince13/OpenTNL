@@ -85,14 +85,12 @@ class SoccerGoalObject : public GameObject
 {
    typedef GameObject Parent;
    Vector<Point> mPolyBounds;
-   U32 teamIndex;
    enum {
       MaxPoints = 10,
    };
 public:
    SoccerGoalObject();
 
-   U32 getTeamIndex() { return teamIndex; }
    void render();
    S32 getRenderSortValue() { return -1; }
    void processArguments(S32 argc, const char **argv);

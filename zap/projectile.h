@@ -44,15 +44,24 @@ public:
       ExplodedMask = BIT(1),
    };
 
+   enum ProjectileType
+   {
+      Phaser,
+      Bounce,
+      Triple,
+      Turret,
+      TypeCount,
+   };
+
    Point pos;
    Point velocity;
    U32 liveTime;
-   bool isBouncy;
+   U32 mType;
    bool collided;
    bool alive;
-   SafePtr<Ship> mShooter;
+   SafePtr<GameObject> mShooter;
 
-   Projectile(Point pos = Point(), Point vel = Point(), U32 liveTime = 0, Ship *shooter = NULL, bool bouncy=false);
+   Projectile(U32 type = Phaser, Point pos = Point(), Point vel = Point(), U32 liveTime = 0, GameObject *shooter = NULL);
 
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);
@@ -66,7 +75,6 @@ public:
    virtual Point getActualVel() { return velocity; }
 
    void render();
-
    TNL_DECLARE_CLASS(Projectile);
 };
 
@@ -89,7 +97,7 @@ class GrenadeProjectile : public Item
 {
    typedef Item Parent;
 public:
-   GrenadeProjectile(Point pos = Point(), Point vel = Point(), U32 liveTime = 0, Ship *shooter = NULL);
+   GrenadeProjectile(Point pos = Point(), Point vel = Point(), U32 liveTime = 0, GameObject *shooter = NULL);
 
    enum Constants
    {

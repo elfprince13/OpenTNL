@@ -29,6 +29,8 @@
 #include "glutInclude.h"
 #include "projectile.h"
 #include "gameType.h"
+#include "gameWeapons.h"
+
 namespace Zap
 {
 
@@ -293,8 +295,7 @@ bool ForceField::collide(GameObject *hitObject)
    if(!(hitObject->getObjectTypeMask() & ShipType))
       return true;
 
-   Ship *s = (Ship *) hitObject;
-   if(s->mTeam == mTeam)
+   if(hitObject->getTeam() == mTeam)
    {
       if(!isGhost())
       {
@@ -549,20 +550,8 @@ void Turret::idle(IdleCallPath path)
       delta2.normalize(TurretRange);
       GameObject *hitObject = findObjectLOS(ShipType | BarrierType | EngineeredType, 0, aimPos, aimPos + delta2, t, n);
 
-      if(hitObject)
-      {
-         if(hitObject->getObjectTypeMask() & ShipType)
-         {
-            if(((Ship *) hitObject)->mTeam == mTeam)
-               continue;
-         }
-         else if(hitObject->getObjectTypeMask() & EngineeredType)
-         {
-            if(((EngineeredObject *) hitObject)->getTeam() == mTeam)
-               continue;
-         }
-      }
-
+      if(hitObject && hitObject->getTeam() == mTeam)
+         continue;
       enableCollision();
 
       F32 dist = delta.len();
@@ -603,9 +592,7 @@ void Turret::idle(IdleCallPath path)
       if(mFireTimer.getCurrent() == 0)
       {
          bestDelta.normalize();
-         Projectile *proj = new Projectile(aimPos + bestDelta * 30.f, bestDelta * 600.f, 1000, mOwner);
-         proj->addToGame(gServerGame);
-
+         createWeaponProjectiles(WeaponTurretBlaster, bestDelta, aimPos, Point(0,0), 30.0f, this);
          mFireTimer.reset(TurretFireDelay);
       }
    }
