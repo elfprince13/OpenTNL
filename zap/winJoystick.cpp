@@ -53,6 +53,9 @@ void InitController()
    if(!gJoystick)
       return;
 
+   if( FAILED(gJoystick->SetDataFormat( &c_dfDIJoystick2 ) ) )
+      return;
+
    // since we passed in a NULL window, we don't bother setting the cooperative level.
 }
 
