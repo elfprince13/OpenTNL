@@ -37,6 +37,7 @@ namespace Zap
 {
 
 extern const char *gWindowTitle;
+extern U32 gJoystickType;
 
 void checkMousePos(S32 maxdx, S32 maxdy)
 {
@@ -134,8 +135,17 @@ void JoystickUpdateMove( Move *theMove )
     F32 controls[4];
     controls[0] = F32( js.lX ) - 32768.0f;
     controls[1] = F32( js.lY ) - 32768.0f;
-    controls[2] = F32( js.lRz ) - 32768.0f;
-    controls[3] = F32( js.rglSlider[0] ) - 32768.0f;
+
+    if(gJoystickType == 0)
+    {
+      controls[2] = F32( js.lRz ) - 32768.0f;
+      controls[3] = F32( js.rglSlider[0] ) - 32768.0f;
+    }
+    else if(gJoystickType == 1)
+    {
+      controls[3] = F32( js.lZ ) - 32768.0f;      
+      controls[2] = F32( js.lRz ) - 32768.0f;
+    }
 
     for(U32 i = 0; i < 4; i++)
     {

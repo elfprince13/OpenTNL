@@ -51,6 +51,7 @@ bool gIsServer = false;
 const char *gHostName = "ZAP Game";
 const char *gWindowTitle = "ZAP II - The Return";
 U32 gMaxPlayers = 128;
+U32 gJoystickType = 0;
 
 const char *gMasterAddressString = "IP:master.opentnl.org:29005";
 Address gMasterAddress;
@@ -319,9 +320,9 @@ int main(int argc, char **argv)
       }
       else if(!stricmp(argv[i], "-joystick"))
       {
+         OptionsMenuUserInterface::joystickEnabled = true;
          if(hasAdditionalArg)
-            OptionsMenuUserInterface::joystickEnabled = true;
-
+            gJoystickType = atoi(argv[i+1]);
       }
       else if(!stricmp(argv[i], "-gain"))
       {

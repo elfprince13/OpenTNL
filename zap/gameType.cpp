@@ -425,7 +425,6 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddClient, (StringTableEntryRef name, b
 void GameType::serverRemoveClient(GameConnection *theClient)
 {
    S32 clientIndex = findClientIndexByConnection(theClient);
-   destroy_lpc10_decoder_state(mClientList[clientIndex].decoderState);
 
    mClientList.erase(clientIndex);
 
@@ -441,6 +440,8 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cRemoveClient, (StringTableEntryRef name
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
    S32 clientIndex = findClientIndexByName(name);
+   destroy_lpc10_decoder_state(mClientList[clientIndex].decoderState);
+
    gGameUserInterface.displayMessage(Color(0.6f, 0.6f, 0.8f), "%s left the game.", name.getString());
    mClientList.erase(clientIndex);
 }

@@ -70,6 +70,9 @@ or IP:www.foobar.com:24601
         browser when searching for servers.
 -maxplayers [number] sets the maximum number of players allowed 
         on the server
+-joystick [joystickType] enables dual analog control pad.  The
+        joystickType argument can be either 0 or 1.  If the right
+        stick doesn't aim shots properly with 0, try 1.
 
 Credits:
 
