@@ -201,7 +201,7 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
       {
          s2cCTFMessage(CTFMsgReturnFlag, cl.name, theFlag->getTeamIndex());
          theFlag->sendHome();
-         cl.score += Scores::ReturnScore;
+         cl.score += ReturnScore;
       }
       else
       {
@@ -218,7 +218,7 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
                // score the flag for the client's team...
                mountedFlag->dismount();
                mountedFlag->sendHome();
-               cl.score += Scores::CapScore;
+               cl.score += CapScore;
             }
          }
       }
@@ -284,9 +284,9 @@ void CTFGameType::controlObjectForClientKilled(GameConnection *theClient, GameOb
    {
       // Punish team killers slightly
       if(mClientList[killerIndex].teamId == mClientList[clientIndex].teamId)
-         mClientList[killerIndex].score -= Scores::KillScore/4;
+         mClientList[killerIndex].score -= KillScore/4;
       else
-         mClientList[killerIndex].score += Scores::KillScore;
+         mClientList[killerIndex].score += KillScore;
 
       s2cKillMessage(mClientList[clientIndex].name, mClientList[killerIndex].name);
    }

@@ -1750,6 +1750,7 @@
 				6656DDD90635C95C00E30126,
 				6656DDDB0635C95C00E30126,
 				6656DDDD0635C95C00E30126,
+				DB997D2C0638AFC1002745B0,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1782,6 +1783,8 @@
 				6656DDD80635C95C00E30126,
 				6656DDDA0635C95C00E30126,
 				6656DDDC0635C95C00E30126,
+				DB997D2A0638AFC1002745B0,
+				DB997D2B0638AFC1002745B0,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1799,6 +1802,7 @@
 				GCC_WARN_UNKNOWN_PRAGMAS = NO;
 				HEADER_SEARCH_PATHS = "../glut ../openal";
 				INSTALL_PATH = /usr/local/bin;
+				MACOSX_DEPLOYMENT_TARGET = 10.2;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-lobjc";
 				OTHER_REZFLAGS = "";
@@ -2214,6 +2218,9 @@
 		};
 		6692C0E606247C3B00D5ADFE = {
 			children = (
+				DB997D270638AFC1002745B0,
+				DB997D280638AFC1002745B0,
+				DB997D290638AFC1002745B0,
 				6656DDCA0635C95C00E30126,
 				6656DDCB0635C95C00E30126,
 				6656DDCC0635C95C00E30126,
@@ -4010,6 +4017,51 @@
 		};
 		DB9525E4063610C200B8795E = {
 			fileRef = DB9525E3063610C200B8795E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		DB997D270638AFC1002745B0 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = gameItems.cpp;
+			path = ../zap/gameItems.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		DB997D280638AFC1002745B0 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = quickChat.cpp;
+			path = ../zap/quickChat.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		DB997D290638AFC1002745B0 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = quickChat.h;
+			path = ../zap/quickChat.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		DB997D2A0638AFC1002745B0 = {
+			fileRef = DB997D270638AFC1002745B0;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		DB997D2B0638AFC1002745B0 = {
+			fileRef = DB997D280638AFC1002745B0;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		DB997D2C0638AFC1002745B0 = {
+			fileRef = DB997D290638AFC1002745B0;
 			isa = PBXBuildFile;
 			settings = {
 			};

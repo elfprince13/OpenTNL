@@ -27,7 +27,7 @@
 #include "quickChat.h"
 #include "glutInclude.h"
 #include "gameType.h"
-
+#include <ctype.h>
 namespace Zap
 {
 

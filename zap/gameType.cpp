@@ -243,6 +243,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cRemoveClient, (StringTableEntry name),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
    S32 clientIndex = findClientIndexByName(name);
+   gGameUserInterface.displayMessage(Color(0.6f, 0.6f, 0.8f), "%s left the game.", name.getString());
    mClientList.erase(clientIndex);
 }
 
