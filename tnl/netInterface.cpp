@@ -843,7 +843,6 @@ void NetInterface::handleConnectAccept(const Address &address, BitStream *stream
    const char *errorString = NULL;
    if(!conn->readConnectAccept(stream, &errorString))
    {
-      conn->handleStartupError(errorString);
       removePendingConnection(conn);
       return;
    }
@@ -1074,6 +1073,7 @@ void NetInterface::sendArrangedConnectRequest(NetConnection *conn)
       out.setBytePosition(innerEncryptPos);
       out.write(SymmetricCipher::KeySize, theParams.mSymmetricKey);
    }
+   out.writeFlag(theParams.mDebugObjectSizes);
    out.write(conn->getInitialSendSequence());
    conn->writeConnectRequest(&out);
 
@@ -1167,6 +1167,7 @@ void NetInterface::handleArrangedConnectRequest(const Address &theAddress, BitSt
    }
 
    U32 connectSequence;
+   theParams.mDebugObjectSizes = stream->readFlag();
    stream->read(&connectSequence);
    TNLLogMessageV(LogNetInterface, ("Received Arranged Connect Request"));
 
@@ -1203,6 +1204,7 @@ void NetInterface::disconnect(NetConnection *conn, const char *reason)
       removePendingConnection(conn);
    else if(conn->getConnectionState() == NetConnection::Connected)
    {
+      conn->setConnectionState(NetConnection::Disconnected);
       if(conn->isNetworkConnection())
       {
          // send a disconnect packet...
@@ -1257,6 +1259,12 @@ void NetInterface::handleDisconnect(const Address &address, BitStream *stream)
    conn->setConnectionState(NetConnection::Disconnected);
    conn->onDisconnect(reason);
    removeConnection(conn);
+}
+
+void NetInterface::handleConnectionError(NetConnection *theConnection, const char *errorString)
+{
+   theConnection->onConnectionError(errorString);
+   disconnect(theConnection, errorString);
 }
 
 };

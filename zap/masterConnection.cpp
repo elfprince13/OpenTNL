@@ -181,7 +181,7 @@ void MasterServerConnection::writeConnectRequest(BitStream *bstream)
 {
    Parent::writeConnectRequest(bstream);
 
-   bstream->writeString("ZAP1.3"); // Game Name
+   bstream->writeString(ZAP_GAME_STRING); // Game Name
    if(bstream->writeFlag(mIsGameServer))
    {
       bstream->write((U32) 1000);        // CPU speed

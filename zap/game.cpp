@@ -37,6 +37,7 @@ using namespace TNL;
 #include "gameObject.h"
 #include "ship.h"
 #include "UIGame.h"
+#include "UIMenus.h"
 #include "SweptEllipsoid.h"
 #include "sparkManager.h"
 #include "barrier.h"
@@ -94,6 +95,8 @@ void Game::checkConnectionToMaster(U32 timeDelta)
 {
    if(!mConnectionToMaster.isValid())
    {
+      if(gMasterAddress == Address())
+         return;
       if(mNextMasterTryTime < timeDelta)
       {
          mConnectionToMaster = new MasterServerConnection(isServer());
@@ -245,6 +248,8 @@ void ClientGame::setConnectionToServer(GameConnection *theConnection)
    mConnectionToServer = theConnection;
 }
 
+extern void JoystickUpdateMove( Move *theMove );
+
 void ClientGame::idle(U32 timeDelta)
 {
    mNetInterface->checkIncomingPackets();
@@ -256,6 +261,11 @@ void ClientGame::idle(U32 timeDelta)
       timeDelta = Move::MaxMoveTime;
 
    Move *theMove = gGameUserInterface.getCurrentMove();
+
+#ifdef TNL_OS_WIN32
+   if(OptionsMenuUserInterface::joystickEnabled)
+      JoystickUpdateMove(theMove);
+#endif
    theMove->prepare();
 
    theMove->time = timeDelta;

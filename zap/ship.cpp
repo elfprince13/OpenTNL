@@ -138,7 +138,7 @@ void Ship::processServerMove(Move *theMove)
       {
          lastFireTime = currentTime;
          Point dir(sin(mMoveState[ActualState].angle), cos(mMoveState[ActualState].angle) );
-         Point projVel = mMoveState[ActualState].vel + dir * 500;
+         Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir); //mMoveState[ActualState].vel + dir * 500;
          Projectile *proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 1000, this);
          proj->addToGame(getGame());
       }
@@ -180,78 +180,62 @@ void Ship::processClient(U32 deltaT)
    float timeDelta = deltaT * 1000.0f;
    lastMove.time = deltaT;
    processMove(&lastMove, ActualState);
+   mMoveState[RenderState].angle = mMoveState[ActualState].angle;
 
    if(interpTime)
    {
-      mMoveState[RenderState].angle = mMoveState[ActualState].angle;
+      // first step is to constrain the render velocity to
+      // the vector of difference between the current position and
+      // the actual position.
+      // we can also clamp to zero, the actual velocity, or the
+      // render velocity, depending on which one is best.
+
+      Point deltaP = mMoveState[ActualState].pos - mMoveState[RenderState].pos;
+      F32 distance = deltaP.len();
+
+      if(!distance)
+         goto interpDone;
+
+      deltaP.normalize();
+      F32 vel = deltaP.dot(mMoveState[RenderState].vel);
+      F32 avel = deltaP.dot(mMoveState[ActualState].vel);
+
+      if(avel > vel)
+         vel = avel;
+      if(vel < 0)
+         vel = 0;
+
+      bool hit = true;
       float time = deltaT * 0.001;
-      Point deltap = mMoveState[ActualState].pos -
-                       mMoveState[RenderState].pos;
+      if(vel * time > distance)
+         goto interpDone;
 
-      Point requestVel = deltap;
-      requestVel *= 1 / time;
-
-      float requestVelLen = deltap.len();
-      bool hit = false;
-
-      if(requestVelLen > InterpMaxVelocity)
+      float requestVel = distance / time;
+      if(requestVel > InterpMaxVelocity)
       {
          hit = false;
-         requestVel.normalize(InterpMaxVelocity);
+         requestVel = InterpMaxVelocity;
       }
-   
-      Point velDelta = requestVel - mMoveState[RenderState].vel;
-      F32 accRequested = velDelta.len();
-
-      F32 maxAccel = InterpAcceleration * time;
-      if(accRequested > maxAccel)
+      F32 a = (requestVel - vel) / time;
+      if(a > InterpAcceleration)
       {
+         a = InterpAcceleration;
          hit = false;
-         velDelta *= maxAccel / accRequested;
-         mMoveState[RenderState].vel += velDelta;
       }
-      else
-         mMoveState[RenderState].vel = requestVel;
+
       if(hit)
-      {
-         interpTime = 0;
-         mMoveState[RenderState] = mMoveState[ActualState];
-      }
-      else
-         mMoveState[RenderState].pos += mMoveState[RenderState].vel * time;
+         goto interpDone;
+
+      vel += a * time;
+      mMoveState[RenderState].vel = deltaP * vel;
+      mMoveState[RenderState].pos += mMoveState[RenderState].vel * time;
    }
    else
-      mMoveState[RenderState] = mMoveState[ActualState];
-   /*
-
-   U32 timeUsed = deltaT;
-   if(interpTime)
    {
-      if(interpTime < timeUsed)
-      {
-         timeUsed -= interpTime;
-         interpTime = 0;
-         mMoveState[RenderState] = mMoveState[ActualState];
-      }
-      else
-      {
-         Point totalDelta = mMoveState[ActualState].pos -
-                            mMoveState[RenderState].pos;
-
-         mMoveState[RenderState].pos +=
-               totalDelta * (timeUsed / F32(interpTime));
-
-         interpTime -= timeUsed;
-         timeUsed = 0;
-      }
+interpDone:
+      interpTime = 0;
+      mMoveState[RenderState] = mMoveState[ActualState];
    }
-
-   if(timeUsed)
-   {
-      lastMove.time = timeUsed;
-      processMove(&lastMove, ActualState);
-      mMoveState[RenderState] = mMoveState[ActualState];
-   }*/
    updateExtent();
 
    // Emit some particles
@@ -395,7 +379,8 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
       if(interpolate)
       {
          interpTime = InterpMS;
-         mMoveState[RenderState].vel = mMoveState[ActualState].vel;
+         // if the actual velocity is in the direction of the actual position
+         // then we'll set it into the render velocity
       }
       else
       {

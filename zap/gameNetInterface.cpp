@@ -47,6 +47,11 @@ void GameNetInterface::handleInfoPacket(const Address &remoteAddress, U8 packetT
          {
             Nonce clientNonce;
             clientNonce.read(stream);
+            char string[256];
+            stream->readString(string);
+            if(strcmp(string, ZAP_GAME_STRING))
+               break;
+
             U32 token = computeClientIdentityToken(remoteAddress, clientNonce);
             PacketStream pingResponse;
             pingResponse.write(U8(PingResponse));
@@ -107,6 +112,7 @@ void GameNetInterface::sendPing(const Address &theAddress, const Nonce &clientNo
    PacketStream packet;
    packet.write(U8(Ping));
    clientNonce.write(&packet);
+   packet.writeString(ZAP_GAME_STRING);
    packet.sendto(mSocket, theAddress);
 }
 

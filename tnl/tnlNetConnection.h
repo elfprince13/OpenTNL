@@ -203,8 +203,7 @@ protected:
    virtual void onDisconnect(const char *reason);            ///< Called when the remote host issues a disconnect packet to this instance.
    virtual void onConnectionRejected(const char *reason);    ///< Called when the remote host rejects this connection.
    virtual void onConnectionEstablished(bool isInitiator);   ///< Called when the connection is successfully established with the remote host.
-   virtual void handleStartupError(const char *errorString); ///< Called when the connection was "accepted" with a bogus connect accept packet.
-
+   virtual void onConnectionError(const char *errorString);  ///< Called when a connection receives a bogus packet or invalid data from the remote host
    /// validates that the given certificate is a valid certificate for this
    /// connection.
    virtual bool validateCertficate(Certificate *theCertificate, bool isInitiator) { return true; }
@@ -256,10 +255,6 @@ protected:
    virtual PacketNotify *allocNotify() { return new PacketNotify; }
 
 public:
-   /// Called to indicate that this connection has received invalid data
-   /// and should be terminated with the given reason.
-   virtual void connectionError(const char *errorString);
-
    /// Returns the next send sequence that will be sent by this side.
    U32 getNextSendSequence() { return mLastSendSeq + 1; }
 

@@ -232,8 +232,11 @@ void NetConnection::readRawPacket(BitStream *bstream)
       readPacketRateInfo(bstream);
       readPacket(bstream);
 
+      if(!bstream->isValid() && !mErrorBuffer[0])
+         NetConnection::setLastError("Invalid Packet.");
       if(mErrorBuffer[0])
-         connectionError(mErrorBuffer);
+         getInterface()->handleConnectionError(this, mErrorBuffer);
+      mErrorBuffer[0] = 0;
    }
 }
 
@@ -592,11 +595,6 @@ void NetConnection::handleNotify(U32 sequence, bool recvd)
    delete note;
 }
 
-void NetConnection::connectionError(const char *errorString)
-{
-   errorString;
-}
-
 //--------------------------------------------------------------------
 
 void NetConnection::checkPacketSend(bool force, U32 curTime)
@@ -798,7 +796,7 @@ void NetConnection::onConnectionEstablished(bool isInitiator)
       setIsConnectionToClient();
 }
 
-void NetConnection::handleStartupError(const char *errorString)
+void NetConnection::onConnectionError(const char *errorString)
 {
 
 }

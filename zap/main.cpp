@@ -251,6 +251,8 @@ void onExit()
    SFXObject::shutdown();
 }
 
+extern void InitController();
+
 };
 
 using namespace Zap;
@@ -355,6 +357,10 @@ int main(int argc, char **argv)
       glutSpecialUpFunc(specialkeyup);
       glutMouseFunc(mouse);
       glutIdleFunc(idle);
+
+#ifdef TNL_OS_WIN32
+      InitController();
+#endif
 
       glutSetCursor(GLUT_CURSOR_NONE);
       glMatrixMode(GL_PROJECTION);

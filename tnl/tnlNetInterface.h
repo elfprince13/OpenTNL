@@ -303,6 +303,8 @@ protected:
    /// Dispatches a disconnect packet for a specified connection.
    void handleDisconnect(const Address &address, BitStream *stream);
 
+   /// Handles an error reported while reading a packet from this remote connection.
+   void handleConnectionError(NetConnection *theConnection, const char *errorString);
    /// @}
 public:
    /// @param   bindAddress    Local network address to bind this interface to.

@@ -33,7 +33,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="../openal/OpenAL32.lib ../openal/alut.lib wsock32.lib ../glut/glut32.lib"
+				AdditionalDependencies="../glut/dxguid.lib ../glut/dinput8.lib ../glut/dinput.lib ../openal/OpenAL32.lib ../openal/alut.lib wsock32.lib ../glut/glut32.lib"
 				OutputFile="../exe/ZAPd.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="../lib"
@@ -83,7 +83,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="../openal/OpenAL32.lib ../openal/alut.lib wsock32.lib ../glut/glut32.lib"
+				AdditionalDependencies="../glut/dxguid.lib ../glut/dinput8.lib ../glut/dinput.lib ../openal/OpenAL32.lib ../openal/alut.lib wsock32.lib ../glut/glut32.lib"
 				OutputFile="../exe/ZAP.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
@@ -280,6 +280,9 @@
 		</File>
 		<File
 			RelativePath=".\UIQueryServers.h">
+		</File>
+		<File
+			RelativePath=".\winJoystick.cpp">
 		</File>
 		<File
 			RelativePath=".\winmain.cpp">

@@ -73,6 +73,7 @@ class OptionsMenuUserInterface : public MenuUserInterface
 public:
    static bool controlsRelative;
    static bool fullscreen;
+   static bool joystickEnabled;
 
    OptionsMenuUserInterface();
    void processSelection(U32 index);

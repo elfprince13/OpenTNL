@@ -167,6 +167,7 @@ OptionsMenuUserInterface gOptionsMenuUserInterface;
 
 bool OptionsMenuUserInterface::controlsRelative = false;
 bool OptionsMenuUserInterface::fullscreen = false;
+bool OptionsMenuUserInterface::joystickEnabled = false;
 
 OptionsMenuUserInterface::OptionsMenuUserInterface()
 {
@@ -192,6 +193,11 @@ void OptionsMenuUserInterface::setupMenus()
       menuItems.push_back("SET WINDOWED MODE");
    else
       menuItems.push_back("SET FULLSCREEN MODE");
+
+   if(joystickEnabled)
+      menuItems.push_back("DISABLE JOYSTICK/CONTROLLER");
+   else
+      menuItems.push_back("ENABLE JOYSTICK/CONTROLLER");
 
    if(gClientGame->getConnectionToServer())
       menuItems.push_back("RETURN TO GAME");
@@ -237,6 +243,9 @@ void OptionsMenuUserInterface::processSelection(U32 index)
       fullscreen = !fullscreen;
       break;
    case 2:
+      joystickEnabled = !joystickEnabled;
+      break;
+   case 3:
       if(gClientGame->getConnectionToServer())
          gGameUserInterface.activate();   
       else
