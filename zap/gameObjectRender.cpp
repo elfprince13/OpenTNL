@@ -193,7 +193,7 @@ void renderShip(Color c, F32 alpha, F32 thrusts[], F32 health, F32 radius, bool 
       glDisable(GL_BLEND);
 }
 
-void renderTeleporter(U32 time, F32 radiusFraction, F32 radius, F32 alpha)
+void renderTeleporter(S32 time, F32 radiusFraction, F32 radius, F32 alpha)
 {
    enum {
       NumColors = 6,
@@ -228,39 +228,49 @@ void renderTeleporter(U32 time, F32 radiusFraction, F32 radius, F32 alpha)
          Tracker &t = particles[i];
          t.thetaI = Random::readF() * Float2Pi;
          t.thetaP = Random::readF() * 2 + 0.5;
-         t.dP = Random::readF() * 10 + 5;
+         t.dP = Random::readF() * 5 + 2.5;
          t.dI = Random::readF() * t.dP;
          t.ci = Random::readI(0, NumColors - 1);
       }
    }
 
+   glEnable(GL_BLEND);
    glBegin(GL_LINES);
    F32 arcLen = 0.3 + (1 - radiusFraction) * 0.8;
-   F32 white = (1 - radiusFraction) * alpha;
+   F32 white = 1 - radiusFraction;
    for(S32 i = 0; i < NumParticles; i++)
    {
       Tracker &t = particles[i];
       //glColor3f(t.c.r, t.c.g, t.c.b);
-      glColor3f(colors[t.ci][0] * alpha * radiusFraction + white, 
-                colors[t.ci][1] * alpha * radiusFraction + white,
-                colors[t.ci][2] * alpha * radiusFraction + white);
+      F32 d = (t.dP - fmod(float(t.dI + time * 0.001), (float) t.dP)) / t.dP;
+      F32 alphaMod = 1;
+      if(d > 0.95)
+         alphaMod = (1 - d) / 0.05;
+
+      glColor4f(colors[t.ci][0] * radiusFraction + white, 
+                colors[t.ci][1] * radiusFraction + white,
+                colors[t.ci][2] * radiusFraction + white,
+                alpha * alphaMod);
       F32 theta = fmod(float( t.thetaI + time * 0.001 * t.thetaP), (float) Float2Pi);
-      F32 d = fmod(float(t.dI + time * 0.001), (float) t.dP);
       Point p(cos(theta), sin(theta));
       Point n(-p.y, p.x);
 
-      p *= radiusFraction * radius * (t.dP - d) / t.dP;
+      p *= radiusFraction * radius * d;
       glVertex2f(p.x, p.y);
 
-      glColor3f(0,0,0);
+      glColor4f(colors[t.ci][0] * radiusFraction + white, 
+                colors[t.ci][1] * radiusFraction + white,
+                colors[t.ci][2] * radiusFraction + white,
+                0);
       theta -= arcLen;
       p.set(cos(theta), sin(theta));
-      p *= radiusFraction * radius * (t.dP - d) / t.dP;
+      p *= radiusFraction * radius * d;
       glVertex2f(p.x, p.y);
 
       //glVertex2f(p.x - n.x * 5, p.y - n.y * 5);
    }
    glEnd();
+   glDisable(GL_BLEND);
 }
 
 void renderTurret(Color c, Point anchor, Point normal, bool enabled, F32 health, F32 barrelAngle, F32 aimOffset)

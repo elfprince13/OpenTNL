@@ -579,7 +579,7 @@ bool GameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
 void GameType::controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject)
 {
    GameConnection *killer = killerObject ? killerObject->getOwner() : NULL;
-   ClientRef *killerRef = killer->getClientRef();
+   ClientRef *killerRef = killer ? killer->getClientRef() : NULL;
    ClientRef *clientRef = theClient->getClientRef();
 
    if(killerRef)

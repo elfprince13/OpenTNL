@@ -84,7 +84,7 @@ void emitSpark(Point pos, Point vel, Color color, F32 ttl)
 struct TeleporterEffect
 {
    Point pos;
-   U32 time;
+   S32 time;
    TeleporterEffect *nextEffect;
 };
 
@@ -159,7 +159,7 @@ void render()
          alpha = (1 - radius) / 0.5;
       glPushMatrix();
       glTranslatef(walk->pos.x, walk->pos.y, 0);
-      renderTeleporter(walk->time, radius, Teleporter::TeleportInRadius, alpha);
+      renderTeleporter(Teleporter::TeleportInExpandTime - walk->time, radius, Teleporter::TeleportInRadius, alpha);
       glPopMatrix();
    }
 }

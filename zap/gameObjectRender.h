@@ -35,7 +35,7 @@ namespace Zap
 {
 
 extern void renderShip(Color c, F32 alpha, F32 thrusts[], F32 health, F32 radius, bool cloakActive, bool shieldActive);
-extern void renderTeleporter(U32 time, F32 radiusFraction, F32 radius, F32 alpha);
+extern void renderTeleporter(S32 time, F32 radiusFraction, F32 radius, F32 alpha);
 extern void renderTurret(Color c, Point anchor, Point normal, bool enabled, F32 health, F32 barrelAngle, F32 aimOffset);
 
 extern void glVertex(Point p);
