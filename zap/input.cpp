@@ -38,6 +38,9 @@ namespace Zap
 static bool updateMoveInternal( Move *theMove, U32 &buttonMask )
 {
    F32 axes[MaxJoystickAxes];
+   static F32 minValues[2] = { - 0.5, -0.5 };
+   static F32 maxValues[2] = { 0.5, 0.5 };
+
    if(!ReadJoystick(axes, buttonMask))
       return false;
 
@@ -47,6 +50,25 @@ static bool updateMoveInternal( Move *theMove, U32 &buttonMask )
    F32 controls[4];
    controls[0] = axes[0];
    controls[1] = axes[1];
+
+   if(controls[0] < minValues[0])
+      minValues[0] = controls[0];
+   if(controls[0] > maxValues[0])
+      maxValues[0] = controls[0];
+   if(controls[1] < minValues[1])
+      minValues[1] = controls[1];
+   if(controls[1] > maxValues[1])
+      maxValues[1] = controls[1];
+
+   if(controls[0] < 0)
+      controls[0] = - (controls[0] / minValues[0]);
+   else if(controls[0] > 0)
+      controls[0] = (controls[0] / maxValues[0]);
+
+   if(controls[1] < 0)
+      controls[1] = - (controls[1] / minValues[1]);
+   else if(controls[1] > 0)
+      controls[1] = (controls[1] / maxValues[1]);
 
    // xbox control inputs are in a circle, not a square, which makes
    // diagonal movement inputs "slower"
@@ -222,6 +244,8 @@ S32 autodetectJoystickType()
    const char *joystickName = GetJoystickName();
    if(!strncmp(joystickName, "WingMan", 7))
       ret = LogitechWingman;
+   else if(!strcmp(joystickName, "XBoxOnXBox"))
+      ret = XBoxControllerOnXBox;
    else if(strstr(joystickName, "XBox"))
       ret = XBoxController;
    else if(!strcmp(joystickName, "4 axis 16 button joystick"))

@@ -593,6 +593,10 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *
          if(hasAdditionalArg)
             gMaxPlayers = atoi(argv[i+1]);
       }
+      else if(!stricmp(argv[i], "-window"))
+      {
+         OptionsMenuUserInterface::fullscreen = false;
+      }
       else if(!stricmp(argv[i], "-edit"))
       {
          if(hasAdditionalArg)
@@ -716,6 +720,8 @@ int main(int argc, char **argv)
       glLineWidth(DefaultLineWidth);
 
       atexit(onExit);
+      if(OptionsMenuUserInterface::fullscreen)
+         glutFullScreen();
 
       glutMainLoop();
    }

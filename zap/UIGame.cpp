@@ -51,7 +51,7 @@ GameUserInterface::GameUserInterface()
 {
    mCurrentMode = PlayMode;
    mInScoreboardMode = false;
-#ifdef TNL_OS_XBOX
+#if 0 //defined(TNL_OS_XBOX)
    mFPSVisible = true;
 #else
    mFPSVisible = false;

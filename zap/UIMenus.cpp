@@ -251,7 +251,7 @@ void MainMenuUserInterface::onEscape()
 OptionsMenuUserInterface gOptionsMenuUserInterface;
 
 bool OptionsMenuUserInterface::controlsRelative = false;
-bool OptionsMenuUserInterface::fullscreen = false;
+bool OptionsMenuUserInterface::fullscreen = true;
 S32 OptionsMenuUserInterface::joystickType = -1;
 bool OptionsMenuUserInterface::echoVoice = false;
 
