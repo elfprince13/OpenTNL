@@ -61,9 +61,12 @@ void RPCEvent::unpack(EventConnection *ps, BitStream *bstream)
 
 void RPCEvent::process(EventConnection *ps)
 {
+   if(!checkClassType(ps))
+      return;
+
    MethodPointer p;
    getFuncPtr(p);
-   mCall.dispatch(getThisPointer(ps), &p);
+   mCall.dispatch(ps, &p);
 }
 
 };

@@ -424,7 +424,6 @@ public:
    void pack(EventConnection *ps, BitStream *bstream);
    void unpack(EventConnection *ps, BitStream *bstream);
    void process(EventConnection *ps);
-   void *getThisPointer(EventConnection *ps) { return (void *) mDestObject.getPointer(); }
 };
 
 /// Macro used to declare the implementation of an RPC method on a NetObject subclass.
@@ -441,6 +440,7 @@ public:
       RPCEV_##className##_##name(NetObject *theObject = NULL) : TNL::NetObjectRPCEvent(theObject, &RPC##className##name, guaranteeType, eventDirection) \
          { mFuncPtr = &className::name##_remote; } \
       TNL_DECLARE_CLASS( RPCEV_##className##_##name ); \
+      bool checkClassType(TNL::Object *theObject) { return dynamic_cast<className *>(theObject) != NULL; } \
       void getFuncPtr(MethodPointer &p) { p.v1=*((U32 *) &mFuncPtr); p.v2 = *(((U32 *) &mFuncPtr) + 1); } }; \
       TNL_IMPLEMENT_NETEVENT( RPCEV_##className##_##name, groupMask, rpcVersion ); \
       TNL::MethodArgList RPC##className##name (#className, #args); \

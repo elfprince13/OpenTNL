@@ -326,8 +326,16 @@ void NetObjectRPCEvent::process(EventConnection *ps)
 {
    if(mDestObject.isNull())
       return;
+
+   if(!checkClassType(mDestObject))
+      return;
+
+   void *thisPointer = (void *) mDestObject.getPointer();
+
    NetObject::mRPCSourceConnection = (GhostConnection *) ps;
-   RPCEvent::process(ps);
+   MethodPointer p;
+   getFuncPtr(p);
+   mCall.dispatch(thisPointer, &p);
    NetObject::mRPCSourceConnection = NULL;
 }
 

@@ -163,8 +163,8 @@ public:
    /// Copies the unmarshalled member function arguments onto the stack and invokes the remote method.
    void process(EventConnection *ps);
 
-   /// Returns the "this" pointer that the remote method should be called on
-   virtual void *getThisPointer(EventConnection *ps) { return (void *) ps; }
+   /// Returns true if this RPC is being sent to an object of the appropriate class.
+   virtual bool checkClassType(Object *theObject) = NULL;
 };
 
 /// Declares an RPC method within a class declaration.  Creates two method prototypes - one for the host side of the RPC call, and one for the receiver, which performs the actual method.
@@ -196,6 +196,7 @@ public:
       RPC_##className##_##name() : RPCEvent(&RPC##className##name, guaranteeType, eventDirection) \
          { mFuncPtr = &className::name##_remote; } \
       TNL_DECLARE_CLASS( RPC_##className##_##name ); \
+      bool checkClassType(TNL::Object *theObject) { return dynamic_cast<className *>(theObject) != NULL; } \
       void getFuncPtr(MethodPointer &m) { m.v1=*((U32 *) &mFuncPtr); m.v2 = *(((U32 *) &mFuncPtr) + 1); } }; \
       TNL_IMPLEMENT_NETEVENT( RPC_##className##_##name, groupMask, rpcVersion ); \
       TNL::MethodArgList RPC##className##name (#className, #args); \
