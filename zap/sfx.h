@@ -46,6 +46,8 @@ enum SFXProfiles {
    SFXFlagSnatch,
    SFXTeleportIn,
    SFXTeleportOut,
+   SFXBounceWall,
+   SFXBounceObject,
    NumSFXBuffers
 };
 

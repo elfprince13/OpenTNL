@@ -260,8 +260,19 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSendChat, (bool global, const char *mes
 
    RefPtr<NetEvent> theEvent = TNL_RPC_CONSTRUCT_NETEVENT(this, 
       s2cDisplayChatMessage, (global, source->playerName, message));
+
+   S32 teamId = 0;
+   
+   if(!global)
+      for(S32 i = 0; i < mClientList.size(); i++)
+         if(mClientList[i].clientId == source->mClientId)
+            teamId = mClientList[i].teamId;
+
    for(S32 i = 0; i < mClientList.size(); i++)
-      mClientList[i].clientConnection->postNetEvent(theEvent);
+   {
+      if(global || mClientList[i].teamId == teamId)
+         mClientList[i].clientConnection->postNetEvent(theEvent);
+   }
 }
 
 extern Color gGlobalChatColor;

@@ -28,7 +28,7 @@
 #include "tnl.h"
 #include "tnlLog.h"
 
-#if defined (TNL_OS_WIN32)
+#if defined (TNL_OS_WIN32) || defined (TNL_OS_LINUX)
 
 #include "alInclude.h"
 
@@ -47,6 +47,8 @@ static SFXProfile gSFXProfiles[] = {
  {  "flag_snatch.wav", true, 0.45f, false, 0, 0 }, 
  {  "teleport_in.wav", false, 1.0, false, 200, 500 },
  {  "teleport_out.wav", false, 1.0, false, 200, 500 },
+ {  "bounce_wall.wav", false, 0.7f, false, 150, 600 },
+ {  "bounce_obj.wav", false, 0.7f, false, 150, 600 },
  {  NULL, false, 0, false, 0, 0 },
 };
 
