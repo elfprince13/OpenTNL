@@ -9,7 +9,7 @@
 #include <limits.h>
 
 /* if there is a custom definition header file use it */
-#include <mycrypt_custom.h>
+#include "mycrypt_custom.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,16 +61,16 @@ enum {
 };
 /* ch1-01-1 */
 
-#include <mycrypt_cfg.h>
-#include <mycrypt_macros.h>
-#include <mycrypt_cipher.h>
-#include <mycrypt_hash.h>
-#include <mycrypt_prng.h>
-#include <mycrypt_pk.h>
-#include <mycrypt_gf.h>
-#include <mycrypt_misc.h>
-#include <mycrypt_kr.h>
-#include <mycrypt_argchk.h>
+#include "mycrypt_cfg.h"
+#include "mycrypt_macros.h"
+#include "mycrypt_cipher.h"
+#include "mycrypt_hash.h"
+#include "mycrypt_prng.h"
+#include "mycrypt_pk.h"
+#include "mycrypt_gf.h"
+#include "mycrypt_misc.h"
+#include "mycrypt_kr.h"
+#include "mycrypt_argchk.h"
 
 #ifdef __cplusplus
    }
