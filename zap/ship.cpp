@@ -419,8 +419,6 @@ void Ship::processEnergy()
    // No cloak with nearby sensored people.
    if(mModuleActive[ModuleCloak])
    {
-      bool isOk = true;
-
       Rect cloakCheck(getActualPos(), getActualPos());
       cloakCheck.expand(Point(CloakCheckRadius, CloakCheckRadius));
 
@@ -436,11 +434,12 @@ void Ship::processEnergy()
             if(!s) continue;
 
             if(s->getTeam() != getTeam() && s->isSensorActive())
-               isOk = false;
+            {
+               mModuleActive[ModuleCloak] = false;
+               break;
+            }
          }
       }
-
-      mModuleActive[ModuleCloak] = isOk;
    }
 
    F32 scaleFactor = mCurrentMove.time * 0.001;
@@ -1083,6 +1082,11 @@ void Ship::render()
       UserInterface::drawString( U32( UserInterface::getStringWidth(14, buff) * -0.5), 30, 14, buff );
       glDisable(GL_BLEND);
       glBlendFunc(GL_ONE, GL_ZERO);
+   }
+   else
+   {
+      if(alpha < 0.25)
+         alpha = 0.25;
    }
    
    if(alpha != 1.0)

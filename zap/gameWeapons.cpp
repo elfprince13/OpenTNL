@@ -41,7 +41,7 @@ ShipWeaponInfo gWeapons[] =
    {StringTableEntry("Bouncer"),  100,  1800,  1800,  540, 1500, Projectile::Bounce },
    {StringTableEntry("Triple"),   200,  2100,  2100,  550, 850,  Projectile::Triple },
    {StringTableEntry("Burst"),    700,  5000,  5000,  500, 1000, 0 },
-   {StringTableEntry("Mine"),     900,  90000, 70000, 500, 1000, 0 },
+   {StringTableEntry("Mine"),     900,  65000, 65000, 500, 1000, 0 },
    {StringTableEntry("Turret"),   0,    0,     0,     800, 800,  Projectile::Turret },
 };
 
