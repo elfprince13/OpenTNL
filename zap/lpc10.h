@@ -61,8 +61,8 @@ void destroy_lpc10_encoder_state (lpc10_encoder_state *st);
 
 lpc10_decoder_state * create_lpc10_decoder_state (void);
 void init_lpc10_decoder_state (lpc10_decoder_state *st);
-int lpc10_decode(unsigned char *in, short *out, lpc10_decoder_state *st);
-int vbr_lpc10_decode(unsigned char *in, short *out, lpc10_decoder_state *st, int *p);
+int lpc10_decode(unsigned char *in, int inSz, short *out, lpc10_decoder_state *st);
+int vbr_lpc10_decode(unsigned char *in, int inSz, short *out, lpc10_decoder_state *st, int *p);
 void destroy_lpc10_decoder_state (lpc10_decoder_state *st);
 
 #ifdef __cplusplus

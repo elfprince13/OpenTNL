@@ -61,7 +61,7 @@ class VoiceDecoder : public Object
    virtual U32 getSamplesPerFrame() = 0;
    virtual U32 getAvgCompressedFrameSize() = 0;
 
-   virtual U32 decompressFrame(S16 *framePtr, U8 *inputPtr) = 0;
+   virtual U32 decompressFrame(S16 *framePtr, U8 *inputPtr, U32 inSize) = 0;
 public:
    ByteBufferPtr decompressBuffer(ByteBufferRef compressedBuffer);
 };
@@ -87,7 +87,7 @@ class LPC10VoiceDecoder : public VoiceDecoder
    U32 getSamplesPerFrame();
    U32 getAvgCompressedFrameSize();
 
-   U32 decompressFrame(S16 *framePtr, U8 *inputPtr);
+   U32 decompressFrame(S16 *framePtr, U8 *inputPtr, U32 inSize);
 public:
    LPC10VoiceDecoder();
    ~LPC10VoiceDecoder();
@@ -114,7 +114,7 @@ class GSMVoiceDecoder : public VoiceDecoder
    U32 getSamplesPerFrame();
    U32 getAvgCompressedFrameSize();
 
-   U32 decompressFrame(S16 *framePtr, U8 *inputPtr);
+   U32 decompressFrame(S16 *framePtr, U8 *inputPtr, U32 inSize);
 public:
    GSMVoiceDecoder();
    ~GSMVoiceDecoder();

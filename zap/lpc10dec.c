@@ -663,7 +663,7 @@ static void chanrd(long *ipitv, long *irms, long *irc, long *ibits, int *p, int 
     }
 }
 
-static int lpc10_decode_int(unsigned char *in, short *speech,
+static int lpc10_decode_int(unsigned char *in, int inLenMax, short *speech,
                  lpc10_decoder_state *st, int *p, int vbr)
 {
     long bits[LPC10_BITS_IN_COMPRESSED_FRAME];
@@ -674,10 +674,16 @@ static int lpc10_decode_int(unsigned char *in, short *speech,
     float rms;
     
     /* unpack bits into array */
-    for (i = 0; i < LPC10_BITS_IN_COMPRESSED_FRAME; i++)
+    int maxBits = inLenMax << 3;
+    if(maxBits > LPC10_BITS_IN_COMPRESSED_FRAME)
+       maxBits = LPC10_BITS_IN_COMPRESSED_FRAME;
+
+    for (i = 0; i < maxBits; i++)
     {
         bits[i] = (in[i >> 3] & (1 << (i & 7))) != 0 ? 1 : 0;
     }
+    for (; i < LPC10_BITS_IN_COMPRESSED_FRAME; i++)
+        bits[i] = 0;
     
     /* decode speech */
     memset(irc, 0, sizeof(irc));
@@ -688,16 +694,16 @@ static int lpc10_decode_int(unsigned char *in, short *speech,
     return LPC10_SAMPLES_PER_FRAME;
 }
 
-int lpc10_decode(unsigned char *in, short *speech, lpc10_decoder_state *st)
+int lpc10_decode(unsigned char *in, int inLenMax, short *speech, lpc10_decoder_state *st)
 {
     int p = 0;
 
-    return lpc10_decode_int(in, speech, st, &p, FALSE);
+    return lpc10_decode_int(in, inLenMax, speech, st, &p, FALSE);
 }
 
-int vbr_lpc10_decode(unsigned char *in, short *speech, lpc10_decoder_state *st, int *p)
+int vbr_lpc10_decode(unsigned char *in, int inLenMax, short *speech, lpc10_decoder_state *st, int *p)
 {
-    return lpc10_decode_int(in, speech, st, p, TRUE);
+    return lpc10_decode_int(in, inLenMax, speech, st, p, TRUE);
 }
 
 /* Allocate memory for, and initialize, the state that needs to be

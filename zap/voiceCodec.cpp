@@ -87,7 +87,7 @@ ByteBufferPtr VoiceDecoder::decompressBuffer(ByteBufferRef compressedBuffer)
 
          samplePtr = (S16 *) ret->getBuffer();
       }
-      p = decompressFrame(samplePtr + frameCount * spf, inputPtr + i);
+      p = decompressFrame(samplePtr + frameCount * spf, inputPtr + i, compressedSize - i);
       frameCount++;
    }
    ret->resize(frameCount * spf * sizeof(S16));
@@ -142,10 +142,10 @@ U32 LPC10VoiceDecoder::getAvgCompressedFrameSize()
    return (LPC10_ENCODED_FRAME_SIZE + 1) >> 1;
 }
 
-U32 LPC10VoiceDecoder::decompressFrame(S16 *framePtr, U8 *inputPtr)
+U32 LPC10VoiceDecoder::decompressFrame(S16 *framePtr, U8 *inputPtr, U32 inSize)
 {
    int p;
-   vbr_lpc10_decode(inputPtr, framePtr, (lpc10_decoder_state *) decoderState, &p);
+   vbr_lpc10_decode(inputPtr, inSize, framePtr, (lpc10_decoder_state *) decoderState, &p);
    return (U32) p;
 }
 
@@ -194,7 +194,7 @@ U32 GSMVoiceDecoder::getAvgCompressedFrameSize()
    return GSM_ENCODED_FRAME_SIZE;
 }
 
-U32 GSMVoiceDecoder::decompressFrame(S16 *framePtr, U8 *inputPtr)
+U32 GSMVoiceDecoder::decompressFrame(S16 *framePtr, U8 *inputPtr, U32 inSize)
 {
    gsm_decode((struct gsm_state *) decoderState, inputPtr, framePtr);
    return GSM_ENCODED_FRAME_SIZE;

@@ -385,7 +385,7 @@ void NetInterface::processConnections()
          if(mConnectionList[i]->checkTimeout(time))
          {
             mConnectionList[i]->setConnectionState(NetConnection::TimedOut);
-            mConnectionList[i]->onConnectTerminated(NetConnection::ReasonTimedOut, "Timeout");
+            mConnectionList[i]->onConnectionTerminated(NetConnection::ReasonTimedOut, "Timeout");
             removeConnection(mConnectionList[i]);
          }
          else
