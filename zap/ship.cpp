@@ -32,13 +32,18 @@
 #include "projectile.h"
 #include "gameLoader.h"
 #include "sfx.h"
+#include "UI.h"
+#include "UIMenus.h"
+
+#include <stdio.h>
 
 namespace Zap
 {
 
 //------------------------------------------------------------------------
 TNL_IMPLEMENT_NETOBJECT(Ship);
-Ship::Ship(Point p, Color c, F32 m) : MoveObject(p, CollisionRadius)
+
+Ship::Ship(StringTableEntry playerName, Point p, Color c, F32 m) : MoveObject(p, CollisionRadius)
 {
    mObjectTypeMask = ShipType | MoveableType;
 
@@ -57,6 +62,8 @@ Ship::Ship(Point p, Color c, F32 m) : MoveObject(p, CollisionRadius)
    timeUntilRemove = 0;
    updateExtent();
    lastFireTime = 0;
+
+   mPlayerName = playerName;
 }
 
 void Ship::processArguments(S32 argc, const char **argv)
@@ -282,6 +289,7 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
 {
    if(stream->writeFlag(updateMask & InitialMask))
    {
+      connection->packStringTableEntry(stream, mPlayerName);
       stream->write(color.r);
       stream->write(color.g);
       stream->write(color.b);
@@ -341,6 +349,7 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
 
    if(stream->readFlag())
    {
+      mPlayerName = connection->unpackStringTableEntry(stream);
       stream->read(&color.r);
       stream->read(&color.g);
       stream->read(&color.b);
@@ -561,6 +570,17 @@ void Ship::render()
    glPushMatrix();
    glTranslatef(mMoveState[RenderState].pos.x, mMoveState[RenderState].pos.y, 0);
 
+   // Render name...
+   if(OptionsMenuUserInterface::showNames)
+   {
+      static char buff[255];
+      sprintf(buff, "%s", mPlayerName.getString());
+
+      // Make it a nice pastel
+      glColor3f(color.r*1.2,color.g*1.2,color.b*1.2);
+      UserInterface::drawString( UserInterface::getStringWidth(14, buff) * -0.5, 30, 14, buff );
+   }
+   
    F32 alpha = 1.0;
 
 //   if(hasExploded)
@@ -734,6 +754,7 @@ void Ship::render()
    for(S32 i = 0; i < mMountedItems.size(); i++)
       if(mMountedItems[i].isValid())
          mMountedItems[i]->renderItem(mMoveState[RenderState].pos);
+
 }
 
 };

@@ -106,7 +106,7 @@ void GameType::spawnShip(GameConnection *theClient)
    S32 spawnIndex = Random::readI() % mTeams[teamIndex].spawnPoints.size();
    spawnPoint = mTeams[teamIndex].spawnPoints[spawnIndex];
 
-   Ship *newShip = new Ship(spawnPoint, mTeams[teamIndex].color);
+   Ship *newShip = new Ship(mClientList[clientIndex].name, spawnPoint, mTeams[teamIndex].color);
    newShip->addToGame(getGame());
    theClient->setControlObject(newShip);
 }
