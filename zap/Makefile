@@ -30,6 +30,7 @@ OBJECTS_ZAP=\
 	quickChat.o\
 	ship.o\
 	sfx.o\
+	soccerGame.o\
 	SweptEllipsoid.o\
 	sparkManager.o\
 	teleporter.o\
