@@ -13,3 +13,7 @@ clean:
 	@$(MAKE) -C master clean
 	@$(MAKE) -C masterclient clean
 	@$(MAKE) -C test clean
+
+docs:
+	@$(MAKE) -C docs
+
