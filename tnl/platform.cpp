@@ -201,16 +201,12 @@ bool Platform::AlertRetry(const char *windowTitle, const char *message)
    return (MessageBox(NULL, message, windowTitle, MB_ICONINFORMATION | MB_SETFOREGROUND | MB_TASKMODAL | MB_RETRYCANCEL) == IDRETRY);
 }
 
-#else
-
-#ifdef TNL_OS_MAC_OSX
-//#include <CarbonCore.h>
+#else // osx and linux
 
 void Platform::debugBreak()
 {
    kill(getpid(), SIGTRAP);
 }
-#endif
 
 void Platform::outputDebugString(const char *string)
 {
@@ -219,6 +215,7 @@ void Platform::outputDebugString(const char *string)
 
 void Platform::forceQuit()
 {
+   debugBreak();
    exit(1);
 }
 
