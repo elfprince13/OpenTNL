@@ -38,6 +38,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZAP", "zap\ZAP.vcproj", "{F
 		{3F7F7B79-4473-4CAB-A54E-4274A9F1A01A} = {3F7F7B79-4473-4CAB-A54E-4274A9F1A01A}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tnlping", "tnlping\tnlping.vcproj", "{1CBEC210-5C02-43D4-AFA1-8A3EC67A3239}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5FAF4911-1DA7-44FE-9DA1-49AE25B11250} = {5FAF4911-1DA7-44FE-9DA1-49AE25B11250}
+		{3F7F7B79-4473-4CAB-A54E-4274A9F1A01A} = {3F7F7B79-4473-4CAB-A54E-4274A9F1A01A}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -126,6 +132,18 @@ Global
 		{F1A0916C-3232-4C2E-B52B-368955AA4C62}.Release Win32.Build.0 = Release|Win32
 		{F1A0916C-3232-4C2E-B52B-368955AA4C62}.Release Xbox.ActiveCfg = Release|Win32
 		{F1A0916C-3232-4C2E-B52B-368955AA4C62}.Release Xbox.Build.0 = Release|Win32
+		{1CBEC210-5C02-43D4-AFA1-8A3EC67A3239}.Debug.ActiveCfg = Debug|Win32
+		{1CBEC210-5C02-43D4-AFA1-8A3EC67A3239}.Debug.Build.0 = Debug|Win32
+		{1CBEC210-5C02-43D4-AFA1-8A3EC67A3239}.Debug Win32.ActiveCfg = Debug|Win32
+		{1CBEC210-5C02-43D4-AFA1-8A3EC67A3239}.Debug Win32.Build.0 = Debug|Win32
+		{1CBEC210-5C02-43D4-AFA1-8A3EC67A3239}.Debug Xbox.ActiveCfg = Debug|Win32
+		{1CBEC210-5C02-43D4-AFA1-8A3EC67A3239}.Debug Xbox.Build.0 = Debug|Win32
+		{1CBEC210-5C02-43D4-AFA1-8A3EC67A3239}.Release.ActiveCfg = Release|Win32
+		{1CBEC210-5C02-43D4-AFA1-8A3EC67A3239}.Release.Build.0 = Release|Win32
+		{1CBEC210-5C02-43D4-AFA1-8A3EC67A3239}.Release Win32.ActiveCfg = Release|Win32
+		{1CBEC210-5C02-43D4-AFA1-8A3EC67A3239}.Release Win32.Build.0 = Release|Win32
+		{1CBEC210-5C02-43D4-AFA1-8A3EC67A3239}.Release Xbox.ActiveCfg = Release|Win32
+		{1CBEC210-5C02-43D4-AFA1-8A3EC67A3239}.Release Xbox.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
