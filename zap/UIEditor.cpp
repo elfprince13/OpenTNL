@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include "gameObjectRender.h"
+#include "barrier.h"
 
 namespace Zap
 {
@@ -57,6 +58,7 @@ void EditorUserInterface::setEditName(const char *name)
    mUp = mDown = mLeft = mRight = mIn = mOut = false;
    mCreatingPoly = false;
    mCurrentTeam = 0;
+   mGridSize = Game::DefaultGridSize;
 
    strcpy(mEditFileName, name);
    mOriginalItems = mItems;
@@ -65,6 +67,7 @@ void EditorUserInterface::setEditName(const char *name)
 struct GameItemRec
 {
    const char *name;
+   bool hasWidth;
    bool hasTeam;
    bool canHaveNoTeam;
    bool isPoly;
@@ -88,19 +91,19 @@ enum GameItems
 };
 
 GameItemRec gGameItemRecs[] = {
-   { "Spawn", true, false, false, 'S' },
-   { "SoccerBallItem", false, false, false, 'B' },
-   { "FlagItem", true, true, false, 0 },
-   { "BarrierMaker", false, false, true, 0 },
-   { "Teleporter", false, false, true, 'T' },
-   { "RepairItem", false, false, false, 'R' },
-   { "TestItem", false, false, false, 't' },
-   { "ResourceItem", false, false, false, 'r' },
-   { "LoadoutZone", true, true, true, 0 },
-   { "Turret", true, true, false, 'N' },
-   { "ForceFieldProjector", true, true, false, 'P' },
-   { "GoalZone", true, false, true, 0 },
-   { NULL, false, false, false, 0 },
+   { "Spawn", false, true, false, false, 'S' },
+   { "SoccerBallItem", false, false, false, false, 'B' },
+   { "FlagItem", false, true, true, false, 0 },
+   { "BarrierMaker", true, false, false, true, 0 },
+   { "Teleporter", false, false, false, true, 'T' },
+   { "RepairItem", false, false, false, false, 'R' },
+   { "TestItem", false, false, false, false, 't' },
+   { "ResourceItem", false, false, false, false, 'r' },
+   { "LoadoutZone", false, true, true, true, 0 },
+   { "Turret", false, true, true, false, 'N' },
+   { "ForceFieldProjector", false, true, true, false, 'P' },
+   { "GoalZone", false, true, false, true, 0 },
+   { NULL, false, false, false, false, 0 },
 };
 
 void EditorUserInterface::processLevelLoadLine(int argc, const char **argv)
@@ -128,6 +131,12 @@ void EditorUserInterface::processLevelLoadLine(int argc, const char **argv)
       S32 arg = 1;
       i.team = -1;
       i.selected = false;
+      i.width = 0;
+      if(gGameItemRecs[index].hasWidth)
+      {
+         i.width = atof(argv[arg]);
+         arg++;
+      }
       if(gGameItemRecs[index].hasTeam)
       {
          i.team = atoi(argv[arg]);
@@ -158,6 +167,10 @@ void EditorUserInterface::processLevelLoadLine(int argc, const char **argv)
       strcpy(t.name, argv[1]);
       t.color.read(argv + 2);
       mTeams.push_back(t);
+   }
+   else if(!strcmp(argv[0], "GridSize") && argc == 2)
+   {
+      mGridSize = atof(argv[1]);
    }
    else
    {
@@ -259,6 +272,18 @@ void EditorUserInterface::render()
       renderPoly(mNewItem);
       glLineWidth(1);
       mNewItem.verts.erase_fast(mNewItem.verts.size() - 1);
+   }
+   else
+   {
+      for(S32 i = 0; i < mItems.size(); i++)
+      {
+         if(mItems[i].selected && mItems[i].index == ItemBarrierMaker)
+         {
+            glColor3f(1,1,1);
+            drawStringf(680, 5, 20, "Width: %g", mItems[i].width);
+            break;
+         }
+      }
    }
    if(mDragSelecting)
    {
@@ -792,6 +817,7 @@ void EditorUserInterface::onRightMouseDown(S32 x, S32 y)
       mCreatingPoly = true;
       mNewItem.verts.clear();
       mNewItem.index = ItemBarrierMaker;
+      mNewItem.width = Barrier::BarrierWidth;
       mNewItem.team = -1;
       mNewItem.selected = false;
       mNewItem.vertSelected.clear();
@@ -846,6 +872,24 @@ void EditorUserInterface::deleteSelection()
          else
             i++;
       }
+   }
+}
+
+void EditorUserInterface::incBarrierWidth()
+{
+   for(S32 i = 0; i < mItems.size(); i++)
+   {
+      if(mItems[i].index == ItemBarrierMaker && mItems[i].selected)
+         mItems[i].width += 5;
+   }
+}
+
+void EditorUserInterface::decBarrierWidth()
+{
+   for(S32 i = 0; i < mItems.size(); i++)
+   {
+      if(mItems[i].index == ItemBarrierMaker && mItems[i].selected && mItems[i].width >= 9)
+         mItems[i].width -= 5;
    }
 }
 
@@ -946,6 +990,14 @@ void EditorUserInterface::onKeyDown(U32 key)
       case 8:
       case 127:
          deleteSelection();
+         break;
+      case '+':
+      case '=':
+         incBarrierWidth();
+         break;
+      case '-':
+      case '_':
+         decBarrierWidth();
          break;
       case 27:
          gEditorMenuUserInterface.activate();
@@ -1075,6 +1127,8 @@ void EditorUserInterface::saveLevel()
    {
       WorldItem &p = mItems[i];
       fprintf(f, "%s ", gGameItemRecs[mItems[i].index].name);
+      if(gGameItemRecs[mItems[i].index].hasWidth)
+         fprintf(f, "%g ", mItems[i].width);
       if(gGameItemRecs[mItems[i].index].hasTeam)
          fprintf(f, "%d ", mItems[i].team);
       for(S32 j = 0; j < p.verts.size(); j++)

@@ -48,7 +48,6 @@ GameType::GameType()
    mNetFlags.set(Ghostable);
    mGameOver = false;
    mTeamScoreLimit = DefaultTeamScoreLimit;
-   mBarrierWidth = Barrier::BarrierWidth;
 }
 
 void GameType::processArguments(S32 argc, const char **argv)
@@ -440,17 +439,17 @@ bool GameType::processLevelItem(S32 argc, const char **argv)
    else if(!stricmp(argv[0], "BarrierMaker"))
    {
       BarrierRec barrier;
-      for(S32 i = 1; i < argc; i++)
+      if(argc < 2)
+         return false;
+      barrier.width = atof(argv[1]);
+      for(S32 i = 2; i < argc; i++)
          barrier.verts.push_back(atof(argv[i]) * getGame()->getGridSize());
       if(barrier.verts.size() > 3)
       {
-         barrier.width = mBarrierWidth;
          mBarriers.push_back(barrier);
-         constructBarriers(getGame(), barrier.verts, mBarrierWidth);
+         constructBarriers(getGame(), barrier.verts, barrier.width);
       }
    }
-   else if(!stricmp(argv[0], "BarrierWidth"))
-      mBarrierWidth = atof(argv[1]);
    else if(!stricmp(argv[0], "LevelName") && argc > 1)
       mLevelName.set(argv[1]);
    else if(!stricmp(argv[0], "LevelDescription") && argc > 1)

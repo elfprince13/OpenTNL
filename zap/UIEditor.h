@@ -40,6 +40,7 @@ class EditorUserInterface : public UserInterface, public LevelLoader
    {
       U32 index;
       S32 team;
+      F32 width;
       Vector<Point> verts;
       bool selected;
       Vector<bool> vertSelected;
@@ -67,6 +68,7 @@ class EditorUserInterface : public UserInterface, public LevelLoader
    Point mMousePos;
    Point mMouseDownPos;
    S32 mCurrentTeam;
+   F32 mGridSize;
 
    bool mCreatingPoly;
    bool mDragSelecting;
@@ -104,6 +106,9 @@ public:
    void flipSelectionVertical();
    void flipSelectionHorizontal();
    void rotateSelection(F32 angle);
+
+   void incBarrierWidth();
+   void decBarrierWidth();
 
    void saveLevel();
    void testLevel();

@@ -76,7 +76,6 @@ public:
       RespawnDelay = 1500,
    };
 
-   F32 mBarrierWidth;
    struct BarrierRec
    {
       Vector<F32> verts;

@@ -138,7 +138,19 @@
 				RelativePath="..\exe\levels\football2.txt">
 			</File>
 			<File
+				RelativePath="..\exe\levels\football3.txt">
+			</File>
+			<File
+				RelativePath="..\exe\levels\football4.txt">
+			</File>
+			<File
+				RelativePath="..\exe\levels\football5.txt">
+			</File>
+			<File
 				RelativePath="..\exe\levels\hunters1.txt">
+			</File>
+			<File
+				RelativePath="..\exe\levels\hunters2.txt">
 			</File>
 			<File
 				RelativePath="..\exe\levels\level2.txt">
@@ -159,10 +171,19 @@
 				RelativePath="..\exe\levels\retrieve1.txt">
 			</File>
 			<File
+				RelativePath="..\exe\levels\retrieve2.txt">
+			</File>
+			<File
+				RelativePath="..\exe\levels\retrieve3.txt">
+			</File>
+			<File
 				RelativePath="..\exe\levels\soccer1.txt">
 			</File>
 			<File
 				RelativePath="..\exe\levels\soccer2.txt">
+			</File>
+			<File
+				RelativePath="..\exe\levels\zm1.txt">
 			</File>
 		</Filter>
 		<Filter
