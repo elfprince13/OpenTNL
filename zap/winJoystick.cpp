@@ -55,6 +55,14 @@ void checkMousePos(S32 maxdx, S32 maxdy)
    POINT cp;
    GetCursorPos(&cp);
 
+   // Check our position in the window; if we're close to the top (within 32px) then ignore
+   // same if we're within 5px of the edges. That way we can avoid going crazy when
+   // people try to resize/drag the window.
+   if(cp.x - r.top < 32)   return;
+   if(cp.y - r.left < 5)   return;
+   if(r.right - cp.y < 5)  return;
+   if(r.bottom - cp.x < 5) return;
+
    S32 centerX = (r.right + r.left) >> 1;
    S32 centerY = (r.bottom + r.top) >> 1;
 
