@@ -78,6 +78,7 @@ class GameUserInterface : public UserInterface
    bool mChatBlink;
    U32 mChatLastBlinkTime;
    bool mInScoreboardMode;
+   bool mGotControlUpdate;
 
    bool mFPSVisible;
    U32 mIdleTimeDelta[FPSAvgCount];
@@ -132,6 +133,8 @@ public:
    void onKeyUp(U32 key);
    void onControllerButtonDown(U32 buttonIndex);
    void onControllerButtonUp(U32 buttonIndex);
+
+   void receivedControlUpdate(bool recvd) { mGotControlUpdate = recvd; }
 
    Move *getCurrentMove();
 };

@@ -56,6 +56,7 @@ public:
    void handleCollision(GameObject *theObject, Point collisionPoint);
 
    void idle(GameObject::IdleCallPath path);
+   void explode(GameObject *hitObject, Point p);
 
    virtual Point getRenderVel() { return velocity; }
    virtual Point getActualVel() { return velocity; }

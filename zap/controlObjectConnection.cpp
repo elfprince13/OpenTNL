@@ -26,6 +26,7 @@
 
 #include "gameObject.h"
 #include "controlObjectConnection.h"
+#include "UIGame.h"
 
 namespace Zap
 {
@@ -163,6 +164,7 @@ void ControlObjectConnection::readPacket(BitStream *bstream)
 
       mCompressPointsRelative = controlObjectValid;
 
+      gGameUserInterface.receivedControlUpdate(false);
       // CRC mismatch...
       if(bstream->readFlag())
       {
@@ -181,6 +183,7 @@ void ControlObjectConnection::readPacket(BitStream *bstream)
                controlObject->idle(GameObject::ClientIdleControlReplay);
             }
             controlObject->controlMoveReplayComplete();
+            gGameUserInterface.receivedControlUpdate(true);
          }
          else
             controlObject = NULL;

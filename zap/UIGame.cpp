@@ -63,6 +63,7 @@ GameUserInterface::GameUserInterface()
       mDisplayMessage[i][0] = 0;
 
    mVChat = new VChatHelper();
+   mGotControlUpdate = false;
 }
 
 void GameUserInterface::displayMessage(Color theColor, const char *format, ...)
@@ -262,6 +263,10 @@ void GameUserInterface::render()
       for(U32 i = 0; i < FPSAvgCount; i++)
          sum += mIdleTimeDelta[i];
       drawStringf(710, 10, 30, "%4.2f fps", (1000 * FPSAvgCount) / F32(sum));
+   }
+   else if(mGotControlUpdate)
+   {
+      drawString(710, 10, 30, "CU");
    }
    if(mVChat->isActive())
       mVChat->render();

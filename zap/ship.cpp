@@ -158,20 +158,21 @@ void Ship::processWeaponFire()
 
 void Ship::controlMoveReplayComplete()
 {
+   // compute the delta between our current render position
+   // and the server position after client-side prediction has
+   // been run.
    Point delta = mMoveState[ActualState].pos - mMoveState[RenderState].pos;
    F32 deltaLen = delta.len();
 
-   if(deltaLen > MaxControlObjectInterpDistance)
+   // if the delta is either very small, or greater than the
+   // max interpolation threshold, just warp to the new position
+   if(deltaLen <= 0.5 || deltaLen > MaxControlObjectInterpDistance)
    {
-      for(S32 i=0; i<TrailCount; i++)
-         mTrail[i].reset();
+      // if it's a large delta, get rid of the movement trails.
+      if(deltaLen > MaxControlObjectInterpDistance)
+         for(S32 i=0; i<TrailCount; i++)
+            mTrail[i].reset();
 
-      mMoveState[RenderState].pos = mMoveState[ActualState].pos;
-      mMoveState[RenderState].vel = mMoveState[ActualState].vel;
-      mInterpolating = false;
-   }
-   else if(deltaLen <= 0.5)
-   {
       mMoveState[RenderState].pos = mMoveState[ActualState].pos;
       mMoveState[RenderState].vel = mMoveState[ActualState].vel;
       mInterpolating = false;
@@ -182,30 +183,63 @@ void Ship::controlMoveReplayComplete()
 
 void Ship::idle(GameObject::IdleCallPath path)
 {
+   // don't process exploded ships
    if(hasExploded)
       return;
 
    if(path == GameObject::ServerIdleMainLoop && isControlled())
    {
+      // if this is a controlled object in the server's main
+      // idle loop, process the render state forward -- this
+      // is what projectiles will collide against.  This allows
+      // clients to properly lead other clients, instead of
+      // piecewise stepping only when packets arrive from the client.
       processMove(RenderState);
       setMaskBits(PositionMask);
    }
    else
    {
+      // for all other cases, advance the actual state of the
+      // object with the current move.
       processMove(ActualState);
+
+      if(path == GameObject::ServerIdleControlFromClient ||
+         path == GameObject::ClientIdleControlMain ||
+         path == GameObject::ClientIdleControlReplay)
+      {
+         // for different optimizer settings and different platforms
+         // the floating point calculations may come out slightly
+         // differently in the lowest mantissa bits.  So normalize
+         // after each update the position and velocity, so that
+         // the control state update will not differ from client to server.
+         const F32 ShipVarNormalizeMultiplier = 128;
+         const F32 ShipVarNormalizeFraction = 1 / ShipVarNormalizeMultiplier;
+
+         mMoveState[ActualState].pos.scaleFloorDiv(ShipVarNormalizeMultiplier, ShipVarNormalizeFraction);
+         mMoveState[ActualState].vel.scaleFloorDiv(ShipVarNormalizeMultiplier, ShipVarNormalizeFraction);
+      }
+
       if(path == GameObject::ServerIdleMainLoop || 
          path == GameObject::ServerIdleControlFromClient)
       {
+         // update the render state on the server to match
+         // the actual updated state, and mark the object
+         // as having changed Position state.  An optimization
+         // here would check the before and after positions
+         // so as to not update unmoving ships.
          mMoveState[RenderState] = mMoveState[ActualState];
          setMaskBits(PositionMask);
-
       }
       else if(path == GameObject::ClientIdleControlMain ||
               path == GameObject::ClientIdleMainRemote)
       {
+         // on the client, update the interpolation of this object
+         // only if we are not replaying control moves.
          updateInterpolation();
       }
    }
+
+   // update the object in the game's extents database.
    updateExtent();
 
    if(path == GameObject::ServerIdleControlFromClient && 
@@ -218,6 +252,7 @@ void Ship::idle(GameObject::IdleCallPath path)
       path == GameObject::ClientIdleControlMain ||
       path == GameObject::ClientIdleControlReplay)
    {
+      // process weapons and energy on controlled object objects
       processWeaponFire();
       processEnergy();
    }
@@ -225,7 +260,7 @@ void Ship::idle(GameObject::IdleCallPath path)
    if(path == GameObject::ClientIdleControlMain ||
       path == GameObject::ClientIdleMainRemote)
    {
-      // Emit some particles
+      // Emit some particles, trail sections and update the turbo noise
       emitMovementSparks();
       for(U32 i=0; i<TrailCount; i++)
          mTrail[i].tick(mCurrentMove.time);
@@ -332,7 +367,6 @@ void Ship::writeControlState(BitStream *stream)
 {
    stream->write(mMoveState[ActualState].pos.x);
    stream->write(mMoveState[ActualState].pos.y);
-   stream->write(mMoveState[ActualState].angle);
    stream->write(mMoveState[ActualState].vel.x);
    stream->write(mMoveState[ActualState].vel.y);
    stream->writeRangedU32(mEnergy, 0, EnergyMax);
@@ -344,15 +378,12 @@ void Ship::readControlState(BitStream *stream)
 {
    stream->read(&mMoveState[ActualState].pos.x);
    stream->read(&mMoveState[ActualState].pos.y);
-   stream->read(&mMoveState[ActualState].angle);
    stream->read(&mMoveState[ActualState].vel.x);
    stream->read(&mMoveState[ActualState].vel.y);
    mEnergy = stream->readRangedU32(0, EnergyMax);
    mCooldown = stream->readFlag();
    U32 fireTimer = stream->readRangedU32(0, FireDelay);
    mFireTimer.reset(fireTimer);
-   
-   logprintf("got a CU %g %g.", mMoveState[ActualState].pos.x, mMoveState[ActualState].pos.y);
 }
 
 U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)

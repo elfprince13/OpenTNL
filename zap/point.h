@@ -61,6 +61,11 @@ struct Point
    void normalize() { member_type l = len(); if(l == 0) { x = 1; y = 0; } else { l = 1 / l; x *= l; y *= l; } }
    void normalize(float newLen) { member_type l = len(); if(l == 0) { x = newLen; y = 0; } else { l = newLen / l; x *= l; y *= l; } }
 
+   void scaleFloorDiv(float scaleFactor, float divFactor)
+   {
+      x = (member_type) floor(x * scaleFactor + 0.5) * divFactor;
+      y = (member_type) floor(y * scaleFactor + 0.5) * divFactor;
+   }
    member_type dot(const Point &p) const { return x * p.x + y * p.y; }
    void read(const char **argv) { x = (member_type) atof(argv[0]); y = (member_type) atof(argv[1]); }
 };

@@ -58,6 +58,7 @@ U32 Projectile::packUpdate(GhostConnection *connection, U32 updateMask, BitStrea
       index = connection->getGhostIndex(mShooter);
    if(stream->writeFlag(index != -1))
       stream->writeInt(index, GhostConnection::GhostIdBitSize);
+   stream->writeFlag(collided);
 
    return 0;
 }
@@ -70,9 +71,15 @@ void Projectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
    if(stream->readFlag())
       mShooter = (Ship *) connection->resolveGhost(stream->readInt(GhostConnection::GhostIdBitSize));
 
+   collided = stream->readFlag();
+   if(collided)
+      explode(NULL, pos);
+   else
+      pos += velocity * -0.020f;
+
    Rect newExtent(pos,pos);
    setExtent(newExtent);
-   mCurrentMove.time = connection->getOneWayTime();
+   mCurrentMove.time = connection->getOneWayTime() + 20;
    idle(GameObject::ClientIdleMainRemote);
 
    SFXObject::play(0, pos, velocity);
@@ -106,63 +113,67 @@ void Projectile::handleCollision(GameObject *hitObject, Point collisionPoint)
    }
 
    liveTime = 0;
+   explode(hitObject, collisionPoint);
+}
 
+void Projectile::explode(GameObject *hitObject, Point thePos)
+{
    // Do some particle spew...
    if(isGhost())
    {
-      SparkManager::emitExplosion(collisionPoint, 0.4, SparkColors, NumSparkColors);
+      SparkManager::emitExplosion(thePos, 0.4, SparkColors, NumSparkColors);
 
       Ship *s = dynamic_cast<Ship*>(hitObject);
       if(s && s->mShield)
-         SFXObject::play(SFXBounceShield, pos, velocity);
+         SFXObject::play(SFXBounceShield, thePos, velocity);
       else
-         SFXObject::play(SFXPhaserImpact, pos, velocity);
+         SFXObject::play(SFXPhaserImpact, thePos, velocity);
    }
 }
 
 void Projectile::idle(GameObject::IdleCallPath path)
 {
    U32 deltaT = mCurrentMove.time;
-   if(collided)
-      return;
-
-   Point endPos = pos + velocity * deltaT * 0.001;
-   static Vector<GameObject *> disableVector;
-
-   Rect queryRect(pos, endPos);
-
-   float collisionTime;
-   disableVector.clear();
-
-   if(mShooter.isValid())
+   if(!collided)
    {
-      disableVector.push_back(mShooter);
-      mShooter->disableCollision();
+      Point endPos = pos + velocity * deltaT * 0.001;
+      static Vector<GameObject *> disableVector;
+
+      Rect queryRect(pos, endPos);
+
+      float collisionTime;
+      disableVector.clear();
+
+      if(mShooter.isValid())
+      {
+         disableVector.push_back(mShooter);
+         mShooter->disableCollision();
+      }
+
+      GameObject *hitObject;
+      for(;;)
+      {
+         hitObject = findObjectLOS(MoveableType | BarrierType, MoveObject::RenderState, pos, endPos, collisionTime);
+         if(!hitObject || hitObject->collide(this))
+            break;
+         disableVector.push_back(hitObject);
+         hitObject->disableCollision();
+      }
+
+      for(S32 i = 0; i < disableVector.size(); i++)
+         disableVector[i]->enableCollision();
+
+      if(hitObject)
+      {
+         Point collisionPoint = pos + (endPos - pos) * collisionTime;
+         handleCollision(hitObject, collisionPoint);
+      }
+      else
+         pos = endPos;
+
+      Rect newExtent(pos,pos);
+      setExtent(newExtent);
    }
-
-   GameObject *hitObject;
-   for(;;)
-   {
-      hitObject = findObjectLOS(MoveableType | BarrierType, MoveObject::RenderState, pos, endPos, collisionTime);
-      if(!hitObject || hitObject->collide(this))
-         break;
-      disableVector.push_back(hitObject);
-      hitObject->disableCollision();
-   }
-
-   for(S32 i = 0; i < disableVector.size(); i++)
-      disableVector[i]->enableCollision();
-
-   if(hitObject)
-   {
-      Point collisionPoint = pos + (endPos - pos) * collisionTime;
-      handleCollision(hitObject, collisionPoint);
-   }
-   else
-      pos = endPos;
-
-   Rect newExtent(pos,pos);
-   setExtent(newExtent);
 
    if(path == GameObject::ClientIdleMainRemote)
       liveTime += deltaT;
