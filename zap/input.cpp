@@ -143,6 +143,28 @@ static bool updateMoveInternal( Move *theMove, U32 &buttonMask )
          buttonMask &= ~(1 << 8);
       }
    }
+   else if(OptionsMenuUserInterface::joystickType == SaitekDualAnalog)
+   {
+      static U32 retMasks[12] = {
+         ControllerButton1,
+         ControllerButton2,
+         ControllerButton3,
+         ControllerButton4,
+         ControllerButton5,
+         ControllerButton6,
+         ControllerButtonLeftTrigger,
+         ControllerButtonRightTrigger,
+         0,
+         ControllerButton1,
+         ControllerButtonBack,
+         0,
+      };
+      U32 retMask = 0;
+      for(S32 i = 0; i < 12; i++)
+         if(buttonMask & (1 << i))
+            retMask |= retMasks[i];
+      buttonMask = retMask;
+   }
    else if(OptionsMenuUserInterface::joystickType == PS2DualShock)
    {
       static U32 retMasks[12] = {
@@ -190,6 +212,27 @@ static bool updateMoveInternal( Move *theMove, U32 &buttonMask )
    return true;
 }
 
+S32 autodetectJoystickType()
+{
+   S32 ret = -1;
+   TNL_JOURNAL_READ_BLOCK(JoystickAutodetect, 
+      TNL_JOURNAL_READ((&ret));
+      return ret;
+      )
+   const char *joystickName = GetJoystickName();
+   if(!strncmp(joystickName, "WingMan", 7))
+      ret = LogitechWingman;
+   else if(strstr(joystickName, "XBox"))
+      ret = XBoxController;
+   else if(!strcmp(joystickName, "4 axis 16 button joystick"))
+      ret = PS2DualShock;
+   else if(strstr(joystickName, "P880"))
+      ret = SaitekDualAnalog;
+   TNL_JOURNAL_WRITE_BLOCK(JoystickAutodetect,
+      TNL_JOURNAL_WRITE((ret));
+   )
+   return ret;
+}
 
 static bool updateMoveJournaled( Move *theMove, U32 &buttonMask )
 {

@@ -689,6 +689,7 @@ int main(int argc, char **argv)
    {
       SFXObject::init();
       InitJoystick();
+      OptionsMenuUserInterface::joystickType = autodetectJoystickType();
 
       glutInitWindowSize(800, 600);
       glutInit(&argc, argv);

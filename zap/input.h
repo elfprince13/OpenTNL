@@ -67,6 +67,8 @@ enum ButtonInfo {
 void getModifierState( bool &shiftDown, bool &controlDown, bool &altDown );
 
 void InitJoystick();
+const char *GetJoystickName();
+S32 autodetectJoystickType();
 void ShutdownJoystick();
 bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask);
 

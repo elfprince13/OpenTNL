@@ -92,6 +92,7 @@ BOOL CALLBACK EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance, VOID*
 
 LPDIRECTINPUT8 gDirectInput = NULL;
 LPDIRECTINPUTDEVICE8 gJoystick = NULL;
+char gJoystickName[MAX_PATH] = "";
 
 void InitJoystick()
 {
@@ -108,10 +109,12 @@ void InitJoystick()
 
    if( FAILED(gJoystick->SetDataFormat( &c_dfDIJoystick2 ) ) )
       return;
-
-   // since we passed in a NULL window, we don't bother setting the cooperative level.
 }
 
+const char *GetJoystickName()
+{
+   return gJoystickName;
+}
 
 BOOL CALLBACK EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance,
                                      VOID* pContext )
@@ -119,7 +122,7 @@ BOOL CALLBACK EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance,
    // Obtain an interface to the enumerated joystick.
    if(FAILED(gDirectInput->CreateDevice( pdidInstance->guidInstance, &gJoystick, NULL )))
       return DIENUM_CONTINUE;
-   
+   strcpy(gJoystickName, pdidInstance->tszProductName);
    return DIENUM_STOP;
 }
 
