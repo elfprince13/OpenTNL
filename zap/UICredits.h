@@ -33,7 +33,6 @@
 namespace Zap
 {
 
-class CreditsUserInterface;
 class CreditsFX
 {
 protected:
@@ -41,8 +40,8 @@ protected:
 
 public:
    CreditsFX();
-   virtual void setActive(bool active) { activated = active; }
-   virtual bool isActive() { return activated; }
+   void setActive(bool active) { activated = active; }
+   bool isActive() { return activated; }
    virtual void updateFX(U32 delta) = 0;
    virtual void render() = 0;
 };
