@@ -93,8 +93,6 @@ void MasterServerConnection::requestArrangedConnection(const Address &remoteAddr
 {
    mCurrentQueryId++;
 
-   IPAddress theAddress = remoteAddress.toIPAddress();
-
    c2mRequestArrangedConnection(mCurrentQueryId, remoteAddress.toIPAddress(),
       getInterface()->getFirstBoundInterfaceAddress().toIPAddress(),
       ByteBuffer((U8 *) "ZAP!", 5)); 
