@@ -40,7 +40,7 @@ VChatHelper::VChatNode VChatHelper::mChatTree[] =
          {2, 'W', true, "Wait for signal",         "Wait for my signal to attack."},
          {2, 'C', true, "Cease fire",              "Cease fire!"},
          {2, 'M', true, "Move out",                "Move out."},
-         {2, 'R', true, "Retreat",                 "Retreat!"},
+         {2, 'N', true, "Retreat",                 "Retreat!"},
          {2, 'H', true, "Hit deck",                "Hit the deck!"},
          {2, 'E', true, "Regroup",                 "Regroup."},
          {2, 'V', true, "Cover me",                "Cover me.."},
