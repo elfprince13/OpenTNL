@@ -36,7 +36,6 @@ namespace Zap
 
 TNL_IMPLEMENT_NETOBJECT(Projectile);
 
-
 Projectile::Projectile(Point p, Point v, U32 t, Ship *shooter)
 {
    mNetFlags.set(Ghostable);
@@ -235,6 +234,179 @@ void Projectile::render()
    glVertex2f(0, -8);
    glVertex2f(-2, -2);
    glVertex2f(-8, 0);
+   glEnd();
+
+   glPopMatrix();
+}
+
+TNL_IMPLEMENT_NETOBJECT(GrenadeProjectile);
+
+GrenadeProjectile::GrenadeProjectile(Point pos, Point vel, U32 liveTime, Ship *shooter)
+ : Item(pos, true, 7.f, 1.f)
+{
+   mObjectTypeMask = MoveableType;
+
+   mNetFlags.set(Ghostable);
+
+   mMoveState[0].pos = pos;
+   mMoveState[0].vel = vel;
+   setMaskBits(PositionMask);
+
+   updateExtent();
+
+   ttl = liveTime;
+   exploded = false;
+}
+
+void GrenadeProjectile::idle(IdleCallPath path)
+{
+   Parent::idle(path);
+
+   // Do some drag...
+   mMoveState[0].vel -= mMoveState[0].vel * (F32(mCurrentMove.time) / 1000.f);
+
+   if(!exploded)
+   {
+      if(getActualVel().len() < 4.0)
+        explode(getActualPos());
+   }
+
+   if(isGhost()) return;
+
+   // Update TTL
+   U32 deltaT = mCurrentMove.time;
+   if(path == GameObject::ClientIdleMainRemote)
+      ttl += deltaT;
+   else if(!exploded)
+   {
+      if(ttl <= deltaT)
+        explode(getActualPos());
+      else
+         ttl -= deltaT;
+   }
+
+}
+
+
+U32  GrenadeProjectile::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
+{
+   U32 ret = Parent::packUpdate(connection, updateMask, stream);
+   stream->writeFlag(exploded);
+   return ret;
+}
+
+void GrenadeProjectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
+{
+   Parent::unpackUpdate(connection, stream);
+
+   if(stream->readFlag())
+   {
+      explode(getActualPos());
+   }
+}
+
+void GrenadeProjectile::damageObject(DamageInfo *theInfo)
+{
+   // If we're being damaged by another grenade, explode...
+   if(theInfo->damageType == 1)
+      explode(getActualPos());
+
+   // Bounce off of stuff.
+   Point dv = theInfo->impulseVector - mMoveState[ActualState].vel;
+   Point iv = mMoveState[ActualState].pos - theInfo->collisionPoint;
+   iv.normalize();
+   mMoveState[ActualState].vel += iv * dv.dot(iv) * 0.3;
+
+   setMaskBits(PositionMask);
+}
+
+static Vector<GameObject *> fillVector;
+
+void GrenadeProjectile::explode(Point pos)
+{
+   if(exploded) return;
+
+   if(isGhost())
+   {
+      // Make us go boom!
+      Color b(1,1,1);
+
+      SparkManager::emitExplosion(getRenderPos(), 1.0, &b, 1);
+   }
+
+   disableCollision();
+
+   if(!isGhost())
+   {
+      setMaskBits(PositionMask);
+      getGame()->deleteObject(this, 100);
+   }
+
+   exploded = true;
+
+   DamageInfo info;
+   info.collisionPoint = pos;
+   info.damagingObject = this;
+   info.damageAmount   = 0.5;
+   info.damageType     = 1;
+
+   // Check for players within range
+   // if so, blast them to death
+   Rect queryRect(pos, pos);
+   queryRect.expand(Point(100, 100));
+
+   fillVector.clear();
+   findObjects(0xFFFFFFFF, fillVector, queryRect);
+
+   for(S32 i=0; i<fillVector.size(); i++)
+   {
+      // figure the impulse
+      info.impulseVector  = fillVector[i]->getActualPos() - pos;
+      info.impulseVector.normalize();
+
+      info.collisionPoint = fillVector[i]->getActualPos();
+      info.collisionPoint -= info.impulseVector;
+
+      info.impulseVector  *= 500.f;
+
+      fillVector[i]->damageObject(&info);
+   }      
+}
+
+void GrenadeProjectile::renderItem(Point pos)
+{
+   if(exploded)
+      return;
+
+   glPushMatrix();
+   glTranslatef(pos.x, pos.y, 0);
+
+   glColor3f(1,1,1);
+   glBegin(GL_LINE_LOOP);
+   glVertex2f(-18, -18);
+   glVertex2f(18, -18);
+   glVertex2f(18, 18);
+   glVertex2f(-18, 18);
+   glEnd();
+
+   glColor3f(1,0,0);
+   glBegin(GL_LINE_LOOP);
+
+   float crossWidth = 4;
+   float crossLen = 14;
+
+   glVertex2f(crossWidth, crossWidth);
+   glVertex2f(crossLen, crossWidth);
+   glVertex2f(crossLen, -crossWidth);
+   glVertex2f(crossWidth, -crossWidth);
+   glVertex2f(crossWidth, -crossLen);
+   glVertex2f(-crossWidth, -crossLen);
+   glVertex2f(-crossWidth, -crossWidth);
+   glVertex2f(-crossLen, -crossWidth);
+   glVertex2f(-crossLen, crossWidth);
+   glVertex2f(-crossWidth, crossWidth);
+   glVertex2f(-crossWidth, crossLen);
+   glVertex2f(crossWidth, crossLen);
    glEnd();
 
    glPopMatrix();

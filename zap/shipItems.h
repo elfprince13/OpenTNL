@@ -43,9 +43,9 @@ enum ShipModule
 
 enum ShipWeapon
 {
-   WeaponPhaser,
-   WeaponTriple,
+   WeaponPhaser = 0,
    WeaponBounce,
+   WeaponTriple,
    WeaponBurst,
    WeaponMineLayer,
    WeaponCount,
@@ -57,7 +57,14 @@ enum EngineerBuildObjects
    ForceFieldObject,
 };
 
+struct ShipWeaponInfo
+{
+   const char *name; // Display name of the weapon.
+   U32 fireDelay;    // Delay between shots.
+   U32 minEnergy;    // Minimum energy to fire.
+   U32 drainEnergy;  // Amount of energy to drain per shot.
 };
 
+};
 #endif
 

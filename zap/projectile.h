@@ -28,6 +28,7 @@
 #define _PROJECTILE_H_
 
 #include "gameObject.h"
+#include "item.h"
 
 namespace Zap
 {
@@ -64,6 +65,33 @@ public:
    void render();
 
    TNL_DECLARE_CLASS(Projectile);
+};
+
+class GrenadeProjectile : public Item
+{
+   typedef Item Parent;
+public:
+   GrenadeProjectile(Point pos = Point(), Point vel = Point(), U32 liveTime = 0, Ship *shooter = NULL);
+
+   enum Constants
+   {
+      ExplodeMask = BIT(8),
+   };
+
+   S32 ttl;
+   bool exploded;
+
+   bool collide(GameObject *otherObj) { return true; };
+
+   void renderItem(Point p);
+   void idle(IdleCallPath path);
+   void damageObject(DamageInfo *damageInfo);
+   void explode(Point p);
+
+   U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
+   void unpackUpdate(GhostConnection *connection, BitStream *stream);
+
+   TNL_DECLARE_CLASS(GrenadeProjectile);
 };
 
 };

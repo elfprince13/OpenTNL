@@ -388,6 +388,14 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
                   g->c2sRequestScoreboardUpdates(true);
                break;
             }
+            case 4:
+            {
+               GameType *g = gClientGame->getGameType();
+               if(g)
+                  g->c2sAdvanceWeapon();
+               break;
+            }
+
             case 5:
                enterVChat(true);
                break;

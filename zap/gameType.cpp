@@ -293,7 +293,7 @@ void GameType::setClientShipLoadout(S32 clientIndex, const Vector<U32> &loadout)
       return;
    Ship *theShip = (Ship *) mClientList[clientIndex].clientConnection->getControlObject();
 
-   theShip->setModules(loadout[0], loadout[1]);
+   theShip->setLoadout(loadout[0], loadout[1], loadout[2], loadout[3], loadout[4]);
 }
 
 void GameType::clientRequestLoadout(GameConnection *client, const Vector<U32> &loadout)
@@ -621,6 +621,14 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sRequestScoreboardUpdates, (bool updates
    mClientList[clientIndex].wantsScoreboardUpdates = updates;
    if(updates)
       updateClientScoreboard(clientIndex);
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sAdvanceWeapon, (),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+{
+   GameConnection *source = (GameConnection *) getRPCSourceConnection();
+   Ship *s = dynamic_cast<Ship*>(source->getControlObject());
+   s->selectWeapon();
 }
 
 Vector<RangedU32<0, GameType::MaxPing> > GameType::mPingTimes; ///< Static vector used for constructing update RPCs

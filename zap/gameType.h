@@ -154,6 +154,8 @@ public:
    TNL_DECLARE_RPC(s2cSetTimeRemaining, (U32 timeLeft));
    TNL_DECLARE_RPC(c2sRequestScoreboardUpdates, (bool updates));
 
+   TNL_DECLARE_RPC(c2sAdvanceWeapon, ());
+
    TNL_DECLARE_RPC(c2sVoiceChat, (bool echo, ByteBufferRef compressedVoice));
    TNL_DECLARE_RPC(s2cVoiceChat, (StringTableEntryRef client, ByteBufferRef compressedVoice));
 

@@ -43,8 +43,6 @@ class Ship : public MoveObject
    typedef MoveObject Parent;
 public:
    enum {
-//      MaxVelocity = 500, // points per second
-//      Acceleration = 800, // points per second per second
       MaxVelocity = 450, // points per second
       Acceleration = 2500, // points per second per second
       BoostMaxVelocity = 700, // points per second
@@ -56,8 +54,8 @@ public:
       VisibilityRadius = 30,
       KillDeleteDelay = 1500,
       ExplosionFadeTime = 300,
-      FireDelay = 100,
       MaxControlObjectInterpDistance = 200,
+      MaxFireDelay = 1024, // About a second
       TrailCount = 2,
       EnergyMax = 100000,
       EnergyRechargeRate = 6000, // How many percent/second
@@ -67,12 +65,12 @@ public:
       EnergySensorDrain = 8000,
       EnergyCloakDrain = 8000,
       EnergyShieldHitDrain = 20000,
-      EnergyShootDrain = 500,
       EnergyCooldownThreshold = 15000,
       ShipModuleCount = 2,
+      ShipWeaponCount = 3,
       SensorZoomTime = 300,
       CloakFadeTime = 300,
-      RepairHundredthsPerSecond = 10,
+      RepairHundredthsPerSecond = 15,
    };
 
    enum MaskBits {
@@ -83,7 +81,8 @@ public:
       ExplosionMask = BIT(4),
       HealthMask = BIT(5),
       PowersMask = BIT(6),
-      ModulesMask = BIT(7),
+      WeaponMask = BIT(7),
+      LoadoutMask = BIT(8),      
    };
 
    Timer mFireTimer;
@@ -95,6 +94,12 @@ public:
    U32 mModule[ShipModuleCount];
    bool mModuleActive[ModuleCount];
    SFXHandle mModuleSound[ModuleCount];
+
+   U32 mWeapon[ShipWeaponCount];
+   U32 mActiveWeapon;
+
+   void selectWeapon();
+   void selectWeapon(U32 weaponIndex);
 
    Timer mSensorZoomTimer;
    Timer mCloakTimer;
@@ -132,7 +137,7 @@ public:
 
    F32 getSensorZoomFraction() { return mSensorZoomTimer.getFraction(); }
 
-   void setModules(U32 module1, U32 module2);
+   void setLoadout(U32 module1, U32 module2, U32 weapon1, U32 weapon2, U32 weapon3);
    void idle(IdleCallPath path);
 
    void processMove(U32 stateIndex);

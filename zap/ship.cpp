@@ -44,6 +44,17 @@
 namespace Zap
 {
 
+ShipWeaponInfo gWeapons[] =
+{
+   {"Phaser",   100, 500, 500},
+   {"Bouncer",  1200, 5000, 5000},
+   {NULL, 0, 0, 0},
+   {NULL, 0, 0, 0},
+   {NULL, 0, 0, 0},
+   {NULL, 0, 0, 0}
+};
+
+
 //------------------------------------------------------------------------
 TNL_IMPLEMENT_NETOBJECT(Ship);
 
@@ -74,6 +85,12 @@ Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, Collisio
 
    mModule[0] = ModuleBoost;
    mModule[1] = ModuleShield;
+
+   mWeapon[0] = WeaponPhaser;
+   mWeapon[1] = WeaponBounce;
+   mWeapon[2] = WeaponPhaser;
+   
+   mActiveWeapon = 0;
 
    mCooldown = false;
 }
@@ -144,22 +161,54 @@ void Ship::processMove(U32 stateIndex)
    move(time, stateIndex, false);
 }
 
+void Ship::selectWeapon()
+{
+   selectWeapon(mActiveWeapon + 1);
+}
+
+void Ship::selectWeapon(U32 weaponIdx)
+{
+   mActiveWeapon = weaponIdx % ShipWeaponCount;
+   setMaskBits(WeaponMask);
+}
+
 void Ship::processWeaponFire()
 {
    mFireTimer.update(mCurrentMove.time);
-   if(mCurrentMove.fire)
+
+   U32 curWeapon = mWeapon[mActiveWeapon];
+
+   if(mCurrentMove.fire && mFireTimer.getCurrent() == 0)
    {
-      if(mFireTimer.getCurrent() == 0 && mEnergy >= EnergyShootDrain)
+      if(mEnergy >= gWeapons[curWeapon].minEnergy)
       {
-         mEnergy -= EnergyShootDrain;
-         mFireTimer.reset(FireDelay);
+         mEnergy -= gWeapons[curWeapon].drainEnergy;
+         mFireTimer.reset(gWeapons[curWeapon].fireDelay);
 
          if(!isGhost())
          {
             Point dir(sin(mMoveState[ActualState].angle), cos(mMoveState[ActualState].angle) );
-            Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir);
-            Projectile *proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this);
-            proj->addToGame(getGame());
+            
+            GameObject *proj = NULL;
+
+            switch(curWeapon)
+            {
+               case WeaponPhaser:
+                  {
+                     Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir);
+                     proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this);
+                  }
+               break;
+               case WeaponBounce:
+                  {
+                     Point projVel = dir * 500 + dir * mMoveState[ActualState].vel.dot(dir);
+                     proj = new GrenadeProjectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this);
+                  }
+               break;
+            }
+
+            if(proj)
+               proj->addToGame(getGame());
          }
       }
    }
@@ -330,7 +379,10 @@ bool Ship::findRepairTargets()
 void Ship::repairTargets()
 {
    F32 totalRepair = RepairHundredthsPerSecond * 0.01 * mCurrentMove.time * 0.001f;
-   totalRepair /= mRepairTargets.size();
+
+
+//   totalRepair /= mRepairTargets.size();
+
    DamageInfo di;
    di.damageAmount = -totalRepair;
    di.damagingObject = this;
@@ -448,6 +500,12 @@ void Ship::damageObject(DamageInfo *theInfo)
    }
    else if(mHealth > 1)
       mHealth = 1;
+
+   // Deal with grenades
+   if(theInfo->damageType == 1)
+   {
+      mMoveState[0].vel += theInfo->impulseVector;
+   }
 }
 
 
@@ -492,7 +550,7 @@ void Ship::writeControlState(BitStream *stream)
    stream->write(mMoveState[ActualState].vel.y);
    stream->writeRangedU32(mEnergy, 0, EnergyMax);
    stream->writeFlag(mCooldown);
-   stream->writeRangedU32(mFireTimer.getCurrent(), 0, FireDelay);
+   stream->writeRangedU32(mFireTimer.getCurrent(), 0, MaxFireDelay);
 }
 
 void Ship::readControlState(BitStream *stream)
@@ -503,11 +561,11 @@ void Ship::readControlState(BitStream *stream)
    stream->read(&mMoveState[ActualState].vel.y);
    mEnergy = stream->readRangedU32(0, EnergyMax);
    mCooldown = stream->readFlag();
-   U32 fireTimer = stream->readRangedU32(0, FireDelay);
+   U32 fireTimer = stream->readRangedU32(0, MaxFireDelay);
    mFireTimer.reset(fireTimer);
 }
 
-U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
+U32  Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
    GameConnection *gameConnection = (GameConnection *) connection;
 
@@ -534,10 +592,19 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
    if(stream->writeFlag(updateMask & HealthMask))
       stream->writeFloat(mHealth, 6);
 
-   if(stream->writeFlag(updateMask & ModulesMask))
+   if(stream->writeFlag(updateMask & LoadoutMask))
    {
       stream->writeRangedU32(mModule[0], 0, ModuleCount);
       stream->writeRangedU32(mModule[1], 0, ModuleCount);
+
+      stream->writeRangedU32(mWeapon[0], 0, WeaponCount);
+      stream->writeRangedU32(mWeapon[1], 0, WeaponCount);
+      stream->writeRangedU32(mWeapon[2], 0, WeaponCount);
+   }
+
+   if(stream->writeFlag(updateMask & WeaponMask))
+   {
+      stream->writeRangedU32(mActiveWeapon, 0, WeaponCount);
    }
 
    stream->writeFlag(hasExploded);
@@ -605,6 +672,15 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
    {
       mModule[0] = stream->readRangedU32(0, ModuleCount);
       mModule[1] = stream->readRangedU32(0, ModuleCount);
+
+      mWeapon[0] = stream->readRangedU32(0, WeaponCount);
+      mWeapon[1] = stream->readRangedU32(0, WeaponCount);
+      mWeapon[2] = stream->readRangedU32(0, WeaponCount);
+   }
+
+   if(stream->readFlag())
+   {
+      mActiveWeapon = stream->readRangedU32(0, WeaponCount);
    }
 
    bool explode = stream->readFlag();
@@ -704,11 +780,14 @@ bool Ship::carryingResource()
    return false;
 }
 
-void Ship::setModules(U32 module1, U32 module2)
+void Ship::setLoadout(U32 module1, U32 module2, U32 weapon1, U32 weapon2, U32 weapon3)
 {
    mModule[0] = module1;
    mModule[1] = module2; 
-   setMaskBits(ModulesMask);
+   mWeapon[0] = weapon1;
+   mWeapon[1] = weapon2;
+   mWeapon[2] = weapon3;
+   setMaskBits(LoadoutMask);
 
    // drop any resources we may be carrying
    for(S32 i = mMountedItems.size() - 1; i >= 0; i--)

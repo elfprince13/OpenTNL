@@ -54,10 +54,10 @@ LoadoutItem gLoadoutModules[] = {
 };
 
 LoadoutItem gLoadoutWeapons[] = {
-   { '1', 0, WeaponPhaser, "Phaser" },
-   { '2', 1, WeaponBounce, "Bouncer" },
-   { '3', 2, WeaponTriple, "Three-Way" },
-   { '4', 3, WeaponBurst, "Burster" },
+   { '1', 0, WeaponPhaser,    "Phaser" },
+   { '2', 1, WeaponBounce,    "Bouncer" },
+   { '3', 2, WeaponTriple,    "Three-Way" },
+   { '4', 3, WeaponBurst,     "Burster" },
    { '5', 4, WeaponMineLayer, "Mine Dropper" },
    { 0, 0, 0, NULL },
 };
