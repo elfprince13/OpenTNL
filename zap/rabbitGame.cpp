@@ -159,7 +159,7 @@ void RabbitGameType::controlObjectForClientKilled(GameConnection *theClient, Gam
 {
    Parent::controlObjectForClientKilled(theClient, clientObject, killerObject);
 
-   Ship *killerShip = NULL;
+   Ship *killerShip = (Ship*)killerObject; //NULL;
    GameConnection *ko = killerShip->getOwner();
    if(ko)
       killerShip = (Ship *) ko->getControlObject();
