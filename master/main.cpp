@@ -396,7 +396,7 @@ public:
       checkActivityTime(2000);
 
       // Get our address...
-      Address theAddress = conn->getNetAddress();
+      Address theAddress = getNetAddress();
 
       // Record some different addresses to try...
       Vector<IPAddress> possibleAddresses;
