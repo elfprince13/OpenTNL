@@ -52,7 +52,12 @@ OBJECTS_ZAP=\
    sparkManager.o\
    teleporter.o\
    voiceCodec.o\
-	../master/masterInterface.o\
+   gsm_encode.o\
+   gsm_decode.o\
+   gsm_state.o\
+   lpc10enc.o\
+   lpc10dec.o\
+   ../master/masterInterface.o
 
 CFLAGS=
 
