@@ -270,12 +270,6 @@
 			RelativePath=".\UIGame.h">
 		</File>
 		<File
-			RelativePath=".\UILevelEditor.cpp">
-		</File>
-		<File
-			RelativePath=".\UILevelEditor.h">
-		</File>
-		<File
 			RelativePath=".\UIMenus.cpp">
 		</File>
 		<File
