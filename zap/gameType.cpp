@@ -29,6 +29,7 @@
 #include "UIGame.h"
 #include "gameNetInterface.h"
 #include "glutInclude.h"
+#include "engineeredObjects.h"
 
 namespace Zap
 {
@@ -281,7 +282,7 @@ void GameType::spawnShip(GameConnection *theClient)
    S32 spawnIndex = Random::readI() % mTeams[teamIndex].spawnPoints.size();
    spawnPoint = mTeams[teamIndex].spawnPoints[spawnIndex];
 
-   Ship *newShip = new Ship(mClientList[clientIndex].name, spawnPoint);
+   Ship *newShip = new Ship(mClientList[clientIndex].name, teamIndex, spawnPoint);
    newShip->addToGame(getGame());
    theClient->setControlObject(newShip);
    setClientShipLoadout(clientIndex, theClient->getLoadout());
@@ -305,7 +306,7 @@ void GameType::clientRequestLoadout(GameConnection *client, const Vector<U32> &l
 
 void GameType::clientRequestEngineerBuild(GameConnection *client, U32 buildObject)
 {
-   logprintf("Client requested build %d", buildObject);
+   engClientCreateObject(client, buildObject);
 }
 
 

@@ -63,6 +63,7 @@ void Item::render()
 
 void Item::mountToShip(Ship *theShip)
 {
+   TNLAssert(isGhost() || isInDatabase(), "Error, mount item not in database.");
    dismount();
    mMount = theShip;
    if(theShip)
@@ -95,8 +96,18 @@ void Item::dismount()
    setMaskBits(MountMask);
 }
 
+void Item::setActualPos(Point p)
+{
+   mMoveState[ActualState].pos = p;
+   mMoveState[ActualState].vel.set(0,0);
+   setMaskBits(WarpPositionMask | PositionMask);
+}
+
 void Item::idle(GameObject::IdleCallPath path)
 {
+   if(!isInDatabase())
+      return;
+
    if(mIsMounted)
    {
       if(mMount.isNull() || mMount->hasExploded)
@@ -133,8 +144,8 @@ U32 Item::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
    }
    if(stream->writeFlag(updateMask & PositionMask))
    {
-      ((GameConnection *) connection)->writeCompressedPoint(mMoveState[RenderState].pos, stream);
-      writeCompressedVelocity(mMoveState[RenderState].vel, 511, stream);
+      ((GameConnection *) connection)->writeCompressedPoint(mMoveState[ActualState].pos, stream);
+      writeCompressedVelocity(mMoveState[ActualState].vel, 511, stream);
       stream->writeFlag(updateMask & WarpPositionMask);
    }
    if(stream->writeFlag(MountMask) && stream->writeFlag(mIsMounted))

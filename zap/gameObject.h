@@ -47,6 +47,7 @@ enum GameObjectType
    ProjectileType = 1 << 4,
    ItemType = 1 << 5,
    ResourceItemType = 1 << 6,
+   EngineeredType = 1 << 7,
 
    CommandMapVisType = 1 << 31,
    AllObjectTypes = 0xFFFFFFFF,
@@ -70,6 +71,7 @@ class GameObject : public NetObject
    U32 mLastQueryId;
    SafePtr<GameConnection> mControllingClient;
    U32 mDisableCollisionCount;
+   bool mInDatabase;
 
    Rect extent;
 protected:
@@ -87,6 +89,7 @@ public:
 
    Game *getGame() { return mGame; }
 
+   bool isInDatabase() { return mInDatabase; }
    void setExtent(Rect &extentRect);
    Rect getExtent() { return extent; }
    void findObjects(U32 typeMask, Vector<GameObject *> &fillVector, Rect &extents);

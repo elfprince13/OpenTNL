@@ -55,7 +55,7 @@ public:
       KillDeleteDelay = 1500,
       ExplosionFadeTime = 300,
       MaxControlObjectInterpDistance = 200,
-      MaxFireDelay = 1024, // About a second
+      MaxFireDelay = 2048, // About a second
       TrailCount = 2,
       EnergyMax = 100000,
       EnergyRechargeRate = 6000, // How many percent/second
@@ -70,7 +70,8 @@ public:
       ShipWeaponCount = 3,
       SensorZoomTime = 300,
       CloakFadeTime = 300,
-      RepairHundredthsPerSecond = 15,
+      RepairHundredthsPerSecond = 16,
+      MaxEngineerDistance = 100,
    };
 
    enum MaskBits {
@@ -107,6 +108,7 @@ public:
    U32 mSparkElapsed;
    S32 mLastTrailPoint[TrailCount];
    fxTrail mTrail[TrailCount];
+   S32 mTeam;
 
    Color color; // color of the ship
    F32 mass; // mass of ship
@@ -117,7 +119,7 @@ public:
    Vector<SafePtr<Ship> > mRepairTargets;
 
    void render();
-   Ship(StringTableEntry playerName="", Point p = Point(0,0), F32 m = 1.0);
+   Ship(StringTableEntry playerName="", S32 team = -1, Point p = Point(0,0), F32 m = 1.0);
 
    F32 getHealth() { return mHealth; }
 
@@ -134,8 +136,12 @@ public:
                                         mModule[1] == ModuleEngineer; }
 
    bool carryingResource();
+   Item *unmountResource();
+
+   S32 getTeam() { return mTeam; }
 
    F32 getSensorZoomFraction() { return mSensorZoomTimer.getFraction(); }
+   Point getAimVector();
 
    void setLoadout(U32 module1, U32 module2, U32 weapon1, U32 weapon2, U32 weapon3);
    void idle(IdleCallPath path);

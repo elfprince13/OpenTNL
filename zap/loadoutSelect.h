@@ -35,7 +35,6 @@ namespace Zap
 
 class LoadoutHelper
 {
-   bool mVisible; 
    bool mFromController;
    U32 mModule[2];
    U32 mWeapon[3];
@@ -45,18 +44,15 @@ public:
 
    void render();
    void show(bool fromController);
-   bool isActive() { return mVisible; }
    bool processKey(U32 key);
 };
 
 class EngineerBuildHelper
 {
-   bool mVisible;
 public:
    EngineerBuildHelper();
    void render();
    void show(bool fromController);
-   bool isActive() { return mVisible; }
    bool processKey(U32 key);
 };
 

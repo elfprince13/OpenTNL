@@ -44,6 +44,9 @@
 namespace Zap
 {
 
+// do not add a weapon with a fire delay > Ship::MaxFireDelay
+// or update the constant.
+
 ShipWeaponInfo gWeapons[] =
 {
    {"Phaser",   100, 500, 500},
@@ -58,7 +61,7 @@ ShipWeaponInfo gWeapons[] =
 //------------------------------------------------------------------------
 TNL_IMPLEMENT_NETOBJECT(Ship);
 
-Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, CollisionRadius)
+Ship::Ship(StringTableEntry playerName, S32 team, Point p, F32 m) : MoveObject(p, CollisionRadius)
 {
    mObjectTypeMask = ShipType | MoveableType | CommandMapVisType;
 
@@ -69,6 +72,7 @@ Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, Collisio
       mMoveState[i].pos = p;
       mMoveState[i].angle = 0;
    }
+   mTeam = team;
    mHealth = 1.0;
    mass = m;
    hasExploded = false;
@@ -84,7 +88,7 @@ Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, Collisio
       mModuleActive[i] = false;
 
    mModule[0] = ModuleBoost;
-   mModule[1] = ModuleShield;
+   mModule[1] = ModuleEngineer; //ModuleShield; // testing engineer
 
    mWeapon[0] = WeaponPhaser;
    mWeapon[1] = WeaponBounce;
@@ -161,6 +165,11 @@ void Ship::processMove(U32 stateIndex)
    move(time, stateIndex, false);
 }
 
+Point Ship::getAimVector()
+{
+   return Point(sin(mMoveState[ActualState].angle), cos(mMoveState[ActualState].angle) );
+}
+
 void Ship::selectWeapon()
 {
    selectWeapon(mActiveWeapon + 1);
@@ -187,7 +196,7 @@ void Ship::processWeaponFire()
 
          if(!isGhost())
          {
-            Point dir(sin(mMoveState[ActualState].angle), cos(mMoveState[ActualState].angle) );
+            Point dir = getAimVector();
             
             GameObject *proj = NULL;
 
@@ -775,9 +784,23 @@ F32 getAngleDiff(F32 a, F32 b)
 bool Ship::carryingResource()
 {
    for(S32 i = mMountedItems.size() - 1; i >= 0; i--)
-      if(mMountedItems[i]->getObjectTypeMask() & ResourceItemType)
+      if(mMountedItems[i].isValid() && mMountedItems[i]->getObjectTypeMask() & ResourceItemType)
          return true;
    return false;
+}
+
+Item *Ship::unmountResource()
+{
+   for(S32 i = mMountedItems.size() - 1; i >= 0; i--)
+   {
+      if(mMountedItems[i]->getObjectTypeMask() & ResourceItemType)
+      {
+         Item *ret = mMountedItems[i];
+         ret->dismount();
+         return ret;
+      }
+   }
+   return NULL;
 }
 
 void Ship::setLoadout(U32 module1, U32 module2, U32 weapon1, U32 weapon2, U32 weapon3)

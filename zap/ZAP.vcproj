@@ -20,7 +20,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../tnl;../glut;../openal"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;TNL_ENABLE_LOGGING"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;TNL_ENABLE_LOGGING;TNL_DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="5"
@@ -238,6 +238,12 @@
 			</File>
 			<File
 				RelativePath=".\barrier.h">
+			</File>
+			<File
+				RelativePath=".\engineeredObjects.cpp">
+			</File>
+			<File
+				RelativePath=".\engineeredObjects.h">
 			</File>
 			<File
 				RelativePath=".\gameItems.cpp">

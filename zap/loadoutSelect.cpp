@@ -25,7 +25,7 @@
 //------------------------------------------------------------------------------------
 
 #include "loadoutSelect.h"
-#include "UI.h"
+#include "UIGame.h"
 #include "gameConnection.h"
 #include "game.h"
 #include "glutInclude.h"
@@ -72,12 +72,10 @@ const char *gLoadoutTitles[] = {
 
 LoadoutHelper::LoadoutHelper()
 {
-   mVisible = false;
 }
 
 void LoadoutHelper::show(bool fromController)
 {
-   mVisible = true;
    mFromController = fromController;
    mCurrentIndex = 0;
 }
@@ -120,7 +118,7 @@ bool LoadoutHelper::processKey(U32 key)
 {
    if(key == 27)
    {
-      mVisible = false;
+      gGameUserInterface.setPlayMode();
       return true;
    }
    if(!mFromController)
@@ -187,7 +185,7 @@ bool LoadoutHelper::processKey(U32 key)
       GameConnection *gc = gClientGame->getConnectionToServer();
       if(gc)
          gc->c2sRequestLoadout(loadout);
-      mVisible = false;
+      gGameUserInterface.setPlayMode();
    }
    return true;
 }
@@ -195,19 +193,17 @@ bool LoadoutHelper::processKey(U32 key)
 const char *gEngineerTitle = "Choose Object to Build:";
 
 LoadoutItem gEngineerBuildOptions[] = {
-   { '1', 0, TurretObject, "Sentry Turret" },
-   { '2', 1, ForceFieldObject, "Force Field Projector" },
+   { '1', 0, EngineeredTurret, "Sentry Turret" },
+   { '2', 1, EngineeredForceField, "Force Field Projector" },
    { 0, 0, 0, NULL },
 };
 
 EngineerBuildHelper::EngineerBuildHelper()
 {
-   mVisible = false;
 }
 
 void EngineerBuildHelper::show(bool fromController)
 {
-   mVisible = true;
 }
 
 void EngineerBuildHelper::render()
@@ -237,7 +233,7 @@ bool EngineerBuildHelper::processKey(U32 key)
 {
    if(key == 27)
    {
-      mVisible = false;
+      gGameUserInterface.setPlayMode();
       return true;
    }
    key = toupper(key);
@@ -258,7 +254,7 @@ bool EngineerBuildHelper::processKey(U32 key)
    GameConnection *gc = gClientGame->getConnectionToServer();
    if(gc)
       gc->c2sRequestEngineerBuild(list[index].index);
-   mVisible = false;
+   gGameUserInterface.setPlayMode();
    return true;
 }
 

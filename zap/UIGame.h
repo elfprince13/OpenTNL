@@ -129,6 +129,7 @@ public:
    void renderReticle();
    void renderMessageDisplay();
    void renderCurrentChat();
+   void setPlayMode() { mCurrentMode = PlayMode; }
 
    void idle(U32 timeDelta);
 

@@ -153,11 +153,11 @@ void GameUserInterface::render()
          sum += mIdleTimeDelta[i];
       drawStringf(710, 10, 30, "%4.2f fps", (1000 * FPSAvgCount) / F32(sum));
    }
-   if(mVChat.isActive())
+   if(mCurrentMode == VChatMode)
       mVChat.render();
-   if(mLoadout.isActive())
+   else if(mCurrentMode == LoadoutMode)
       mLoadout.render();
-   if(mEngineerBuild.isActive())
+   else if(mCurrentMode == EngineerBuildMode)
       mEngineerBuild.render();
 
    GameType *theGameType = gClientGame->getGameType();
@@ -441,21 +441,6 @@ void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
             }
          }
       }
-      else if(mCurrentMode == VChatMode)
-      {
-         if(!mVChat.isActive())
-            mCurrentMode = PlayMode;
-      }
-      else if(mCurrentMode == LoadoutMode)
-      {
-         if(!mLoadout.isActive())
-            mCurrentMode = PlayMode;
-      }
-      else if(mCurrentMode == EngineerBuildMode)
-      {
-         if(!mEngineerBuild.isActive())
-            mCurrentMode = PlayMode;
-      }
    }
 }
 
@@ -509,6 +494,13 @@ void GameUserInterface::onKeyDown(U32 key)
             mCurrentMove.module[1] = true;
             break;
 
+         case 'W':
+            {
+               GameType *g = gClientGame->getGameType();
+               if(g)
+                  g->c2sAdvanceWeapon();
+               break;
+            }
          case 27:
             if(!gClientGame->isConnectedToServer())
             {
@@ -589,16 +581,6 @@ void GameUserInterface::onKeyDown(U32 key)
 
 void GameUserInterface::onKeyUp(U32 key)
 {
-   if(mCurrentMode == LoadoutMode)
-   {
-      if(!mLoadout.isActive())
-         mCurrentMode = PlayMode;
-   }
-   if(mCurrentMode == EngineerBuildMode)
-   {
-      if(!mEngineerBuild.isActive())
-         mCurrentMode = PlayMode;
-   }
    if(mCurrentMode == EngineerBuildMode ||
       mCurrentMode == LoadoutMode || 
       mCurrentMode == PlayMode)
@@ -641,11 +623,6 @@ void GameUserInterface::onKeyUp(U32 key)
    {
 
 
-   }
-   else if(mCurrentMode == VChatMode)
-   {
-      if(!mVChat.isActive())
-         mCurrentMode = PlayMode;
    }
 }
 

@@ -49,7 +49,6 @@ private:
 
    static VChatNode mChatTree[];
 
-   bool mVisible; 
    bool mFromController;
    VChatNode *mCurNode;
 
@@ -58,7 +57,6 @@ public:
 
    void render();
    void show(bool fromController);
-   bool isActive();
    void processKey(U32 key);
 };
 

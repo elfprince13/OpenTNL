@@ -24,79 +24,72 @@
 //
 //------------------------------------------------------------------------------------
 
-#ifndef _ITEM_H_
-#define _ITEM_H_
+#ifndef _ENGINEEREDOBJECTS_H_
+#define _ENGINEEREDOBJECTS_H_
 
-#include "moveObject.h"
-#include "timer.h"
+#include "gameObject.h"
+#include "item.h"
 
 namespace Zap
 {
 
-class Ship;
+extern void engClientCreateObject(GameConnection *connection, U32 object);
 
-class Item : public MoveObject
+class EngineeredObject : public GameObject
 {
+   typedef GameObject Parent;
 protected:
-   enum MaskBits {
-      InitialMask = BIT(0),
-      PositionMask = BIT(1),
-      WarpPositionMask = BIT(2),
-      MountMask = BIT(3),
-      FirstFreeMask = BIT(4),
+   F32 mHealth;
+   S32 mTeam;
+   SafePtr<Item> mResource;
+   Point mAnchorPoint;
+   Point mAnchorNormal;
+
+   enum MaskBits
+   {
+      InitialMask = 1 << 0,
+      NextFreeMask = 1 << 1,
    };
-
-   SafePtr<Ship> mMount;
-   bool mIsMounted;
-   bool mIsCollideable;
-public:
-   void idle(GameObject::IdleCallPath path);
-
-   void processArguments(S32 argc, const char **argv);
    
+public:
+   EngineeredObject(S32 team = -1, Point anchorPoint = Point(), Point anchorNormal = Point());
+   void setResource(Item *resource);
+   bool checkDeploymentPosition();
+   void computeExtent();
+
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);
 
-   Item(Point p = Point(0,0), bool collideable = false, float radius = 1, float mass = 1);
-
-   void setActualPos(Point p);
-
-   void mountToShip(Ship *theShip);
-   bool isMounted() { return mIsMounted; }
-   void dismount();
-   void render();
-   virtual void renderItem(Point pos) = 0;
-
-   virtual void onMountDestroyed();
-
-   bool collide(GameObject *otherObject);
+   void damageObject(DamageInfo *damageInfo);
+   bool collide(GameObject *hitObject) { return true; }
 };
 
-class PickupItem : public Item
+class ForceFieldProjector : public EngineeredObject
 {
-   typedef Item Parent;
-   bool mIsVisible;
-   Timer mRepopTimer;
-protected:
-   enum MaskBits {
-      PickupMask = Parent::FirstFreeMask << 0,
-      FirstFreeMask = Parent::FirstFreeMask << 1,
-   };
+   typedef EngineeredObject Parent;
 public:
-   PickupItem(Point p = Point(), float radius = 1);
-   void idle(GameObject::IdleCallPath path);
-   bool isVisible() { return mIsVisible; }
+   ForceFieldProjector(S32 team = -1, Point anchorPoint = Point(), Point anchorNormal = Point()) :
+      EngineeredObject(team, anchorPoint, anchorNormal) { mNetFlags.set(Ghostable); }
 
-   U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
-   void unpackUpdate(GhostConnection *connection, BitStream *stream);
+   bool getCollisionPoly(Vector<Point> &polyPoints);
+   void render();
 
-   bool collide(GameObject *otherObject);
-   virtual bool pickup(Ship *theShip) = 0;
-   virtual U32 getRepopDelay() = 0;
-   virtual void onClientPickup() = 0;
+   TNL_DECLARE_CLASS(ForceFieldProjector);
+};
+
+class Turret : public EngineeredObject
+{
+   typedef EngineeredObject Parent;
+public:
+   Turret(S32 team = -1, Point anchorPoint = Point(), Point anchorNormal = Point()) :
+      EngineeredObject(team, anchorPoint, anchorNormal) { mNetFlags.set(Ghostable); }
+
+   bool getCollisionPoly(Vector<Point> &polyPoints);
+   void render();
+
+   TNL_DECLARE_CLASS(Turret);
 };
 
 };
 
 #endif
-

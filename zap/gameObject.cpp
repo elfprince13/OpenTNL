@@ -38,6 +38,7 @@ GameObject::GameObject()
    mLastQueryId = 0;
    mObjectTypeMask = UnknownType;
    mDisableCollisionCount = 0;
+   mInDatabase = false;
 }
 
 void GameObject::setControllingClient(GameConnection *c)
@@ -113,7 +114,7 @@ GameConnection *GameObject::getControllingClient()
 
 void GameObject::setExtent(Rect &extents)
 {
-   if(mGame)
+   if(mGame && mInDatabase)
    {
       // remove from the extents database for current extents
       mGame->getGridDatabase()->removeFromExtents(this, extent);
@@ -139,12 +140,20 @@ GameObject *GameObject::findObjectLOS(U32 typeMask, U32 stateIndex, Point raySta
 
 void GameObject::addToDatabase()
 {
-   mGame->getGridDatabase()->addToExtents(this, extent);
+   if(!mInDatabase)
+   {
+      mInDatabase = true;
+      mGame->getGridDatabase()->addToExtents(this, extent);
+   }
 }
 
 void GameObject::removeFromDatabase()
 {
-   mGame->getGridDatabase()->removeFromExtents(this, extent);
+   if(mInDatabase)
+   {
+      mInDatabase = false;
+      mGame->getGridDatabase()->removeFromExtents(this, extent);
+   }
 }
 
 void GameObject::addToGame(Game *theGame)

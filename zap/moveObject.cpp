@@ -183,7 +183,7 @@ void MoveObject::move(F32 moveTime, U32 stateIndex, bool displacing)
             shipHit->move(t + displaceEpsilon, stateIndex, true);
          }
       }
-      else if(objectHit->getObjectTypeMask() & BarrierType)
+      else if(objectHit->getObjectTypeMask() & (BarrierType | EngineeredType))
       {
          computeCollisionResponseBarrier(stateIndex, collisionPoint);
       }

@@ -25,6 +25,7 @@
 //------------------------------------------------------------------------------------
 
 #include "quickChat.h"
+#include "UIGame.h"
 #include "glutInclude.h"
 #include "gameType.h"
 #include <ctype.h>
@@ -98,29 +99,26 @@ VChatHelper::VChatNode VChatHelper::mChatTree[] =
 VChatHelper::VChatHelper()
 {
    mCurNode = &mChatTree[0];
-   mVisible = false;
 }
 
 void VChatHelper::render()
 {
    Vector<VChatNode *> renderNodes;
-   if(mVisible)
-   {
-      VChatNode *walk = mCurNode;
-      U32 matchLevel = walk->depth + 1;
+
+   VChatNode *walk = mCurNode;
+   U32 matchLevel = walk->depth + 1;
+   walk++;
+
+   // First get to the end...
+   while(walk->depth >= matchLevel)
       walk++;
 
-      // First get to the end...
-      while(walk->depth >= matchLevel)
-         walk++;
-
-      // Then draw bottom up...
-      while(walk != mCurNode)
-      {
-         if(walk->depth == matchLevel && (!mFromController || (mFromController && walk->buttonIndex != -1)))
-            renderNodes.push_back(walk);
-         walk--;
-      }
+   // Then draw bottom up...
+   while(walk != mCurNode)
+   {
+      if(walk->depth == matchLevel && (!mFromController || (mFromController && walk->buttonIndex != -1)))
+         renderNodes.push_back(walk);
+      walk--;
    }
 
    S32 curPos = 300;
@@ -138,13 +136,7 @@ void VChatHelper::render()
 void VChatHelper::show(bool fromController)
 {
    mCurNode = &mChatTree[0];
-   mVisible = true;
    mFromController = fromController;
-}
-
-bool VChatHelper::isActive()
-{
-   return mVisible;
 }
 
 void VChatHelper::processKey(U32 key)
@@ -155,7 +147,7 @@ void VChatHelper::processKey(U32 key)
       if(key == 27)
       {
          UserInterface::playBoop();
-         mVisible = false;
+         gGameUserInterface.setPlayMode();
          return;
       }
 
@@ -189,12 +181,11 @@ void VChatHelper::processKey(U32 key)
          if(mCurNode->depth >= walk->depth)
          {
             GameType *gt = gClientGame->getGameType();
+            gGameUserInterface.setPlayMode();
 
             StringTableEntry entry(mCurNode->msg);
             if(gt)
                gt->c2sSendChatSTE(!mCurNode->teamOnly, entry);
-
-            mVisible = false;
 
             return;
          }

@@ -53,8 +53,8 @@ enum ShipWeapon
 
 enum EngineerBuildObjects
 {
-   TurretObject,
-   ForceFieldObject,
+   EngineeredTurret,
+   EngineeredForceField,
 };
 
 struct ShipWeaponInfo
