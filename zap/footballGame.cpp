@@ -173,44 +173,43 @@ void ZoneControlGameType::performProxyScopeQuery(GameObject *scopeObject, GameCo
 
 void ZoneControlGameType::renderInterfaceOverlay(bool scoreboardVisible)
 {
+   Parent::renderInterfaceOverlay(scoreboardVisible);
    Ship *u = (Ship *) gClientGame->getConnectionToServer()->getControlObject();
-   if(u)
-   {
-      if(mFlag.isValid() && mFlag->getMount() == u)
-      {
-         // the ship has the flag, so render zones not controlled by his team
-         for(S32 i = 0; i < mZones.size(); i++)
-            if(mZones[i]->getTeam() != u->getTeam())
-               renderObjectiveArrow(mZones[i], getTeamColor(mZones[i]->getTeam()));
-      }
-      else
-      {
-         if(mFlag.isValid())
-         {
-            if(!mFlag->isMounted())
-               renderObjectiveArrow(mFlag, getTeamColor(mFlag->getTeam()));
-            else
-            {
-               Ship *mount = mFlag->getMount();
-               if(mount)
-                  renderObjectiveArrow(mount, getTeamColor(mount->getTeam()));
-            }
-         }
-         for(S32 i = 0; i < mZones.size(); i++)
-         {
-            if(mZones[i]->didRecentlyChangeTeam() && mZones[i]->getTeam() != -1)
-            {
-               Color c = getTeamColor(mZones[i]->getTeam());
-               if(mZones[i]->isFlashing())
-                  c *= 0.8;
-               renderObjectiveArrow(mZones[i], c);
+   if(!u)
+      return;
 
-            }
+   if(mFlag.isValid() && mFlag->getMount() == u)
+   {
+      // the ship has the flag, so render zones not controlled by his team
+      for(S32 i = 0; i < mZones.size(); i++)
+         if(mZones[i]->getTeam() != u->getTeam())
+            renderObjectiveArrow(mZones[i], getTeamColor(mZones[i]->getTeam()));
+   }
+   else
+   {
+      if(mFlag.isValid())
+      {
+         if(!mFlag->isMounted())
+            renderObjectiveArrow(mFlag, getTeamColor(mFlag->getTeam()));
+         else
+         {
+            Ship *mount = mFlag->getMount();
+            if(mount)
+               renderObjectiveArrow(mount, getTeamColor(mount->getTeam()));
+         }
+      }
+      for(S32 i = 0; i < mZones.size(); i++)
+      {
+         if(mZones[i]->didRecentlyChangeTeam() && mZones[i]->getTeam() != -1)
+         {
+            Color c = getTeamColor(mZones[i]->getTeam());
+            if(mZones[i]->isFlashing())
+               c *= 0.8;
+            renderObjectiveArrow(mZones[i], c);
+
          }
       }
    }
-
-   Parent::renderInterfaceOverlay(scoreboardVisible);
 }
 
 

@@ -26,7 +26,7 @@
 
 #include "item.h"
 #include "ship.h"
-
+#include "goalZone.h"
 #include "glutInclude.h"
 
 namespace Zap
@@ -114,6 +114,17 @@ Ship *Item::getMount()
    return mMount;
 }
 
+void Item::setZone(GoalZone *theZone)
+{
+   mZone = theZone;
+   setMaskBits(ZoneMask);
+}
+
+GoalZone *Item::getZone()
+{
+   return mZone;
+}
+
 void Item::idle(GameObject::IdleCallPath path)
 {
    if(!isInDatabase())
@@ -163,13 +174,26 @@ U32 Item::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
       writeCompressedVelocity(mMoveState[ActualState].vel, 511, stream);
       stream->writeFlag(updateMask & WarpPositionMask);
    }
-   if(stream->writeFlag(MountMask) && stream->writeFlag(mIsMounted))
+   if(stream->writeFlag(updateMask & MountMask) && stream->writeFlag(mIsMounted))
    {
       S32 index = connection->getGhostIndex(mMount);
       if(stream->writeFlag(index != -1))
          stream->writeInt(index, GhostConnection::GhostIdBitSize);
       else
-         retMask = MountMask;
+         retMask |= MountMask;
+   }
+   if(stream->writeFlag(updateMask & ZoneMask))
+   {
+      if(mZone.isValid())
+      {
+         S32 index = connection->getGhostIndex(mZone);
+         if(stream->writeFlag(index != -1))
+            stream->writeInt(index, GhostConnection::GhostIdBitSize);
+         else
+            retMask |= ZoneMask;
+      }
+      else
+         stream->writeFlag(false);
    }
    return retMask;
 }
@@ -201,6 +225,14 @@ void Item::unpackUpdate(GhostConnection *connection, BitStream *stream)
       }
       else
          dismount();
+   }
+   if(stream->readFlag())
+   {
+      bool hasZone = stream->readFlag();
+      if(hasZone)
+         mZone = (GoalZone *) connection->resolveGhost(stream->readInt(GhostConnection::GhostIdBitSize));
+      else
+         mZone = NULL;
    }
    
    if(positionChanged)

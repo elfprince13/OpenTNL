@@ -47,9 +47,13 @@ class CTFGameType : public GameType
       CapTeamScore = 2,
 
    };
+   Vector<SafePtr<FlagItem> > mFlags;
 public:
+   void addFlag(FlagItem *theFlag);
    void shipTouchFlag(Ship *theShip, FlagItem *theFlag);
    void flagDropped(Ship *theShip, FlagItem *theFlag);
+   void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);
+   void renderInterfaceOverlay(bool scoreboardVisible);
    const char *getGameTypeString() { return "Capture the Flag"; }
    const char *getInstructionString() { return "Take the opposing team's flag and touch it to your flag!"; }
    TNL_DECLARE_CLASS(CTFGameType);

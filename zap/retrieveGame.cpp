@@ -35,17 +35,29 @@ namespace Zap
 
 class RetrieveGameType : public GameType
 {
+   typedef GameType Parent;
    Vector<GoalZone *> mZones;
-   Vector<FlagItem *> mFlags;
-   Vector<GoalZone *> mFlagZones;
+   Vector<SafePtr<FlagItem> > mFlags;
    enum {
       CapScore = 2,
    };
 public:
    void addFlag(FlagItem *theFlag)
    {
-      mFlags.push_back(theFlag);
-      mFlagZones.push_back(NULL);
+      S32 i;
+      for(i = 0; i < mFlags.size(); i++)
+      {
+         if(mFlags[i] == NULL)
+         {
+            mFlags[i] = theFlag;
+            break;
+         }
+      }
+      if(i == mFlags.size())
+         mFlags.push_back(theFlag);
+
+      if(!isGhost())
+         addItemOfInterest(theFlag);
    }
 
    void addZone(GoalZone *zone)
@@ -72,7 +84,7 @@ public:
          return;
 
       // see if this flag is already in a flag zone owned by the ship's team
-      if(mFlagZones[flagIndex] != NULL && mFlagZones[flagIndex]->getTeam() == theShip->getTeam())
+      if(theFlag->getZone() != NULL && theFlag->getZone()->getTeam() == theShip->getTeam())
          return;
 
       static StringTableEntry stealString("%e0 stole a flag from team %e1!");
@@ -83,12 +95,12 @@ public:
          r = oneFlagTakeString;
       S32 teamIndex;
 
-      if(mFlagZones[flagIndex] == NULL)
+      if(theFlag->getZone() == NULL)
          teamIndex = cl->teamId;
       else
       {
          r = stealString;
-         teamIndex = mFlagZones[flagIndex]->getTeam();
+         teamIndex = theFlag->getZone()->getTeam();
          setTeamScore(teamIndex, mTeams[teamIndex].score - 1);
       }
       Vector<StringTableEntry> e;
@@ -98,7 +110,7 @@ public:
          mClientList[i]->clientConnection->s2cDisplayMessageE(
             GameConnection::ColorNuclearGreen, SFXFlagSnatch, r, e);
       theFlag->mountToShip(theShip);
-      mFlagZones[flagIndex] = NULL;
+      theFlag->setZone(NULL);
    }
 
    void flagDropped(Ship *theShip, FlagItem *theFlag)
@@ -123,8 +135,8 @@ public:
          return;
 
       // see if this zone already has a flag in it...
-      for(S32 i = 0; i < mFlagZones.size(); i++)
-         if(mFlagZones[i] == z)
+      for(S32 i = 0; i < mFlags.size(); i++)
+         if(mFlags[i]->getZone() == z)
             return;
 
       // ok, it's an empty zone on our team:
@@ -160,14 +172,14 @@ public:
             if(mFlags[flagIndex] == mountedFlag)
                break;
 
-         mFlagZones[flagIndex] = z;
+         mFlags[flagIndex]->setZone(z);
 
          mountedFlag->setActualPos(z->getExtent().getCenter());
          cl->score += CapScore;
          // see if all the flags are owned by one team
-         for(S32 i = 0; i < mFlagZones.size(); i++)
+         for(S32 i = 0; i < mFlags.size(); i++)
          {
-            if(!mFlagZones[i] || mFlagZones[i]->getTeam() != cl->teamId)
+            if(!mFlags[i]->getZone() || mFlags[i]->getZone()->getTeam() != cl->teamId)
                return;
          }
 
@@ -180,8 +192,82 @@ public:
          }
          for(S32 i = 0; i < mFlags.size(); i++)
          {
-            mFlagZones[i] = NULL;
+            mFlags[i]->setZone(NULL);
             mFlags[i]->sendHome();
+         }
+      }
+   }
+
+   void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection)
+   {
+      Parent::performProxyScopeQuery(scopeObject, connection);
+      S32 uTeam = scopeObject->getTeam();
+
+      for(S32 i = 0; i < mFlags.size(); i++)
+      {
+         if(mFlags[i]->isAtHome() || mFlags[i]->getZone())
+            connection->objectInScope(mFlags[i]);
+         else
+         {
+            Ship *mount = mFlags[i]->getMount();
+            if(mount && mount->getTeam() == uTeam)
+            {
+               connection->objectInScope(mount);
+               connection->objectInScope(mFlags[i]);
+            }
+         }
+      }
+   }
+
+   void renderInterfaceOverlay(bool scoreboardVisible)
+   {
+      Parent::renderInterfaceOverlay(scoreboardVisible);
+      Ship *u = (Ship *) gClientGame->getConnectionToServer()->getControlObject();
+      if(!u)
+         return;
+      bool uFlag = false;
+
+      for(S32 i = 0; i < mFlags.size(); i++)
+      {
+         if(mFlags[i].isValid() && mFlags[i]->getMount() == u)
+         {
+            for(S32 j = 0; j < mZones.size(); j++)
+            {
+               // see if this is one of our zones and that it doesn't have a flag in it.
+               if(mZones[j]->getTeam() != u->getTeam())
+                  continue;
+               S32 k;
+               for(k = 0; k < mFlags.size(); k++)
+               {
+                  if(mFlags[k]->getZone() == mZones[j])
+                     break;
+               }
+               if(k == mFlags.size())
+                  renderObjectiveArrow(mZones[j], getTeamColor(u->getTeam()));
+            }
+            uFlag = true;
+            break;
+         }
+      }
+
+      for(S32 i = 0; i < mFlags.size(); i++)
+      {
+         if(!mFlags[i].isValid())
+            continue;
+
+         if(!mFlags[i]->isMounted() && !uFlag)
+         {
+            GoalZone *gz = mFlags[i]->getZone();
+            if(gz && gz->getTeam() != u->getTeam())
+               renderObjectiveArrow(mFlags[i], getTeamColor(gz->getTeam()));
+            else if(!gz)
+               renderObjectiveArrow(mFlags[i], getTeamColor(-1));
+         }
+         else
+         {
+            Ship *mount = mFlags[i]->getMount();
+            if(mount && mount != u)
+               renderObjectiveArrow(mount, getTeamColor(mount->getTeam()));
          }
       }
    }

@@ -67,6 +67,16 @@ TNL_IMPLEMENT_NETOBJECT_RPC(SoccerGameType, s2cSoccerScoreMessage, (U32 msgIndex
    }
 }
 
+void SoccerGameType::addZone(GoalZone *theZone)
+{
+   mGoals.push_back(theZone);
+}
+
+void SoccerGameType::setBall(SoccerBallItem *theBall)
+{
+   mBall = theBall;
+}
+
 void SoccerGameType::scoreGoal(StringTableEntry playerName, U32 goalTeamIndex)
 {
    ClientRef *cl = findClientRef(playerName);
@@ -92,6 +102,22 @@ void SoccerGameType::scoreGoal(StringTableEntry playerName, U32 goalTeamIndex)
    }
 }
 
+void SoccerGameType::renderInterfaceOverlay(bool scoreboardVisible)
+{
+   Parent::renderInterfaceOverlay(scoreboardVisible);
+   Ship *u = (Ship *) gClientGame->getConnectionToServer()->getControlObject();
+   if(!u)
+      return;
+
+   for(S32 i = 0; i < mGoals.size(); i++)
+   {
+      if(mGoals[i]->getTeam() != u->getTeam())
+         renderObjectiveArrow(mGoals[i], getTeamColor(mGoals[i]->getTeam()));
+   }
+   if(mBall.isValid())
+      renderObjectiveArrow(mBall, getTeamColor(-1));
+}
+
 TNL_IMPLEMENT_NETOBJECT(SoccerBallItem);
 
 SoccerBallItem::SoccerBallItem(Point pos) : Item(pos, true, 30, 4)
@@ -105,6 +131,13 @@ void SoccerBallItem::processArguments(S32 argc, const char **argv)
 {
    Parent::processArguments(argc, argv);
    initialPos = mMoveState[ActualState].pos;
+}
+
+void SoccerBallItem::onAddedToGame(Game *theGame)
+{
+   if(!isGhost())
+      theGame->getGameType()->addItemOfInterest(this);
+   ((SoccerGameType *) theGame->getGameType())->setBall(this);
 }
 
 void SoccerBallItem::renderItem(Point pos)

@@ -38,6 +38,24 @@ namespace Zap
 
 TNL_IMPLEMENT_NETOBJECT(CTFGameType);
 
+void CTFGameType::addFlag(FlagItem *theFlag)
+{
+   S32 i;
+   for(i = 0; i < mFlags.size(); i++)
+   {
+      if(mFlags[i] == NULL)
+      {
+         mFlags[i] = theFlag;
+         break;
+      }
+   }
+   if(i == mFlags.size())
+      mFlags.push_back(theFlag);
+
+   if(!isGhost())
+      addItemOfInterest(theFlag);
+}
+
 void CTFGameType::shipTouchFlag(Ship *theShip, FlagItem *theFlag)
 {
    GameConnection *controlConnection = theShip->getControllingClient();
@@ -107,6 +125,52 @@ void CTFGameType::flagDropped(Ship *theShip, FlagItem *theFlag)
    for(S32 i = 0; i < mClientList.size(); i++)
       mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagDrop, dropString, e);
 }
+
+void CTFGameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection)
+{
+   Parent::performProxyScopeQuery(scopeObject, connection);
+   S32 uTeam = scopeObject->getTeam();
+
+   for(S32 i = 0; i < mFlags.size(); i++)
+   {
+      if(mFlags[i]->isAtHome() || mFlags[i]->getZone())
+         connection->objectInScope(mFlags[i]);
+      else
+      {
+         Ship *mount = mFlags[i]->getMount();
+         if(mount && mount->getTeam() == uTeam)
+         {
+            connection->objectInScope(mount);
+            connection->objectInScope(mFlags[i]);
+         }
+      }
+   }
+}
+
+
+void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
+{
+   Parent::renderInterfaceOverlay(scoreboardVisible);
+   Ship *u = (Ship *) gClientGame->getConnectionToServer()->getControlObject();
+   if(!u)
+      return;
+
+   for(S32 i = 0; i < mFlags.size(); i++)
+   {
+      if(!mFlags[i].isValid())
+         continue;
+
+      if(mFlags[i]->isMounted())
+      {
+         Ship *mount = mFlags[i]->getMount();
+         if(mount)
+            renderObjectiveArrow(mount, getTeamColor(mount->getTeam()));
+      }
+      else
+         renderObjectiveArrow(mFlags[i], getTeamColor(mFlags[i]->getTeam()));
+   }
+}
+
 
 };
 

@@ -34,6 +34,7 @@ namespace Zap
 {
 
 class Ship;
+class GoalZone;
 
 class Item : public MoveObject
 {
@@ -43,10 +44,13 @@ protected:
       PositionMask = BIT(1),
       WarpPositionMask = BIT(2),
       MountMask = BIT(3),
-      FirstFreeMask = BIT(4),
+      ZoneMask = BIT(4),
+      FirstFreeMask = BIT(5),
    };
 
    SafePtr<Ship> mMount;
+   SafePtr<GoalZone> mZone;
+
    bool mIsMounted;
    bool mIsCollideable;
 public:
@@ -64,6 +68,9 @@ public:
 
    void mountToShip(Ship *theShip);
    bool isMounted() { return mIsMounted; }
+   void setZone(GoalZone *theZone);
+   GoalZone *getZone();
+
    Ship *getMount();
    void dismount();
    void render();

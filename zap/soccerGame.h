@@ -44,8 +44,14 @@ class SoccerGameType : public GameType
       KillScore    = 1,
       GoalScore    = 5,
    };
+   Vector<GoalZone *> mGoals;
+   SafePtr<SoccerBallItem> mBall;
+
 public:
    void scoreGoal(StringTableEntry playerName, U32 goalTeamIndex);
+   void addZone(GoalZone *theZone);
+   void setBall(SoccerBallItem *theBall);
+   void renderInterfaceOverlay(bool scoreboardVisible);
 
    enum {
       SoccerMsgScoreGoal,
@@ -73,6 +79,7 @@ public:
    void damageObject(DamageInfo *theInfo);
    void idle(GameObject::IdleCallPath path);
    void processArguments(S32 argc, const char **argv);
+   void onAddedToGame(Game *theGame);
 
    bool collide(GameObject *hitObject);
 

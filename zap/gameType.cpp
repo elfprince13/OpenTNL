@@ -244,13 +244,13 @@ void GameType::renderObjectiveArrow(GameObject *target, Color c)
 
    Point center(400, 300);
    Point arrowDir = rp - center;
+   /*
    if(rp.x > UserInterface::horizMargin && 
       rp.x < UserInterface::canvasWidth - UserInterface::horizMargin && 
       rp.y > UserInterface::vertMargin && 
       rp.y < UserInterface::canvasHeight - UserInterface::vertMargin)
       return;
 
-   Point np = rp;
    if(rp.x < UserInterface::horizMargin)
       rp.x = UserInterface::horizMargin;
    if(rp.x > UserInterface::canvasWidth - UserInterface::horizMargin)
@@ -259,12 +259,23 @@ void GameType::renderObjectiveArrow(GameObject *target, Color c)
       rp.y = UserInterface::vertMargin;
    if(rp.y > UserInterface::canvasHeight - UserInterface::vertMargin)
       rp.y = UserInterface::canvasHeight - UserInterface::vertMargin;
+   */
+
+   F32 er = arrowDir.x * arrowDir.x / (350 * 350) + arrowDir.y * arrowDir.y / (250 * 250);
+   if(er < 1)
+      return;
+   Point np = rp;
+
+   er = sqrt(er);
+   rp.x = arrowDir.x / er;
+   rp.y = arrowDir.y / er;
+   rp += center;
 
    F32 dist = (np - rp).len();
 
    arrowDir.normalize();
    Point crossVec(arrowDir.y, -arrowDir.x);
-   F32 alpha = (1 - gClientGame->getCommanderZoomFraction()) * 0.8;
+   F32 alpha = (1 - gClientGame->getCommanderZoomFraction()) * 0.6;
    if(!alpha)
       return;
 
@@ -273,15 +284,6 @@ void GameType::renderObjectiveArrow(GameObject *target, Color c)
 
    Point p2 = rp - arrowDir * 23 + crossVec * 8;
    Point p3 = rp - arrowDir * 23 - crossVec * 8;
-
-   glColor3f(0,0,0);
-   glLineWidth(4);
-   glBegin(GL_LINE_LOOP);
-   glVertex(rp);
-   glVertex(p2);
-   glVertex(p3);
-   glEnd();
-   glLineWidth(2);
 
    glEnable(GL_BLEND);
    glColor(c * 0.7, alpha);
