@@ -123,6 +123,11 @@ bool EventConnection::readConnectAccept(BitStream *stream, const char **errorStr
       return false;
 
    stream->read(&mEventClassCount);
+   U32 myCount = NetClassRep::getNetClassCount(getNetClassGroup(), NetClassTypeEvent);
+
+   if(mEventClassCount > myCount)
+      return false;
+
    if(!NetClassRep::isVersionBorderCount(getNetClassGroup(), NetClassTypeEvent, mEventClassCount))
       return false;
 
@@ -134,6 +139,12 @@ void EventConnection::setTranslatesStrings()
 {
    if(!mStringTable) 
       mStringTable = new ConnectionStringTable(this);
+}
+
+void EventConnection::processEvent(NetEvent *theEvent)
+{
+   if(getConnectionState() == NetConnection::Connected)
+      theEvent->process(this);
 }
 
 void EventConnection::packetDropped(PacketNotify *pnotify)
@@ -420,7 +431,7 @@ void EventConnection::readPacket(BitStream *bstream)
 
       if(unguaranteedPhase)
       {
-         evt->process(this);
+         processEvent(evt);
          delete evt;
          if(mErrorBuffer[0])
             return;
@@ -449,7 +460,7 @@ void EventConnection::readPacket(BitStream *bstream)
       mWaitSeqEvents = temp->mNextEvent;
       
       TNLLogMessageV(LogEventConnection, ("EventConnection %s: ProcessGuaranteed %d", getNetAddressString(), temp->mSeqCount));
-      temp->mEvent->process(this);
+      processEvent(temp->mEvent);
       mEventNoteChunker.free(temp);
       if(mErrorBuffer[0])
          return;
@@ -459,7 +470,7 @@ void EventConnection::readPacket(BitStream *bstream)
 bool EventConnection::postNetEvent(NetEvent *theEvent)
 {   
    S32 classId = theEvent->getClassId(getNetClassGroup());
-   if(U32(classId) >= mEventClassCount)
+   if(U32(classId) >= mEventClassCount && getConnectionState() == Connected)
       return false;
 
    theEvent->notifyPosted(this);

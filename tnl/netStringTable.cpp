@@ -44,6 +44,7 @@ struct Node
 {
    StringTableEntryId masterIndex; ///< index of the Node pointer in the master list
    StringTableEntryId nextIndex; ///< next string in this hash bucket.
+   U32 hash; ///< stored hash value of this string.
    U16 stringLen; ///< length of string in this node.
    U16 refCount; ///< number of StringTableEntry's that reference this node
    char stringData[1]; ///< String data, with space for the NULL token.  Node structure is allocated as strlen + sizeof(Node);
@@ -153,7 +154,8 @@ void init()
    mNodeList = (Node **) malloc(InitialNodeListSize * sizeof(Node *));
    for(U32 i = 1; i < InitialNodeListSize; i++)
       mNodeList[i] = (Node *) (( (i + 1) << 1) | 1); // see the doco in stringTable.h for how free list entries are coded
-   mNodeList[InitialNodeListSize - 1] = 0;
+   
+   mNodeList[InitialNodeListSize - 1] = NULL;
    mNodeList[0] = (Node *) mMemPool->alloc(sizeof(Node));
    mNodeList[0]->stringData[0] = 0;
    mNodeList[0]->stringLen = 0;
@@ -267,6 +269,7 @@ StringTableEntryId insertn(const char* val, S32 len, const bool caseSens)
    stringNode->refCount = 1;
    stringNode->masterIndex = mNodeListFreeEntry >> 1; // shift off the low bit flag for the free list
    stringNode->nextIndex = 0;
+   stringNode->hash = key;
    *walk = stringNode->masterIndex;
 
    // dequeue the next free entry in the node list
@@ -308,7 +311,7 @@ StringTableEntryId lookupn(const char* val, S32 len, const bool  caseSens)
 {
    StringTableEntryId *walk;
    Node *stringNode;
-   U32 key = hashString(val);
+   U32 key = hashStringn(val, len);
    walk = &mBuckets[key % mNumBuckets];
    while(*walk)
    {
@@ -356,7 +359,7 @@ void resizeHashTable(const U32 newSize)
       Node *temp = mNodeList[walk];
       
       walk = temp->nextIndex;
-      key = hashString(temp->stringData);
+      key = temp->hash;
       temp->nextIndex = mBuckets[key % newSize];
       mBuckets[key % newSize] = temp->masterIndex;
    }
@@ -371,13 +374,16 @@ void compact()
       theNode = mNodeList[i];
       
       // if the low bit is set, it's an entry in the free list.
-      if(((StringTableEntryId) theNode) & 1)
+      // if it is NULL it is the last entry (see the constructor)
+      // this *may* not be the best fix, but it was a crash -pw
+      if(((StringTableEntryId) theNode) & 1 || theNode == NULL)
          continue;
       newNode = (Node *) newData->alloc(sizeof(Node) + theNode->stringLen);
       newNode->stringLen = theNode->stringLen;
       newNode->refCount = theNode->refCount;
       newNode->masterIndex = theNode->masterIndex;
       newNode->nextIndex = theNode->nextIndex;
+      newNode->hash = theNode->hash;
       strcpy(newNode->stringData, theNode->stringData);
       mNodeList[i] = newNode; 
    }
@@ -393,8 +399,24 @@ void incRef(StringTableEntryId index)
 
 void decRef(StringTableEntryId index)
 {
-   if(--mNodeList[index]->refCount)
+   Node *theNode = mNodeList[index];
+   if(--theNode->refCount)
       return;
+
+   // remove from the hash table first:
+   StringTableEntryId *walk = &mBuckets[theNode->hash % mNumBuckets];
+   Node *stringNode;
+   while(*walk)
+   {
+      stringNode = mNodeList[*walk];
+      if(stringNode == theNode)
+      {
+         *walk = theNode->nextIndex;
+         break;
+      }
+      walk = &(stringNode->nextIndex);
+   }
+
    mFreeStringDataSize += mNodeList[index]->stringLen + sizeof(Node);
    mNodeList[index] = (Node *) mNodeListFreeEntry;
    mNodeListFreeEntry = (index << 1) | 1;

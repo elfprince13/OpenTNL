@@ -145,50 +145,60 @@ struct MarshalledCall
    void dispatch(void *thisPointer, MethodPointer *method);
 };
 
-#if defined(TNL_SUPPORTS_VC_INLINE_X86_ASM) || defined(TNL_SUPPORTS_MWERKS_INLINE_X86_ASM)
+struct RPCThreadStorage
+{
+   void *basePtr;
+#ifdef TNL_CPU_PPC
+   U32 registerSaves[8 + 13 + 1];
+#endif
+   U8 rpcReadData[MethodArgList::MaxRPCDataSize];
+   U32 rpcReadOffsets[MethodArgList::MaxOffsets];
+   U8 *rpcSTEOffsets[MethodArgList::MaxOffsets];
+   U32 rpcSTEIndex[MethodArgList::MaxOffsets];
+   U32 rpcNumSTEs;
+   U32 rpcNumOffsets;
 };
+extern RPCThreadStorage &getRPCThreadStorage();
 
-// VC 6.0 and Codewarrior have problems with the usage of a namespace reference inside an 
-// inline assembly block, so we close the namespace and add this as a global global.
 
-extern void *TNL_gBasePtr;
-namespace TNL {
-#define SAVE_PARAMS __asm { lea eax, this }; __asm { mov TNL_gBasePtr, eax };
+#if defined(TNL_SUPPORTS_VC_INLINE_X86_ASM) || defined(TNL_SUPPORTS_MWERKS_INLINE_X86_ASM)
+
+#define SAVE_PARAMS { void *basePtr; __asm { lea eax, this }; __asm { mov basePtr, eax }; TNL::getRPCThreadStorage().basePtr = basePtr; }
 
 #elif defined(TNL_SUPPORTS_GCC_INLINE_X86_ASM )
 
-};
-extern void *TNL_gBasePtr;
-namespace TNL {
-#define SAVE_PARAMS TNL_gBasePtr = (void *) ((TNL::U8 *) __builtin_frame_address(0) + 8);
+#define SAVE_PARAMS { void *basePtr = (void *) ((TNL::U8 *) __builtin_frame_address(0) + 8); TNL::getRPCThreadStorage().basePtr = basePtr; }
 
 #elif defined(TNL_SUPPORTS_GCC_INLINE_PPC_ASM )
-extern U32 gRegisterSaves[8 + 13 + 1];
-#define SAVE_PARAMS __asm__ volatile ( \
-  "mr r2, %0\n" \
-  "stw r3, 0(r2) \n" \
-  "stw r4, 4(r2) \n" \
-  "stw r5, 8(r2) \n" \
-  "stw r6, 12(r2) \n" \
-  "stw r7, 16(r2) \n" \
-  "stw r8, 20(r2) \n" \
-  "stw r9, 24(r2) \n" \
-  "stw r10, 28(r2) \n" \
-  "stfs f1, 32(r2) \n" \
-  "stfs f2, 36(r2) \n" \
-  "stfs f3, 40(r2) \n" \
-  "stfs f4, 44(r2) \n" \
-  "stfs f5, 48(r2) \n" \
-  "stfs f6, 52(r2) \n" \
-  "stfs f7, 56(r2) \n" \
-  "stfs f8, 60(r2) \n" \
-  "stfs f9, 64(r2) \n" \
-  "stfs f10, 68(r2) \n" \
-  "stfs f11, 72(r2) \n" \
-  "stfs f12, 76(r2) \n" \
-  "stfs f13, 80(r2) \n" \
-  "stw r1, 84(r2) \n" \
-  : : "r" (TNL::gRegisterSaves) : "r2" );
+
+#define SAVE_PARAMS { \
+   U32 *registerSaves = TNL::getRPCThreadStorage().registerSaves; \
+   __asm__ volatile ( \
+   "mr r2, %0\n" \
+   "stw r3, 0(r2) \n" \
+   "stw r4, 4(r2) \n" \
+   "stw r5, 8(r2) \n" \
+   "stw r6, 12(r2) \n" \
+   "stw r7, 16(r2) \n" \
+   "stw r8, 20(r2) \n" \
+   "stw r9, 24(r2) \n" \
+   "stw r10, 28(r2) \n" \
+   "stfs f1, 32(r2) \n" \
+   "stfs f2, 36(r2) \n" \
+   "stfs f3, 40(r2) \n" \
+   "stfs f4, 44(r2) \n" \
+   "stfs f5, 48(r2) \n" \
+   "stfs f6, 52(r2) \n" \
+   "stfs f7, 56(r2) \n" \
+   "stfs f8, 60(r2) \n" \
+   "stfs f9, 64(r2) \n" \
+   "stfs f10, 68(r2) \n" \
+   "stfs f11, 72(r2) \n" \
+   "stfs f12, 76(r2) \n" \
+   "stfs f13, 80(r2) \n" \
+   "stw r1, 84(r2) \n" \
+   : : "r" (TNL::gRegisterSaves) : "r2" ); \
+}
 
 #else
 #error "Compiling RPC code without inline assembler support! You will need to implement RPCEvent::process() and co for your platform."

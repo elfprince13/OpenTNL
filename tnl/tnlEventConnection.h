@@ -108,6 +108,9 @@ protected:
    /// Returns true if there are events pending that should be sent across the wire
    virtual bool isDataToTransmit();
 
+   /// Dispatches an event
+   void processEvent(NetEvent *theEvent);
+
 
 //----------------------------------------------------------------
 // event manager functions/code:

@@ -126,6 +126,24 @@ public:
       return false;
    }
 
+   /// Appends the specified buffer to the end of the byte buffer.
+   /// returns false if it does not own its own memory.
+   bool appendBuffer(const U8 *dataBuffer, U32 bufferSize)
+   {
+      U32 start = mBufSize;
+      if(!resize(mBufSize + bufferSize))
+         return false;
+      memcpy(mDataPtr + start, dataBuffer, bufferSize);
+      return true;
+   }
+
+   /// Appends the specified ByteBuffer to the end of this byte buffer.
+   /// returns fals if it does not own its own memory.
+   bool appendBuffer(const ByteBuffer &theBuffer)
+   {
+      return appendBuffer(theBuffer.getBuffer(), theBuffer.getBufferSize());
+   }
+
    /// Copies the current buffer into a newly allocated buffer that the ByteBuffer owns.
    void takeOwnership()
    {
@@ -165,10 +183,18 @@ public:
       memset(mDataPtr, 0, mBufSize);
    }
 
-   /// Encode the buffer to base 64, in place. Resizes the buffer..
+   /// Encode the buffer to base 64, returning the encoded buffer.
    RefPtr<ByteBuffer> encodeBase64() const;
-   /// Decode the buffer from base 64, in place. Resizes the buffer.
+   /// Decode the buffer from base 64, returning the decoded buffer.
    RefPtr<ByteBuffer> decodeBase64() const;
+
+   /// Computes an MD5 hash and returns it in a ByteBuffer
+   RefPtr<ByteBuffer> computeMD5Hash(U32 len = 0) const;
+
+   /// Converts to ascii-hex, returning the encoded buffer.
+   RefPtr<ByteBuffer> encodeBase16() const;
+   /// Decodes the buffer from base 16, returning the decoded buffer.
+   RefPtr<ByteBuffer> decodeBase16() const;
 
    /// Returns a 32 bit CRC for the buffer.
    U32 calculateCRC(U32 start = 0, U32 end = 0xFFFFFFFF, U32 crcVal = 0xFFFFFFFF) const;

@@ -26,13 +26,9 @@
 
 #include "tnlMethodDispatch.h"
 #include "tnlNetStringTable.h"
-
-void *TNL_gBasePtr = NULL;
-
+#include "tnlThread.h"
 namespace TNL
 {
-void *gThisPtr = NULL;
-void *gStackPtr = NULL;
 
 struct TypeInfo
 {
@@ -50,6 +46,7 @@ enum ArgTypeId {
    TypeS32,
    TypeU32,
    TypeF32,
+   TypeF64,
    TypeSignedInt,
    TypeInt,
    TypeSignedFloat,
@@ -74,6 +71,7 @@ TypeInfo gTypes[] = {
 { "S32", sizeof(S32), true, true },
 { "U32", sizeof(U32), true, true },
 { "F32", sizeof(F32), true, true },
+{ "F64", sizeof(F64), false, true },
 { "SignedInt<", sizeof(SignedInt<32>), true, true },
 { "Int<", sizeof(Int<32>), true, true },
 { "SignedFloat<", sizeof(SignedFloat<32>), true, true },
@@ -192,7 +190,7 @@ MethodArgList::MethodArgList(const char *className, const char *anArgList)
          else
             info.bitCount = getValue(walk);
       }
-      if(type == TypeF32 || type == TypeFloat || type == TypeSignedFloat)
+      if(!info.isVector && (type == TypeF32 || type == TypeFloat || type == TypeSignedFloat))
       {
          if(numFloats < 13)
          {
@@ -217,23 +215,33 @@ MethodArgList::MethodArgList(const char *className, const char *anArgList)
       floatRegOffsets[numFloats] = -1;
 }
 
-#ifdef TNL_CPU_PPC
-U32 gRegisterSaves[8 + 13 + 1];
-#endif
+ThreadStorage gRPCThreadStorage;
+
+RPCThreadStorage &getRPCThreadStorage()
+{
+   RPCThreadStorage *val = (RPCThreadStorage *) gRPCThreadStorage.get();   
+   if(!val)
+   {
+      val = new RPCThreadStorage;
+      gRPCThreadStorage.set(val);
+   }
+   return *val;
+}
 
 void MethodArgList::marshall(MarshalledCall *theEvent)
 {
    PacketStream bstream;
+   RPCThreadStorage &sto = getRPCThreadStorage();
 
 #if defined (TNL_CPU_PPC)
-   U32 *intArg = gRegisterSaves;
-   F32 *floatArg = (F32 *) (&gRegisterSaves[8]);
-   void *stackPtr = (void *) gRegisterSaves[8 + 13];
+   U32 *intArg = sto.registerSaves;
+   F32 *floatArg = (F32 *) (&sto.registerSaves[8]);
+   void *stackPtr = (void *) sto.registerSaves[8 + 13];
    stackPtr = (void *) (*((U8 **) stackPtr) + 24); // advance past linkage area of stack
    intArg++; // get rid of the "this" pointer.
    bool floatInRegs = true;
 #else
-   U8 *ptr = (U8 *) TNL_gBasePtr;
+   U8 *ptr = (U8 *) sto.basePtr;
    ptr += 4; // get rid of the return address and saved base ptr.
 #endif
    U32 whichSTE = 0;
@@ -314,6 +322,9 @@ void MethodArgList::marshall(MarshalledCall *theEvent)
                bstream.write(*((F32 *) floatArg));
                floatArg++;
                break;
+            case TypeF64:
+               bstream.write(*((F64 *) intArg));
+               break;
             case TypeSignedInt:
                bstream.writeSignedInt(((SignedInt<32> *) intArg)->value, argList[i].bitCount);
                break;
@@ -391,25 +402,18 @@ void MethodArgList::marshall(MarshalledCall *theEvent)
    theEvent->marshalledData.setBitPosition(bstream.getBitPosition());
 }
 
-static U8 rpcReadData[MethodArgList::MaxRPCDataSize];
-static U32 rpcReadOffsets[MethodArgList::MaxOffsets];
-static U8 *rpcSTEOffsets[MethodArgList::MaxOffsets];
-static U32 rpcSTEIndex[MethodArgList::MaxOffsets];
-static U32 rpcNumSTEs;
-static U32 rpcNumOffsets;
-
-inline U8 *allocSpace(U8 **offsetDest, U32 &currentSize, U32 requestSize)
+inline U8 *allocSpace(U8 **offsetDest, U32 &currentSize, U32 requestSize, RPCThreadStorage &sto)
 {
-   if(rpcNumOffsets >= MethodArgList::MaxOffsets)
+   if(sto.rpcNumOffsets >= MethodArgList::MaxOffsets)
       return NULL;
 
    currentSize = fourByteAlign(currentSize);
-   rpcReadOffsets[rpcNumOffsets++] = ((U8 *) offsetDest) - rpcReadData;
+   sto.rpcReadOffsets[sto.rpcNumOffsets++] = ((U8 *) offsetDest) - sto.rpcReadData;
 
    if(requestSize + currentSize > MethodArgList::MaxRPCDataSize)
       return NULL;
 
-   U8 *ret = rpcReadData + currentSize;
+   U8 *ret = sto.rpcReadData + currentSize;
    *offsetDest = ret;
 
    currentSize += requestSize;
@@ -418,8 +422,9 @@ inline U8 *allocSpace(U8 **offsetDest, U32 &currentSize, U32 requestSize)
 
 bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
 {
-   rpcNumOffsets = 0;
-   rpcNumSTEs = 0;
+   RPCThreadStorage &sto = getRPCThreadStorage();
+   sto.rpcNumOffsets = 0;
+   sto.rpcNumSTEs = 0;
    U32 rpcCurrentSTEIndex = 0;
 
    U32 currentSize = argListSize;
@@ -427,14 +432,14 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
    currentSize = getMax(currentSize, U32(28));
 #endif
    U32 whichSTE = 0;
-   U8 *argPtr= rpcReadData;
+   U8 *argPtr= sto.rpcReadData;
    for(S32 i = 0; i < argList.size(); i++)
    {
       U8 *arg = argPtr;
       U32 count = 1;
       if(argList[i].isVector)
       {
-         VectorRep *vector = (VectorRep *) allocSpace((U8 **) arg, currentSize, sizeof(VectorRep));
+         VectorRep *vector = (VectorRep *) allocSpace((U8 **) arg, currentSize, sizeof(VectorRep), sto);
          if(!vector)
             goto errorOut;
 
@@ -443,16 +448,16 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
 
          if(argList[i].argType == TypeStringTableEntry)
          {
-            rpcSTEIndex[rpcNumSTEs] = rpcCurrentSTEIndex;
-            rpcSTEOffsets[rpcNumSTEs] = (U8 *) &vector->array;
-            rpcNumSTEs++;
+            sto.rpcSTEIndex[sto.rpcNumSTEs] = rpcCurrentSTEIndex;
+            sto.rpcSTEOffsets[sto.rpcNumSTEs] = (U8 *) &vector->array;
+            sto.rpcNumSTEs++;
             rpcCurrentSTEIndex += vector->elementCount;
             argPtr += sizeof(U32);
             continue;
          }
          else
          {
-            vector->array = allocSpace(&vector->array, currentSize, vector->elementCount * gTypes[argList[i].argType].size);
+            vector->array = allocSpace(&vector->array, currentSize, vector->elementCount * gTypes[argList[i].argType].size, sto);
             if(!vector->array)
                goto errorOut;
             *((VectorRep **) arg) = vector;
@@ -513,6 +518,9 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
             case TypeF32:
                bstream->read((F32 *) arg);
                break;
+            case TypeF64:
+               bstream->read((F64 *) arg);
+               break;
             case TypeSignedInt:
                ((SignedInt<32> *) arg)->value = bstream->readSignedInt(argList[i].bitCount);
                break;
@@ -528,7 +536,7 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
             case TypeString:
                {
                char **stringPtr = (char **) arg;
-               *stringPtr = (char *) allocSpace((U8 **) arg, currentSize, 256);
+               *stringPtr = (char *) allocSpace((U8 **) arg, currentSize, 256, sto);
                if(!*stringPtr)
                   goto errorOut;
                bstream->readString(*stringPtr);
@@ -537,11 +545,11 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
                }
                break;
             case TypeStringTableEntryRef:
-               if(rpcNumSTEs >= MethodArgList::MaxOffsets)
+               if(sto.rpcNumSTEs >= MethodArgList::MaxOffsets)
                   goto errorOut;
-               rpcSTEIndex[rpcNumSTEs] = rpcCurrentSTEIndex;
-               rpcSTEOffsets[rpcNumSTEs] = arg;
-               rpcNumSTEs++;
+               sto.rpcSTEIndex[sto.rpcNumSTEs] = rpcCurrentSTEIndex;
+               sto.rpcSTEOffsets[sto.rpcNumSTEs] = arg;
+               sto.rpcNumSTEs++;
                rpcCurrentSTEIndex++;
                break;
             case TypeRangedU32:
@@ -552,12 +560,12 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
                break;
             case TypeByteBufferPtr:
                {
-               ByteBuffer *buffer = (ByteBuffer *) allocSpace((U8 **) arg, currentSize, sizeof(ByteBuffer));
+               ByteBuffer *buffer = (ByteBuffer *) allocSpace((U8 **) arg, currentSize, sizeof(ByteBuffer), sto);
                if(!buffer)
                   goto errorOut;
                buffer->mOwnsMemory = false;
                buffer->mBufSize = bstream->readInt(ByteBufferSizeBitSize);
-               buffer->mDataPtr = (U8 *) allocSpace(&buffer->mDataPtr, currentSize, buffer->mBufSize);
+               buffer->mDataPtr = (U8 *) allocSpace(&buffer->mDataPtr, currentSize, buffer->mBufSize, sto);
                if(!buffer->mDataPtr)
                   goto errorOut;
                bstream->read(buffer->mBufSize, buffer->mDataPtr);
@@ -566,7 +574,7 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
                break;
             case TypeIPAddressRef:
                {
-               IPAddress *ip = (IPAddress *) allocSpace((U8 **) arg, currentSize, sizeof(IPAddress));
+               IPAddress *ip = (IPAddress *) allocSpace((U8 **) arg, currentSize, sizeof(IPAddress), sto);
                if(!ip)
                   goto errorOut;
                bstream->read(&ip->netNum);
@@ -587,20 +595,20 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
       	argPtr += gTypes[argList[i].argType].size;
    }
    theEvent->mSTEs.setSize(rpcCurrentSTEIndex);
-   for(U32 i = 0; i < rpcNumSTEs; i++)
-      *((StringTableEntry **) rpcSTEOffsets[i]) = &theEvent->mSTEs[rpcSTEIndex[i]];
+   for(U32 i = 0; i < sto.rpcNumSTEs; i++)
+      *((StringTableEntry **) sto.rpcSTEOffsets[i]) = &theEvent->mSTEs[sto.rpcSTEIndex[i]];
 
-   theEvent->unmarshalledData.setBuffer(rpcReadData, currentSize, false);
+   theEvent->unmarshalledData.setBuffer(sto.rpcReadData, currentSize, false);
    theEvent->unmarshalledData.takeOwnership();
 
    U32 delta;
    U8 *data;
    data = theEvent->unmarshalledData.getBuffer();
-   delta = data - rpcReadData;
+   delta = data - sto.rpcReadData;
 
-   for(U32 i = 0; i < rpcNumOffsets; i++)
+   for(U32 i = 0; i < sto.rpcNumOffsets; i++)
    {
-      *((U8 **) (data + rpcReadOffsets[i])) += delta;
+      *((U8 **) (data + sto.rpcReadOffsets[i])) += delta;
    }
    return true;
 errorOut:

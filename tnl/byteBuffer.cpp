@@ -48,6 +48,73 @@ RefPtr<ByteBuffer> ByteBuffer::decodeBase64() const
    return ret;
 }
 
+RefPtr<ByteBuffer> ByteBuffer::encodeBase16() const
+{
+   U32 outLen = getBufferSize() * 2 + 1;
+   ByteBuffer *ret = new ByteBuffer(outLen);
+   const U8 *buffer = getBuffer();
+   U8 *outBuffer = ret->getBuffer();
+
+   S32 size = getBufferSize();
+   for(S32 i = 0; i < size; i++)
+   {
+      U8 b = *buffer++;
+      U32 nib1 = b >> 4;
+      U32 nib2 = b & 0xF;
+      if(nib1 > 9)
+         *outBuffer++ = 'a' + nib1 - 10;
+      else
+         *outBuffer++ = '0' + nib1;
+      if(nib2 > 9)
+         *outBuffer++ = 'a' + nib2 - 10;
+      else
+         *outBuffer++ = '0' + nib2;
+   }
+   *outBuffer = 0;
+   return ret;
+}
+
+RefPtr<ByteBuffer> ByteBuffer::decodeBase16() const
+{
+   U32 outLen = getBufferSize() >> 1;
+   ByteBuffer *ret = new ByteBuffer(outLen);
+   const U8 *src = getBuffer();
+   U8 *dst = ret->getBuffer();
+   for(U32 i = 0; i < outLen; i++)
+   {
+      U8 out = 0;
+      U8 nib1 = *src++;
+      U8 nib2 = *src++;
+      if(nib1 >= '0' && nib1 <= '9')
+         out = (nib1 - '0') << 4;
+      else if(nib1 >= 'a' && nib1 <= 'f')
+         out = (nib1 - 'a' + 10) << 4;
+      else if(nib1 >= 'A' && nib1 <= 'A')
+         out = (nib1 - 'A' + 10) << 4;
+      if(nib2 >= '0' && nib2 <= '9')
+         out |= nib2 - '0';
+      else if(nib2 >= 'a' && nib2 <= 'f')
+         out |= nib2 - 'a' + 10;
+      else if(nib2 >= 'A' && nib2 <= 'A')
+         out |= nib2 - 'A' + 10;
+      *dst++ = out;
+   }
+   return ret;
+}
+
+RefPtr<ByteBuffer> ByteBuffer::computeMD5Hash(U32 len) const
+{
+   if(!len)
+      len = getBufferSize();
+
+   ByteBuffer *ret = new ByteBuffer(16);
+   hash_state md;
+   md5_init(&md);
+   md5_process(&md, (unsigned char *) getBuffer(), len);
+   md5_done(&md, ret->getBuffer());
+   return ret;
+}
+
 U32 ByteBuffer::calculateCRC(U32 start, U32 end, U32 crcVal) const
 {
    static U32 crcTable[256];

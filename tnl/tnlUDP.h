@@ -51,6 +51,7 @@ namespace TNL {
 enum TransportProtocol
 {
    IPProtocol,    ///< The standard Internet routing protocol
+   TCPProtocol,   ///< The standard Internet guaranteed delivery protocol
    IPXProtocol,   ///< Novell's IPX protocol
    IPv6Protocol,  ///< The next generation 128-bit address internet protocol (not currently supported by TNL)
 };
@@ -183,6 +184,10 @@ public:
    /// Returns the list of network addresses this host can be bound to.  Currently this only
    /// returns IP addresses, with the port field set to 0.
    static void getInterfaceAddresses(Vector<Address> *addressVector);
+
+   NetError connect(const Address &theAddress);
+   NetError recv(U8 *buffer, S32 bufferSize, S32 *bytesRead);
+   NetError send(const U8 *buffer, S32 bufferSize);
 };
 
 };

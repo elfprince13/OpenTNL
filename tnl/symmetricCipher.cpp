@@ -61,10 +61,10 @@ SymmetricCipher::SymmetricCipher(const ByteBuffer *theByteBuffer)
 
 void SymmetricCipher::setupCounter(U32 counterValue1, U32 counterValue2, U32 counterValue3, U32 counterValue4)
 {   
-   mCounter[0] = mInitVector[0] + counterValue1;
-   mCounter[1] = mInitVector[1] + counterValue2;
-   mCounter[2] = mInitVector[2] + counterValue3;
-   mCounter[3] = mInitVector[3] + counterValue4;
+   mCounter[0] = convertHostToLEndian(convertLEndianToHost(mInitVector[0]) + counterValue1);
+   mCounter[1] = convertHostToLEndian(convertLEndianToHost(mInitVector[1]) + counterValue2);
+   mCounter[2] = convertHostToLEndian(convertLEndianToHost(mInitVector[2]) + counterValue3);
+   mCounter[3] = convertHostToLEndian(convertLEndianToHost(mInitVector[3]) + counterValue4);
 
    rijndael_ecb_encrypt((U8 *) mCounter, mPad, (symmetric_key *) &mSymmetricKey);
    mPadLen = 0;

@@ -157,7 +157,7 @@ static void shutdown()
 
 static void TNLToSocketAddress(const Address &address, SOCKADDR *sockAddr, socklen_t *addressSize)
 {
-   if(address.transport == IPProtocol)
+   if(address.transport == IPProtocol || address.transport == TCPProtocol)
    {
       memset(sockAddr, 0, sizeof(SOCKADDR_IN));
       ((SOCKADDR_IN *) sockAddr)->sin_family = AF_INET;
@@ -214,15 +214,25 @@ Socket::Socket(const Address &bindAddress, U32 sendBufferSize, U32 recvBufferSiz
    mPlatformSocket = INVALID_SOCKET;
    mTransportProtocol = bindAddress.transport;
 
+   const char *socketType = "UDP";
+
    if(bindAddress.transport == IPProtocol)
       mPlatformSocket = socket(AF_INET, SOCK_DGRAM, 0);
+   else if(bindAddress.transport == TCPProtocol)
+   {
+      socketType = "TCP";
+      mPlatformSocket = socket(AF_INET, SOCK_STREAM, 0);
+   }
 #if !defined(NO_IPX_SUPPORT)
    else if(bindAddress.transport == IPXProtocol)
+   {
+      socketType = "IPX";
       mPlatformSocket = socket(AF_IPX, SOCK_DGRAM, NSPROTO_IPX);
+   }
 #endif
    else
    {
-      logprintf("Attempted to create a socket bound to an invalid transport.");
+      TNLLogMessageV(LogUDP, ("Attempted to create a socket bound to an invalid transport."));
    }
    if(mPlatformSocket != INVALID_SOCKET)
    {
@@ -239,28 +249,31 @@ Socket::Socket(const Address &bindAddress, U32 sendBufferSize, U32 recvBufferSiz
       getsockname(mPlatformSocket, (PSOCKADDR) &address, &addressSize);
       SocketToTNLAddress(&address, &boundAddress);
 
-      logprintf("Socket created - bound to address: %s", boundAddress.toString());
+      TNLLogMessageV(LogUDP, ("%s socket created - bound to address: %s", socketType, boundAddress.toString()));
 
       // set the send and receive buffer sizes
       error = setsockopt(mPlatformSocket, SOL_SOCKET, SO_RCVBUF, (char *) &recvBufferSize, sizeof(recvBufferSize));
       if(!error)
       {
-         logprintf("UDP receive buffer size set to %d.", recvBufferSize);
+         TNLLogMessageV(LogUDP, ("%s socket receive buffer size set to %d.", socketType, recvBufferSize));
          error = setsockopt(mPlatformSocket, SOL_SOCKET, SO_SNDBUF, (char *) &sendBufferSize, sizeof(sendBufferSize));
       }
       else
-         logprintf("Error: unable to set the receive buffer size on UDP socket.");
+         TNLLogMessageV(LogUDP, ("%s socket error: unable to set the receive buffer size on socket.", socketType));
 
       if(!error)
       {
-         logprintf("UDP send buffer size set to %d.", recvBufferSize);
+         TNLLogMessageV(LogUDP, ("%s socket send buffer size set to %d.", socketType, recvBufferSize));
 
-         // set the broadcast allowed flag
-         S32 bc = acceptsBroadcast;
-         error = setsockopt(mPlatformSocket, SOL_SOCKET, SO_BROADCAST, (char*)&bc, sizeof(bc));
+         if(mTransportProtocol != TCPProtocol)
+         {
+            // set the broadcast allowed flag
+            S32 bc = acceptsBroadcast;
+            error = setsockopt(mPlatformSocket, SOL_SOCKET, SO_BROADCAST, (char*)&bc, sizeof(bc));
+         }
       }
       else
-         logprintf("Error: unable to set the send buffer size on UDP socket.");
+         TNLLogMessageV(LogUDP, ("%s socket error: unable to set the send buffer size on socket.", socketType));
 
 
       // set the nonblocking IO flag
@@ -275,13 +288,17 @@ Socket::Socket(const Address &bindAddress, U32 sendBufferSize, U32 recvBufferSiz
 #endif
       }
       else
-         logprintf("Error: unable to set broadcast mode on UDP socket.");
+      {
+         TNLLogMessageV(LogUDP, ("%s socket error: unable to set broadcast mode on socket.", socketType));
+      }
 
       if(!error)
-         logprintf("UDP socket non-blocking IO set.  UDP socket initialized.");
+      {
+         TNLLogMessageV(LogUDP, ("%s socket non-blocking IO set.  Socket initialized.", socketType));
+      }
       else
       {
-         logprintf("Error prevented successful initialization of UDP.");
+         TNLLogMessageV(LogUDP, ("Error prevented successful initialization of %s socket.", socketType));
          closesocket(mPlatformSocket);
          mPlatformSocket = INVALID_SOCKET;
       }
@@ -377,6 +394,32 @@ NetError Socket::recvfrom(Address *address, U8 *buffer, S32 bufferSize, S32 *out
    return NoError;
 }
 
+NetError Socket::connect(const Address &theAddress)
+{
+   SOCKADDR destAddress;
+   socklen_t addressSize;
+
+   TNLToSocketAddress(theAddress, &destAddress, &addressSize);
+   if(::connect(mPlatformSocket, &destAddress, addressSize) == -1)
+      return getLastError();
+   return NoError;
+}
+
+NetError Socket::send(const U8 *buffer, S32 bufferSize)
+{
+   if(::send(mPlatformSocket, (const char *) buffer, bufferSize, 0) == SOCKET_ERROR)
+      return getLastError();
+   return NoError;
+}
+
+NetError Socket::recv(U8 *buffer, S32 bufferSize, S32 *bytesRead)
+{
+   *bytesRead = ::recv(mPlatformSocket, (char *) buffer, bufferSize, 0);
+   if(*bytesRead == -1)
+      return getLastError();
+   return NoError;
+}
+
 Address Socket::getBoundAddress()
 {
    SOCKADDR address;
@@ -394,9 +437,9 @@ bool Socket::isValid()
    return mPlatformSocket != INVALID_SOCKET;
 }
 
+#if defined ( TNL_OS_WIN32 )
 void Socket::getInterfaceAddresses(Vector<Address> *addressVector)
 {
-#if defined ( TNL_OS_WIN32 )
    typedef struct {
       DWORD dwAddr;
       DWORD dwIndex;
@@ -456,9 +499,85 @@ void Socket::getInterfaceAddresses(Vector<Address> *addressVector)
       }
    }
    free(pIPAddrTable);
-#endif
 }
 
+#elif defined (TNL_OS_MAC_OSX)
+#include <ifaddrs.h>
+
+void Socket::getInterfaceAddresses(Vector<Address> *addressVector)
+{
+   struct ifaddrs *addrs;
+   getifaddrs(&addrs);
+   
+   for(struct ifaddrs *walk = addrs; walk; walk = walk->ifa_next)
+   {
+      Address theAddress;
+      SocketToTNLAddress(walk->ifa_addr, &theAddress);
+	  if(theAddress.netNum[0] != INADDR_ANY && theAddress.netNum[0] != 0x7F000001)
+	  {
+	     //logprintf("found IF address %s", theAddress.toString());
+		 addressVector->push_back(theAddress);
+      }
+   }
+   
+   freeifaddrs(addrs);
+}
+
+#elif defined (TNL_OS_LINUX)
+#include <stdio.h>
+#include <sys/ioctl.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <net/if.h>
+
+void Socket::getInterfaceAddresses(Vector<Address> *addressVector)
+{
+   int sfd = socket(AF_INET, SOCK_STREAM, 0);
+   if(sfd < 0)
+     return;
+
+   FILE *f = fopen("/proc/net/dev", "r");
+   if(!f)
+   {
+      close(sfd);
+      return;
+   }
+   char buf[1024];
+   fgets(buf, 1024, f);
+   fgets(buf, 1024, f);
+
+   struct ifreq ifr;
+   struct sockaddr_in *sin = (struct sockaddr_in *) &ifr.ifr_addr;
+   memset(&ifr, 0, sizeof(ifr));
+   
+
+   while(fgets(buf, 1024, f))
+   {
+      char *s = buf;
+      while(*s == ' ')
+         s++;
+      char *end = strchr(s, ':');
+      if(!end)
+         continue;
+      *end = 0;
+
+      strcpy(ifr.ifr_name, s);
+      sin->sin_family = AF_INET;
+      if(ioctl(sfd, SIOCGIFADDR, &ifr) == 0)
+      {
+         Address theAddress;
+         SocketToTNLAddress((struct sockaddr *) sin, &theAddress);
+	 if(theAddress.netNum[0] != INADDR_ANY && theAddress.netNum[0] != 0x7F000001)
+	 {
+            addressVector->push_back(theAddress);
+         }
+      }
+   }
+   fclose(f);
+   close(sfd);
+}
+#endif
 
 bool Address::operator ==(const Address &theAddress) const
 {
@@ -521,9 +640,15 @@ bool Address::set(const char *addressString)
    init();
    if(strnicmp(addressString, "ipx:", 4))
    {
+      bool isTCP = false;
       // assume IP if it doesn't have ipx: at the front.
       if(!strnicmp(addressString, "ip:", 3))
          addressString += 3;  // eat off the ip:
+      else if(!strnicmp(addressString, "tcp:", 4))
+      {
+         addressString += 4;
+         isTCP = true;
+      }
 
       SOCKADDR_IN ipAddr;
       char remoteAddr[256];
@@ -564,6 +689,8 @@ bool Address::set(const char *addressString)
          ipAddr.sin_port = htons(0);
       ipAddr.sin_family = AF_INET;
       SocketToTNLAddress((SOCKADDR *) &ipAddr, this);
+      if(isTCP)
+         transport = TCPProtocol;
       return true;
    }
    else

@@ -158,9 +158,16 @@ bool NetConnection::checkTimeout(U32 time)
 
    if(isAdaptive())
    {
-      timeoutCount = AdaptivePingRetryCount;
-      if(!mPingSendCount)
-         timeout = AdaptiveInitialPingTimeout;
+      if(hasUnackedSentPackets())
+      {
+         timeout = AdaptiveUnackedSentPingTimeout;
+      }
+      else
+      {
+         timeoutCount = AdaptivePingRetryCount;
+         if(!mPingSendCount)
+            timeout = AdaptiveInitialPingTimeout;
+      }
    }
    if((time - mLastPingSendTime) > timeout)
    {
@@ -369,7 +376,10 @@ bool NetConnection::readPacketHeader(BitStream *pstream)
    {
       mSymmetricCipher->setupCounter(pkSequenceNumber, pkHighestAck, pkPacketType, 0);
       if(!pstream->decryptAndCheckHash(MessageSignatureBytes, PacketHeaderByteSize, mSymmetricCipher))
+      {
+         TNLLogMessage(LogNetConnection, "Packet failed crypto");
          return false;
+      }
    }
 
    U32 pkAckByteCount   = pstream->readRangedU32(0, MaxAckByteCount);
@@ -859,6 +869,8 @@ bool NetConnection::connectLocal(NetInterface *connectionInterface, NetInterface
 
    client->setInterface(connectionInterface);
    client->getConnectionParameters().mIsInitiator = true;
+   client->getConnectionParameters().mIsLocal = true;
+   server->getConnectionParameters().mIsLocal = true;
 
    server->setInterface(serverInterface);
 

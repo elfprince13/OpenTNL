@@ -124,6 +124,11 @@ public:
       *(reinterpret_cast<T**>(elem)) = freeListHead;
       freeListHead = elem;
    }
+
+   void freeBlocks()
+   {
+	   DataChunker::freeBlocks();
+   }
 };
 
 };

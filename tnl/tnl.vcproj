@@ -276,6 +276,9 @@
 			RelativePath=".\symmetricCipher.cpp">
 		</File>
 		<File
+			RelativePath=".\thread.cpp">
+		</File>
+		<File
 			RelativePath="tnl.h">
 		</File>
 		<File
@@ -364,6 +367,9 @@
 		</File>
 		<File
 			RelativePath=".\tnlSymmetricCipher.h">
+		</File>
+		<File
+			RelativePath=".\tnlThread.h">
 		</File>
 		<File
 			RelativePath=".\tnlTypes.h">

@@ -433,7 +433,8 @@ void NetInterface::processPacket(const Address &sourceAddress, BitStream *pStrea
       // so pass it to the appropriate connection.
 
       // lookup the connection in the addressTable
-      NetConnection *conn = findConnection(sourceAddress);
+      // if this packet causes a disconnection, keep the conn around until this function exits
+      RefPtr<NetConnection> conn = findConnection(sourceAddress);
       if(conn)
          conn->readRawPacket(pStream);
    }
@@ -899,6 +900,7 @@ void NetInterface::handleConnectReject(const Address &address, BitStream *stream
    char reason[256];
    stream->readString(reason);
 
+   TNLLogMessageV(LogNetInterface, ("Received Connect Reject - reason %s", reason));
    // if the reason is a bad puzzle solution, try once more with a
    // new nonce.
    if(!strcmp(reason, "Puzzle") && !p.mPuzzleRetried)

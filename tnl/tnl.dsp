@@ -270,6 +270,10 @@ SOURCE=.\symmetricCipher.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\thread.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\tnl.h
 # End Source File
 # Begin Source File

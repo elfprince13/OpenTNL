@@ -218,6 +218,7 @@ template<class T> inline U32 Vector<T>::setSize(U32 size)
 template<class T> inline void Vector<T>::insert(U32 index)
 {
    checkSize(mElementCount + 1);
+   constructInPlace(&mArray[mElementCount]);
    mElementCount++;
 
    for(U32 i = mElementCount - 1; i > index; i--)
