@@ -40,6 +40,14 @@ void *glutStrokeRoman;
 namespace Zap
 {
 
+#ifdef TNL_OS_XBOX
+S32 UserInterface::horizMargin = 50;
+S32 UserInterface::vertMargin = 38;
+#else
+S32 UserInterface::horizMargin = 15;
+S32 UserInterface::vertMargin = 15;
+#endif
+
 S32 UserInterface::canvasWidth = 800;
 S32 UserInterface::canvasHeight = 600;
 S32 UserInterface::windowWidth = 800;

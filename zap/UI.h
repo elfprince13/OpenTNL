@@ -42,6 +42,7 @@ public:
    static UserInterface *current;
 
    static S32 windowWidth, windowHeight, canvasWidth, canvasHeight;
+   static S32 vertMargin, horizMargin;
 
    static void renderCurrent();
 

@@ -211,6 +211,7 @@ public:
    bool hasValidControlObject();
    bool isConnectedToServer();
 
+   F32 getCommanderZoomFraction() { return mCommanderZoomDelta / F32(CommanderMapZoomTime); }
    void setConnectionToServer(GameConnection *connection);
    void drawStars(F32 alphaFrac, Point cameraPos, Point visibleExtent);
    GameConnection *getConnectionToServer();
@@ -231,7 +232,7 @@ extern void hostGame(bool dedicated, Address bindAddress);
 extern void joinGame(Address remoteAddress, bool isFromMaster, bool local = false);
 extern void endGame();
 
-#define ZAP_GAME_STRING "ZAP 1.4.0 rc 9"
+#define ZAP_GAME_STRING "ZAP 1.4.0 rc 10"
 };
 
 #endif

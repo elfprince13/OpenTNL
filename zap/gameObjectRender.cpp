@@ -36,7 +36,7 @@ namespace Zap
 #ifdef TNL_OS_XBOX
 const float gShapeLineWidth = 2.0f;
 #else
-const float gShapeLineWidth = 1.0f;
+const float gShapeLineWidth = 2.0f;
 #endif
 
 void glVertex(Point p)
@@ -508,6 +508,9 @@ void renderMine(Point pos, bool armed, bool visible)
       drawCircle(pos, Mine::SensorRadius);
       mod = 1.0;
    }
+   else
+      glLineWidth(1);
+
    glColor3f(mod,mod,mod);
    drawCircle(pos, 10);
 
@@ -516,6 +519,7 @@ void renderMine(Point pos, bool armed, bool visible)
       glColor3f(mod,0,0);
       drawCircle(pos, 6);
    }
+   glLineWidth(DefaultLineWidth);
 }
 
 void renderGrenade(Point pos)

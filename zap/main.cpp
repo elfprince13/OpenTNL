@@ -616,7 +616,11 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *
 };
 
 using namespace Zap;
+#ifdef TNL_OS_XBOX
 int zapmain(int argc, char **argv)
+#else
+int main(int argc, char **argv)
+#endif
 {
    //TNLLogEnable(LogConnectionProtocol, true);
    //TNLLogEnable(LogNetConnection, true);

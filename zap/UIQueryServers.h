@@ -93,6 +93,7 @@ public:
 
    void onKeyDown(U32 key);
    void onSpecialKeyDown(U32 key);
+   void onControllerButtonDown(U32 buttonIndex);
 
    void onActivate();
    void idle(U32 t);

@@ -247,14 +247,14 @@ void GameUserInterface::renderMessageDisplay()
 {
    glColor3f(1,1,1);
 
-   U32 y = 5;
+   U32 y = UserInterface::vertMargin;
    for(S32 i = 3; i >= 0; i--)
    {
       if(mDisplayMessage[i][0])
       {
          glColor(mDisplayMessageColor[i]);
 
-         drawString(5, y, 20, mDisplayMessage[i]);
+         drawString(UserInterface::horizMargin, y, 20, mDisplayMessage[i]);
          y += 24;
       }
    }
@@ -284,11 +284,11 @@ void GameUserInterface::renderCurrentChat()
 
       U32 width = getStringWidth(20, promptStr);
 
-      drawString(5, 100, 20, promptStr);
-      drawString(5 + width, 100, 20, mChatBuffer);
+      drawString(UserInterface::horizMargin, UserInterface::vertMargin + 95, 20, promptStr);
+      drawString(UserInterface::horizMargin + width, UserInterface::vertMargin + 95, 20, mChatBuffer);
 
       if(mChatBlink)
-         drawString(5 + width + getStringWidth(20, mChatBuffer, mChatCursorPos), 100, 20, "_");
+         drawString(UserInterface::horizMargin + width + getStringWidth(20, mChatBuffer, mChatCursorPos), UserInterface::vertMargin + 95, 20, "_");
    }
 }
 

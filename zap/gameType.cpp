@@ -119,7 +119,7 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
    }
    if((mGameOver || scoreboardVisible) && mTeams.size() > 0)
    {
-      U32 totalWidth = 780;
+      U32 totalWidth = UserInterface::canvasWidth - UserInterface::horizMargin * 2;
       U32 teamWidth = totalWidth / mTeams.size();
       U32 maxTeamPlayers = 0;
       countTeamPlayers();
@@ -135,7 +135,7 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
       if(mTeams.size() < 2)
          teamAreaHeight = 0;
 
-      U32 totalHeight = 580;
+      U32 totalHeight = UserInterface::canvasHeight - UserInterface::vertMargin * 2;
       U32 maxHeight = (totalHeight - teamAreaHeight) / maxTeamPlayers;
       if(maxHeight > 30)
          maxHeight = 30;
@@ -201,7 +201,7 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
    {
       for(S32 i = 0; i < mTeams.size(); i++)
       {
-         Point pos(750, 535 - i * 38);
+         Point pos(UserInterface::canvasWidth - UserInterface::horizMargin - 35, UserInterface::canvasHeight - UserInterface::vertMargin - 60 - i * 38);
          renderFlag(pos + Point(-20, 18), mTeams[i].color);
          glColor3f(1,1,1);
          UserInterface::drawStringf(U32(pos.x), U32(pos.y), 32, "%d", mTeams[i].score);
@@ -218,7 +218,8 @@ void GameType::renderTimeLeft()
 
    U32 minsRemaining = timeLeft / (60000);
    U32 secsRemaining = (timeLeft - (minsRemaining * 60000)) / 1000;
-   UserInterface::drawStringf(720, 577, 20, "%02d:%02d", minsRemaining, secsRemaining);
+   UserInterface::drawStringf(UserInterface::canvasWidth - UserInterface::horizMargin - 65,
+      UserInterface::canvasHeight - UserInterface::vertMargin - 20, 20, "%02d:%02d", minsRemaining, secsRemaining);
 }
 
 void GameType::renderTalkingClients()

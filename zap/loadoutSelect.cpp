@@ -90,7 +90,7 @@ void LoadoutHelper::render()
 
    glColor3f(0.8, 1, 0.8);
 
-   UserInterface::drawStringf(20, curPos, fontSize, "%s", gLoadoutTitles[mCurrentIndex]); 
+   UserInterface::drawStringf(UserInterface::horizMargin, curPos, fontSize, "%s", gLoadoutTitles[mCurrentIndex]); 
    curPos += fontSize + 4;
 
    LoadoutItem *list;
@@ -111,10 +111,10 @@ void LoadoutHelper::render()
          c.set(0.1, 1.0, 0.1);
 
       glColor(c);
-      renderControllerButton(20, curPos, list[i].button, list[i].key);
+      renderControllerButton(UserInterface::horizMargin, curPos, list[i].button, list[i].key);
 
       glColor(c);
-      UserInterface::drawStringf(40, curPos, fontSize, "- %s", 
+      UserInterface::drawStringf(UserInterface::horizMargin + 20, curPos, fontSize, "- %s", 
          list[i].text);
       curPos += fontSize + 4;
    }

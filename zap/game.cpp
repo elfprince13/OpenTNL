@@ -546,12 +546,14 @@ void ClientGame::renderCommander()
 
    Point position = u->getRenderPos();
 
-   F32 zoomFrac = mCommanderZoomDelta / F32(CommanderMapZoomTime);
+   F32 zoomFrac = getCommanderZoomFraction();
    // Set up the view to show the whole level.
    Rect worldBounds = computeWorldObjectExtents();
 
    Point worldCenter = worldBounds.getCenter();
    Point worldExtents = worldBounds.getExtents();
+   worldExtents.x *= UserInterface::canvasWidth / F32(UserInterface::canvasWidth - (UserInterface::horizMargin * 2));
+   worldExtents.y *= UserInterface::canvasHeight / F32(UserInterface::canvasHeight - (UserInterface::vertMargin * 2));
 
    F32 aspectRatio = worldExtents.x / worldExtents.y;
    F32 screenAspectRatio = UserInterface::canvasWidth / F32(UserInterface::canvasHeight);
@@ -680,34 +682,39 @@ void ClientGame::renderNormal()
 
          glColor3f(1, 1 ,1);
          glBegin(GL_LINES);
-         glVertex2f(15, 565);
-         glVertex2f(15, 585);
-         glVertex2f(15 + totalLineCount * 2, 565);
-         glVertex2f(15 + totalLineCount * 2, 585);
-
+         glVertex2f(UserInterface::horizMargin, UserInterface::canvasHeight - UserInterface::vertMargin - 20);
+         glVertex2f(UserInterface::horizMargin, UserInterface::canvasHeight - UserInterface::vertMargin);
+         glVertex2f(UserInterface::horizMargin + totalLineCount * 2, UserInterface::canvasHeight - UserInterface::vertMargin - 20);
+         glVertex2f(UserInterface::horizMargin + totalLineCount * 2, UserInterface::canvasHeight - UserInterface::vertMargin);
+         // Show safety line.
+         glColor3f(1, 1, 0);
+         F32 cutoffx = (Ship::EnergyCooldownThreshold * totalLineCount * 2) / Ship::EnergyMax;
+         glVertex2f(UserInterface::horizMargin + cutoffx, UserInterface::canvasHeight - UserInterface::vertMargin - 23);
+         glVertex2f(UserInterface::horizMargin + cutoffx, UserInterface::canvasHeight - UserInterface::vertMargin + 4);
+         glEnd();
          F32 halfway = totalLineCount * 0.5;
          F32 full = energy * totalLineCount;
+         glBegin(GL_POLYGON);
+         glColor3f(0, 0, 1);
+         glVertex2f(UserInterface::horizMargin, UserInterface::canvasHeight - UserInterface::vertMargin - 20);
+         glVertex2f(UserInterface::horizMargin, UserInterface::canvasHeight - UserInterface::vertMargin);
+         glColor3f(0, 1, 1);
+         glVertex2f(UserInterface::horizMargin + full * 2, UserInterface::canvasHeight - UserInterface::vertMargin);
+         glVertex2f(UserInterface::horizMargin + full * 2, UserInterface::canvasHeight - UserInterface::vertMargin - 20);
+         glEnd();
+         /*
          for(U32 i = 1; i < full; i++)
          {
-            /*if(i < halfway)
+            if(i < halfway)
                glColor3f(1 - i / halfway, 0, i / halfway);
             else
                glColor3f(0, (i - halfway) / halfway, 1);
-            */
+            
             glColor3f(0, i / full, 1);
             glVertex2f(15 + i * 2, 565);
             glVertex2f(15 + i * 2, 585);
-         }
+         }*/
          glEnd();
-
-         // Show safety line.
-         glColor3f(1, 1, 0);
-         glBegin(GL_LINES);
-         F32 cutoffx = (Ship::EnergyCooldownThreshold * totalLineCount * 2) / Ship::EnergyMax;
-         glVertex2f(15 + cutoffx, 562);
-         glVertex2f(15 + cutoffx, 589);
-         glEnd();
-
       }
    }
 }

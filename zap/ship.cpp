@@ -1117,9 +1117,18 @@ void Ship::render()
    {
       const char *string = mPlayerName.getString();
       glEnable(GL_BLEND);
-      glColor4f(1,1,1,0.5 * alpha);
-      UserInterface::drawString( U32( UserInterface::getStringWidth(14, string) * -0.5), 30, 14, string );
+      F32 textAlpha = 0.5 * alpha;
+      F32 textSize = 14;
+#ifdef TNL_OS_XBOX
+      textAlpha *= 1 - gClientGame->getCommanderZoomFraction();
+      textSize = 23;
+#else
+      glLineWidth(1);
+#endif
+      glColor4f(1,1,1,textAlpha);
+      UserInterface::drawString( U32( UserInterface::getStringWidth(textSize, string) * -0.5), 30, textSize, string );
       glDisable(GL_BLEND);
+      glLineWidth(DefaultLineWidth);
    }
    else
    {

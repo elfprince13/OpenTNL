@@ -169,10 +169,10 @@ void VChatHelper::render()
    for(S32 i = 0; i < renderNodes.size(); i++)
    {
       glColor3f(0.3, 1.0, 0.3);
-      renderControllerButton(20, curPos, renderNodes[i]->buttonIndex, renderNodes[i]->trigger);
+      renderControllerButton(UserInterface::horizMargin, curPos, renderNodes[i]->buttonIndex, renderNodes[i]->trigger);
 
       glColor3f(0.3, 1.0, 0.3);
-      UserInterface::drawStringf(40, curPos, fontSize, "- %s", 
+      UserInterface::drawStringf(UserInterface::horizMargin + 20, curPos, fontSize, "- %s", 
          renderNodes[i]->caption);
       curPos += fontSize + 4;
    }

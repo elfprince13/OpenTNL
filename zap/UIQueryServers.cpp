@@ -365,6 +365,14 @@ void QueryServersUserInterface::render()
    glEnd();
 }
 
+void QueryServersUserInterface::onControllerButtonDown(U32 buttonIndex)
+{
+   if(buttonIndex == 0)
+      onKeyDown('\r');
+   else if(buttonIndex == 1)
+      onKeyDown(27);
+}
+
 void QueryServersUserInterface::onKeyDown(U32 key)
 {
    switch(key)
