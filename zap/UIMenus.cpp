@@ -31,6 +31,7 @@
 #include "UICredits.h"
 #include "game.h"
 #include "gameType.h"
+#include "UIEditor.h"
 
 #include "glutInclude.h"
 
@@ -312,8 +313,11 @@ void GameMenuUserInterface::processSelection(U32 index)
          gOptionsMenuUserInterface.activate();
          break;
       case 2:
-         gMainMenuUserInterface.activate();
          endGame();
+         if(EditorUserInterface::editorEnabled)
+            gEditorUserInterface.activate();
+         else
+            gMainMenuUserInterface.activate();
          break;
       default:
          if(mGameType.isValid())

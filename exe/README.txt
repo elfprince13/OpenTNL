@@ -1,20 +1,9 @@
-ZAP 1.2.2
+ZAP 1.3
 
 Welcome to ZAP, the retro multiplayer team action game!
 
-Changes since version 1.2.1:
-- Fixed the big one! (crash)
-- Improved smoothness of play on higher ping connections
-- Improved packet space utilization
-- Fixed multiple other crashes
-- Added a crazy bot option to slam test the game.
-- Many cosmetic game screen fixes
-- Removed some items from V-chat menu
-- Added controller support for V-chats
-- Fixed a nasty string compression bug in BitStream/RPC
-- Added command line arguments to the journal
-- Added support for headless linux dedicated server compiles
-- Added support for GCC 2.9.x in the RPC code
+Changes since version 1.2.2:
+- Added built-in level editor!
 
 Controls:
 
@@ -89,6 +78,37 @@ or IP:www.foobar.com:24601
 -jsave [journalName] saves the log of the play session to the specified
         journal file.
 -jplay [journalName] replays a saved journal.
+-edit [levelName] starts Zap in level editing mode, loading and saving the
+		specified level.
+		
+Level editor instructions:
+
+Currently the level editor allows you to edit the barrier objects within
+levels, and will display spawn points and some mission objects.
+
+Mouse functions:
+
+Left-click - select and move.  Clicking on vertices allows movement
+		of verts, clicking on edges allows movement of the entire barrier border.
+		To move a vertex or border, click and hold as you drag the object around.
+		Left click also completes a new barrier border.
+
+Right-click - add barrier vertex.  If right clicking on an existing barrier edge,
+		this will insert a new vertex along that edge at the click point.  Otherwise
+		this either begins a new barrier border or adds a new vertex to the current
+		new barrier border.
+
+Keyboard functions:
+
+W - scroll map up
+S - scroll map down
+A - scroll map left
+D - scroll map right
+C - zoom out
+E - zoom in
+R - reset view to 0,0 in the top left corner
+
+ESC - bring up editor menu
 
 Credits:
 
