@@ -61,7 +61,7 @@ void BarrierMaker::processArguments(S32 argc, const char **argv)
       float y = (float) atof(argv[i]) * getGame()->getGridSize();
       vec.push_back(Point(x,y));
    }
-   if(vec.size() < 1)
+   if(vec.size() <= 1)
       return;
 
    loop = vec[0] == vec[vec.size() - 1];
@@ -230,11 +230,14 @@ void Barrier::clipRenderLinesToPoly(Vector<Point> &polyPoints)
 
 void Barrier::render(U32 layerIndex)
 {
+   Color b(0,0,0.075), f(0,0,1);
+   //Color b(0.0,0.0,0.075), f(.3 ,0.3,0.8);
+
    if(layerIndex == 0)
    {
       Vector<Point> colPoly;
       getCollisionPoly(colPoly);
-      glColor3f(0,0,0.075);
+      glColor3f(b.r, b.g, b.b);
       glBegin(GL_POLYGON);
       for(S32 i = 0; i < colPoly.size(); i++)
          glVertex2f(colPoly[i].x, colPoly[i].y);
@@ -270,7 +273,7 @@ void Barrier::render(U32 layerIndex)
                clipRenderLinesToPoly(colPoly);
          }
       }
-      glColor3f(0,0,1);
+      glColor3f(f.r, f.g, f.b);
       glBegin(GL_LINES);
       for(S32 i = 0; i < mRenderLineSegments.size(); i++)
          glVertex2f(mRenderLineSegments[i].x, mRenderLineSegments[i].y);

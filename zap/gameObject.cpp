@@ -251,7 +251,7 @@ void GameObject::render()
 
 void GameObject::render(U32 layerIndex)
 {
-   if(layerIndex == 0)
+   if(layerIndex == 1)
       render();
 }
 

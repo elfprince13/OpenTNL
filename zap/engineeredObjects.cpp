@@ -30,6 +30,7 @@
 #include "projectile.h"
 #include "gameType.h"
 #include "gameWeapons.h"
+#include "sfx.h"
 
 namespace Zap
 {
@@ -109,15 +110,18 @@ void EngineeredObject::damageObject(DamageInfo *di)
 {
    mHealth -= di->damageAmount * .5f;
 
+   setMaskBits(HealthMask);
+
    if(mHealth > 0.f)
       return;
+   mHealth = 0;
 
    onDestroyed();
 
    mResource->addToDatabase();
    mResource->setActualPos(mAnchorPoint + mAnchorNormal * mResource->getRadius());
 
-   deleteObject(0);
+   deleteObject(500);
 }
 
 void EngineeredObject::onDestroyed()
@@ -133,6 +137,44 @@ void EngineeredObject::computeExtent()
    for(S32 i = 1; i < v.size(); i++)
       r.unionPoint(v[i]);
    setExtent(r);
+}
+
+void EngineeredObject::explode()
+{
+   enum {
+      NumShipExplosionColors = 12,
+   };
+
+   static Color ShipExplosionColors[NumShipExplosionColors] = {
+   Color(1, 0, 0),
+   Color(0.9, 0.5, 0),
+   Color(1, 1, 1),
+   Color(1, 1, 0),
+   Color(1, 0, 0),
+   Color(0.8, 1.0, 0),
+   Color(1, 0.5, 0),
+   Color(1, 1, 1),
+   Color(1, 0, 0),
+   Color(0.9, 0.5, 0),
+   Color(1, 1, 1),
+   Color(1, 1, 0),
+   };
+
+   SFXObject::play(SFXShipExplode, getActualPos(), Point());
+
+   F32 a, b;
+   a = Random::readF() * 0.4 + 0.5;
+   b = Random::readF() * 0.2 + 0.9;
+
+   F32 c, d;
+   c = Random::readF() * 0.15 + 0.125;
+   d = Random::readF() * 0.2 + 0.9;
+
+   SparkManager::emitExplosion(getActualPos(), 0.65, ShipExplosionColors, NumShipExplosionColors);
+   SparkManager::emitBurst(getActualPos(), Point(a,c) * 0.6, Color(1,1,0.25), Color(1,0,0));
+   SparkManager::emitBurst(getActualPos(), Point(b,d) * 0.6, Color(1,1,0), Color(0,1,1));
+
+   disableCollision();
 }
 
 bool PolygonsIntersect(Vector<Point> &p1, Vector<Point> &p2)
@@ -208,6 +250,10 @@ U32 EngineeredObject::packUpdate(GhostConnection *connection, U32 updateMask, Bi
       stream->write(mAnchorNormal.x);
       stream->write(mAnchorNormal.y);
    }
+   if(stream->writeFlag(updateMask & HealthMask))
+   {
+      stream->writeFloat(mHealth, 6);
+   }
    return 0;
 }
 
@@ -221,6 +267,12 @@ void EngineeredObject::unpackUpdate(GhostConnection *connection, BitStream *stre
       stream->read(&mAnchorNormal.x);
       stream->read(&mAnchorNormal.y);
       computeExtent();
+   }
+   if(stream->readFlag())
+   {
+      mHealth = stream->readFloat(6);
+      if(!mHealth)
+         explode();
    }
 }
 
@@ -336,8 +388,10 @@ U32 ForceField::packUpdate(GhostConnection *connection, U32 updateMask, BitStrea
 
 void ForceField::unpackUpdate(GhostConnection *connection, BitStream *stream)
 {
+   bool initial = false;
    if(stream->readFlag())
    {
+      initial = true;
       stream->read(&mStart.x);
       stream->read(&mStart.y);
       stream->read(&mEnd.x);
@@ -348,7 +402,11 @@ void ForceField::unpackUpdate(GhostConnection *connection, BitStream *stream)
       extent.expand(Point(5,5));
       setExtent(extent);
    }
+   bool wasUp = mFieldUp;
    mFieldUp = stream->readFlag();
+
+   if(initial || (wasUp != mFieldUp))
+      SFXObject::play(mFieldUp ? SFXForceFieldUp : SFXForceFieldDown, mStart, Point());
 }
 
 bool ForceField::getCollisionPoly(Vector<Point> &p)
@@ -444,22 +502,22 @@ void Turret::render()
    {
       F32 theta = x * FloatHalfPi * 0.1;
       Point pos = mAnchorNormal * cos(theta) + cross * sin(theta);
-      glVertex(aimCenter + pos * 20);
+      glVertex(aimCenter + pos * 15);
    }
    glEnd();
 
    glBegin(GL_LINE_LOOP);
-   glVertex(mAnchorPoint + cross * 25);
-   glVertex(mAnchorPoint + cross * 25 + mAnchorNormal * TurretAimOffset);
-   glVertex(mAnchorPoint - cross * 25 + mAnchorNormal * TurretAimOffset);
-   glVertex(mAnchorPoint - cross * 25);
+   glVertex(mAnchorPoint + cross * 18);
+   glVertex(mAnchorPoint + cross * 18 + mAnchorNormal * TurretAimOffset);
+   glVertex(mAnchorPoint - cross * 18 + mAnchorNormal * TurretAimOffset);
+   glVertex(mAnchorPoint - cross * 18);
    glEnd();
 
    glLineWidth(3);
    glBegin(GL_LINES);
    Point aimDelta(cos(mCurrentAngle), sin(mCurrentAngle));
-   glVertex(aimCenter + aimDelta * 20);
-   glVertex(aimCenter + aimDelta * 35);
+   glVertex(aimCenter + aimDelta * 15);
+   glVertex(aimCenter + aimDelta * 30);
    glEnd();
    glLineWidth(1);
 }
@@ -479,6 +537,8 @@ void Turret::unpackUpdate(GhostConnection *connection, BitStream *stream)
    if(stream->readFlag())
       stream->read(&mCurrentAngle);
 }
+
+extern bool FindLowestRootInInterval(Point::member_type inA, Point::member_type inB, Point::member_type inC, Point::member_type inUpperBound, Point::member_type &outX);
 
 void Turret::idle(IdleCallPath path)
 {
@@ -521,25 +581,26 @@ void Turret::idle(IdleCallPath path)
 
       // Calculate where we have to shoot to hit this...
       const F32 projVel = TurretProjectileVelocity;
-      F32 shipVel = potential->getActualVel().len() * 0.8;
+      Point Vs = potential->getActualVel();
+      F32 S = gWeapons[WeaponTurretBlaster].projVelocity;
+      Point d = potential->getRenderPos() - aimPos;
 
-      // If we can't hit 'em (or the math will break, move on), pretend we're trying
-      if(shipVel > projVel)
-         shipVel = projVel;
+      F32 t;
+      if(!FindLowestRootInInterval(Vs.dot(Vs) - S * S, 2 * Vs.dot(d), d.dot(d), gWeapons[WeaponTurretBlaster].projLiveTime * 0.001f, t))
+         continue;
 
-      Point distVec  = potential->getActualPos() - aimPos;
-      F32 travelTime = distVec.len() / sqrt( projVel * projVel - shipVel*shipVel );
-      Point leadPos  = potential->getActualPos() + potential->getActualVel() * travelTime;
+      Point leadPos = potential->getRenderPos() + Vs * t;
 
       // Calculate distance
       delta = (leadPos - aimPos);
 
+      Point angleCheck = delta;
+      angleCheck.normalize();
       // Check that we're facing it...
-      if(delta.dot(mAnchorNormal) <= 0.f)
+      if(angleCheck.dot(mAnchorNormal) <= -0.1f)
          continue;
 
       // See if we can see it...
-      F32 t;
       Point n;
       if(findObjectLOS(BarrierType, 0, aimPos, potential->getActualPos(), t, n))
          continue;
@@ -549,10 +610,10 @@ void Turret::idle(IdleCallPath path)
       Point delta2 = delta;
       delta2.normalize(TurretRange);
       GameObject *hitObject = findObjectLOS(ShipType | BarrierType | EngineeredType, 0, aimPos, aimPos + delta2, t, n);
+      enableCollision();
 
       if(hitObject && hitObject->getTeam() == mTeam)
          continue;
-      enableCollision();
 
       F32 dist = delta.len();
 

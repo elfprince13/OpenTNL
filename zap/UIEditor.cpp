@@ -91,6 +91,7 @@ GameItemRec gGameItemRecs[] = {
    { "SoccerGoalObject", true, true },
    { "TestItem", false, false },
    { "ResourceItem", false, false },
+   { "LoadoutZone", true, true },
    { NULL, false, false },
 };
 
@@ -809,7 +810,7 @@ void EditorUserInterface::onKeyDown(U32 key)
 {
    bool ctrlActive = glutGetModifiers() & GLUT_ACTIVE_CTRL;
 
-   if(key >= '0' && key < ('0' + mTeams.size()))
+   if(key >= '0' && key < U32('0' + mTeams.size()))
    {
       mCurrentTeam = key - '0';
       return;

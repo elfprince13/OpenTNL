@@ -50,7 +50,8 @@ protected:
    enum MaskBits
    {
       InitialMask  = BIT(0),
-      NextFreeMask = BIT(1),
+      HealthMask   = BIT(1),
+      NextFreeMask = BIT(2),
    };
    
 public:
@@ -60,6 +61,7 @@ public:
    void computeExtent();
    virtual void onDestroyed();
 
+   void explode();
    void setOwner(Ship *owner) { mOwner = owner; }
 
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
@@ -119,7 +121,7 @@ class Turret : public EngineeredObject
    typedef EngineeredObject Parent;
 
    enum {
-      TurretAimOffset = 25,
+      TurretAimOffset = 15,
       TurretRange = 600,
       TurretPerceptionDistance = 800,
       TurretProjectileVelocity = 600,

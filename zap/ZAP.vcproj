@@ -267,6 +267,9 @@
 				RelativePath=".\item.h">
 			</File>
 			<File
+				RelativePath=".\LoadoutZone.cpp">
+			</File>
+			<File
 				RelativePath=".\moveObject.cpp">
 			</File>
 			<File

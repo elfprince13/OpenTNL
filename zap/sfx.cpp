@@ -228,6 +228,8 @@ static SFXProfile gSFXProfiles[] = {
  {  "boop.wav",            true,  0.4f,  false, 150, 600 },
  {  "comm_up.wav",         true,  0.4f,  false, 150, 600 },
  {  "comm_down.wav",       true,  0.4f,  false, 150, 600 },
+ {  "comm_up.wav",         false,  0.7f,  false, 150, 600 },
+ {  "comm_down.wav",       false,  0.7f,  false, 150, 600 },
  {  NULL, false, 0, false, 0, 0 },
 };
 

@@ -48,6 +48,7 @@ enum GameObjectType
    ResourceItemType  = BIT(6),
    EngineeredType    = BIT(7),
    ForceFieldType    = BIT(8),
+   LoadoutZoneType   = BIT(9),
 
    DeletedType       = BIT(30),
    CommandMapVisType = BIT(31),

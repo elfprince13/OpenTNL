@@ -371,17 +371,18 @@ void GrenadeProjectile::explode(Point pos)
    {
       setMaskBits(PositionMask);
       deleteObject(100);
+
+      DamageInfo info;
+      info.collisionPoint = pos;
+      info.damagingObject = this;
+      info.damageAmount   = 0.5;
+      info.damageType     = 1;
+
+      radiusDamage(pos, 200.f, ShipType | EngineeredType, &info);
    }
 
    exploded = true;
 
-   DamageInfo info;
-   info.collisionPoint = pos;
-   info.damagingObject = this;
-   info.damageAmount   = 0.5;
-   info.damageType     = 1;
-
-   radiusDamage(pos, 200.f, 0xffffffff, &info);
 }
 
 void GrenadeProjectile::renderItem(Point pos)

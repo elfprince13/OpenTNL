@@ -57,6 +57,8 @@ enum SFXProfiles {
    SFXUIBoop,
    SFXUICommUp,
    SFXUICommDown,
+   SFXForceFieldUp,
+   SFXForceFieldDown,
    NumSFXBuffers
 };
 
