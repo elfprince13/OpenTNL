@@ -24,80 +24,41 @@
 //
 //------------------------------------------------------------------------------------
 
-#ifndef _UIGAME_H_
-#define _UIGAME_H_
+#ifndef _UIVCHAT_H_
+#define _UIVCHAT_H_
 
+#include "tnlNetBase.h"
 #include "UI.h"
-#include "point.h"
-#include "gameConnection.h"
-#include "quickChat.h"
 
 namespace Zap
 {
 
-class GameUserInterface : public UserInterface
+class VChatHelper
 {
-   Move mCurrentMove;
-   Move mTransformedMove;
-
-   Point mMousePoint;
-   enum {
-      DisplayMessageTimeout = 2500,
+private:
+   struct VChatNode
+   {
+      U32 depth;
+      U8  trigger;
+      bool teamOnly;
+      const char *caption;
+      const char *msg;
    };
 
-   enum {
-      MessageDisplayCount = 4,
-   };
+   static VChatNode mChatTree[];
 
-   Color mDisplayMessageColor[MessageDisplayCount];
-   char mDisplayMessage[MessageDisplayCount][2048];
+   bool mVisible; 
+   VChatNode *mCurNode;
 
-
-   U32 mDisplayMessageTimer;
-   enum Mode {
-      PlayMode,
-      ChatMode,
-      VChatMode,
-   };
-   enum ChatType {
-      GlobalChat,
-      TeamChat,
-   };
-   enum {
-      ChatBlinkTime = 100,
-   };
-   Mode mCurrentMode;
-   ChatType mCurrentChatType;
-
-   char  mChatBuffer[50];
-   U32   mChatCursorPos;
-   bool  mChatBlink;
-   U32   mChatLastBlinkTime;
-   bool  mInScoreboardMode;
-
-   VChatHelper *mVChat;
 public:
-   GameUserInterface();
-
-   void displayMessage(Color messageColor, const char *format, ...);
+   VChatHelper();
 
    void render();
-   void idle(U32 timeDelta);
+   void show();
+   bool isActive();
+   void processKey(U32 key);
 
-   void issueChat();
-   void cancelChat();
-
-   void onMouseMoved(S32 x, S32 y);
-   void onMouseDragged(S32 x, S32 y);
-   void onMouseDown(S32 x, S32 y);
-   void onMouseUp(S32 x, S32 y);
-   void onKeyDown(U32 key);
-   void onKeyUp(U32 key);
-
-   Move *getCurrentMove();
 };
-
-extern GameUserInterface gGameUserInterface;
 
 };
 

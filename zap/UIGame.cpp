@@ -52,6 +52,8 @@ GameUserInterface::GameUserInterface()
 
    for(U32 i = 0; i < 4; i++)
       mDisplayMessage[i][0] = 0;
+
+   mVChat = new VChatHelper();
 }
 
 void GameUserInterface::displayMessage(Color theColor, const char *format, ...)
@@ -124,6 +126,11 @@ void GameUserInterface::render()
    glPushMatrix();
 
    glTranslatef(mMousePoint.x, mMousePoint.y, 0);
+
+   static U32 cursorSpin = 90;
+   cursorSpin++;
+
+   glRotatef((cursorSpin % 720) * 0.9, 0, 0, 1);
 
    glColor3f(1, 0, 0);
    glBegin(GL_LINE_LOOP);
@@ -214,6 +221,9 @@ void GameUserInterface::render()
       drawStringf(10, 550, 30, "%0.2g", con->getRoundTripTime());
    }
 #endif
+
+   if(mVChat->isActive())
+      mVChat->render();
 }
 
 void GameUserInterface::onMouseDragged(S32 x, S32 y)
@@ -294,6 +304,11 @@ void GameUserInterface::onKeyDown(U32 key)
                mCurrentMove.right = 
                mCurrentMove.down = 0;
             break;
+         case 'v':
+         case 'V':
+            mVChat->show();
+            mCurrentMode = VChatMode;
+            break;
       }
    }
    else if(mCurrentMode == ChatMode)
@@ -324,6 +339,13 @@ void GameUserInterface::onKeyDown(U32 key)
             mChatCursorPos++;
          }
       }
+   }
+   else if(mCurrentMode == VChatMode)
+   {
+      mVChat->processKey(key);
+
+      if(!mVChat->isActive())
+         mCurrentMode = PlayMode;
    }
 }
 

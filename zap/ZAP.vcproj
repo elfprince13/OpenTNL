@@ -212,6 +212,12 @@
 			RelativePath=".\projectile.h">
 		</File>
 		<File
+			RelativePath=".\quickChat.cpp">
+		</File>
+		<File
+			RelativePath=".\quickChat.h">
+		</File>
+		<File
 			RelativePath=".\sfx.cpp">
 		</File>
 		<File
