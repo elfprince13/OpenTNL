@@ -35,12 +35,12 @@ namespace Zap
 
 ShipWeaponInfo gWeapons[] =
 {
-   {"Phaser",   100,  500,  500, 600, 1000, Projectile::Phaser },
-   {"Bouncer",  100,  2500, 2500, 540, 1500, Projectile::Bounce },
-   {"Triple",   200,  2500, 2500, 550, 850, Projectile::Triple },
-   {"Burst",  700,  5000, 5000, 500, 1000, 0 },
-   {NULL, 0, 0, 0, 0, 0, 0  },
-   { "Turret", 0, 0, 0, 800, 800, Projectile::Turret },
+   {StringTableEntry("Phaser"),   100,  500,  500, 600, 1000, Projectile::Phaser },
+   {StringTableEntry("Bouncer"),  100,  2500, 2500, 540, 1500, Projectile::Bounce },
+   {StringTableEntry("Triple"),   200,  2500, 2500, 550, 850, Projectile::Triple },
+   {StringTableEntry("Burst"),  700,  5000, 5000, 500, 1000, 0 },
+   {StringTableEntry(NULL), 0, 0, 0, 0, 0, 0  },
+   { StringTableEntry("Turret"), 0, 0, 0, 800, 800, Projectile::Turret },
 };
 
 void createWeaponProjectiles(U32 weapon, Point &dir, Point &shooterPos, Point &shooterVel, F32 shooterRadius, GameObject *shooter)

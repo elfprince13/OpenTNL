@@ -111,6 +111,9 @@ public:
 
    bool collide(GameObject *hitObject)
    {
+      if(!isGhost() && hitObject->getObjectTypeMask() & ShipType)
+         getGame()->getGameType()->updateShipLoadout(hitObject);
+
       return false;
    }
 

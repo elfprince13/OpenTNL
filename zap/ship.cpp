@@ -74,7 +74,7 @@ Ship::Ship(StringTableEntry playerName, S32 team, Point p, F32 m) : MoveObject(p
       mModuleActive[i] = false;
 
    mModule[0] = ModuleBoost;
-   mModule[1] = ModuleEngineer; //ModuleShield; // testing engineer
+   mModule[1] = ModuleShield;
 
    mWeapon[0] = WeaponPhaser;
    mWeapon[1] = WeaponBounce;
@@ -164,6 +164,14 @@ void Ship::selectWeapon()
 void Ship::selectWeapon(U32 weaponIdx)
 {
    mActiveWeapon = weaponIdx % ShipWeaponCount;
+   GameConnection *cc = getControllingClient();
+   if(cc)
+   {
+      Vector<StringTableEntry> e;
+      e.push_back(gWeapons[mWeapon[mActiveWeapon]].name);
+      static StringTableEntry msg("%e0 selected.");
+      cc->s2cDisplayMessageE(GameConnection::ColorAqua, SFXUIBoop, msg, e);
+   }
 }
 
 void Ship::processWeaponFire()
@@ -756,17 +764,46 @@ Item *Ship::unmountResource()
 
 void Ship::setLoadout(U32 module1, U32 module2, U32 weapon1, U32 weapon2, U32 weapon3)
 {
+   if(module1 == mModule[0] && module2 == mModule[1]
+      && weapon1 == mWeapon[0] && weapon2 == mWeapon[1] && weapon3 == mWeapon[2])
+         return;
+
+   U32 currentWeapon = mWeapon[mActiveWeapon];
+
    mModule[0] = module1;
    mModule[1] = module2; 
    mWeapon[0] = weapon1;
    mWeapon[1] = weapon2;
    mWeapon[2] = weapon3;
+
    setMaskBits(LoadoutMask);
 
-   // drop any resources we may be carrying
-   for(S32 i = mMountedItems.size() - 1; i >= 0; i--)
-      if(mMountedItems[i]->getObjectTypeMask() & ResourceItemType)
-         mMountedItems[i]->dismount();
+   GameConnection *cc = getControllingClient();
+
+   if(cc)
+   {
+      static StringTableEntry msg("Ship loadout configuration updated.");
+      cc->s2cDisplayMessage(GameConnection::ColorAqua, SFXUIBoop, msg);
+   }
+   U32 i;
+   for(i = 0; i < 3; i++)
+   {
+      if(mWeapon[i] == currentWeapon)
+      {
+         mActiveWeapon = i;
+         break;
+      }
+   }
+   if(i == 3)
+      selectWeapon(0);
+
+   if(mModule[0] != ModuleEngineer && mModule[1] != ModuleEngineer)
+   {
+      // drop any resources we may be carrying
+      for(S32 i = mMountedItems.size() - 1; i >= 0; i--)
+         if(mMountedItems[i]->getObjectTypeMask() & ResourceItemType)
+            mMountedItems[i]->dismount();
+   }
 }
 
 void Ship::kill()

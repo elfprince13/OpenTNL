@@ -148,7 +148,6 @@ static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
       return false; // The device should have been acquired during the Poll()
 
    S32 x = js.lX;
-   F32 deadZone = 8192.0f;
 
    F32 controls[4];
    controls[0] = F32( js.lX ) - 32768.0f;
@@ -177,6 +176,7 @@ static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
 
    for(U32 i = 0; i < 4; i++)
    {
+      F32 deadZone = i < 2 ? 8192.0f : 1024.0f;
       if(controls[i] < -deadZone)
          controls[i] = -(-controls[i] - deadZone) / F32(32768.0f - deadZone);
       else if(controls[i] > deadZone)
@@ -207,10 +207,11 @@ static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
    }
 
    Point p(controls[2], controls[3]);
-   if(p.len() > 0.1)
+   F32 plen = p.len();
+   if(plen > 0.3)
    {
       theMove->angle = atan2(p.y, p.x);
-      theMove->fire = true;
+      theMove->fire = (plen > 0.5);
    }
    else
       theMove->fire = false;

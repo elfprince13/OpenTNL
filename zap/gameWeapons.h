@@ -53,7 +53,7 @@ enum WeaponConsts
 
 struct ShipWeaponInfo
 {
-   const char *name; // Display name of the weapon.
+   StringTableEntry name; // Display name of the weapon.
    U32 fireDelay;    // Delay between shots.
    U32 minEnergy;    // Minimum energy to fire.
    U32 drainEnergy;  // Amount of energy to drain per shot.

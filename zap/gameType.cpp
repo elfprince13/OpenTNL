@@ -287,7 +287,19 @@ void GameType::spawnShip(GameConnection *theClient)
    Ship *newShip = new Ship(mClientList[clientIndex].name, teamIndex, spawnPoint);
    newShip->addToGame(getGame());
    theClient->setControlObject(newShip);
-   setClientShipLoadout(clientIndex, theClient->getLoadout());
+   //setClientShipLoadout(clientIndex, theClient->getLoadout());
+}
+
+void GameType::updateShipLoadout(GameObject *shipObject)
+{
+   GameConnection *gc = shipObject->getControllingClient();
+   if(!gc)
+      return;
+   S32 clientIndex = findClientIndexByConnection(gc);
+   if(clientIndex == -1)
+      return;
+
+   setClientShipLoadout(clientIndex, gc->getLoadout());
 }
 
 void GameType::setClientShipLoadout(S32 clientIndex, const Vector<U32> &loadout)
@@ -302,9 +314,9 @@ void GameType::setClientShipLoadout(S32 clientIndex, const Vector<U32> &loadout)
 
 void GameType::clientRequestLoadout(GameConnection *client, const Vector<U32> &loadout)
 {
-   S32 clientIndex = findClientIndexByConnection(client);
-   if(clientIndex != -1)
-      setClientShipLoadout(clientIndex, loadout);
+   //S32 clientIndex = findClientIndexByConnection(client);
+   //if(clientIndex != -1)
+   //   setClientShipLoadout(clientIndex, loadout);
 }
 
 void GameType::clientRequestEngineerBuild(GameConnection *client, U32 buildObject)

@@ -127,6 +127,8 @@ public:
    void renderTalkingClients();
    virtual void updateClientScoreboard(S32 clientIndex);
    virtual void clientRequestLoadout(GameConnection *client, const Vector<U32> &loadout);
+   virtual void updateShipLoadout(GameObject *shipObject); // called from LoadoutZone when a Ship touches the zone
+
    virtual void clientRequestEngineerBuild(GameConnection *client, U32 buildObject);
 
    void setClientShipLoadout(S32 clientIndex, const Vector<U32> &loadout);
