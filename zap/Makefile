@@ -35,8 +35,12 @@ OBJECTS_ZAP=\
 	sparkManager.o\
 	teleporter.o\
 	barrier.o\
+	voiceCodec.o\
 	lpc10dec.o\
 	lpc10enc.o\
+	gsm_decode.o\
+	gsm_encode.o\
+	gsm_state.o\
 	main.o
 
 
@@ -49,11 +53,11 @@ CFLAGS=
 	$(CC) -c $(CFLAGS) $<
 
 default: $(OBJECTS_ZAP)
-	$(CC) -o zap $(OBJECTS_ZAP) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a ../openal/linux/libopenal.a -lpthread -lstdc++ -lGL -lGLU -lglut -lm
+	$(CC) -o ../exe/zap $(OBJECTS_ZAP) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a ../openal/linux/libopenal.a -lpthread -lstdc++ -lGL -lGLU -lglut -lm
 
 ../master/masterInterface.o:
 	make -C ../master
 
 clean:
-	rm -f $(OBJECTS_ZAP) zap
+	rm -f $(OBJECTS_ZAP) ../exe/zap
 
