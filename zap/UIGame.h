@@ -118,6 +118,10 @@ public:
    void displayMessage(Color messageColor, const char *format, ...);
 
    void render();
+   void renderReticle();
+   void renderMessageDisplay();
+   void renderCurrentChat();
+
    void idle(U32 timeDelta);
 
    void issueChat();

@@ -146,26 +146,56 @@ void GameUserInterface::render()
    if(gClientGame)
       gClientGame->render();
 
-   // draw the reticle
-   if(!OptionsMenuUserInterface::joystickEnabled)
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+
+   renderReticle();
+
+   renderMessageDisplay();
+   renderCurrentChat();
+
+   mVoiceRecorder.render();
+   if(mFPSVisible)
    {
-      Point realMousePoint = mMousePoint;
+      U32 sum = 0;
+      for(U32 i = 0; i < FPSAvgCount; i++)
+         sum += mIdleTimeDelta[i];
+      drawStringf(710, 10, 30, "%4.2f fps", (1000 * FPSAvgCount) / F32(sum));
+   }
+   if(mVChat->isActive())
+      mVChat->render();
 
-#ifdef TNL_OS_WIN32
-      if(!OptionsMenuUserInterface::controlsRelative)
+   GameType *theGameType = gClientGame->getGameType();
+
+   if(theGameType)
+      theGameType->renderInterfaceOverlay(mInScoreboardMode);
+
+#if 0
+   // some code for outputting the position of the ship for finding good spawns
+   GameConnection *con = gClientGame->getConnectionToServer();
+
+   if(con)
+   {
+      GameObject *co = con->getControlObject();
+      if(co)
       {
-         F32 len = mMousePoint.len();
-         checkMousePos(windowWidth * 100 / canvasWidth,
-                     windowHeight * 100 / canvasHeight);
-
-         if(len > 100)
-            realMousePoint *= 100 / len;
+         Point pos = co->getActualPos() * F32(1 / 300.0f);
+         drawStringf(10, 550, 30, "%0.2g, %0.2g", pos.x, pos.y);
       }
+   }
+
+   if(mGotControlUpdate)
+   {
+      drawString(710, 10, 30, "CU");
+   }
 #endif
+}
 
-      glPushMatrix();
-      glTranslatef(400, 300, 0);
+void GameUserInterface::renderReticle()
+{
+   // draw the reticle
 
+/*
       glTranslatef(realMousePoint.x, realMousePoint.y, 0);
 
       static U32 cursorSpin = 90;
@@ -196,11 +226,71 @@ void GameUserInterface::render()
       glVertex2f(-3, 3);
 
       glEnd();
-      glPopMatrix();
-   }
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
+      glPopMatrix();*/
 
+   if(!OptionsMenuUserInterface::joystickEnabled)
+   {
+#if 0 // TNL_OS_WIN32
+      Point realMousePoint = mMousePoint;
+      if(!OptionsMenuUserInterface::controlsRelative)
+      {
+         F32 len = mMousePoint.len();
+         checkMousePos(windowWidth * 100 / canvasWidth,
+                     windowHeight * 100 / canvasHeight);
+
+         if(len > 100)
+            realMousePoint *= 100 / len;
+      }
+#endif
+      Point offsetMouse = mMousePoint + Point(canvasWidth / 2, canvasHeight / 2);
+
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glColor4f(0,1,0, 0.7);
+      glBegin(GL_LINES);
+
+      glVertex2f(offsetMouse.x - 15, offsetMouse.y);
+      glVertex2f(offsetMouse.x + 15, offsetMouse.y);
+      glVertex2f(offsetMouse.x, offsetMouse.y - 15);
+      glVertex2f(offsetMouse.x, offsetMouse.y + 15);
+
+      if(offsetMouse.x > 30)
+      {
+         glColor4f(0,1,0, 0);
+         glVertex2f(0, offsetMouse.y);
+         glColor4f(0,1,0, 0.7);
+         glVertex2f(offsetMouse.x - 30, offsetMouse.y);
+      }
+      if(offsetMouse.x < canvasWidth - 30)
+      {
+         glColor4f(0,1,0, 0.7);
+         glVertex2f(offsetMouse.x + 30, offsetMouse.y);
+         glColor4f(0,1,0, 0);
+         glVertex2f(canvasWidth, offsetMouse.y);
+      }
+      if(offsetMouse.y > 30)
+      {
+         glColor4f(0,1,0, 0);
+         glVertex2f(offsetMouse.x, 0);
+         glColor4f(0,1,0, 0.7);
+         glVertex2f(offsetMouse.x, offsetMouse.y - 30);
+      }
+      if(offsetMouse.y < canvasHeight - 30)
+      {
+         glColor4f(0,1,0, 0.7);
+         glVertex2f(offsetMouse.x, offsetMouse.y + 30);
+         glColor4f(0,1,0, 0);
+         glVertex2f(offsetMouse.x, canvasHeight);
+      }
+
+      glEnd();
+      glDisable(GL_BLEND);
+      glBlendFunc(GL_ONE, GL_ZERO);
+   }
+}
+
+void GameUserInterface::renderMessageDisplay()
+{
    glColor3f(1,1,1);
 
    U32 y = 5;
@@ -216,11 +306,10 @@ void GameUserInterface::render()
          y += 24;
       }
    }
-   GameType *theGameType = gClientGame->getGameType();
+}
 
-   if(theGameType)
-      theGameType->renderInterfaceOverlay(mInScoreboardMode);
-
+void GameUserInterface::renderCurrentChat()
+{   
    if(mCurrentMode == ChatMode)
    {
       const char *promptStr;
@@ -249,37 +338,6 @@ void GameUserInterface::render()
       if(mChatBlink)
          drawString(5 + width + getStringWidth(20, mChatBuffer, mChatCursorPos), 100, 20, "_");
    }
-
-   mVoiceRecorder.render();
-   if(mFPSVisible)
-   {
-      U32 sum = 0;
-      for(U32 i = 0; i < FPSAvgCount; i++)
-         sum += mIdleTimeDelta[i];
-      drawStringf(710, 10, 30, "%4.2f fps", (1000 * FPSAvgCount) / F32(sum));
-   }
-   if(mVChat->isActive())
-      mVChat->render();
-
-#if 0
-   // some code for outputting the position of the ship for finding good spawns
-   GameConnection *con = gClientGame->getConnectionToServer();
-
-   if(con)
-   {
-      GameObject *co = con->getControlObject();
-      if(co)
-      {
-         Point pos = co->getActualPos() * F32(1 / 300.0f);
-         drawStringf(10, 550, 30, "%0.2g, %0.2g", pos.x, pos.y);
-      }
-   }
-
-   if(mGotControlUpdate)
-   {
-      drawString(710, 10, 30, "CU");
-   }
-#endif
 }
 
 void GameUserInterface::onMouseDragged(S32 x, S32 y)
@@ -291,13 +349,10 @@ void GameUserInterface::onMouseMoved(S32 x, S32 y)
 {
    S32 xp = S32(x - windowWidth / 2);
    S32 yp = S32(y - windowHeight / 2);
-   S32 horzMax = S32(100 * windowWidth / canvasWidth);
-   S32 vertMax = S32(100 * windowHeight / canvasHeight);
-
    
    mMousePoint = Point(x - windowWidth / 2, y - windowHeight / 2);
-   mMousePoint.x *= canvasWidth / windowWidth;
-   mMousePoint.y *= canvasHeight / windowHeight;
+   mMousePoint.x = mMousePoint.x * canvasWidth / windowWidth;
+   mMousePoint.y = mMousePoint.y * canvasHeight / windowHeight;
    mCurrentMove.angle = atan2(mMousePoint.x, mMousePoint.y);
 }
 
