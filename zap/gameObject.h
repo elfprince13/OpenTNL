@@ -76,7 +76,7 @@ struct DamageInfo
    GameObject *damagingObject;   
 };
 
-class GameObject : public NetObject
+class GameObject : public TNL::NetObject
 {
    friend class GridDatabase;
 

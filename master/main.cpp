@@ -32,7 +32,7 @@
 using namespace TNL;
 
 NetInterface *gNetInterface = NULL;
-class MissionGameType : public Object
+class MissionGameType : public TNL::Object
 {
 public:
    MissionGameType(const StringTableEntry &name) { mName = name; }
@@ -598,7 +598,7 @@ MasterServerConnection MasterServerConnection::gServerList;
 
 #include <stdio.h>
 
-class StdoutLogConsumer : public LogConsumer
+class StdoutLogConsumer : public TNL::LogConsumer
 {
 public:
    void logString(const char *string)

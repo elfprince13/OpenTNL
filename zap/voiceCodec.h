@@ -42,7 +42,7 @@ namespace Zap
 /// of 16 bit samples at 8KHz and returns a compressed buffer.  The 
 /// original buffer is modified to contain any samples that were not used 
 /// due to unfilled frame sizing.
-class VoiceEncoder : public Object
+class VoiceEncoder : public TNL::Object
 {
    virtual U32 getSamplesPerFrame() = 0;
    virtual U32 getMaxCompressedFrameSize() = 0;
@@ -56,7 +56,7 @@ public:
 /// HawkVoice variable bitrate LPC10 codec.  It takes a buffer compressed
 /// with the appropriate VoiceEncoder analogue and returns the decompressed
 /// 16 bit sample buffer.
-class VoiceDecoder : public Object
+class VoiceDecoder : public TNL::Object
 {
    virtual U32 getSamplesPerFrame() = 0;
    virtual U32 getAvgCompressedFrameSize() = 0;

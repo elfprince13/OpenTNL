@@ -40,7 +40,7 @@ class GoalZone;
 struct MenuItem;
 class Item;
 
-class ClientRef : public Object
+class ClientRef : public TNL::Object
 {
 public:
    StringTableEntry name;  /// Name of client - guaranteed to be unique of current clients

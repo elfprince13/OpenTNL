@@ -106,7 +106,7 @@ struct SFXProfile
    F32         zeroGainDistance;
 };
 
-class SFXObject : public Object
+class SFXObject : public TNL::Object
 {
    static Point mListenerPosition;
    static Point mListenerVelocity;
