@@ -236,6 +236,16 @@ void EditorUserInterface::render()
       }
       glEnd();
    }
+   glColor3f(0.7, 0.7, 0.7);
+   glLineWidth(3);
+   Point origin = convertLevelToCanvasCoord(Point(0,0));
+   glBegin(GL_LINES );
+   glVertex2f(0, origin.y);
+   glVertex2f(canvasWidth, origin.y);
+   glVertex2f(origin.x, 0);
+   glVertex2f(origin.x, canvasHeight);
+   glEnd();
+   glLineWidth(1);
 
    for(S32 i = 0; i < mItems.size(); i++)
       renderItem(i);
@@ -469,7 +479,9 @@ void EditorUserInterface::rotateSelection(F32 angle)
    mOriginalItems = mItems;
    Point min, max;
    computeSelectionMinMax(min,max);
-   Point ctr = (min + max)*0.5;
+   //Point ctr = (min + max)*0.5;
+   //ctr.x = floor(ctr.x * 10) * 0.1f;
+   //ctr.y = floor(ctr.y * 10) * 0.1f;
    F32 sinTheta = sin(angle * Float2Pi / 360.0f);
    F32 cosTheta = cos(angle * Float2Pi / 360.0f);
    for(S32 i = 0; i < mItems.size(); i++)
@@ -479,9 +491,9 @@ void EditorUserInterface::rotateSelection(F32 angle)
       WorldItem &itm = mItems[i];
       for(S32 j = 0; j < itm.verts.size(); j++)
       {
-         Point v = itm.verts[j] - ctr;
+         Point v = itm.verts[j];// - ctr;
          Point n(v.x * cosTheta + v.y * sinTheta, v.y * cosTheta - v.x * sinTheta);
-         itm.verts[j] = n + ctr;
+         itm.verts[j] = n;// + ctr;
       }
    }
 }
