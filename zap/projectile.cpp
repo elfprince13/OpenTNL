@@ -36,7 +36,7 @@ namespace Zap
 
 TNL_IMPLEMENT_NETOBJECT(Projectile);
 
-Projectile::Projectile(Point p, Point v, U32 t, Ship *shooter)
+Projectile::Projectile(Point p, Point v, U32 t, Ship *shooter, bool bouncy)
 {
    mNetFlags.set(Ghostable);
    pos = p;
@@ -45,12 +45,15 @@ Projectile::Projectile(Point p, Point v, U32 t, Ship *shooter)
    collided = false;
    alive = true;
    mShooter = shooter;
+   isBouncy = bouncy;
 }
 
 U32 Projectile::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
    ((GameConnection *) connection)->writeCompressedPoint(pos, stream);
    writeCompressedVelocity(velocity, CompressedVelocityMax, stream);
+
+   stream->writeFlag(isBouncy);
 
    S32 index = -1;
    if(mShooter.isValid())
@@ -66,6 +69,8 @@ void Projectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
 {
    ((GameConnection *) connection)->readCompressedPoint(pos, stream);
    readCompressedVelocity(velocity, CompressedVelocityMax, stream);
+
+   isBouncy = stream->readFlag();
 
    if(stream->readFlag())
       mShooter = (Ship *) connection->resolveGhost(stream->readInt(GhostConnection::GhostIdBitSize));
@@ -165,16 +170,16 @@ void Projectile::idle(GameObject::IdleCallPath path)
 
       if(hitObject)
       {
-         //if(hitObject->getObjectTypeMask() & BarrierType)
-         //{
-         //   // test out reflection
-         //   velocity -= surfNormal * surfNormal.dot(velocity) * 2;
-        // }
-         //else
-         //{
+         if(isBouncy && hitObject->getObjectTypeMask() & BarrierType)
+         {
+            // test out reflection
+            velocity -= surfNormal * surfNormal.dot(velocity) * 2;
+         }
+         else
+         {
             Point collisionPoint = pos + (endPos - pos) * collisionTime;
             handleCollision(hitObject, collisionPoint);
-         //}
+         }
       }
       else
          pos = endPos;

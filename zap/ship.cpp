@@ -38,25 +38,11 @@
 #include "gameType.h"
 #include "gameConnection.h"
 #include "shipItems.h"
-
+#include "gameWeapons.h"
 #include <stdio.h>
 
 namespace Zap
 {
-
-// do not add a weapon with a fire delay > Ship::MaxFireDelay
-// or update the constant.
-
-ShipWeaponInfo gWeapons[] =
-{
-   {"Phaser",   100, 500, 500},
-   {"Bouncer",  1200, 5000, 5000},
-   {NULL, 0, 0, 0},
-   {NULL, 0, 0, 0},
-   {NULL, 0, 0, 0},
-   {NULL, 0, 0, 0}
-};
-
 
 //------------------------------------------------------------------------
 TNL_IMPLEMENT_NETOBJECT(Ship);
@@ -208,10 +194,16 @@ void Ship::processWeaponFire()
                      proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this);
                   }
                break;
-               case WeaponBounce:
+               case WeaponGrenade:
                   {
                      Point projVel = dir * 500 + dir * mMoveState[ActualState].vel.dot(dir);
                      proj = new GrenadeProjectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 1000, this);
+                  }
+               break;
+               case WeaponBounce:
+                  {
+                     Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir);
+                     proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this, true);
                   }
                break;
             }

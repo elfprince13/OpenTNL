@@ -255,6 +255,12 @@
 				RelativePath=".\gameObject.h">
 			</File>
 			<File
+				RelativePath=".\gameWeapons.cpp">
+			</File>
+			<File
+				RelativePath=".\gameWeapons.h">
+			</File>
+			<File
 				RelativePath=".\item.cpp">
 			</File>
 			<File

@@ -55,7 +55,6 @@ public:
       KillDeleteDelay = 1500,
       ExplosionFadeTime = 300,
       MaxControlObjectInterpDistance = 200,
-      MaxFireDelay = 2048, // About a second
       TrailCount = 2,
       EnergyMax = 100000,
       EnergyRechargeRate = 6000, // How many percent/second

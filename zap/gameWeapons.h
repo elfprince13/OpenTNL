@@ -24,30 +24,37 @@
 //
 //------------------------------------------------------------------------------------
 
-#ifndef _SHIPITEMS_H_
-#define _SHIPITEMS_H_
+#ifndef _GAMEWEAPONS_H_
+#define _GAMEWEAPONS_H_
 
-namespace Zap
-{
+#include "tnlPlatform.h"
 
-enum ShipModule
+using namespace TNL;
+
+enum WeaponTypes
 {
-   ModuleShield,
-   ModuleBoost,
-   ModuleSensor,
-   ModuleRepair,
-   ModuleEngineer,
-   ModuleCloak,
-   ModuleCount,
+   WeaponPhaser = 0,
+   WeaponGrenade,
+   WeaponBounce,
+   WeaponTriple,
+   WeaponBurst,
+   WeaponMineLayer,
+   WeaponCount,
 };
 
-
-enum EngineerBuildObjects
+enum WeaponConsts
 {
-   EngineeredTurret,
-   EngineeredForceField,
+   MaxFireDelay = 2048,
 };
 
+struct ShipWeaponInfo
+{
+   const char *name; // Display name of the weapon.
+   U32 fireDelay;    // Delay between shots.
+   U32 minEnergy;    // Minimum energy to fire.
+   U32 drainEnergy;  // Amount of energy to drain per shot.
 };
+
+extern ShipWeaponInfo gWeapons[WeaponCount];
+
 #endif
-

@@ -45,11 +45,12 @@ public:
    Point pos;
    Point velocity;
    U32 liveTime;
+   bool isBouncy;
    bool collided;
    bool alive;
    SafePtr<Ship> mShooter;
 
-   Projectile(Point pos = Point(), Point vel = Point(), U32 liveTime = 0, Ship *shooter = NULL);
+   Projectile(Point pos = Point(), Point vel = Point(), U32 liveTime = 0, Ship *shooter = NULL, bool bouncy=false);
 
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);

@@ -30,6 +30,7 @@
 #include "game.h"
 #include "glutInclude.h"
 #include "shipItems.h"
+#include "gameWeapons.h"
 #include <ctype.h>
 
 namespace Zap
@@ -55,10 +56,11 @@ LoadoutItem gLoadoutModules[] = {
 
 LoadoutItem gLoadoutWeapons[] = {
    { '1', 0, WeaponPhaser,    "Phaser" },
-   { '2', 1, WeaponBounce,    "Bouncer" },
-   { '3', 2, WeaponTriple,    "Three-Way" },
-   { '4', 3, WeaponBurst,     "Burster" },
-   { '5', 4, WeaponMineLayer, "Mine Dropper" },
+   { '2', 1, WeaponGrenade,   "Grenade" },
+   { '3', 2, WeaponBounce,    "Bouncer" },
+   { '4', 3, WeaponTriple,    "Three-Way" },
+   { '5', 4, WeaponBurst,     "Burster" },
+   { '6', 5, WeaponMineLayer, "Mine Dropper" },
    { 0, 0, 0, NULL },
 };
 
