@@ -225,6 +225,8 @@ void GameType::onAddedToGame(Game *theGame)
    theGame->setGameType(this);
 }
 
+extern void constructBarriers(Game *theGame, const Vector<F32> &barrier);
+
 bool GameType::processLevelItem(S32 argc, const char **argv)
 {
    if(!stricmp(argv[0], "Team"))
@@ -248,6 +250,17 @@ bool GameType::processLevelItem(S32 argc, const char **argv)
       p *= getGame()->getGridSize();
       if(teamIndex >= 0 && teamIndex < mTeams.size())
          mTeams[teamIndex].spawnPoints.push_back(p);
+   }
+   else if(!stricmp(argv[0], "BarrierMaker"))
+   {
+      Vector<F32> barrier;
+      for(S32 i = 1; i < argc; i++)
+         barrier.push_back(atof(argv[i]) * getGame()->getGridSize());
+      if(barrier.size() > 3)
+      {
+         mBarriers.push_back(barrier);
+         constructBarriers(getGame(), barrier);
+      }
    }
    else
       return false;
@@ -590,6 +603,15 @@ void GameType::onGhostAvailable(GhostConnection *theConnection)
       s2cAddClient(mClientList[i].name, mClientList[i].clientConnection == theConnection);
       s2cClientJoinedTeam(mClientList[i].name, mClientList[i].teamId);
    }
+
+   // an empty list clears the barriers
+   Vector<F32> v;
+   s2cAddBarriers(v);
+
+   for(S32 i = 0; i < mBarriers.size(); i++)
+   {
+      s2cAddBarriers(mBarriers[i]);
+   }
    s2cSetTimeRemaining(mGameTimer.getCurrent());
    s2cSetGameOver(mGameOver);
    s2cSyncMessagesComplete(theConnection->getGhostingSequence());
@@ -611,6 +633,15 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSyncMessagesComplete, (U32 sequence),
    if(sequence != source->getGhostingSequence())
       return;
    mClientList[clientIndex].readyForRegularGhosts = true;
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddBarriers, (const Vector<F32> &barrier),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+{
+   if(!barrier.size())
+      getGame()->deleteObjects(BarrierType);
+   else
+      constructBarriers(getGame(), barrier);
 }
 
 TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSendChat, (bool global, const char *message),

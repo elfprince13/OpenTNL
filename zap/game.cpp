@@ -153,6 +153,13 @@ void Game::removeFromGameObjectList(GameObject *theObject)
    TNLAssert(0, "Object not in game's list!");
 }
 
+void Game::deleteObjects(U32 typeMask)
+{
+   for(S32 i = 0; i < mGameObjects.size(); i++)
+      if(mGameObjects[i]->getObjectTypeMask() & typeMask)
+         mGameObjects[i]->deleteObject(0);
+}
+
 Rect Game::computeWorldObjectExtents()
 {
    if(!mGameObjects.size())

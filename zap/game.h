@@ -127,6 +127,7 @@ public:
 
    void addToGameObjectList(GameObject *theObject);
    void removeFromGameObjectList(GameObject *theObject);
+   void deleteObjects(U32 typeMask);
 
    void setGridSize(F32 gridSize) { mGridSize = gridSize; }
 

@@ -66,6 +66,7 @@ public:
       }
    };
 
+   Vector<Vector<F32> > mBarriers;
    Vector<ClientRef> mClientList;
 
    struct Team
@@ -145,6 +146,7 @@ public:
 
    TNL_DECLARE_RPC(s2cSyncMessagesComplete, (U32 sequence));
    TNL_DECLARE_RPC(c2sSyncMessagesComplete, (U32 sequence));
+   TNL_DECLARE_RPC(s2cAddBarriers, (const Vector<F32> &barrier));
 
    TNL_DECLARE_RPC(s2cAddTeam, (StringTableEntryRef teamName, F32 r, F32 g, F32 b));
    TNL_DECLARE_RPC(s2cSetTeamScore, (U32 teamIndex, U32 score));

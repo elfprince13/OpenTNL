@@ -39,26 +39,15 @@ TNL_IMPLEMENT_NETOBJECT(Barrier);
 
 U32 Barrier::mBarrierChangeIndex = 1;
 
-class BarrierMaker : public GameObject
+void constructBarriers(Game *theGame, const Vector<F32> &barrier)
 {
-public:
-   void processArguments(S32 argc, const char **argv);
-   TNL_DECLARE_CLASS(BarrierMaker);
-};
-
-TNL_IMPLEMENT_CLASS(BarrierMaker);
-
-void BarrierMaker::processArguments(S32 argc, const char **argv)
-{
-   Point lastPoint;
-
    Vector<Point> vec;
    bool loop;
 
-   for(S32 i = 1; i < argc; i += 2)
+   for(S32 i = 1; i < barrier.size(); i += 2)
    {
-      float x = (float) atof(argv[i-1]) * getGame()->getGridSize();
-      float y = (float) atof(argv[i]) * getGame()->getGridSize();
+      float x = barrier[i-1];
+      float y = barrier[i];
       vec.push_back(Point(x,y));
    }
    if(vec.size() <= 1)
@@ -107,14 +96,13 @@ void BarrierMaker::processArguments(S32 argc, const char **argv)
       Point start = vec[i] - edgeVector[i] * extendBack;
       Point end = vec[i+1] + edgeVector[i] * extendForward;
       Barrier *b = new Barrier(start, end);
-      b->addToGame(getGame());
+      b->addToGame(theGame);
    }
 }
 
 Barrier::Barrier(Point st, Point e)
 {
    mObjectTypeMask = BarrierType | CommandMapVisType;
-   mNetFlags.set(Ghostable);
    start = st;
    end = e;
    Rect r(start, end);
@@ -125,8 +113,6 @@ Barrier::Barrier(Point st, Point e)
 
 void Barrier::onAddedToGame(Game *theGame)
 {
-   if(!isGhost())
-      setScopeAlways();
 }
 
 U32 Barrier::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
