@@ -66,7 +66,7 @@ void GameType::processServer(U32 deltaT)
    {
       if(mClientList[i].respawnDelay)
       {
-         if(mClientList[i].respawnDelay < deltaT)
+         if(mClientList[i].respawnDelay <= deltaT)
             spawnShip(mClientList[i].clientConnection);
          else
             mClientList[i].respawnDelay -= deltaT;
