@@ -47,6 +47,7 @@ using namespace TNL;
 namespace Zap
 {
 
+bool gIsCrazyBot = false;
 bool gQuit = false;
 bool gIsServer = false;
 const char *gHostName = "ZAP Game";
@@ -99,6 +100,9 @@ void motion(int x, int y)
 
 TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, motion, (S32 x, S32 y))
 {
+   if(gIsCrazyBot)
+      return;
+
    if(UserInterface::current)
       UserInterface::current->onMouseDragged(x, y);
 }
@@ -110,6 +114,9 @@ void passivemotion(int x, int y)
 
 TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, passivemotion, (S32 x, S32 y))
 {
+   if(gIsCrazyBot)
+      return;
+
    if(UserInterface::current)
       UserInterface::current->onMouseMoved(x, y);
 }
@@ -145,6 +152,9 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, mouse, (S32 button, S32 state, S32 
 {
    static int mouseState[2] = { 0, };
    if(!UserInterface::current)
+      return;
+
+   if(gIsCrazyBot)
       return;
 
    if(button == GLUT_LEFT_BUTTON)
@@ -215,9 +225,73 @@ void idle()
       gZapJournal.idle(integerTime);
    }
 
+   // Make us move all crazy like...
+   if(gIsCrazyBot)
+   {
+      gIsCrazyBot = false; // Reenable input events
+      static S64 lastMove = Platform::getHighPrecisionTimerValue();
+
+      F64 delta = Platform::getHighPrecisionMilliseconds(currentTimer - lastMove);
+      if(delta > 200.0)
+      {
+            // Do movement craziness
+            if(Random::readB())
+               gZapJournal.key('w');
+            else
+               gZapJournal.keyup('w');
+
+            if(Random::readB())
+               gZapJournal.key('a');
+            else
+               gZapJournal.keyup('a');
+
+            if(Random::readB())
+               gZapJournal.key('s');
+            else
+               gZapJournal.keyup('s');
+
+            if(Random::readB())
+               gZapJournal.key('d');
+            else
+               gZapJournal.keyup('d');
+
+            if(Random::readB())
+               gZapJournal.key('r');
+            else
+               gZapJournal.keyup('r');
+
+            if(Random::readB())
+               gZapJournal.key('c');
+            else
+               gZapJournal.keyup('c');
+
+            if(Random::readF() > 0.8)
+               gZapJournal.key(' ');
+            else
+               gZapJournal.keyup(' ');
+
+            // Do mouse craziness
+            S32 x = Random::readI(0, 800);
+            S32 y = Random::readI(0, 600);
+            gZapJournal.passivemotion(x,y);
+            gZapJournal.mouse(0, Random::readF() > 0.2, x,y);
+            gZapJournal.mouse(1, Random::readF() > 0.2, x,y);
+            gZapJournal.mouse(2, Random::readF() > 0.8, x,y);
+            lastMove = currentTimer;
+      }
+      gIsCrazyBot = true; // Reenable input events
+   }
+
+
+
    // Sleep a bit so we don't saturate the system. For a non-dedicated server,
    // sleep(0) helps reduce the impact of OpenGL on windows.
-   Platform::sleep((gClientGame ? 0 : 1));
+   U32 sleepTime = 1;
+
+   if(gClientGame) sleepTime = 0;
+   if(gIsCrazyBot) sleepTime = 10;
+
+   Platform::sleep(sleepTime);
    gZapJournal.processNextJournalEntry();
 }
 
@@ -401,7 +475,23 @@ int main(int argc, char **argv)
    {
       bool hasAdditionalArg = (i != argc - 1);
 
-      if(!stricmp(argv[i], "-server"))
+      if(!stricmp(argv[i], "-crazybot"))
+      {
+         gIsCrazyBot = true;
+
+         // Connect to specified server
+         connectRemote = true;
+         if(hasAdditionalArg)
+            gConnectAddress.set(argv[i+1]);
+
+         // Generate a name...
+         char *name = tmpnam(NULL);
+
+         nameSet = true;
+         gNameEntryUserInterface.setText(name);
+         gZapJournal.record(name);
+      }
+      else if(!stricmp(argv[i], "-server"))
       {
          hasServer = true;
          connectLocal = true;

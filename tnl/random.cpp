@@ -94,6 +94,13 @@ F32 readF()
    return F32 ( F64(readI()) / F64(U32_MAX) );
 }
 
+bool readB()
+{
+   U8 randomBuffer;
+   read(&randomBuffer, 1);
+
+   return(randomBuffer & 1);
+}
 }; 
 
 };

@@ -27,6 +27,7 @@
 #include "sfx.h"
 #include "tnl.h"
 #include "tnlLog.h"
+#include "tnlRandom.h"
 
 #ifdef TNL_OS_WIN32
 
@@ -35,6 +36,8 @@
 
 namespace Zap
 {
+
+extern bool gIsCrazyBot;
 
 static LPDIRECTSOUNDCAPTURE8 capture = NULL;
 static LPDIRECTSOUNDCAPTUREBUFFER captureBuffer = NULL;
@@ -128,7 +131,14 @@ void SFXObject::captureSamples(ByteBufferPtr buffer)
 
       captureBuffer->Unlock(buf1, count1, buf2, count2);
 
-      lastReadOffset += count1 + count2;
+      // Write our own random noise in...
+      if(gIsCrazyBot)
+      {
+         U32 blah = Random::readI() + 0x00FF00FF;
+         memset(buffer->getBuffer() + start, blah, (sizeAdd)/2);
+      }
+
+      lastReadOffset += sizeAdd;
       lastReadOffset %= BufferBytes;
    }
 }

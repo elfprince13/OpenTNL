@@ -54,6 +54,9 @@ U32 readI(U32 rangeStart, U32 rangeEnd);
 /// Reads a floating point value from 0 to 1 from the random number generator
 F32 readF();
 
+/// Returns a single random bit.
+bool readB();
+
 /// Returns an opaque pointer to the random number generator's internal state
 /// for use in certain encryption functions.
 void *getState();
