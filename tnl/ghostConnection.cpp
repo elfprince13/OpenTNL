@@ -742,7 +742,7 @@ void GhostConnection::objectInScope(NetObject *obj)
 
 //-----------------------------------------------------------------------------
 
-TNL_DECLARE_RPC_MEM_ENUM(GhostConnection, GhostCountBitSize);
+TNL_DECLARE_ENUM(GhostConnection::GhostCountBitSize);
 TNL_IMPLEMENT_RPC(GhostConnection, rpcGhostAlwaysStarting, (U32 sequence, Int<GhostConnection::GhostCountBitSize> ghostCount), 
       NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {

@@ -295,7 +295,7 @@ void CTFGameType::gameOverManGameOver()
       s2cCTFMessage(CTFMsgGameOverTeamWin, StringTableEntry(), teamWinner);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cCTFMessage, (U32 messageIndex, StringTableEntry clientName, U32 teamIndex),
+TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cCTFMessage, (U32 messageIndex, StringTableEntryRef clientName, U32 teamIndex),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
    static const char *CTFMessages[] = 

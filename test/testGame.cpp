@@ -354,9 +354,9 @@ void Building::unpackUpdate(GhostConnection *connection, BitStream *stream)
 
 TNL_IMPLEMENT_NETCONNECTION(TestConnection, NetClassGroupGame, true);
 
-TNL_DECLARE_RPC_MEM_ENUM(TestConnection, PlayerPosReplyBitSize);
+TNL_DECLARE_ENUM(TestConnection::PlayerPosReplyBitSize);
 
-TNL_IMPLEMENT_RPC(TestConnection, rpcGotPlayerPos, (bool b1, bool b2, StringTableEntry string, Float<TestConnection::PlayerPosReplyBitSize> x, Float<TestConnection::PlayerPosReplyBitSize> y), 
+TNL_IMPLEMENT_RPC(TestConnection, rpcGotPlayerPos, (bool b1, bool b2, StringTableEntryRef string, Float<TestConnection::PlayerPosReplyBitSize> x, Float<TestConnection::PlayerPosReplyBitSize> y), 
       NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {
    F32 xv = x, yv = y;

@@ -37,7 +37,7 @@ TNL_IMPLEMENT_RPC(MasterServerInterface, m2cQueryGameTypesResponse, (U32 queryId
 
 TNL_IMPLEMENT_RPC(MasterServerInterface, c2mQueryServers, (U32 queryId, U32 regionMask,
    U32 minPlayers, U32 maxPlayers, U32 infoFlags,
-   U32 maxBots, U32 minCPUSpeed, StringTableEntry gameType, StringTableEntry missionType),
+   U32 maxBots, U32 minCPUSpeed, StringTableEntryRef gameType, StringTableEntryRef missionType),
    NetClassGroupMasterMask, RPCGuaranteedOrdered, RPCDirClientToServer, 0) {}
 
 TNL_IMPLEMENT_RPC(MasterServerInterface, m2cQueryServersResponse, (U32 queryId,
@@ -66,6 +66,6 @@ TNL_IMPLEMENT_RPC(MasterServerInterface, m2cArrangedConnectionRejected, (U32 req
    NetClassGroupMasterMask, RPCGuaranteedOrdered, RPCDirServerToClient, 0) {}
 
 TNL_IMPLEMENT_RPC(MasterServerInterface, c2mUpdateServerStatus, (
-   StringTableEntry gameType, StringTableEntry missionType,
+   StringTableEntryRef gameType, StringTableEntryRef missionType,
    U32 botCount, U32 playerCount, U32 maxPlayers, U32 infoFlags),
    NetClassGroupMasterMask, RPCGuaranteedOrdered, RPCDirClientToServer, 0) {}

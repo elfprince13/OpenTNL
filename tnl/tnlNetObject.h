@@ -419,7 +419,7 @@ public:
    NetObjectRPCDirection mRPCDirection;
 
    /// Constructor - initializes the base class's data
-   NetObjectRPCEvent(NetObject *destObject, RPCArgList *aMarshaller, RPCGuaranteeType type, NetObjectRPCDirection dir) :
+   NetObjectRPCEvent(NetObject *destObject, MethodArgList *aMarshaller, RPCGuaranteeType type, NetObjectRPCDirection dir) :
       RPCEvent(aMarshaller, type, RPCDirAny) { mDestObject = destObject; mRPCDirection = dir; }
    void pack(EventConnection *ps, BitStream *bstream);
    void unpack(EventConnection *ps, BitStream *bstream);
@@ -433,7 +433,7 @@ public:
 /// with the body code (to be executed on the remote side of the RPC) immediately
 /// following the TNL_IMPLEMENT_NETOBJECT_RPC macro call.
 #define TNL_IMPLEMENT_NETOBJECT_RPC(className, name, args, groupMask, guaranteeType, eventDirection, rpcVersion) \
-   extern TNL::RPCArgList RPC##className##name; \
+   extern TNL::MethodArgList RPC##className##name; \
    class RPCEV_##className##_##name : public TNL::NetObjectRPCEvent { \
       public: typedef void (FN_CDECL className::*RPCFuncPtr) args; \
       RPCFuncPtr mFuncPtr; \
@@ -441,9 +441,9 @@ public:
       RPCEV_##className##_##name(NetObject *theObject = NULL) : TNL::NetObjectRPCEvent(theObject, &RPC##className##name, guaranteeType, eventDirection) \
          { mFuncPtr = &className::name##_remote; } \
       TNL_DECLARE_CLASS( RPCEV_##className##_##name ); \
-      void getFuncPtr(U32 &v1, U32 &v2) { v1=*((U32 *) &mFuncPtr); v2 = *(((U32 *) &mFuncPtr) + 1); } }; \
+      void getFuncPtr(MethodPointer &p) { p.v1=*((U32 *) &mFuncPtr); p.v2 = *(((U32 *) &mFuncPtr) + 1); } }; \
       TNL_IMPLEMENT_NETEVENT( RPCEV_##className##_##name, groupMask, rpcVersion ); \
-      TNL::RPCArgList RPC##className##name (#className, #args); \
+      TNL::MethodArgList RPC##className##name (#className, #args); \
       void FN_CDECL className::name args { SAVE_PARAMS RPCEV_##className##_##name *theEvent = new RPCEV_##className##_##name(this); theEvent->marshallArguments(); postRPCEvent(theEvent); } \
       TNL::NetEvent * FN_CDECL className::name##_construct args { SAVE_PARAMS RPCEV_##className##_##name *theEvent = new RPCEV_##className##_##name(this); theEvent->marshallArguments(); return theEvent; } \
       void FN_CDECL className::name##_remote args

@@ -31,6 +31,10 @@
 #include "tnlNetEvent.h"
 #endif
 
+#ifndef _TNL_METHODDISPATCH_H_
+#include "tnlMethodDispatch.h"
+#endif
+
 namespace TNL {
 
 /*! @page rpcdesc RPC in the Torque Network Library
@@ -119,168 +123,6 @@ The preceding RPC method would use 4 + 7 + 7 = 18 bits to transmit the arguments
 to the function over the network, not including the RPC event overhead.
 */
 
-/// NetType serves as a base class for all bit-compressed versions of
-/// the base types that can be transmitted using TNL's RPC mechanism.
-/// In general, the type names are self-explanatory, providing simple
-/// wrappers on the original base types.  The template argument for bit
-/// counts or numeric ranges is necessary because TNL parses the actual
-/// function prototype as a string in order to determine how many bits
-/// to use for each RPC parameter.
-///
-/// Template parameters to the NetType templates can be either integer
-/// constants or enumeration values.  If enumeration values are used,
-/// the TNL_DECLARE_RPC_ENUM or TNL_DECLARE_RPC_MEM enum macros must
-/// be used to register the enumerations with the RPC system.
-struct NetType {
-
-};
-
-/// Unsigned integer bit-level RPC template wrapper.
-///
-/// When an Int<X> is in the parameter list for an RPC method, that parameter will
-/// be transmitted using X bits.
-template<U32 bitCount> struct Int : NetType
-{
-   U32 value;
-   Int(U32 val=0) { value = val; }
-   operator U32() const { return value; }
-   U32 getPrecisionBits() { return bitCount; }
-};
-
-/// Signed integer bit-level RPC template wrapper.
-///
-/// When a SignedInt<X> is in the parameter list for an RPC method, that parameter will
-/// be transmitted using X bits.
-template<U32 bitCount> struct SignedInt : NetType
-{
-   S32 value;
-   SignedInt(S32 val=0) { value = val; }
-   operator S32() const { return value; }
-   U32 getPrecisionBits() { return bitCount; }
-};
-
-/// Floating point 0...1 value bit-level RPC template wrapper.
-///
-/// When a Float<X> is in the parameter list for an RPC method, that parameter will
-/// be transmitted using X bits.
-template<U32 bitCount> struct Float : NetType
-{
-   F32 value;
-   Float(F32 val=0) { value = val; }
-   operator F32() const { return value; }
-   U32 getPrecisionBits() { return bitCount; }
-};
-
-/// Floating point -1...1 value bit-level RPC template wrapper.
-///
-/// When a SignedFloat<X> is in the parameter list for an RPC method, that parameter will
-/// be transmitted using X bits.
-template<U32 bitCount> struct SignedFloat : NetType
-{
-   F32 value;
-   SignedFloat(F32 val=0) { value = val; }
-   operator F32() const { return value; }
-   U32 getPrecisionBits() { return bitCount; }
-};
-
-/// Unsigned ranged integer bit-level RPC template wrapper.
-///
-/// The RangedU32 is used to specify a range of valid values for the parameter
-/// in the parameter list for an RPC method.
-template<U32 rangeStart, U32 rangeEnd> struct RangedU32 : NetType
-{
-   U32 value;
-   RangedU32(U32 val=rangeStart) { TNLAssert(val >= rangeStart && val <= rangeEnd, "Out of range value!"); value = val; }
-   operator U32() const { return value; }
-};
-
-/// RPCArgInfo tracks an individual parameter in an RPC method parameter list
-struct RPCArgInfo {
-   enum Type {
-      TypeS8,
-      TypeU8,
-      TypeS16,
-      TypeU16,
-      TypeS32,
-      TypeU32,
-      TypeF32,
-      TypeSignedInt,
-      TypeInt,
-      TypeSignedFloat,
-      TypeFloat,
-      TypeString,
-      TypeRangedU32,
-      TypeBool,
-      TypeStringTableEntryRef,
-      TypeByteBufferPtr,
-      TypeIPAddressRef,
-      TypeIPAddress,
-      NumTypes,
-   };
-   bool isVector;  ///< True if this is a vector of the specified type argument
-   U32 argType;    ///< The type of this argument.
-   U32 rangeStart; ///< Start of the U32 range, for TypeRangedU32s.
-   U32 rangeEnd;   ///< End of the U32 range, for TypeRangedU32s.
-   U32 bitCount;   ///< Bit size of this argument.
-};
-
-/// Manages an enumeration declared with TNL_DECLARE_RPC_ENUM or TNL_DECLARE_RPC_MEM_ENUM
-struct RPCEnum
-{
-   const char *mSymbol; ///< The name of the enumeration value
-
-   U32 mValue;     ///< The value of the enumeration constant
-   RPCEnum *mNext; ///< The next in global linked list of enums
-
-   static RPCEnum *mLinkedList; ///< The head of the linked list of enums
-
-   /// Constructor - called from statically allocated RPCEnums, using the declare macros
-   RPCEnum(const char *symbol, U32 value)
-   {
-      mNext = mLinkedList;
-      mLinkedList = this;
-      mSymbol = symbol;
-      mValue = value;
-   }
-};
-
-/// Declares a global enumeration as usable as a template argument in an RPC declaration
-#define TNL_DECLARE_RPC_ENUM(enumSymbol) namespace { TNL::RPCEnum enm##enumSymbol(#enumSymbol, enumSymbol); };
-
-/// Declares a class member enumeration as usable as a template argument in an RPC declaration
-#define TNL_DECLARE_RPC_MEM_ENUM(enumClass, enumSymbol) namespace  { TNL::RPCEnum enm##enumClass##enumSymbol(#enumClass "::" #enumSymbol, enumClass::enumSymbol); };
-
-class RPCEvent;
-
-/// RPCArgList instances parse and evaluate the argument lists of declared RPC methods
-struct RPCArgList
-{
-   RPCArgList(const char *className, const char *argList);
-   enum {
-      MaxRPCDataSize = 4096,
-      MaxOffsets = 1024,
-      VectorSizeBitSize = 9,
-      ByteBufferSizeBitSize = 10,
-   };
-   U32 getValue(const char *buffer); ///< Converts a text string into an enumerated value using the RPCEnum global linked list
-
-   const char *argListString; ///< The original argument list for the RPC method, converted into a string in the macro
-   const char *mClassName;    ///< Class name this RPC is a member of.
-                              ///
-                              ///  Used for resolving enums declared in this class
-
-   Vector<RPCArgInfo> argList; ///< Vector of structures representing each argument in the RPC call
-
-   U32 mNumStringTableEntries; ///< The number of arguments that are string table entries
-
-   S32 floatRegOffsets[13];    ///< offsets for reading the floating point values into registers
-   void marshall(BitStream *stream, RPCEvent *theEvent); ///< Copies the arguments to the RPC method invocation into a BitStream buffer
-
-   void *unmarshall(BitStream *stream, EventConnection *ps, RPCEvent *theEvent); ///< Reads the arguments from a BitStream buffer (packet) into an allocated buffer
-                                        ///<
-                                        ///<  Later we do some chicanery to stuff this back onto the sack for the method call.
-};
-
 /// Enumeration for valid directions that RPC messages can travel
 enum RPCDirection {
    RPCDirAny            = NetEvent::DirAny,           ///< This RPC can be sent from the server or the client
@@ -295,28 +137,22 @@ enum RPCGuaranteeType {
    RPCUnguaranteed      = NetEvent::Unguaranteed       ///< Event delivery is not guaranteed - however, the event will remain ordered relative to other unguaranteed events
 };
 
-class StringTableEntry;
-
 /// Base class for RPC events.
 ///
 /// All declared RPC methods create subclasses of RPCEvent to send data across the wire
 class RPCEvent : public NetEvent
 {
 public:
-   void *mData;             ///< Argument data copied from the stack on the initiator, and copied to the stack on the receiver.
-   U32 mBitCount;           ///< Total number of bits to be written into the BitStream on pack()
-   RPCArgList *mMarshaller; ///< Object describing the argument list to call
-   Vector<StringTableEntry> mSTEs; ///< Index list of StringTableEntry ids that are a part of this RPC
+   MarshalledCall mCall;    ///< Call arguments marshalled into a buffer on the sender and represented for the stack on the receiver
 
    /// Constructor call from within the rpc<i>Something</i> method generated by the TNL_IMPLEMENT_RPC macro.
-   RPCEvent(RPCArgList *aMarshaller, RPCGuaranteeType gType, RPCDirection dir);
-   ~RPCEvent();
+   RPCEvent(MethodArgList *aMarshaller, RPCGuaranteeType gType, RPCDirection dir);
 
    /// Copies the argument list into the event data.
-   void /*RPCEvent:: */marshallArguments();
+   void marshallArguments();
 
    /// Returns the base address of the class member function pointer for the _remote version of the RPC function
-   virtual void getFuncPtr(U32 &v1, U32 &v2) = 0;
+   virtual void getFuncPtr(MethodPointer &m) = 0;
 
    /// Writes the marshalled data into the BitStream.
    void pack(EventConnection *ps, BitStream *bstream);
@@ -346,55 +182,13 @@ public:
 /// connections, instead of allocating an RPCEvent for each connection.
 #define TNL_RPC_CONSTRUCT_NETEVENT(object, rpcMethod, args) (object)->rpcMethod##_construct args
 
-#if defined(TNL_SUPPORTS_VC_INLINE_X86_ASM)
-
-extern void *gBasePtr;
-#define SAVE_PARAMS __asm { lea eax, this }; __asm { mov gBasePtr, eax };
-
-#elif defined(TNL_SUPPORTS_GCC_INLINE_X86_ASM )
-
-extern void *gBasePtr;
-#define SAVE_PARAMS gBasePtr = (void *) ((U8 *) __builtin_frame_address(0) + 8);
-
-#elif defined(TNL_SUPPORTS_GCC_INLINE_PPC_ASM )
-extern U32 gRegisterSaves[8 + 13 + 1];
-#define SAVE_PARAMS __asm__ volatile ( \
-  "mr r2, %0\n" \
-  "stw r3, 0(r2) \n" \
-  "stw r4, 4(r2) \n" \
-  "stw r5, 8(r2) \n" \
-  "stw r6, 12(r2) \n" \
-  "stw r7, 16(r2) \n" \
-  "stw r8, 20(r2) \n" \
-  "stw r9, 24(r2) \n" \
-  "stw r10, 28(r2) \n" \
-  "stfs f1, 32(r2) \n" \
-  "stfs f2, 36(r2) \n" \
-  "stfs f3, 40(r2) \n" \
-  "stfs f4, 44(r2) \n" \
-  "stfs f5, 48(r2) \n" \
-  "stfs f6, 52(r2) \n" \
-  "stfs f7, 56(r2) \n" \
-  "stfs f8, 60(r2) \n" \
-  "stfs f9, 64(r2) \n" \
-  "stfs f10, 68(r2) \n" \
-  "stfs f11, 72(r2) \n" \
-  "stfs f12, 76(r2) \n" \
-  "stfs f13, 80(r2) \n" \
-  "stw r1, 84(r2) \n" \
-  : : "r" (gRegisterSaves) : "r2" );
-
-#else
-#error "Compiling RPC code without inline assembler support! You will need to implement RPCEvent::process() and co for your platform."
-#endif
-
 /// Macro used to declare the implementation of an RPC method on an EventConnection subclass.
 ///
 /// The macro should be used in place of a member function parameter declaration,
 /// with the body code (to be executed on the remote side of the RPC) immediately
 /// following the TNL_IMPLEMENT_RPC macro call.
 #define TNL_IMPLEMENT_RPC(className, name, args, groupMask, guaranteeType, eventDirection, rpcVersion) \
-   extern TNL::RPCArgList RPC##className##name; \
+   extern TNL::MethodArgList RPC##className##name; \
    class RPC_##className##_##name : public RPCEvent { \
       public: \
       void (FN_CDECL className::*mFuncPtr) args; \
@@ -402,9 +196,9 @@ extern U32 gRegisterSaves[8 + 13 + 1];
       RPC_##className##_##name() : RPCEvent(&RPC##className##name, guaranteeType, eventDirection) \
          { mFuncPtr = &className::name##_remote; } \
       TNL_DECLARE_CLASS( RPC_##className##_##name ); \
-      void getFuncPtr(U32 &v1, U32 &v2) { v1=*((U32 *) &mFuncPtr); v2 = *(((U32 *) &mFuncPtr) + 1); } }; \
+      void getFuncPtr(MethodPointer &m) { m.v1=*((U32 *) &mFuncPtr); m.v2 = *(((U32 *) &mFuncPtr) + 1); } }; \
       TNL_IMPLEMENT_NETEVENT( RPC_##className##_##name, groupMask, rpcVersion ); \
-      TNL::RPCArgList RPC##className##name (#className, #args); \
+      TNL::MethodArgList RPC##className##name (#className, #args); \
       void FN_CDECL className::name args { SAVE_PARAMS RPC_##className##_##name *theEvent = new RPC_##className##_##name; theEvent->marshallArguments(); postNetEvent(theEvent); } \
       TNL::NetEvent * FN_CDECL className::name##_construct args { SAVE_PARAMS RPC_##className##_##name *theEvent = new RPC_##className##_##name; theEvent->marshallArguments(); return theEvent; } \
       void FN_CDECL className::name##_test args { SAVE_PARAMS RPC_##className##_##name *ev = new RPC_##className##_##name; PacketStream ps; ev->marshallArguments(); ev->pack(this, &ps); ps.setBytePosition(0); ev->unpack(this, &ps); ev->process(this); } \

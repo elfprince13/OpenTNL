@@ -123,18 +123,18 @@ public:
 
    virtual void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);
 
-   TNL_DECLARE_RPC(s2cAddTeam, (StringTableEntry teamName, F32 r, F32 g, F32 b));
+   TNL_DECLARE_RPC(s2cAddTeam, (StringTableEntryRef teamName, F32 r, F32 g, F32 b));
    TNL_DECLARE_RPC(s2cSetTeamScore, (U32 teamIndex, U32 score));
-   TNL_DECLARE_RPC(s2cAddClient, (StringTableEntry clientName, bool isMyClient));
-   TNL_DECLARE_RPC(s2cRemoveClient, (StringTableEntry clientName));
+   TNL_DECLARE_RPC(s2cAddClient, (StringTableEntryRef clientName, bool isMyClient));
+   TNL_DECLARE_RPC(s2cRemoveClient, (StringTableEntryRef clientName));
 
    TNL_DECLARE_RPC(c2sChangeTeams, ());
-   TNL_DECLARE_RPC(s2cClientJoinedTeam, (StringTableEntry clientName, U32 teamIndex));
+   TNL_DECLARE_RPC(s2cClientJoinedTeam, (StringTableEntryRef clientName, U32 teamIndex));
 
    TNL_DECLARE_RPC(c2sSendChat, (bool global, const char *message));
-   TNL_DECLARE_RPC(s2cDisplayChatMessage, (bool global, StringTableEntry clientName, const char *message));
+   TNL_DECLARE_RPC(s2cDisplayChatMessage, (bool global, StringTableEntryRef clientName, const char *message));
 
-   TNL_DECLARE_RPC(s2cKillMessage, (StringTableEntry victim, StringTableEntry killer));
+   TNL_DECLARE_RPC(s2cKillMessage, (StringTableEntryRef victim, StringTableEntryRef killer));
    TNL_DECLARE_RPC(s2cScoreboardUpdate, (const Vector<RangedU32<0, MaxPing> > &pingTimes, const Vector<Int<24> > &scores));
 
    TNL_DECLARE_RPC(s2cSetGameOver, (bool gameOver));

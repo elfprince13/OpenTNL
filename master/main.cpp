@@ -255,7 +255,7 @@ public:
    TNL_DECLARE_RPC_OVERRIDE(c2mQueryServers,
                 (U32 queryId, U32 regionMask, U32 minPlayers, U32 maxPlayers,
                  U32 infoFlags, U32 maxBots, U32 minCPUSpeed,
-                 StringTableEntry gameType, StringTableEntry missionType)
+                 StringTableEntryRef gameType, StringTableEntryRef missionType)
    )
    {
       Vector<IPAddress> theVector(IPMessageAddressCount);
@@ -473,7 +473,7 @@ public:
 
    // Called to update the status of a game server.
    TNL_DECLARE_RPC_OVERRIDE(c2mUpdateServerStatus, (
-      StringTableEntry gameType, StringTableEntry missionType,
+      StringTableEntryRef gameType, StringTableEntryRef missionType,
       U32 botCount, U32 playerCount, U32 maxPlayers, U32 infoFlags))
    {
       // If we didn't know we were a game server, don't accept updates.

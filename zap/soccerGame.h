@@ -58,7 +58,7 @@ public:
       SoccerMsgGameOverTie,
    };
 
-   TNL_DECLARE_RPC(s2cSoccerScoreMessage, (U32 msgIndex, StringTableEntry clientName, U32 teamIndex));
+   TNL_DECLARE_RPC(s2cSoccerScoreMessage, (U32 msgIndex, StringTableEntryRef clientName, U32 teamIndex));
    TNL_DECLARE_CLASS(SoccerGameType);
 };
 

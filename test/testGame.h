@@ -264,7 +264,7 @@ public:
    /// We only use 6 bits of precision on each float to illustrate the float compression
    /// that's possible using TNL's RPC.  This RPC also sends bool and StringTableEntry data,
    /// as well as showing the use of the TNL_DECLARE_RPC_ENUM macro.
-   TNL_DECLARE_RPC(rpcGotPlayerPos, (bool b1, bool b2, StringTableEntry string, Float<PlayerPosReplyBitSize> x, Float<PlayerPosReplyBitSize> y));
+   TNL_DECLARE_RPC(rpcGotPlayerPos, (bool b1, bool b2, StringTableEntryRef string, Float<PlayerPosReplyBitSize> x, Float<PlayerPosReplyBitSize> y));
 
    /// TNL_DECLARE_NETCONNECTION is used to declare that TestConnection is a valid connection class to the
    /// TNL network system.

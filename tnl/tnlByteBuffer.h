@@ -39,7 +39,7 @@ namespace TNL {
 
 class ByteBuffer : public Object
 {
-   friend struct RPCArgList;
+   friend struct MethodArgList;
 protected:
    /// Pointer to our data buffer.
    U8 *mDataPtr;

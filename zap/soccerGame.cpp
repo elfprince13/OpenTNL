@@ -163,7 +163,7 @@ bool SoccerGameType::objectCanDamageObject(GameObject *damager, GameObject *vict
           mClientList[findClientIndexByConnection(c2)].teamId;
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(SoccerGameType, s2cSoccerScoreMessage, (U32 msgIndex, StringTableEntry clientName, U32 teamIndex),
+TNL_IMPLEMENT_NETOBJECT_RPC(SoccerGameType, s2cSoccerScoreMessage, (U32 msgIndex, StringTableEntryRef clientName, U32 teamIndex),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
    if(msgIndex == SoccerMsgScoreGoal)

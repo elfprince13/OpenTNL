@@ -69,6 +69,81 @@ typedef double              F64;     ///< Compiler independent 64-bit float.
 
 /// @}
 
+/// NetType serves as a base class for all bit-compressed versions of
+/// the base types that can be transmitted using TNL's RPC mechanism.
+/// In general, the type names are self-explanatory, providing simple
+/// wrappers on the original base types.  The template argument for bit
+/// counts or numeric ranges is necessary because TNL parses the actual
+/// function prototype as a string in order to determine how many bits
+/// to use for each RPC parameter.
+///
+/// Template parameters to the NetType templates can be either integer
+/// constants or enumeration values.  If enumeration values are used,
+/// the TNL_DECLARE_RPC_ENUM or TNL_DECLARE_RPC_MEM enum macros must
+/// be used to register the enumerations with the RPC system.
+struct NetType {
+
+};
+
+/// Unsigned integer bit-level RPC template wrapper.
+///
+/// When an Int<X> is in the parameter list for an RPC method, that parameter will
+/// be transmitted using X bits.
+template<U32 bitCount> struct Int : NetType
+{
+   U32 value;
+   Int(U32 val=0) { value = val; }
+   operator U32() const { return value; }
+   U32 getPrecisionBits() { return bitCount; }
+};
+
+/// Signed integer bit-level RPC template wrapper.
+///
+/// When a SignedInt<X> is in the parameter list for an RPC method, that parameter will
+/// be transmitted using X bits.
+template<U32 bitCount> struct SignedInt : NetType
+{
+   S32 value;
+   SignedInt(S32 val=0) { value = val; }
+   operator S32() const { return value; }
+   U32 getPrecisionBits() { return bitCount; }
+};
+
+/// Floating point 0...1 value bit-level RPC template wrapper.
+///
+/// When a Float<X> is in the parameter list for an RPC method, that parameter will
+/// be transmitted using X bits.
+template<U32 bitCount> struct Float : NetType
+{
+   F32 value;
+   Float(F32 val=0) { value = val; }
+   operator F32() const { return value; }
+   U32 getPrecisionBits() { return bitCount; }
+};
+
+/// Floating point -1...1 value bit-level RPC template wrapper.
+///
+/// When a SignedFloat<X> is in the parameter list for an RPC method, that parameter will
+/// be transmitted using X bits.
+template<U32 bitCount> struct SignedFloat : NetType
+{
+   F32 value;
+   SignedFloat(F32 val=0) { value = val; }
+   operator F32() const { return value; }
+   U32 getPrecisionBits() { return bitCount; }
+};
+
+/// Unsigned ranged integer bit-level RPC template wrapper.
+///
+/// The RangedU32 is used to specify a range of valid values for the parameter
+/// in the parameter list for an RPC method.
+template<U32 rangeStart, U32 rangeEnd> struct RangedU32 : NetType
+{
+   U32 value;
+   RangedU32(U32 val=rangeStart) { value = val; }
+   operator U32() const { return value; }
+};
+
 //------------------------------------------------------------------------------
 //-------------------------------------- Type constants...
 

@@ -321,6 +321,12 @@
 			RelativePath=".\tnlLog.h">
 		</File>
 		<File
+			RelativePath=".\tnlMethodDispatch.cpp">
+		</File>
+		<File
+			RelativePath=".\tnlMethodDispatch.h">
+		</File>
+		<File
 			RelativePath=".\tnlNetBase.h">
 		</File>
 		<File

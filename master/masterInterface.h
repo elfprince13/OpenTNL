@@ -84,7 +84,7 @@ public:
    /// Vector of servers.
    TNL_DECLARE_RPC(c2mQueryServers, (U32 queryId, U32 regionMask,
       U32 minPlayers, U32 maxPlayers, U32 infoFlags,
-      U32 maxBots, U32 minCPUSpeed, StringTableEntry gameType, StringTableEntry missionType));
+      U32 maxBots, U32 minCPUSpeed, StringTableEntryRef gameType, StringTableEntryRef missionType));
 
    /// m2cQueryServersResponse is sent by the master server in response to a c2mQueryServers RPC, to
    /// return a partial list of the servers that matched the specified filter criteria.  Because packets
@@ -129,7 +129,7 @@ public:
    /// c2mUpdateServerStatus updates the status of a server to the Master Server, specifying the current game
    /// and mission types, any player counts and the current info flags.
    TNL_DECLARE_RPC(c2mUpdateServerStatus, (
-      StringTableEntry gameType, StringTableEntry missionType,
+      StringTableEntryRef gameType, StringTableEntryRef missionType,
       U32 botCount, U32 playerCount, U32 maxPlayers, U32 infoFlags));
 };
 

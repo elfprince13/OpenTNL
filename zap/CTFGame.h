@@ -66,7 +66,7 @@ public:
       CTFMsgGameOverTie,
    };
 
-   TNL_DECLARE_RPC(s2cCTFMessage, (U32 messageIndex, StringTableEntry clientName, U32 teamIndex));
+   TNL_DECLARE_RPC(s2cCTFMessage, (U32 messageIndex, StringTableEntryRef clientName, U32 teamIndex));
    TNL_DECLARE_CLASS(CTFGameType);
 };
 
