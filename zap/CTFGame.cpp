@@ -30,6 +30,7 @@
 #include "sfx.h"
 
 #include "glutInclude.h"
+#include <stdio.h>
 
 namespace Zap
 {
@@ -114,6 +115,7 @@ void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
          glEnd();
 
          UserInterface::drawString(xl + 40, yt + 2, 30, mTeams[i].name.getString());
+
          UserInterface::drawStringf(xr - 140, yt + 2, 30, "%d", mTeams[i].score);
 
          U32 curRowY = yt + 41;
@@ -123,7 +125,11 @@ void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
             if(mClientList[j].teamId == i)
             {
                UserInterface::drawString(xl + 40, curRowY, fontSize, mClientList[j].name.getString());
-               UserInterface::drawStringf(xr - 140, curRowY, fontSize, "%d", mClientList[j].score);
+
+               static char buff[255] = "";
+               sprintf(buff, "%d", mClientList[j].score);
+
+               UserInterface::drawString(xr - (120 + UserInterface::getStringWidth(fontSize, buff)), curRowY, fontSize, buff);
                UserInterface::drawStringf(xr - 70, curRowY, fontSize, "%d", mClientList[j].ping);
                curRowY += maxHeight;
             }           
@@ -143,7 +149,7 @@ void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
 }
 
 Vector<RangedU32<0, CTFGameType::MaxPing> > CTFGameType::mPingTimes; ///< Static vector used for constructing update RPCs
-Vector<Int<9> > CTFGameType::mScores;
+Vector<Int<24> > CTFGameType::mScores;
 
 void CTFGameType::updateClientScoreboard(S32 clientIndex)
 {
@@ -166,7 +172,7 @@ void CTFGameType::updateClientScoreboard(S32 clientIndex)
 
 TNL_DECLARE_RPC_MEM_ENUM(CTFGameType, MaxPing);
 
-TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cScoreboardUpdate, (const Vector<RangedU32<0, CTFGameType::MaxPing> > &pingTimes, const Vector<Int<9> > &scores),
+TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cScoreboardUpdate, (const Vector<RangedU32<0, CTFGameType::MaxPing> > &pingTimes, const Vector<Int<24> > &scores),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
    for(S32 i = 0; i < mClientList.size(); i++)
@@ -195,7 +201,7 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
       {
          s2cCTFMessage(CTFMsgReturnFlag, cl.clientId, theFlag->getTeamIndex());
          theFlag->sendHome();
-         cl.score += 2;
+         cl.score += Scores::ReturnScore;
       }
       else
       {
@@ -212,7 +218,7 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
                // score the flag for the client's team...
                mountedFlag->dismount();
                mountedFlag->sendHome();
-               cl.score += 5;
+               cl.score += Scores::CapScore;
             }
          }
       }
@@ -264,7 +270,12 @@ void CTFGameType::controlObjectForClientKilled(GameConnection *theClient, GameOb
 
    if(killerIndex != -1)
    {
-      mClientList[killerIndex].score++;
+      // Punish team killers slightly
+      if(mClientList[killerIndex].teamId == mClientList[clientIndex].teamId)
+         mClientList[killerIndex].score -= Scores::KillScore/4;
+      else
+         mClientList[killerIndex].score += Scores::KillScore;
+
       s2cKillMessage(mClientList[clientIndex].name, mClientList[killerIndex].name);
    }
    checkFlagDrop(clientObject);
