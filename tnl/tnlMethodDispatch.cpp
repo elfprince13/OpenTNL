@@ -80,10 +80,10 @@ TypeInfo gTypes[] = {
 { "const char *", sizeof(const char *), true, true },
 { "RangedU32<", sizeof(RangedU32<0, U32_MAX>), true, true },
 { "bool", sizeof(bool), true, true },
-{ "StringTableEntryRef", sizeof(StringTableEntryRef), true, false },
+{ "StringTableEntryRef", sizeof(StringTableEntry *), true, false },
 { "StringTableEntry", sizeof(StringTableEntry), false, true },
-{ "ByteBufferRef", sizeof(ByteBufferRef), true, false },
-{ "IPAddressRef", sizeof(IPAddressRef), true, false },
+{ "ByteBufferRef", sizeof(ByteBuffer *), true, false },
+{ "IPAddressRef", sizeof(IPAddress *), true, false },
 { "IPAddress", sizeof(IPAddress), false, true },
 { 0, 0, 0, 0 },
 };
@@ -226,10 +226,11 @@ void MethodArgList::marshall(MarshalledCall *theEvent)
    ptr += 4; // get rid of the return address and saved base ptr.
 #endif
    U32 whichSTE = 0;
+   
    for(S32 i = 0; i < argList.size(); i++)
    {
 #if !defined (TNL_CPU_PPC)
-      void *arg = ptr + sizeof(U32) * i;
+      void *arg = ptr;
       U32 *intArg = (U32 *) arg;
       F32 *floatArg = (F32 *) arg;
 #else
@@ -303,17 +304,17 @@ void MethodArgList::marshall(MarshalledCall *theEvent)
                floatArg++;
                break;
             case TypeSignedInt:
-               bstream.writeSignedInt(*((S32 *) intArg), argList[i].bitCount);
+               bstream.writeSignedInt(((SignedInt<32> *) intArg)->value, argList[i].bitCount);
                break;
             case TypeInt:
-               bstream.writeInt(*((U32 *) intArg), argList[i].bitCount);
+               bstream.writeInt(((Int<32> *) intArg)->value, argList[i].bitCount);
                break;
             case TypeSignedFloat:
-               bstream.writeSignedFloat(*((F32 *) floatArg), argList[i].bitCount);
+               bstream.writeSignedFloat(((SignedFloat<32> *) floatArg)->value, argList[i].bitCount);
                floatArg++;
                break;
             case TypeFloat:
-               bstream.writeFloat(*((F32 *) floatArg), argList[i].bitCount);
+               bstream.writeFloat(((Float<32> *) floatArg)->value, argList[i].bitCount);
                floatArg++;
                break;
             case TypeString:
@@ -326,7 +327,7 @@ void MethodArgList::marshall(MarshalledCall *theEvent)
                theEvent->mSTEs.push_back(*((StringTableEntry *) intArg));
                break;
             case TypeRangedU32:
-               bstream.writeRangedU32(*((U32 *) intArg), argList[i].rangeStart, argList[i].rangeEnd);
+               bstream.writeRangedU32(((RangedU32<0,U32_MAX> *) intArg)->value, argList[i].rangeStart, argList[i].rangeEnd);
                break;
             case TypeBool:
                bstream.writeFlag(*((bool *) intArg));
@@ -367,7 +368,12 @@ void MethodArgList::marshall(MarshalledCall *theEvent)
       }
       if(floatArg == (F32 *) &gRegisterSaves[8+13]) // we're on our 13th register... start reading floats from the stack:
          floatInRegs = false;
-#endif
+#else
+      if(argList[i].isVector || gTypes[argList[i].argType].size <= sizeof(U32))
+         ptr += sizeof(U32);
+      else
+         ptr += gTypes[argList[i].argType].size;
+#endif   
    }
    theEvent->marshalledData.setBuffer(bstream.getBuffer(), bstream.getBytePosition());
    theEvent->marshalledData.takeOwnership();
