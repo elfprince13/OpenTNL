@@ -11,6 +11,8 @@ Changes since version 1.2.1:
 - Many cosmetic game screen fixes
 - Removed some items from V-chat menu
 - Added controller support for V-chats
+- Fixed a nasty string compression bug in BitStream/RPC
+- Added command line arguments to the journal
 
 Controls:
 

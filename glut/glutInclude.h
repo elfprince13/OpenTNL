@@ -24,6 +24,11 @@
 //
 //------------------------------------------------------------------------------------
 
+#ifdef ZAP_DEDICATED
+
+#include "glDedicated.h"
+
+#else
 
 #ifdef TNL_OS_MAC_OSX
 
@@ -35,3 +40,4 @@
 
 #endif
 
+#endif

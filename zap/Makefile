@@ -52,8 +52,17 @@ CFLAGS=
 .cpp.o : 
 	$(CC) -c $(CFLAGS) $<
 
-default: $(OBJECTS_ZAP)
+default: ../exe/zap
+
+zap: ../exe/zap
+
+zapded: ../exe/zapded
+
+../exe/zap: $(OBJECTS_ZAP)
 	$(CC) -o ../exe/zap $(OBJECTS_ZAP) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a ../openal/linux/libopenal.a -lpthread -lstdc++ -lGL -lGLU -lglut -lm
+
+../exe/zapded $(OBJECTS_ZAP) CFLAGS=$(CFLAGS) -DZAP_DEDICATED
+	$(CC) -o ../exe/zap $(OBJECTS_ZAP) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a ../openal/linux/libopenal.a -lpthread -lstdc++ -lm
 
 ../master/masterInterface.o:
 	make -C ../master
