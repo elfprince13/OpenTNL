@@ -447,6 +447,7 @@ IPAddress Address::toIPAddress() const
 
 bool Address::set(const char *addressString)
 {
+   init();
    if(strnicmp(addressString, "ipx:", 4))
    {
       // assume IP if it doesn't have ipx: at the front.

@@ -49,8 +49,8 @@ bool gQuit = false;
 bool gIsServer = false;
 const char *gHostName = "ZAP Game";
 U32 gMaxPlayers = 128;
-
-Address gMasterAddress("127.0.0.1:28999");
+const char *gMasterAddressString = "IP:master.garagegames.com:29002";
+Address gMasterAddress;
 
 void reshape(int nw, int nh)
 {
@@ -255,7 +255,7 @@ int main(int argc, char **argv)
       else if(!stricmp(argv[i], "-master"))
       {
          if(hasAdditionalArg)
-            gMasterAddress.set(argv[i+1]);
+            gMasterAddressString = argv[i+1];
       }
       else if(!stricmp(argv[i], "-dedicated"))
       {
@@ -283,6 +283,7 @@ int main(int argc, char **argv)
             gMaxPlayers = atoi(argv[i+1]);
       }
    }
+   gMasterAddress.set(gMasterAddressString);
 
    if(hasClient)
       gClientGame = new ClientGame(Address());
