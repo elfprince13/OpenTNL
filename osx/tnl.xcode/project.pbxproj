@@ -83,8 +83,9 @@
 			);
 			isa = PBXGroup;
 			name = Products;
-			refType = 4;
-			sourceTree = "<group>";
+			path = ../exe;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 //190
 //191
@@ -177,6 +178,7 @@
 		};
 		29B97323FDCFA39411CA2CEA = {
 			children = (
+				6656DD9B0635C8EF00E30126,
 				6692C11906247CF900D5ADFE,
 				1058C7A0FEA54F0111CA2CBB,
 				1058C7A2FEA54F0111CA2CBB,
@@ -1518,14 +1520,184 @@
 			settings = {
 			};
 		};
+		6656DD850635C66F00E30126 = {
+			fileRef = 66D85E1905ACBA97008DC9C1;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		6656DD9B0635C8EF00E30126 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = OpenAL.framework;
+			path = /Library/Frameworks/OpenAL.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		6656DD9C0635C8EF00E30126 = {
+			fileRef = 6656DD9B0635C8EF00E30126;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		6656DDCA0635C95C00E30126 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = CTFGame.cpp;
+			path = ../zap/CTFGame.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		6656DDCB0635C95C00E30126 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = CTFGame.h;
+			path = ../zap/CTFGame.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		6656DDCC0635C95C00E30126 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = gameType.cpp;
+			path = ../zap/gameType.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		6656DDCD0635C95C00E30126 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = gameType.h;
+			path = ../zap/gameType.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		6656DDCE0635C95C00E30126 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = item.cpp;
+			path = ../zap/item.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		6656DDCF0635C95C00E30126 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = item.h;
+			path = ../zap/item.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		6656DDD00635C95C00E30126 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = moveObject.cpp;
+			path = ../zap/moveObject.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		6656DDD10635C95C00E30126 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = moveObject.h;
+			path = ../zap/moveObject.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		6656DDD20635C95C00E30126 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = sfx.cpp;
+			path = ../zap/sfx.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		6656DDD30635C95C00E30126 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = sfx.h;
+			path = ../zap/sfx.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		6656DDD40635C95C00E30126 = {
+			fileRef = 6656DDCA0635C95C00E30126;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		6656DDD50635C95C00E30126 = {
+			fileRef = 6656DDCB0635C95C00E30126;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		6656DDD60635C95C00E30126 = {
+			fileRef = 6656DDCC0635C95C00E30126;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		6656DDD70635C95C00E30126 = {
+			fileRef = 6656DDCD0635C95C00E30126;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		6656DDD80635C95C00E30126 = {
+			fileRef = 6656DDCE0635C95C00E30126;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		6656DDD90635C95C00E30126 = {
+			fileRef = 6656DDCF0635C95C00E30126;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		6656DDDA0635C95C00E30126 = {
+			fileRef = 6656DDD00635C95C00E30126;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		6656DDDB0635C95C00E30126 = {
+			fileRef = 6656DDD10635C95C00E30126;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		6656DDDC0635C95C00E30126 = {
+			fileRef = 6656DDD20635C95C00E30126;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		6656DDDD0635C95C00E30126 = {
+			fileRef = 6656DDD30635C95C00E30126;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		6661401205B3965A00320653 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = udp.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/udp.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/udp.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6661401405B3965A00320653 = {
 			fileRef = 6661401205B3965A00320653;
@@ -1538,9 +1710,9 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = platform.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/platform.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/platform.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6661401A05B3966700320653 = {
 			fileRef = 6661401905B3966700320653;
@@ -1571,6 +1743,11 @@
 				6692C2400625E7E800D5ADFE,
 				6692C2420625E7E800D5ADFE,
 				6692C2440625E7E800D5ADFE,
+				6656DDD50635C95C00E30126,
+				6656DDD70635C95C00E30126,
+				6656DDD90635C95C00E30126,
+				6656DDDB0635C95C00E30126,
+				6656DDDD0635C95C00E30126,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1598,6 +1775,11 @@
 				6692C23F0625E7E800D5ADFE,
 				6692C2410625E7E800D5ADFE,
 				6692C2430625E7E800D5ADFE,
+				6656DDD40635C95C00E30126,
+				6656DDD60635C95C00E30126,
+				6656DDD80635C95C00E30126,
+				6656DDDA0635C95C00E30126,
+				6656DDDC0635C95C00E30126,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1613,8 +1795,8 @@
 			buildSettings = {
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				HEADER_SEARCH_PATHS = "../glut ../openal";
 				INSTALL_PATH = /usr/local/bin;
-				OPTIMIZATION_CFLAGS = "";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
@@ -1643,234 +1825,234 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = gameConnection.cpp;
-			path = /Users/markfrohnmayer/tnl/zap/gameConnection.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/gameConnection.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C08F06247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = gameConnection.h;
-			path = /Users/markfrohnmayer/tnl/zap/gameConnection.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/gameConnection.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09006247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = gameNetInterface.cpp;
-			path = /Users/markfrohnmayer/tnl/zap/gameNetInterface.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/gameNetInterface.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09106247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = gameNetInterface.h;
-			path = /Users/markfrohnmayer/tnl/zap/gameNetInterface.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/gameNetInterface.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09406247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = main.cpp;
-			path = /Users/markfrohnmayer/tnl/zap/main.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/main.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09506247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = masterConnection.cpp;
-			path = /Users/markfrohnmayer/tnl/zap/masterConnection.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/masterConnection.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09606247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = masterConnection.h;
-			path = /Users/markfrohnmayer/tnl/zap/masterConnection.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/masterConnection.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09706247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = point.h;
-			path = /Users/markfrohnmayer/tnl/zap/point.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/point.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09806247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = projectile.cpp;
-			path = /Users/markfrohnmayer/tnl/zap/projectile.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/projectile.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09906247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = projectile.h;
-			path = /Users/markfrohnmayer/tnl/zap/projectile.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/projectile.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09A06247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = ship.cpp;
-			path = /Users/markfrohnmayer/tnl/zap/ship.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/ship.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09B06247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = ship.h;
-			path = /Users/markfrohnmayer/tnl/zap/ship.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/ship.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09C06247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = sparkManager.cpp;
-			path = /Users/markfrohnmayer/tnl/zap/sparkManager.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/sparkManager.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09D06247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = sparkManager.h;
-			path = /Users/markfrohnmayer/tnl/zap/sparkManager.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/sparkManager.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09E06247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = SweptEllipsoid.cpp;
-			path = /Users/markfrohnmayer/tnl/zap/SweptEllipsoid.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/SweptEllipsoid.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C09F06247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = SweptEllipsoid.h;
-			path = /Users/markfrohnmayer/tnl/zap/SweptEllipsoid.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/SweptEllipsoid.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C0A006247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = UI.cpp;
-			path = /Users/markfrohnmayer/tnl/zap/UI.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/UI.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C0A106247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = UI.h;
-			path = /Users/markfrohnmayer/tnl/zap/UI.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/UI.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C0A206247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = UIGame.cpp;
-			path = /Users/markfrohnmayer/tnl/zap/UIGame.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/UIGame.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C0A306247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = UIGame.h;
-			path = /Users/markfrohnmayer/tnl/zap/UIGame.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/UIGame.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C0A406247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = UIMenus.cpp;
-			path = /Users/markfrohnmayer/tnl/zap/UIMenus.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/UIMenus.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C0A506247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = UIMenus.h;
-			path = /Users/markfrohnmayer/tnl/zap/UIMenus.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/UIMenus.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C0A606247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = UINameEntry.cpp;
-			path = /Users/markfrohnmayer/tnl/zap/UINameEntry.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/UINameEntry.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C0A706247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = UINameEntry.h;
-			path = /Users/markfrohnmayer/tnl/zap/UINameEntry.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/UINameEntry.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C0A806247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = UIQueryServers.cpp;
-			path = /Users/markfrohnmayer/tnl/zap/UIQueryServers.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/UIQueryServers.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C0A906247C2300D5ADFE = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = UIQueryServers.h;
-			path = /Users/markfrohnmayer/tnl/zap/UIQueryServers.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../zap/UIQueryServers.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C0AA06247C2300D5ADFE = {
 			fileRef = 6692C08E06247C2300D5ADFE;
@@ -2030,6 +2212,16 @@
 		};
 		6692C0E606247C3B00D5ADFE = {
 			children = (
+				6656DDCA0635C95C00E30126,
+				6656DDCB0635C95C00E30126,
+				6656DDCC0635C95C00E30126,
+				6656DDCD0635C95C00E30126,
+				6656DDCE0635C95C00E30126,
+				6656DDCF0635C95C00E30126,
+				6656DDD00635C95C00E30126,
+				6656DDD10635C95C00E30126,
+				6656DDD20635C95C00E30126,
+				6656DDD30635C95C00E30126,
 				6692C22D0625E7E800D5ADFE,
 				6692C22E0625E7E800D5ADFE,
 				6692C22F0625E7E800D5ADFE,
@@ -2089,6 +2281,7 @@
 				6692C15E06247D2000D5ADFE,
 				6692C15F06247D2500D5ADFE,
 				6692C16106247D2700D5ADFE,
+				6656DD9C0635C8EF00E30126,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2116,9 +2309,9 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = glutInclude.h;
-			path = ../zap/glutInclude.h;
-			refType = 4;
-			sourceTree = "<group>";
+			path = ../glut/glutInclude.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		6692C18B06247DB900D5ADFE = {
 			fileRef = 6692C18A06247DB900D5ADFE;
@@ -3076,9 +3269,9 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = main.cpp;
-			path = /Users/markfrohnmayer/tnl/masterclient/main.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../masterclient/main.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66BA0EA405FD478900D882FA = {
 			fileRef = 66BA0EA305FD478900D882FA;
@@ -3112,27 +3305,27 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = testGame.cpp;
-			path = /Users/markfrohnmayer/tnl/test/testGame.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../test/testGame.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85C1F05AC8772008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = testGame.h;
-			path = /Users/markfrohnmayer/tnl/test/testGame.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../test/testGame.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85C2005AC8772008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = testGameRender.cpp;
-			path = /Users/markfrohnmayer/tnl/test/testGameRender.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../test/testGameRender.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85C2105AC8772008DC9C1 = {
 			fileRef = 66D85C1E05AC8772008DC9C1;
@@ -3285,9 +3478,9 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = tnl.h;
-			path = /Users/markfrohnmayer/tnl/tnl/tnl.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/tnl.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85E7305ACCB91008DC9C1 = {
 			fileRef = 66D85E5C05ACCB91008DC9C1;
@@ -3300,144 +3493,144 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = huffmanStringProcessor.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/huffmanStringProcessor.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/huffmanStringProcessor.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85E9405ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = assert.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/assert.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/assert.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85E9505ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = dataChunker.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/dataChunker.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/dataChunker.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85E9605ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = netStringTable.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/netStringTable.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/netStringTable.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85E9705ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = ghostConnection.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/ghostConnection.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/ghostConnection.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85E9905ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = netConnection.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/netConnection.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/netConnection.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85E9C05ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = log.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/log.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/log.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85E9D05ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = random.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/random.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/random.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85E9E05ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = netObject.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/netObject.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/netObject.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85E9F05ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = connectionStringTable.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/connectionStringTable.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/connectionStringTable.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85EA005ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = rpc.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/rpc.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/rpc.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85EA105ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = netInterface.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/netInterface.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/netInterface.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85EA205ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = netBase.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/netBase.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/netBase.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85EA305ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = eventConnection.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/eventConnection.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/eventConnection.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85EA405ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = vector.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/vector.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/vector.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85EA505ACCBBA008DC9C1 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = bitStream.cpp;
-			path = /Users/markfrohnmayer/tnl/tnl/bitStream.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../tnl/bitStream.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85EA605ACCBBA008DC9C1 = {
 			fileRef = 66D85E9305ACCBBA008DC9C1;
@@ -3576,7 +3769,7 @@
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				GCC_WARN_UNKNOWN_PRAGMAS = NO;
 				INSTALL_PATH = /usr/local/bin;
-				LIBRARY_SEARCH_PATHS = /Users/markfrohnmayer/tnl/osx/build;
+				LIBRARY_SEARCH_PATHS = ../osx/build;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
@@ -3619,9 +3812,9 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = server.cpp;
-			path = /Users/markfrohnmayer/tnl/test/server.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../test/server.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		66D85EE705ACCC6A008DC9C1 = {
 			fileRef = 66D85EE605ACCC6A008DC9C1;
@@ -3679,7 +3872,7 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				LIBRARY_SEARCH_PATHS = /Users/markfrohnmayer/tnl/osx/build;
+				LIBRARY_SEARCH_PATHS = ../osx/build;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = TNLTest;
@@ -3742,6 +3935,7 @@
 		8D11072E0486CEB800E47090 = {
 			buildActionMask = 2147483647;
 			files = (
+				6656DD850635C66F00E30126,
 				66BA0CF605FD182100D882FA,
 				8D11072F0486CEB800E47090,
 			);
