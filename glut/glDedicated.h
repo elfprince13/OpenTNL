@@ -976,7 +976,7 @@ typedef double		GLclampd;	/* double precision float in [0,1] */
 #define GLUT_XLIB_IMPLEMENTATION	15
 #endif
 
-#define GLUTAPI
+#define inline
 
 /* Display mode bit masks. */
 #define GLUT_RGB			0
@@ -1071,21 +1071,21 @@ typedef double		GLclampd;	/* double precision float in [0,1] */
 #endif
 #else
 /* Stroke font opaque addresses (use constants instead in source code). */
-GLUTAPI void *glutStrokeRoman;
-GLUTAPI void *glutStrokeMonoRoman;
+inline void *glutStrokeRoman;
+inline void *glutStrokeMonoRoman;
 
 /* Stroke font constants (use these in GLUT program). */
 #define GLUT_STROKE_ROMAN		(&glutStrokeRoman)
 #define GLUT_STROKE_MONO_ROMAN		(&glutStrokeMonoRoman)
 
 /* Bitmap font opaque addresses (use constants instead in source code). */
-GLUTAPI void *glutBitmap9By15;
-GLUTAPI void *glutBitmap8By13;
-GLUTAPI void *glutBitmapTimesRoman10;
-GLUTAPI void *glutBitmapTimesRoman24;
-GLUTAPI void *glutBitmapHelvetica10;
-GLUTAPI void *glutBitmapHelvetica12;
-GLUTAPI void *glutBitmapHelvetica18;
+extern void *glutBitmap9By15;
+extern void *glutBitmap8By13;
+extern void *glutBitmapTimesRoman10;
+extern void *glutBitmapTimesRoman24;
+extern void *glutBitmapHelvetica10;
+extern void *glutBitmapHelvetica12;
+extern void *glutBitmapHelvetica18;
 
 /* Bitmap font constants (use these in GLUT program). */
 #define GLUT_BITMAP_9_BY_15		(&glutBitmap9By15)
@@ -1237,139 +1237,129 @@ GLUTAPI void *glutBitmapHelvetica18;
 #define APIENTRY
 #endif
 
-#undef GLUTAPI
-#define GLUTAPI inline
-
 #define GLUT_DISABLE_ATEXIT_HACK
 #define GLUT_BUILDING_LIB
 
 /* GLUT initialization sub-API. */
-GLUTAPI void APIENTRY glutInit(int *argcp, char **argv) {}
-#if defined(_WIN32) && !defined(GLUT_DISABLE_ATEXIT_HACK)
-GLUTAPI void APIENTRY __glutInitWithExit(int *argcp, char **argv, void (__cdecl *exitfunc)(int));
-#ifndef GLUT_BUILDING_LIB
-static void APIENTRY glutInit_ATEXIT_HACK(int *argcp, char **argv) { __glutInitWithExit(argcp, argv, exit); }
-#define glutInit glutInit_ATEXIT_HACK
-#endif
-#endif
-GLUTAPI void APIENTRY glutInitDisplayMode(unsigned int mode) {}
+inline void APIENTRY glutInit(int *argcp, char **argv) {}
+inline void APIENTRY glutInitDisplayMode(unsigned int mode) {}
 #if (GLUT_API_VERSION >= 4 || GLUT_XLIB_IMPLEMENTATION >= 9)
-GLUTAPI void APIENTRY glutInitDisplayString(const char *string) {}
+inline void APIENTRY glutInitDisplayString(const char *string) {}
 #endif
-GLUTAPI void APIENTRY glutInitWindowPosition(int x, int y) {}
-GLUTAPI void APIENTRY glutInitWindowSize(int width, int height) {}
-GLUTAPI void APIENTRY glutMainLoop(void) {}
+inline void APIENTRY glutInitWindowPosition(int x, int y) {}
+inline void APIENTRY glutInitWindowSize(int width, int height) {}
+inline void APIENTRY glutMainLoop(void) {}
 
 /* GLUT window sub-API. */
-GLUTAPI int APIENTRY glutCreateWindow(const char *title){ return 0; }
-GLUTAPI int APIENTRY glutCreateSubWindow(int win, int x, int y, int width, int height) { return 0; }
-GLUTAPI void APIENTRY glutDestroyWindow(int win) {}
-GLUTAPI void APIENTRY glutPostRedisplay(void) {}
+inline int APIENTRY glutCreateWindow(const char *title){ return 0; }
+inline int APIENTRY glutCreateSubWindow(int win, int x, int y, int width, int height) { return 0; }
+inline void APIENTRY glutDestroyWindow(int win) {}
+inline void APIENTRY glutPostRedisplay(void) {}
 #if (GLUT_API_VERSION >= 4 || GLUT_XLIB_IMPLEMENTATION >= 11)
-GLUTAPI void APIENTRY glutPostWindowRedisplay(int win) {}
+inline void APIENTRY glutPostWindowRedisplay(int win) {}
 #endif
-GLUTAPI void APIENTRY glutSwapBuffers(void) {}
-GLUTAPI int APIENTRY glutGetWindow(void) { return 0; }
-GLUTAPI void APIENTRY glutSetWindow(int win) {}
-GLUTAPI void APIENTRY glutSetWindowTitle(const char *title) {}
-GLUTAPI void APIENTRY glutSetIconTitle(const char *title) {}
-GLUTAPI void APIENTRY glutPositionWindow(int x, int y) {}
-GLUTAPI void APIENTRY glutReshapeWindow(int width, int height) {}
-GLUTAPI void APIENTRY glutPopWindow(void) {}
-GLUTAPI void APIENTRY glutPushWindow(void) {}
-GLUTAPI void APIENTRY glutIconifyWindow(void) {}
-GLUTAPI void APIENTRY glutShowWindow(void) {}
-GLUTAPI void APIENTRY glutHideWindow(void) {}
+inline void APIENTRY glutSwapBuffers(void) {}
+inline int APIENTRY glutGetWindow(void) { return 0; }
+inline void APIENTRY glutSetWindow(int win) {}
+inline void APIENTRY glutSetWindowTitle(const char *title) {}
+inline void APIENTRY glutSetIconTitle(const char *title) {}
+inline void APIENTRY glutPositionWindow(int x, int y) {}
+inline void APIENTRY glutReshapeWindow(int width, int height) {}
+inline void APIENTRY glutPopWindow(void) {}
+inline void APIENTRY glutPushWindow(void) {}
+inline void APIENTRY glutIconifyWindow(void) {}
+inline void APIENTRY glutShowWindow(void) {}
+inline void APIENTRY glutHideWindow(void) {}
 #if (GLUT_API_VERSION >= 3)
-GLUTAPI void APIENTRY glutFullScreen(void) {}
-GLUTAPI void APIENTRY glutSetCursor(int cursor) {}
+inline void APIENTRY glutFullScreen(void) {}
+inline void APIENTRY glutSetCursor(int cursor) {}
 #if (GLUT_API_VERSION >= 4 || GLUT_XLIB_IMPLEMENTATION >= 9)
-GLUTAPI void APIENTRY glutWarpPointer(int x, int y) {}
+inline void APIENTRY glutWarpPointer(int x, int y) {}
 #endif
 
 /* GLUT overlay sub-API. */
-GLUTAPI void APIENTRY glutEstablishOverlay(void) {}
-GLUTAPI void APIENTRY glutRemoveOverlay(void) {}
-GLUTAPI void APIENTRY glutUseLayer(GLenum layer) {}
-GLUTAPI void APIENTRY glutPostOverlayRedisplay(void) {}
+inline void APIENTRY glutEstablishOverlay(void) {}
+inline void APIENTRY glutRemoveOverlay(void) {}
+inline void APIENTRY glutUseLayer(GLenum layer) {}
+inline void APIENTRY glutPostOverlayRedisplay(void) {}
 #if (GLUT_API_VERSION >= 4 || GLUT_XLIB_IMPLEMENTATION >= 11)
-GLUTAPI void APIENTRY glutPostWindowOverlayRedisplay(int win) {}
+inline void APIENTRY glutPostWindowOverlayRedisplay(int win) {}
 #endif
-GLUTAPI void APIENTRY glutShowOverlay(void) {}
-GLUTAPI void APIENTRY glutHideOverlay(void) {}
+inline void APIENTRY glutShowOverlay(void) {}
+inline void APIENTRY glutHideOverlay(void) {}
 #endif
 
 #define GLUTCALLBACK
 /* GLUT menu sub-API. */
-GLUTAPI int APIENTRY glutCreateMenu(void (GLUTCALLBACK *func)(int)) { return 0; }
-GLUTAPI void APIENTRY glutDestroyMenu(int menu) {}
-GLUTAPI int APIENTRY glutGetMenu(void) { return 0; }
-GLUTAPI void APIENTRY glutSetMenu(int menu) {}
-GLUTAPI void APIENTRY glutAddMenuEntry(const char *label, int value) {}
-GLUTAPI void APIENTRY glutAddSubMenu(const char *label, int submenu) {}
-GLUTAPI void APIENTRY glutChangeToMenuEntry(int item, const char *label, int value) {}
-GLUTAPI void APIENTRY glutChangeToSubMenu(int item, const char *label, int submenu) {}
-GLUTAPI void APIENTRY glutRemoveMenuItem(int item) {}
-GLUTAPI void APIENTRY glutAttachMenu(int button) {}
-GLUTAPI void APIENTRY glutDetachMenu(int button) {}
+inline int APIENTRY glutCreateMenu(void (GLUTCALLBACK *func)(int)) { return 0; }
+inline void APIENTRY glutDestroyMenu(int menu) {}
+inline int APIENTRY glutGetMenu(void) { return 0; }
+inline void APIENTRY glutSetMenu(int menu) {}
+inline void APIENTRY glutAddMenuEntry(const char *label, int value) {}
+inline void APIENTRY glutAddSubMenu(const char *label, int submenu) {}
+inline void APIENTRY glutChangeToMenuEntry(int item, const char *label, int value) {}
+inline void APIENTRY glutChangeToSubMenu(int item, const char *label, int submenu) {}
+inline void APIENTRY glutRemoveMenuItem(int item) {}
+inline void APIENTRY glutAttachMenu(int button) {}
+inline void APIENTRY glutDetachMenu(int button) {}
 
 /* GLUT window callback sub-API. */
-GLUTAPI void APIENTRY glutDisplayFunc(void (GLUTCALLBACK *func)(void)) {}
-GLUTAPI void APIENTRY glutReshapeFunc(void (GLUTCALLBACK *func)(int width, int height)) {}
-GLUTAPI void APIENTRY glutKeyboardFunc(void (GLUTCALLBACK *func)(unsigned char key, int x, int y)) {}
-GLUTAPI void APIENTRY glutMouseFunc(void (GLUTCALLBACK *func)(int button, int state, int x, int y)) {}
-GLUTAPI void APIENTRY glutMotionFunc(void (GLUTCALLBACK *func)(int x, int y)) {}
-GLUTAPI void APIENTRY glutPassiveMotionFunc(void (GLUTCALLBACK *func)(int x, int y)) {}
-GLUTAPI void APIENTRY glutEntryFunc(void (GLUTCALLBACK *func)(int state)) {}
-GLUTAPI void APIENTRY glutVisibilityFunc(void (GLUTCALLBACK *func)(int state)) {}
-GLUTAPI void APIENTRY glutIdleFunc(void (GLUTCALLBACK *func)(void)) {}
-GLUTAPI void APIENTRY glutTimerFunc(unsigned int millis, void (GLUTCALLBACK *func)(int value), int value) {}
-GLUTAPI void APIENTRY glutMenuStateFunc(void (GLUTCALLBACK *func)(int state)) {}
+inline void APIENTRY glutDisplayFunc(void (GLUTCALLBACK *func)(void)) {}
+inline void APIENTRY glutReshapeFunc(void (GLUTCALLBACK *func)(int width, int height)) {}
+inline void APIENTRY glutKeyboardFunc(void (GLUTCALLBACK *func)(unsigned char key, int x, int y)) {}
+inline void APIENTRY glutMouseFunc(void (GLUTCALLBACK *func)(int button, int state, int x, int y)) {}
+inline void APIENTRY glutMotionFunc(void (GLUTCALLBACK *func)(int x, int y)) {}
+inline void APIENTRY glutPassiveMotionFunc(void (GLUTCALLBACK *func)(int x, int y)) {}
+inline void APIENTRY glutEntryFunc(void (GLUTCALLBACK *func)(int state)) {}
+inline void APIENTRY glutVisibilityFunc(void (GLUTCALLBACK *func)(int state)) {}
+inline void APIENTRY glutIdleFunc(void (GLUTCALLBACK *func)(void)) {}
+inline void APIENTRY glutTimerFunc(unsigned int millis, void (GLUTCALLBACK *func)(int value), int value) {}
+inline void APIENTRY glutMenuStateFunc(void (GLUTCALLBACK *func)(int state)) {}
 #if (GLUT_API_VERSION >= 2)
-GLUTAPI void APIENTRY glutSpecialFunc(void (GLUTCALLBACK *func)(int key, int x, int y)) {}
-GLUTAPI void APIENTRY glutSpaceballMotionFunc(void (GLUTCALLBACK *func)(int x, int y, int z)) {}
-GLUTAPI void APIENTRY glutSpaceballRotateFunc(void (GLUTCALLBACK *func)(int x, int y, int z)) {}
-GLUTAPI void APIENTRY glutSpaceballButtonFunc(void (GLUTCALLBACK *func)(int button, int state)) {}
-GLUTAPI void APIENTRY glutButtonBoxFunc(void (GLUTCALLBACK *func)(int button, int state)) {}
-GLUTAPI void APIENTRY glutDialsFunc(void (GLUTCALLBACK *func)(int dial, int value)) {}
-GLUTAPI void APIENTRY glutTabletMotionFunc(void (GLUTCALLBACK *func)(int x, int y)) {}
-GLUTAPI void APIENTRY glutTabletButtonFunc(void (GLUTCALLBACK *func)(int button, int state, int x, int y)) {}
+inline void APIENTRY glutSpecialFunc(void (GLUTCALLBACK *func)(int key, int x, int y)) {}
+inline void APIENTRY glutSpaceballMotionFunc(void (GLUTCALLBACK *func)(int x, int y, int z)) {}
+inline void APIENTRY glutSpaceballRotateFunc(void (GLUTCALLBACK *func)(int x, int y, int z)) {}
+inline void APIENTRY glutSpaceballButtonFunc(void (GLUTCALLBACK *func)(int button, int state)) {}
+inline void APIENTRY glutButtonBoxFunc(void (GLUTCALLBACK *func)(int button, int state)) {}
+inline void APIENTRY glutDialsFunc(void (GLUTCALLBACK *func)(int dial, int value)) {}
+inline void APIENTRY glutTabletMotionFunc(void (GLUTCALLBACK *func)(int x, int y)) {}
+inline void APIENTRY glutTabletButtonFunc(void (GLUTCALLBACK *func)(int button, int state, int x, int y)) {}
 #if (GLUT_API_VERSION >= 3)
-GLUTAPI void APIENTRY glutMenuStatusFunc(void (GLUTCALLBACK *func)(int status, int x, int y)) {}
-GLUTAPI void APIENTRY glutOverlayDisplayFunc(void (GLUTCALLBACK *func)(void)) {}
+inline void APIENTRY glutMenuStatusFunc(void (GLUTCALLBACK *func)(int status, int x, int y)) {}
+inline void APIENTRY glutOverlayDisplayFunc(void (GLUTCALLBACK *func)(void)) {}
 #if (GLUT_API_VERSION >= 4 || GLUT_XLIB_IMPLEMENTATION >= 9)
-GLUTAPI void APIENTRY glutWindowStatusFunc(void (GLUTCALLBACK *func)(int state)) {}
+inline void APIENTRY glutWindowStatusFunc(void (GLUTCALLBACK *func)(int state)) {}
 #endif
 #if (GLUT_API_VERSION >= 4 || GLUT_XLIB_IMPLEMENTATION >= 13)
-GLUTAPI void APIENTRY glutKeyboardUpFunc(void (GLUTCALLBACK *func)(unsigned char key, int x, int y)) {}
-GLUTAPI void APIENTRY glutSpecialUpFunc(void (GLUTCALLBACK *func)(int key, int x, int y)){}
-GLUTAPI void APIENTRY glutJoystickFunc(void (GLUTCALLBACK *func)(unsigned int buttonMask, int x, int y, int z), int pollInterval) {}
+inline void APIENTRY glutKeyboardUpFunc(void (GLUTCALLBACK *func)(unsigned char key, int x, int y)) {}
+inline void APIENTRY glutSpecialUpFunc(void (GLUTCALLBACK *func)(int key, int x, int y)){}
+inline void APIENTRY glutJoystickFunc(void (GLUTCALLBACK *func)(unsigned int buttonMask, int x, int y, int z), int pollInterval) {}
 #endif
 #endif
 #endif
 
 /* GLUT color index sub-API. */
-GLUTAPI void APIENTRY glutSetColor(int, GLfloat red, GLfloat green, GLfloat blue) {}
-GLUTAPI GLfloat APIENTRY glutGetColor(int ndx, int component) {}
-GLUTAPI void APIENTRY glutCopyColormap(int win) {}
+inline void APIENTRY glutSetColor(int, GLfloat red, GLfloat green, GLfloat blue) {}
+inline GLfloat APIENTRY glutGetColor(int ndx, int component) {}
+inline void APIENTRY glutCopyColormap(int win) {}
 
 /* GLUT state retrieval sub-API. */
-GLUTAPI int APIENTRY glutGet(GLenum type) { return 0; }
-GLUTAPI int APIENTRY glutDeviceGet(GLenum type) { return 0; }
+inline int APIENTRY glutGet(GLenum type) { return 0; }
+inline int APIENTRY glutDeviceGet(GLenum type) { return 0; }
 #if (GLUT_API_VERSION >= 2)
 /* GLUT extension support sub-API */
-GLUTAPI int APIENTRY glutExtensionSupported(const char *name) { return 0; }
+inline int APIENTRY glutExtensionSupported(const char *name) { return 0; }
 #endif
 #if (GLUT_API_VERSION >= 3)
-GLUTAPI int APIENTRY glutGetModifiers(void) { return 0; }
-GLUTAPI int APIENTRY glutLayerGet(GLenum type) { return 0; }
+inline int APIENTRY glutGetModifiers(void) { return 0; }
+inline int APIENTRY glutLayerGet(GLenum type) { return 0; }
 #endif
 
 /* GLUT font sub-API */
-GLUTAPI void APIENTRY glutBitmapCharacter(void *font, int character) { }
-GLUTAPI int APIENTRY glutBitmapWidth(void *font, int character) { return 0; }
-GLUTAPI void APIENTRY glutStrokeCharacter(void *font, int character) {}
-GLUTAPI int APIENTRY glutStrokeWidth(void *font, int character) { return 0; }
+inline void APIENTRY glutBitmapCharacter(void *font, int character) { }
+inline int APIENTRY glutBitmapWidth(void *font, int character) { return 0; }
+inline void APIENTRY glutStrokeCharacter(void *font, int character) {}
+inline int APIENTRY glutStrokeWidth(void *font, int character) { return 0; }
 
 //------------------------------------------------------------------------------
 // GL functions
