@@ -161,7 +161,7 @@ void Teleporter::idle(GameObject::IdleCallPath path)
    for(S32 i=0; i<fillVector2.size(); i++)
    {
       Ship *s = (Ship*)fillVector2[i];
-      if((pos - s->getActualPos()).len() < TeleporterRadius)
+      if((pos - s->getRenderPos()).len() < TeleporterRadius + s->getRadius())
       {
          Point newPos = s->getActualPos() - pos + dest;
          s->setActualPos(newPos);

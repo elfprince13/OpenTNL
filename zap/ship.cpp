@@ -1120,8 +1120,12 @@ void Ship::render()
          alpha = 0.25;
    }
    F32 warpInScale = (WarpFadeInTime - mWarpInTimer.getCurrent()) / F32(WarpFadeInTime);
-   
-   glRotatef(radiansToDegrees(mMoveState[RenderState].angle) - 90, 0, 0, 1.0);
+
+   F32 rotAmount = 0;
+   if(warpInScale < 0.8)
+      rotAmount = (0.8 - warpInScale) * 540;
+
+   glRotatef(radiansToDegrees(mMoveState[RenderState].angle) - 90 + rotAmount, 0, 0, 1.0);
    glScalef(warpInScale, warpInScale, 1);
    renderShip(color, alpha, thrusts, mHealth, mRadius, isCloakActive(), isShieldActive());
    glColor3f(1,1,1);
