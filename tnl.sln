@@ -1,6 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tnl", "tnl\tnl.vcproj", "{5FAF4911-1DA7-44FE-9DA1-49AE25B11250}"
 	ProjectSection(ProjectDependencies) = postProject
+		{3F7F7B79-4473-4CAB-A54E-4274A9F1A01A} = {3F7F7B79-4473-4CAB-A54E-4274A9F1A01A}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TNLTest", "test\TNLTest.vcproj", "{2BF337F1-B812-4324-A9BA-E4D580C8CFF1}"
@@ -81,6 +82,7 @@ Global
 		{2BC8A06B-B9E6-4C92-9E10-6B5E37CBFF96}.Release Xbox.ActiveCfg = Release|Win32
 		{2BC8A06B-B9E6-4C92-9E10-6B5E37CBFF96}.Release Xbox.Build.0 = Release|Win32
 		{3F7F7B79-4473-4CAB-A54E-4274A9F1A01A}.Debug.ActiveCfg = Debug|Win32
+		{3F7F7B79-4473-4CAB-A54E-4274A9F1A01A}.Debug.Build.0 = Debug|Win32
 		{3F7F7B79-4473-4CAB-A54E-4274A9F1A01A}.Debug Win32.ActiveCfg = Debug|Win32
 		{3F7F7B79-4473-4CAB-A54E-4274A9F1A01A}.Debug Win32.Build.0 = Debug|Win32
 		{3F7F7B79-4473-4CAB-A54E-4274A9F1A01A}.Debug Xbox.ActiveCfg = Debug|Win32
