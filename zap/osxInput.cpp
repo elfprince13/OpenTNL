@@ -62,17 +62,30 @@ void getModifierState(bool &shiftDown, bool &controlDown, bool &altDown)
 	altDown = (modKeys & optionKey) != 0;
 }
 
+enum AxisIndex
+{
+   AxisX,
+   AxisY,
+   AxisZ,
+   AxisRx,
+   AxisRy,
+   AxisRz,
+   AxisSlider0,
+   AxisSlider1,
+};
+
 struct ControllerElement
 {
    IOHIDElementCookie cookie;
    long minValue;
    long maxValue;
+   ControllerElement() { cookie = 0; minValue = 0; maxValue = 1; }
 };
 
 struct Controller
 {
    IOHIDDeviceInterface **device;
-   Vector<ControllerElement> axes;
+   ControllerElement axes[MaxJoystickAxes];
    Vector<ControllerElement> buttons;  
 };
 
@@ -80,6 +93,9 @@ Controller gController;
 
 static S32 getElementValue(ControllerElement *theElement)
 {
+   if(!theElement->cookie)
+      return 0;
+
    IOHIDEventStruct hidEvent;
    hidEvent.value = 0;
 
@@ -106,6 +122,7 @@ static void HIDGetElementsCFArrayHandler (const void * value, void * parameter)
 	CFTypeRef refUsage = CFDictionaryGetValue (refElement, CFSTR(kIOHIDElementUsageKey));
    bool isButton = false, isAxis = false;
 
+   ControllerElement *theElement = NULL;
 	if ((refElementType) && (CFNumberGetValue (refElementType, kCFNumberLongType, &elementType)))
 	{
 		/* look at types of interest */
@@ -122,21 +139,38 @@ static void HIDGetElementsCFArrayHandler (const void * value, void * parameter)
 							switch (usage) /* look at usage to determine function */
 							{
 								case kHIDUsage_GD_X:
+                           theElement = gController.axis + AxisX;
+                           break;
 								case kHIDUsage_GD_Y:
+                           theElement = gController.axis + AxisY;
+                           break;
 								case kHIDUsage_GD_Z:
+                           theElement = gController.axis + AxisZ;
+                           break;
 								case kHIDUsage_GD_Rx:
+                           theElement = gController.axis + AxisRx;
+                           break;
 								case kHIDUsage_GD_Ry:
+                           theElement = gController.axis + AxisRy;
+                           break;
 								case kHIDUsage_GD_Rz:
+                           theElement = gController.axis + AxisRz;
+                           break;
 								case kHIDUsage_GD_Slider:
+                           theElement = gController.axis + AxisSlider0;
+                           break;
 								case kHIDUsage_GD_Dial:
 								case kHIDUsage_GD_Wheel:
-                           isAxis = true;
    								break;
 							}							
 						}
 						break;
 					case kHIDPage_Button:
-                  isButton = true;
+                  {
+                     ControllerElement e;
+                     gController.buttons.push_back(e);
+                     theElement = &gController.buttons.last();
+                  }
 						break;
 					default:
 						break;
@@ -145,35 +179,19 @@ static void HIDGetElementsCFArrayHandler (const void * value, void * parameter)
 		}
 		else if (kIOHIDElementTypeCollection == elementType)
       {
-        CFTypeRef refElementTop = CFDictionaryGetValue ((CFMutableDictionaryRef) refElement, CFSTR(kIOHIDElementKey));
-        if (refElementTop)
-		{
-		CFTypeID type = CFGetTypeID (refElementTop);
-	      if (type == CFArrayGetTypeID()) /* if element is an array */
-	      {
-		      CFRange range = {0, CFArrayGetCount (refElementTop)};
-		      /* CountElementsCFArrayHandler called for each array member */
-		      CFArrayApplyFunction (refElementTop, range, HIDGetElementsCFArrayHandler, NULL);
-	      }
-		  }
+         CFTypeRef refElementTop = CFDictionaryGetValue ((CFMutableDictionaryRef) refElement, CFSTR(kIOHIDElementKey));
+         if (refElementTop)
+         {
+            CFTypeID type = CFGetTypeID (refElementTop);
+            if (type == CFArrayGetTypeID()) /* if element is an array */
+            {
+               CFRange range = {0, CFArrayGetCount (refElementTop)};
+               /* CountElementsCFArrayHandler called for each array member */
+               CFArrayApplyFunction (refElementTop, range, HIDGetElementsCFArrayHandler, NULL);
+            }
+         }
       }
 	}
-   ControllerElement *theElement = NULL;
-   if(isButton)
-   {
-      ControllerElement e;
-      gController.buttons.push_back(e);
-      theElement = &gController.buttons.last();
-	  logprintf("Found Button!");
-   }
-   else if(isAxis)
-   {
-      ControllerElement e;
-      gController.axes.push_back(e);
-      theElement = &gController.axes.last();
-	  logprintf("Found Axis!");
-   }
-
 	if (theElement) /* add to list */
 	{
 	   long number;
@@ -279,10 +297,8 @@ bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask)
       return false;
 
    S32 i;
-   for(i = 0; i < gController.axes.size(); i++)
+   for(i = 0; i < MaxJoystickAxes; i++)
    {
-      if(i >= MaxJoystickAxes)
-         break;
       ControllerElement *e = &gController.axes[i];
       S32 elementValue = getElementValue(e);
       S32 diff = e->maxValue - e->minValue;
@@ -294,8 +310,6 @@ bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask)
       else
          axes[i] = 0;
    }
-   for(; i < MaxJoystickAxes; i++)
-      axes[i] = 0;
 
    buttonMask = 0;
    for(i = 0; i < gController.buttons.size(); i++)
