@@ -177,7 +177,7 @@ void SFXObject::play()
       // see if it's on the play list:
       S32 i;
       for(i = 0; i < gPlayList.size(); i++)
-         if(gPlayList[i] == this)
+         if(this == gPlayList[i].getPointer())
             return;
       gPlayList.push_back(this);
    }
@@ -193,7 +193,7 @@ void SFXObject::stop()
    }
    for(S32 i = 0; i < gPlayList.size(); i++)
    {
-      if(gPlayList[i] == this)
+      if(gPlayList[i].getPointer() == this)
       {
          gPlayList.erase(i);
          return;

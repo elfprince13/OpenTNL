@@ -78,7 +78,7 @@ void Item::dismount()
    {
       for(S32 i = 0; i < mMount->mMountedItems.size(); i++)
       {
-         if(mMount->mMountedItems[i] == this)
+         if(mMount->mMountedItems[i].getPointer() == this)
          {
             mMount->mMountedItems.erase(i);
             break;
