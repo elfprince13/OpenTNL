@@ -125,19 +125,19 @@ void GameObject::damageObject(DamageInfo *theInfo)
 
 static Vector<GameObject*> fillVector;
 
-void GameObject::radiusDamage(Point pos, F32 rad, U32 typemask, DamageInfo *info, F32 force)
+void GameObject::radiusDamage(Point pos, F32 innerRad, F32 outerRad, U32 typemask, DamageInfo &info, F32 force)
 {
    // Check for players within range
    // if so, blast them to death
    Rect queryRect(pos, pos);
-   queryRect.expand(Point(rad, rad));
+   queryRect.expand(Point(outerRad, outerRad));
 
    fillVector.clear();
    findObjects(typemask, fillVector, queryRect);
 
    // Ghosts can't do damage.
    if(isGhost())
-      info->damageAmount = 0;
+      info.damageAmount = 0;
 
    for(S32 i=0; i<fillVector.size(); i++)
    {
@@ -145,26 +145,43 @@ void GameObject::radiusDamage(Point pos, F32 rad, U32 typemask, DamageInfo *info
       Point objPos = fillVector[i]->getActualPos();
       Point delta = objPos - pos;
 
-      if(delta.len() > rad)
+      if(delta.len() > outerRad)
          continue;
 
       // Can one damage another?
       if(getGame()->getGameType())
-         if(!getGame()->getGameType()->objectCanDamageObject(info->damagingObject, fillVector[i]))
+         if(!getGame()->getGameType()->objectCanDamageObject(info.damagingObject, fillVector[i]))
             continue;
 
-      // figure the impulse
-      info->impulseVector  = delta;
-      info->impulseVector.normalize();
+      // Do an LOS check...
+      F32 t;
+      Point n;
 
-      info->collisionPoint  = objPos;
-      info->collisionPoint -= info->impulseVector;
+      if(findObjectLOS(BarrierType, 0, pos, objPos, t, n))
+         continue;
 
-      info->impulseVector  *= force;
+      // figure the impulse and damage
+      DamageInfo localInfo = info;
 
-      // BJGTODO: Check if we can see them via LOS?
+      // Figure collision forces...
+      localInfo.impulseVector  = delta;
+      localInfo.impulseVector.normalize();
 
-      fillVector[i]->damageObject(info);
+      localInfo.collisionPoint  = objPos;
+      localInfo.collisionPoint -= info.impulseVector;
+
+      // Reuse t from above to represent interpolation based on distance.
+      F32 dist = delta.len();
+      if(dist < innerRad)
+         t = 1.f;
+      else
+         t = 1.f - (dist - innerRad) / (outerRad - innerRad);
+
+      // Scale stuff by distance.
+      localInfo.impulseVector  *= force * t;
+      localInfo.damageAmount   *= t;
+
+      fillVector[i]->damageObject(&localInfo);
    }
 }
 
