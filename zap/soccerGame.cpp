@@ -340,10 +340,7 @@ SoccerGoalObject::SoccerGoalObject()
 void SoccerGoalObject::onAddedToGame(Game *theGame)
 {
    if(!isGhost())
-   {
-      setInterface(theGame->getNetInterface());
       setScopeAlways();
-   }
 }
 
 void SoccerGoalObject::render()

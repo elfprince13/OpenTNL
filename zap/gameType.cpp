@@ -223,9 +223,6 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cSetGameOver, (bool gameOver),
 void GameType::onAddedToGame(Game *theGame)
 {
    theGame->setGameType(this);
-   setInterface(theGame->getNetInterface());
-   if(!isGhost())
-      setScopeAlways();
 }
 
 bool GameType::processLevelItem(S32 argc, const char **argv)
@@ -325,6 +322,29 @@ void GameType::clientRequestEngineerBuild(GameConnection *client, U32 buildObjec
 }
 
 
+void GameType::performScopeQuery(GhostConnection *connection)
+{
+   GameConnection *gc = (GameConnection *) connection;
+   GameObject *co = gc->getControlObject();
+
+   const Vector<SafePtr<GameObject> > &scopeAlwaysList = getGame()->getScopeAlwaysList();
+
+   gc->objectInScope(this);
+
+   // we make sure that all scope always objects are available before
+   // we scope anything else to the client
+   bool allAvailable = true;
+   for(S32 i = 0; i < scopeAlwaysList.size(); i++)
+   {
+      if(scopeAlwaysList[i].isNull())
+         continue;
+      gc->objectInScope(scopeAlwaysList[i]);
+      allAvailable = gc->isGhostAvailable(scopeAlwaysList[i]) && allAvailable;
+   }
+   if(allAvailable && co)
+      performProxyScopeQuery(co, (GameConnection *) connection);
+}
+
 void GameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection)
 {
    static Vector<GameObject *> fillVector;
@@ -394,6 +414,8 @@ void GameType::countTeamPlayers()
 
 void GameType::serverAddClient(GameConnection *theClient)
 {
+   theClient->setScopeObject(this);
+
    ClientRef cref;
    cref.name = theClient->getClientName();
 

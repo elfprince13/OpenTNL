@@ -164,8 +164,6 @@ public:
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);
 
-   void performScopeQuery(GhostConnection *connection);
-
    void processArguments(S32 argc, const char **argv);
 
    TNL_DECLARE_CLASS(Ship);

@@ -174,7 +174,6 @@ protected:
 
    Vector<NetConnection *> mPendingConnections; ///< List of connections that are in the startup state, where the remote host has not fully
                                                 ///  validated the connection.
-   Vector<NetObject *> mScopeAlwaysList;        ///< List of NetObjects marked as ScopeAlways for this connection.
 
    RefPtr<AsymmetricKey> mPrivateKey;  ///< The private key used by this NetInterface for secure key exchange.
    RefPtr<Certificate> mCertificate;   ///< A certificate, signed by some Certificate Authority, to authenticate this host.
@@ -373,9 +372,6 @@ public:
 
    /// Returns the list of connections on this NetInterface.
    Vector<NetConnection *> &getConnectionList() { return mConnectionList; }
-
-   /// Returns the list of NetObjects that are marked as ScopeAlways for this interface.
-   Vector<NetObject *> &getScopeAlwaysList() { return mScopeAlwaysList; }
 
    /// looks up a connected connection on this NetInterface
    NetConnection *findConnection(const Address &remoteAddress);

@@ -27,10 +27,12 @@
 #ifndef _GAMEOBJECT_H_
 #define _GAMEOBJECT_H_
 
+#include "tnlTypes.h"
 #include "point.h"
 #include "gameConnection.h"
 #include "tnlNetObject.h"
 #include "game.h"
+#include "move.h"
 
 namespace Zap
 {
@@ -54,6 +56,10 @@ enum GameObjectType
    CommandMapVisType = BIT(31),
    AllObjectTypes = 0xFFFFFFFF,
 };
+
+class GameObject;
+class Game;
+class GameConnection;
 
 struct DamageInfo
 {
@@ -162,6 +168,7 @@ public:
    bool isCollisionEnabled() { return mDisableCollisionCount == 0; }
 
    virtual void processArguments(S32 argc, const char**argv);
+   void setScopeAlways();
 };
 
 extern void drawCircle(Point pos, F32 radius);

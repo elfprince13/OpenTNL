@@ -126,10 +126,7 @@ Barrier::Barrier(Point st, Point e)
 void Barrier::onAddedToGame(Game *theGame)
 {
    if(!isGhost())
-   {
-      setInterface(theGame->getNetInterface());
       setScopeAlways();
-   }
 }
 
 U32 Barrier::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)

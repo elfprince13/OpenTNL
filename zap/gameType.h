@@ -51,12 +51,19 @@ public:
       Timer respawnTimer;
 
       bool wantsScoreboardUpdates;
+      bool scopeAlwaysComplete;
+
       SafePtr<GameConnection> clientConnection;
       RefPtr<SFXObject> voiceSFX;
       RefPtr<VoiceDecoder> decoder;
 
       U32 ping;
-      ClientRef() { ping = 0; score = 0; }
+      ClientRef()
+      {
+         ping = 0;
+         score = 0;
+         scopeAlwaysComplete = false;
+      }
    };
 
    Vector<ClientRef> mClientList;
@@ -133,6 +140,7 @@ public:
 
    void setClientShipLoadout(S32 clientIndex, const Vector<U32> &loadout);
 
+   void performScopeQuery(GhostConnection *connection);
    virtual void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);
 
    TNL_DECLARE_RPC(s2cAddTeam, (StringTableEntryRef teamName, F32 r, F32 g, F32 b));

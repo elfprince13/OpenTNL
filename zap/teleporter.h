@@ -59,6 +59,8 @@ public:
    void idle(GameObject::IdleCallPath path);
    void render();
 
+   void onAddedToGame(Game *theGame);
+
    void processArguments(S32 argc, const char **argv);
 
    TNL_DECLARE_CLASS(Teleporter);

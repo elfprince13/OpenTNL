@@ -87,11 +87,8 @@ public:
 
    void onAddedToGame(Game *theGame)
    {
-      if(!isGhost())
-      {
-         setInterface(theGame->getNetInterface());
+      if(!isGhost())      
          setScopeAlways();
-      }
    }
 
    void computeExtent()

@@ -46,7 +46,6 @@ void ControlObjectConnection::setControlObject(GameObject *theObject)
       controlObject->setControllingClient(NULL);
 
    controlObject = theObject;
-   setScopeObject(theObject);
 
    if(theObject)
       theObject->setControllingClient((GameConnection *) this);

@@ -29,103 +29,14 @@
 
 #include "tnl.h"
 #include "tnlGhostConnection.h"
-
+#include "gameObject.h"
 #include "point.h"
+#include "move.h"
 
 using namespace TNL;
 
 namespace Zap
 {
-
-// some angle conversion functions:
-const F32 radiansToDegreesConversion = 360.0f * FloatInverse2Pi;
-
-inline F32 radiansToDegrees(F32 angle)
-{
-   return angle * radiansToDegreesConversion;
-}
-
-inline F32 radiansToUnit(F32 angle)
-{
-   return angle * FloatInverse2Pi;
-}
-
-inline F32 unitToRadians(F32 angle)
-{
-   return angle * Float2Pi;
-}
-
-struct Move
-{
-   float left;
-   float right;
-   float up;
-   float down;
-   float angle;
-   bool fire;
-   bool module[2];
-   U32 time;
-
-   enum {
-      MaxMoveTime = 127,
-   };
-
-   Move() { left = right = up = down = angle = 0; module[0] = module[1] = fire = false; time = 32; }
-
-   bool isEqualMove(Move *prev)
-   {
-      return   prev->left == left &&
-               prev->right == right &&
-               prev->up == up &&
-               prev->down == down &&
-               prev->angle == angle &&
-               prev->fire == fire &&
-               prev->module[0] == module[0] &&
-               prev->module[1] == module[1];
-   }
-
-   void pack(BitStream *stream, Move *prev, bool packTime)
-   {
-      if(!stream->writeFlag(prev && isEqualMove(prev)))
-      {
-         stream->writeFloat(left, 4);
-         stream->writeFloat(right, 4);
-         stream->writeFloat(up, 4);
-         stream->writeFloat(down, 4);
-         U32 writeAngle = U32(radiansToUnit(angle) * 0xFFF);
-
-         stream->writeInt(writeAngle, 12);
-         stream->writeFlag(fire);
-         stream->writeFlag(module[0]);
-         stream->writeFlag(module[1]);
-      }
-      if(packTime)
-         stream->writeRangedU32(time, 0, MaxMoveTime);
-   }
-   void unpack(BitStream *stream, bool unpackTime)
-   {
-      if(!stream->readFlag())
-      {
-         left = stream->readFloat(4);
-         right = stream->readFloat(4);
-         up = stream->readFloat(4);
-         down = stream->readFloat(4);
-         angle = unitToRadians(stream->readInt(12) / F32(0xFFF));
-         fire = stream->readFlag();
-         module[0] = stream->readFlag();
-         module[1] = stream->readFlag();
-      }
-      if(unpackTime)
-         time = stream->readRangedU32(0, MaxMoveTime);
-   }
-   void prepare()
-   {
-      PacketStream stream;
-      pack(&stream, NULL, false);
-      stream.setBytePosition(0);
-      unpack(&stream, false);
-   }
-};
 
 class GameObject;
 

@@ -207,6 +207,8 @@ void ServerGame::cycleLevel()
    while(mGameObjects.size())
       delete mGameObjects[0];
 
+   mScopeAlwaysList.clear();
+
    for(GameConnection *walk = GameConnection::getClientList(); walk ; walk = walk->getNextClient())
       walk->resetGhosting();
 

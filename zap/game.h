@@ -77,6 +77,8 @@ namespace Zap
 class MasterServerConnection;
 class GameNetInterface;
 class GameType;
+class GameObject;
+class GameConnection;
 
 /// Base class for server and client Game subclasses.  The Game
 /// base class manages all the objects in the game simulation on
@@ -100,6 +102,7 @@ protected:
    GridDatabase mDatabase;
    Vector<GameObject *> mGameObjects;
    Vector<DeleteRef> mPendingDeleteObjects;
+   Vector<SafePtr<GameObject> > mScopeAlwaysList;
 
    RefPtr<GameNetInterface> mNetInterface;
 
@@ -138,6 +141,9 @@ public:
    GameNetInterface *getNetInterface();
    GridDatabase *getGridDatabase() { return &mDatabase; }
 
+   const Vector<SafePtr<GameObject> > &getScopeAlwaysList() { return mScopeAlwaysList; }
+
+   void setScopeAlwaysObject(GameObject *theObject) { mScopeAlwaysList.push_back(theObject); }
    GameType *getGameType();
    U32 getTeamCount();
 

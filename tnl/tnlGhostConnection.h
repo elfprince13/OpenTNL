@@ -154,10 +154,12 @@ protected:
 
    void freeGhostInfo(GhostInfo *);
 
-   virtual void onAllGhostAlwaysObjectsReceived();              ///< Notifies subclasses that all ghost always objects have been received.
-   virtual void onEndGhosting();                                ///< Notifies subclasses that the server has stopped ghosting objects on this connection.
-   virtual void onStartGhosting(U32 numGhostAlwaysObjects);     ///< Notifies subclasses that the server has started ghosting objects.
-   virtual void onGhostAlwaysObjectReceived(NetObject *object); ///< Notifies subclasses that one of the ghost always objects has been received.
+   /// Notifies subclasses that the remote host is about to start ghosting objects.
+   virtual void onStartGhosting();                              
+
+   /// Notifies subclasses that the server has stopped ghosting objects on this connection.
+   virtual void onEndGhosting();
+
 public:
    GhostConnection();
    ~GhostConnection();
@@ -199,24 +201,17 @@ public:
 
    S32 getGhostIndex(NetObject *object); ///< Returns the client-side ghostIndex of the specified server object, or -1 if the object is not available on the client.
 
+   /// Returns true if the object is available on the client.
+   bool isGhostAvailable(NetObject *object) { return getGhostIndex(object) != -1; }
+
    void resetGhosting();                   ///< Stops ghosting objects from this GhostConnection to the remote host, which causes all ghosts to be destroyed on the client.
    void activateGhosting();                ///< Begins ghosting objects from this GhostConnection to the remote host, starting with the GhostAlways objects.
    bool isGhosting() { return mGhosting; } ///< Returns true if this connection is currently ghosting objects to the remote host.
 
    void detachObject(GhostInfo *info);                      ///< Notifies the GhostConnection that the specified GhostInfo should no longer be scoped to the client.
-   void setGhostAlwaysObject(NetObject *object, U32 index); ///< Called by the GhostAlwaysEvent on the client to install a GhostAlways object.
 
    /// RPC from server to client before the GhostAlwaysObjects are transmitted
-   TNL_DECLARE_RPC(rpcGhostAlwaysStarting, (U32 sequence, Int<GhostCountBitSize>));
-
-   /// RPC from server to client called after all the GhostAlwaysEvents are posted
-   TNL_DECLARE_RPC(rpcGhostAlwaysDone, (U32 sequence));
-
-   /// RPC from client to server sent when the client receives the rpcGhostAlwaysDone, to notify that it is ready for the activation of the ghost always objects.
-   TNL_DECLARE_RPC(rpcReadyForGhostAlwaysActivation, (U32 sequence));
-
-   /// RPC from server to client called after all GhostAlways objects are activated
-   TNL_DECLARE_RPC(rpcGhostAlwaysActivated, (U32 sequence));    
+   TNL_DECLARE_RPC(rpcStartGhosting, (U32 sequence));
 
    /// RPC from client to server sent when the client receives the rpcGhostAlwaysActivated
    TNL_DECLARE_RPC(rpcReadyForNormalGhosts, (U32 sequence));
@@ -256,12 +251,11 @@ struct GhostInfo
     enum Flags
     {
       InScope = BIT(0),             ///< This GhostInfo's NetObject is currently in scope for this connection.
-      ScopeAlways = BIT(1),         ///< This GhostInfo's NetObject is always in scope for all connections.
-      ScopeLocalAlways = BIT(2),    ///< This GhostInfo's NetObject is always in scope for this connection.
-      NotYetGhosted = BIT(3),       ///< This GhostInfo's NetObject has not been sent to or constructed on the remote host.
-      Ghosting = BIT(4),            ///< This GhostInfo's NetObject has been sent to the client, but the packet it was sent in hasn't been acked yet.
-      KillGhost = BIT(5),           ///< The ghost of this GhostInfo's NetObject should be destroyed ASAP.
-      KillingGhost = BIT(6),        ///< The ghost of this GhostInfo's NetObject is in the process of being destroyed.
+      ScopeLocalAlways = BIT(1),    ///< This GhostInfo's NetObject is always in scope for this connection.
+      NotYetGhosted = BIT(2),       ///< This GhostInfo's NetObject has not been sent to or constructed on the remote host.
+      Ghosting = BIT(3),            ///< This GhostInfo's NetObject has been sent to the client, but the packet it was sent in hasn't been acked yet.
+      KillGhost = BIT(4),           ///< The ghost of this GhostInfo's NetObject should be destroyed ASAP.
+      KillingGhost = BIT(5),        ///< The ghost of this GhostInfo's NetObject is in the process of being destroyed.
 
       /// Flag mask - if any of these are set, the object is not yet available for ghost ID lookup.
       NotAvailable = (NotYetGhosted | Ghosting | KillGhost | KillingGhost),

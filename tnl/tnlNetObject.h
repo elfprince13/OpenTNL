@@ -215,15 +215,13 @@ class NetObject : public Object
    GhostInfo *mFirstObjectRef; ///< Head of the linked list of GhostInfos for this object.
 
    SafePtr<NetObject> mServerObject; ///< Direct pointer to the parent object on the server if it is a local connection
-   SafePtr<NetInterface> mOwningInterface; ///< The interface that owns this NetObject
    GhostConnection *mOwningConnection; ///< The connection that owns this ghost, if it's a ghost
 protected:
    enum NetFlag
    {
     IsGhost =              BIT(1),  ///< Set if this is a ghost.
-      ScopeAlways =        BIT(2),  ///< Set if this object always ghosts clients.
-      ScopeLocal =         BIT(3),  ///< If set, this object ghosts only to the local client.
-      Ghostable =          BIT(4),  ///< Set if this object can ghost at all.
+      ScopeLocal =         BIT(2),  ///< If set, this object ghosts only to the local client.
+      Ghostable =          BIT(3),  ///< Set if this object can ghost at all.
     MaxNetFlagBit = 15
    };
 
@@ -281,19 +279,6 @@ public:
    /// @note This is a server side call. It has no meaning for ghosts.
    void clearMaskBits(U32 orMask);
 
-   /// Notify the network system that this object should always be
-   /// considered to be in scope for all clients.
-   void setScopeAlways();
-
-   /// Notify the network system that this object should no longer be
-   /// automatically scoped to all clients.
-   ///
-   /// @see setScopeAlways
-   void clearScopeAlways();
-
-   /// Set the NetInterface that owns this NetObject.
-   void setInterface(NetInterface *myInterface);
-
    /// Called to determine the relative update priority of an object.
    ///
    /// All objects that are in scope and that have out of date
@@ -341,14 +326,8 @@ public:
    /// local client.
    bool isScopeLocal() const;
 
-   /// isScopeable returns true if this object is ghostable, but is not scope always.
-   bool isScopeable() const;
-
    /// isGhostable returns true if this object can be ghosted to any clients.
    bool isGhostable() const;
-
-   /// isGhostAlways returns true if this object always replicates to all clients.
-   bool isGhostAlways() const;
 
    /// Return a hash for this object.
    ///
@@ -370,19 +349,9 @@ inline bool NetObject::isScopeLocal() const
     return mNetFlags.test(ScopeLocal);
 }
 
-inline bool NetObject::isScopeable() const
-{
-    return mNetFlags.test(Ghostable) && !mNetFlags.test(ScopeAlways);
-}
-
 inline bool NetObject::isGhostable() const
 {
     return mNetFlags.test(Ghostable);
-}
-
-inline bool NetObject::isGhostAlways() const
-{
-    return mNetFlags.test(Ghostable) && mNetFlags.test(ScopeAlways);
 }
 
 inline U32 NetObject::getHashId() const

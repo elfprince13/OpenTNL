@@ -40,7 +40,7 @@ TNL_IMPLEMENT_NETOBJECT(Teleporter);
 
 Teleporter::Teleporter(Point start, Point end)
 {
-   mNetFlags.set(Ghostable | ScopeAlways);
+   mNetFlags.set(Ghostable);
    pos = start;
    dest = end;
    timeout = 0;
@@ -50,6 +50,12 @@ Teleporter::Teleporter(Point start, Point end)
    r.expand(Point(TeleporterRadius, TeleporterRadius));
    setExtent(r);
    mObjectTypeMask |= CommandMapVisType;
+}
+
+void Teleporter::onAddedToGame(Game *theGame)
+{
+   if(!isGhost())
+      setScopeAlways();
 }
 
 void Teleporter::processArguments(S32 argc, const char **argv)

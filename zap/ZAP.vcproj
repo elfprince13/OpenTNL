@@ -398,6 +398,9 @@
 			RelativePath="..\master\masterInterface.cpp">
 		</File>
 		<File
+			RelativePath=".\move.h">
+		</File>
+		<File
 			RelativePath=".\point.h">
 		</File>
 		<File

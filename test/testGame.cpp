@@ -287,7 +287,6 @@ Building::Building()
    
    // always scope the buildings to the clients
    mNetFlags.set(Ghostable);
-   setScopeAlways();  
 }
 
 Building::~Building()
@@ -428,7 +427,6 @@ void TestConnection::onConnectionEstablished()
       // for this client.
       Player *player = new Player;
       myPlayer = player;
-      myPlayer->setInterface(getInterface());
       myPlayer->addToGame(((TestNetInterface *) getInterface())->game);
       setScopeObject(myPlayer);
       setGhostFrom(true);
@@ -529,13 +527,11 @@ TestGame::TestGame(bool server, const Address &interfaceBindAddr, const Address 
       for(S32 i = 0; i < 50; i ++)
       {
          Building *building = new Building;
-         building->setInterface(myNetInterface);
          building->addToGame(this);
       }
       for(S32 i = 0; i < 15; i ++)
       {
          Player *aiPlayer = new Player(Player::PlayerTypeAI);
-         aiPlayer->setInterface(myNetInterface);
          aiPlayer->addToGame(this);
       }
       serverPlayer = new Player(Player::PlayerTypeMyClient);

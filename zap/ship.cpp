@@ -713,12 +713,6 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
 
 static Vector<GameObject *> fillVector;
 
-void Ship::performScopeQuery(GhostConnection *connection)
-{
-   GameType *gt = gServerGame->getGameType();
-   gt->performProxyScopeQuery(this, (GameConnection *) connection);
-}
-
 F32 getAngleDiff(F32 a, F32 b)
 {
    // Figure out the shortest path from a to b...

@@ -67,6 +67,11 @@ Point GameObject::getActualPos()
    return extent.getCenter();
 }
 
+void GameObject::setScopeAlways()
+{
+   getGame()->setScopeAlwaysObject(this);
+}
+
 void GameObject::setActualPos(Point p)
 {
 }

@@ -418,10 +418,7 @@ void HuntersNexusObject::processArguments(S32 argc, const char **argv)
 void HuntersNexusObject::onAddedToGame(Game *theGame)
 {
    if(!isGhost())
-   {
-      setInterface(theGame->getNetInterface());
       setScopeAlways();
-   }
 }
 
 void HuntersNexusObject::render()

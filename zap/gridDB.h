@@ -27,9 +27,12 @@
 #ifndef _GRIDDB_H_
 #define _GRIDDB_H_
 
+#include "tnlTypes.h"
 #include "point.h"
-#include "gameConnection.h"
-#include "../tnl/tnlNetObject.h"
+#include "tnlDataChunker.h"
+#include "tnlVector.h"
+
+using namespace TNL;
 
 namespace Zap
 {

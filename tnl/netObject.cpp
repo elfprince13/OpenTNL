@@ -46,7 +46,6 @@ NetObject::NetObject()
 
 NetObject::~NetObject()
 {
-   clearScopeAlways();
    while(mFirstObjectRef)
       mFirstObjectRef->connection->detachObject(mFirstObjectRef);
 
@@ -147,79 +146,6 @@ void NetObject::collapseDirtyList()
    }
 }
 
-/** Scope the object to all connections
-   The object is marked as ScopeAlways and immediatly ghost to
-   all active connections.  This function has no effect if the object
-   is not marked as Ghostable.
-*/
-
-void NetObject::setInterface(NetInterface *interface)
-{
-   mOwningInterface = interface;
-   if(interface && mNetFlags.test(ScopeAlways))
-   {
-      mNetFlags.clear(ScopeAlways);
-      setScopeAlways();
-   }
-}
-
-void NetObject::setScopeAlways()
-{
-   if(mNetFlags.test(Ghostable) && !mNetFlags.test(IsGhost) && !mNetFlags.test(ScopeAlways))
-   {
-      mNetFlags.set(ScopeAlways);
-   
-      // if it's a ghost always object, add it to the ghost always set
-      // for NetConnections created later
-
-      if(!mOwningInterface.isNull())
-      {
-         Vector<NetObject *> &scopeAlwaysList = mOwningInterface->getScopeAlwaysList();
-
-         scopeAlwaysList.push_back(this);
-         // add it to all Connections that already exist.
-
-         Vector<NetConnection*> &connectionList = mOwningInterface->getConnectionList();
-
-         for(S32 i = 0; i < connectionList.size(); i++)
-         {
-            NetConnection *con = connectionList[i];
-            GhostConnection *gc = dynamic_cast<GhostConnection *>(con);
-
-            if(gc && gc->doesGhostFrom() && gc->isGhosting())
-               gc->objectInScope(this);
-         }
-      }
-   }
-}
-
-/** Un-ghost the object from all connections
-   The object's ScopeAlways flag is cleared and the object is removed from
-   all current active connections.
-*/
-void NetObject::clearScopeAlways()
-{
-   if(!mNetFlags.test(IsGhost) && mNetFlags.test(ScopeAlways))
-   {
-      mNetFlags.clear(ScopeAlways);
-      if(!mOwningInterface.isNull())
-      {
-         Vector<NetObject *>& scopeAlwaysList = mOwningInterface->getScopeAlwaysList();
-         for(S32 i = 0; i < scopeAlwaysList.size(); i++)
-         {
-            if(scopeAlwaysList[i] == this)
-            {
-               scopeAlwaysList.erase_fast(i);
-               break;
-            }
-         }
-      }
-      // Un ghost this object from all the connections
-      while(mFirstObjectRef)
-         mFirstObjectRef->connection->detachObject(mFirstObjectRef);
-   }
-}   
-
 bool NetObject::onGhostAdd(GhostConnection *theConnection)
 {
    return true;
@@ -256,7 +182,7 @@ void NetObject::performScopeQuery(GhostConnection *connection)
 {
    // default behavior - since we have no idea here about
    // the contents of the world, or why they matter, just scope
-   // the control object.
+   // the scope object.
    connection->objectInScope(this);
 }
 

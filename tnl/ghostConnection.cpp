@@ -33,90 +33,6 @@
 
 namespace TNL {
 
-class GhostAlwaysObjectEvent : public NetEvent
-{
-   SafePtr<NetObject> object;
-   U32 ghostIndex;
-   bool validObject;
-public:
-   GhostAlwaysObjectEvent(NetObject *obj = NULL, U32 index = 0)
-     : NetEvent(NetEvent::GuaranteedOrdered, NetEvent::DirAny)
-   {
-      if(obj)
-      {
-         object = obj;
-         ghostIndex = index;
-      }
-   }
-   ~GhostAlwaysObjectEvent()
-   {
-   }
-   
-   void pack(EventConnection *ps, BitStream *bstream)
-   {
-      bstream->writeInt(ghostIndex, GhostConnection::GhostIdBitSize);
-
-      if(bstream->writeFlag(!object.isNull()))
-      {
-         GhostConnection *gc = static_cast<GhostConnection *>(ps);
-         S32 classId = object->getClassId(ps->getNetClassGroup());
-         bstream->writeClassId(classId, NetClassTypeObject, ps->getNetClassGroup());
-         object->packUpdate(gc, 0xFFFFFFFF, bstream);
-      }
-   }
-   void write(EventConnection *ps, BitStream *bstream)
-   {
-      bstream->writeInt(ghostIndex, GhostConnection::GhostIdBitSize);
-      if(bstream->writeFlag(validObject))
-      {
-         GhostConnection *gc = static_cast<GhostConnection *>(ps);
-         S32 classId = object->getClassId(ps->getNetClassGroup());
-         bstream->writeClassId(classId, NetClassTypeObject, ps->getNetClassGroup());
-         object->packUpdate(gc, 0xFFFFFFFF, bstream);
-      }
-   }
-   void unpack(EventConnection *ps, BitStream *bstream)
-   {
-      ghostIndex = bstream->readInt(GhostConnection::GhostIdBitSize);
-
-      if(bstream->readFlag())
-      {
-         GhostConnection *gc = static_cast<GhostConnection *>(ps);
-         S32 classId = bstream->readClassId(NetClassTypeObject, ps->getNetClassGroup());
-         if(classId == -1)
-         {
-            ps->setLastError("Invalid packet.");
-            return;
-         }
-         object = (NetObject *) Object::create(ps->getNetClassGroup(), NetClassTypeObject, classId);
-         if(!object)
-         {
-            ps->setLastError("Invalid packet.");
-            return;
-         }
-         object->mOwningConnection = gc;
-         object->mNetFlags = NetObject::IsGhost;
-         object->unpackUpdate(gc, bstream);
-         object->setInterface(ps->getInterface());
-         validObject = true;
-      }
-      else
-      {
-         object = new NetObject;
-         validObject = false;
-      }
-   }
-   void process(EventConnection *ps)
-   {
-      GhostConnection *gc = static_cast<GhostConnection *>(ps);
-      gc->setGhostAlwaysObject(object, ghostIndex);
-      object = NULL;
-   }
-   TNL_DECLARE_CLASS(GhostAlwaysObjectEvent);
-};
-
-TNL_IMPLEMENT_NETEVENT(GhostAlwaysObjectEvent, NetClassGroupGameMask, 0);
-
 GhostConnection::GhostConnection()
 {
    // ghost management data:
@@ -188,7 +104,7 @@ void GhostConnection::packetDropped(PacketNotify *pnotify)
 
    GhostRef *packRef = notify->ghostList;
    // loop through all the packRefs in the packet
-
+ 
    while(packRef)
    {
       GhostRef *temp = packRef->nextRef;
@@ -274,15 +190,6 @@ void GhostConnection::packetReceived(PacketNotify *pnotify)
    }
 }
 
-struct UpdateQueueEntry
-{
-   F32 priority;
-   GhostInfo *obj;
-
-   UpdateQueueEntry(F32 in_priority, GhostInfo *in_obj) 
-      { priority = in_priority; obj = in_obj; }
-};
-
 static S32 QSORT_CALLBACK UQECompare(const void *a,const void *b)
 {
    GhostInfo *ga = *((GhostInfo **) a);
@@ -313,7 +220,7 @@ void GhostConnection::prepareWritePacket()
       // increment the updateSkip for everyone... it's all good
       GhostInfo *walk = mGhostArray[i];
       walk->updateSkipCount++;
-      if(!(walk->flags & (GhostInfo::ScopeAlways | GhostInfo::ScopeLocalAlways)))
+      if(!(walk->flags & (GhostInfo::ScopeLocalAlways)))
          walk->flags &= ~GhostInfo::InScope;
    }
 
@@ -551,7 +458,6 @@ void GhostConnection::readPacket(BitStream *bstream)
 
             obj->mNetIndex = index;
             mLocalGhosts[index] = obj;
-            mLocalGhosts[index]->setInterface(getInterface());
             mLocalGhosts[index]->unpackUpdate(this, bstream);
             
             if(!obj->onGhostAdd(this))
@@ -726,9 +632,6 @@ void GhostConnection::objectInScope(NetObject *obj)
 
    giptr->flags = GhostInfo::NotYetGhosted | GhostInfo::InScope;
    
-   if(obj->mNetFlags.test(NetObject::ScopeAlways))
-      giptr->flags |= GhostInfo::ScopeAlways;
-
    giptr->obj = obj;
    giptr->lastUpdateChain = NULL;
    giptr->updateSkipCount = 0;
@@ -761,104 +664,31 @@ void GhostConnection::activateGhosting()
    // iterate through the ghost always objects and InScope them...
    // also post em all to the other side.
 
-   Vector<NetObject *> &ghostAlwaysSet = mInterface->getScopeAlwaysList();
-
-   S32 sz = ghostAlwaysSet.size();
    S32 j;
-
-   for(j = 0; j < sz; j++)
+   for(j = 0; j < MaxGhostCount; j++)
    {
-      U32 idx = MaxGhostCount - sz + j;
-      mGhostArray[j] = mGhostRefs + idx;
-      mGhostArray[j]->arrayIndex = j;
-   }
-   for(j = sz; j < MaxGhostCount; j++)
-   {
-      U32 idx = j - sz;
-      mGhostArray[j] = mGhostRefs + idx;
+      mGhostArray[j] = mGhostRefs + j;
       mGhostArray[j]->arrayIndex = j;
    }
    mScoping = true; // so that objectInScope will work
-   for(j = 0; j < sz; j++)
-   {
-      objectInScope(ghostAlwaysSet[j]);
-   }
-   rpcGhostAlwaysStarting(mGhostingSequence, ghostAlwaysSet.size());
-   for(j = mGhostZeroUpdateIndex - 1; j >= 0; j--)
-   {
-      TNLAssert((mGhostArray[j]->flags & GhostInfo::ScopeAlways) != 0, "Non-scope always in the scope always list.")
 
-      // we may end up resending state here, but at least initial state
-      // will not be resent.
-      mGhostArray[j]->updateMask = 0;
-      ghostPushToZero(mGhostArray[j]);
-      mGhostArray[j]->flags &= ~GhostInfo::NotYetGhosted;
-      mGhostArray[j]->flags |= GhostInfo::Ghosting;
-
-      postNetEvent(new GhostAlwaysObjectEvent(mGhostArray[j]->obj, mGhostArray[j]->index));
-   }
-   rpcGhostAlwaysDone(mGhostingSequence);
+   rpcStartGhosting(mGhostingSequence);
    //TNLAssert(validateGhostArray(), "Invalid ghost array!");
 }
 
 TNL_DECLARE_MEMBER_ENUM(GhostConnection, GhostCountBitSize);
-TNL_IMPLEMENT_RPC(GhostConnection, rpcGhostAlwaysStarting, (U32 sequence, Int<GhostConnection::GhostCountBitSize> ghostCount), 
+TNL_IMPLEMENT_RPC(GhostConnection, rpcStartGhosting, (U32 sequence), 
       NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {
-   TNLLogMessageV(LogGhostConnection, ("Got GhostAlwaysStarting %d", sequence));
+   TNLLogMessageV(LogGhostConnection, ("Got GhostingStarting %d", sequence));
 
    if(!doesGhostTo())
    {
       setLastError("Invalid packet.");
       return;
    }
-   onStartGhosting(ghostCount);
-}
-
-TNL_IMPLEMENT_RPC(GhostConnection, rpcGhostAlwaysDone, (U32 sequence), 
-      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
-{
-   TNLLogMessageV(LogGhostConnection, ("Got GhostAlwaysDone %d", sequence));
-   if(!doesGhostTo())
-   {
-      setLastError("Invalid packet.");
-      return;
-   }
-   rpcReadyForGhostAlwaysActivation(sequence);
-}
-
-TNL_IMPLEMENT_RPC(GhostConnection, rpcReadyForGhostAlwaysActivation, (U32 sequence), 
-      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
-{
-   TNLLogMessageV(LogGhostConnection, ("Got ready for ghost always activation %d %d", sequence, mGhostingSequence));
-   if(!doesGhostFrom())
-   {
-      setLastError("Invalid packet.");
-      return;
-   }
-   if(sequence != mGhostingSequence)
-      return;
-
-   for(S32 i = 0; i < mGhostFreeIndex; i++)
-   {
-      mGhostArray[i]->flags &= ~GhostInfo::Ghosting;
-      if(mGhostArray[i]->obj)
-         mGhostArray[i]->obj->onGhostAvailable(this);
-   }
-   rpcGhostAlwaysActivated(mGhostingSequence);
-}
-
-TNL_IMPLEMENT_RPC(GhostConnection, rpcGhostAlwaysActivated, (U32 sequence), 
-      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
-{
-   TNLLogMessageV(LogGhostConnection, ("Got GhostAlwaysActivated %d", sequence));
-   if(!doesGhostTo())
-   {
-      setLastError("Invalid packet.");
-      return;
-   }
-   mGhostingSequence = sequence;
-   rpcReadyForNormalGhosts(mGhostingSequence);
+   onStartGhosting();
+   rpcReadyForNormalGhosts(sequence);
 }
 
 TNL_IMPLEMENT_RPC(GhostConnection, rpcReadyForNormalGhosts, (U32 sequence), 
@@ -872,7 +702,6 @@ TNL_IMPLEMENT_RPC(GhostConnection, rpcReadyForNormalGhosts, (U32 sequence),
    }
    if(sequence != mGhostingSequence)
       return;
-   onAllGhostAlwaysObjectsReceived();
    mGhosting = true;
 }
 
@@ -947,34 +776,6 @@ void GhostConnection::resetGhosting()
    //TNLAssert(validateGhostArray(), "Invalid ghost array!");
 }
 
-void GhostConnection::setGhostAlwaysObject(NetObject *object, U32 index)
-{
-   if(!doesGhostTo())
-   {
-	  delete object;
-      setLastError("Invalid packet.");
-      return;
-   }
-   object->mNetFlags = NetObject::IsGhost;
-   // while there's an object waiting...
-   if (isLocalConnection()) {
-      GhostConnection *gc = static_cast<GhostConnection *>(mRemoteConnection.getPointer());
-      object->mServerObject = gc->resolveGhostParent(index);
-   }
-   if(!object->onGhostAdd(this))
-   {
-      // make sure there's an error message if necessary
-      if(!mErrorBuffer[0])
-         setLastError("Invalid packet.");
-      delete object;
-      return;
-   }
-   TNLAssert(mLocalGhosts[index] == NULL, "Ghost already in table!");
-   mLocalGhosts[index] = object;
-   object->mNetIndex = index;
-   onGhostAlwaysObjectReceived(object);
-}
-
 //-----------------------------------------------------------------------------
 
 NetObject *GhostConnection::resolveGhost(S32 id)
@@ -1008,19 +809,11 @@ S32 GhostConnection::getGhostIndex(NetObject *obj)
 
 //-----------------------------------------------------------------------------
 
-void GhostConnection::onAllGhostAlwaysObjectsReceived()
-{
-}
-
 void GhostConnection::onEndGhosting()
 {
 }
 
-void GhostConnection::onStartGhosting(U32)
-{
-}
-
-void GhostConnection::onGhostAlwaysObjectReceived(NetObject *)
+void GhostConnection::onStartGhosting()
 {
 }
 
