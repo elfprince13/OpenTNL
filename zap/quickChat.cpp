@@ -158,7 +158,7 @@ void VChatHelper::render()
 
       S32 curPos = 600 - 20;
 
-      const fontSize = 15;
+      const int fontSize = 15;
 
       // First get to the end...
       while(walk->depth >= matchLevel)
