@@ -9,8 +9,8 @@
 //   the Free Software Foundation; either version 2 of the License, or
 //   (at your option) any later version.
 //
-//   For use in products that are not compatible with the terms of the GNU 
-//   General Public License, alternative licensing options are available 
+//   For use in products that are not compatible with the terms of the GNU
+//   General Public License, alternative licensing options are available
 //   from GarageGames.com.
 //
 //   This program is distributed in the hope that it will be useful,
@@ -157,8 +157,7 @@ bool ClientPuzzleManager::solvePuzzle(U32 *solution, Nonce &clientNonce, Nonce &
    // Until we're done...
    for(;;)
    {
-      // We do 50,000 attempts... (this valus is tweakable)
-      U32 nextValue = startValue + 50000;
+      U32 nextValue = startValue + SolutionFragmentIterations;
       for(;startValue < nextValue; startValue++)
       {
          if(checkOneSolution(startValue, clientNonce, serverNonce, puzzleDifficulty, clientIdentity))
