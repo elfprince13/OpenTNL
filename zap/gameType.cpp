@@ -209,6 +209,9 @@ void GameType::renderTalkingClients()
 void GameType::gameOverManGameOver()
 {
    // 17 days??? We won't last 17 hours!
+   if (mGameOver)
+      return;
+
    mGameOver = true;
    s2cSetGameOver(true);
    gServerGame->gameEnded();
