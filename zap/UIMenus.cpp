@@ -128,7 +128,8 @@ MainMenuUserInterface gMainMenuUserInterface;
 
 MainMenuUserInterface::MainMenuUserInterface()
 {
-   menuTitle = "ZAP:";
+   dSprintf(titleBuffer, sizeof(titleBuffer), "%s:", ZAP_GAME_STRING);
+   menuTitle = titleBuffer;
    menuSubTitle = "A TORQUE NETWORK LIBRARY GAME - WWW.OPENTNL.ORG";
    menuFooter = "(C) 2004 GARAGEGAMES.COM, INC.";
 

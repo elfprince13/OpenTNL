@@ -159,9 +159,12 @@ void display(void)
    // Render master connection state...
    if(gClientGame && gClientGame->getConnectionToMaster() 
       && gClientGame->getConnectionToMaster()->getConnectionState() != NetConnection::Connected)
+   {
+      glColor3f(1,1,1);
       UserInterface::drawStringf(10, 550, 15, "Master Server - %s", 
                                  gConnectStatesTable[gClientGame->getConnectionToMaster()->getConnectionState()]);
 
+   }
    glFlush();
    glutSwapBuffers();
 

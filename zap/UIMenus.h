@@ -64,6 +64,7 @@ public:
 
 class MainMenuUserInterface : public MenuUserInterface
 {
+   char titleBuffer[256];
 public:
    MainMenuUserInterface();
    void processSelection(U32 index);
