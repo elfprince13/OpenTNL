@@ -115,7 +115,13 @@
 	</References>
 	<Files>
 		<File
+			RelativePath=".\config.cpp">
+		</File>
+		<File
 			RelativePath=".\main.cpp">
+		</File>
+		<File
+			RelativePath="..\exe\master.cfg">
 		</File>
 		<File
 			RelativePath=".\masterInterface.cpp">

@@ -39,8 +39,8 @@ public:
    StringTableEntry mName;
 };
 
-Vector<const char *> MOTDTypeVec;
-Vector<const char *> MOTDStringVec;
+Vector<char *> MOTDTypeVec;
+Vector<char *> MOTDStringVec;
 
 
 class MasterServerConnection;
@@ -609,41 +609,36 @@ enum {
    DefaultMasterPort = 29005,
 };
 
+U32 gMasterPort = DefaultMasterPort;
+extern void readConfigFile();
+
 int main(int argc, const char **argv)
 {
-   // Parse command line parameters...
-   U32 port = DefaultMasterPort;
-
-   for(S32 i = 1; i < argc; i++)
-   {
-      if(!stricmp(argv[i], "-port") && i < argc - 1)
-      {
-         port = atoi(argv[i+1]);
-         i++;
-      }
-      else if(!stricmp(argv[i], "-motd") && i < argc - 2)
-      {
-         MOTDTypeVec.push_back(argv[i+1]);
-         MOTDStringVec.push_back(argv[i+2]);
-         i+= 2;
-      }
-   }
+   // Parse command line parameters... 
+   readConfigFile();
 
    // Initialize our net interface so we can accept connections...
-   gNetInterface = new NetInterface(Address(IPProtocol, Address::Any, port));
+   gNetInterface = new NetInterface(Address(IPProtocol, Address::Any, gMasterPort));
 
    //for the master server alone, we don't need a key exchange - that would be a waste
    //gNetInterface->setRequiresKeyExchange(true);
    //gNetInterface->setPrivateKey(new AsymmetricKey(20));
 
-   logprintf("Master Server created - listening on port %d", port);
+   logprintf("Master Server created - listening on port %d", gMasterPort);
 
    // And until infinity, process whatever comes our way.
+   U32 lastConfigReadTime = Platform::getRealMilliseconds();
+
    for(;;)
    {
       U32 currentTime = Platform::getRealMilliseconds();
       gNetInterface->checkIncomingPackets();
       gNetInterface->processConnections();
+      if(currentTime - lastConfigReadTime > 5000)
+      {
+         lastConfigReadTime = currentTime;
+         readConfigFile();
+      }
       Platform::sleep(1);
    }
    return 0;
