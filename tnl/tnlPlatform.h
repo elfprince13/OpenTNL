@@ -31,6 +31,8 @@
 #include "tnlTypes.h"
 #endif
 
+#include <stdarg.h>
+
 namespace TNL {
 
 /// Platform specific functionality is gathered here to enable easier porting.
@@ -105,7 +107,7 @@ extern int    dSprintf(char *buffer, U32 bufferSize, const char *format, ...);
 /// Vsprintf with buffer size argument.
 ///
 /// This will print into the specified string until the buffer size is reached.
-extern int    dVsprintf(char *buffer, U32 bufferSize, const char *format, void *arglist); ///< compiler independent
+extern int    dVsprintf(char *buffer, U32 bufferSize, const char *format, va_list arglist); ///< compiler independent
 
 inline char dToupper(const char c) { if (c >= char('a') && c <= char('z')) return char(c + 'A' - 'a'); else return c; } ///< Converts an ASCII character to upper case.
 inline char dTolower(const char c) { if (c >= char('A') && c <= char('Z')) return char(c - 'A' + 'a'); else return c; } ///< Converts an ASCII character to lower case.

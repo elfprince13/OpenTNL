@@ -447,12 +447,12 @@ S32 dSprintf(char *buffer, U32 bufferSize, const char *format, ...)
 }
 
 
-S32 dVsprintf(char *buffer, U32 bufferSize, const char *format, void *arglist)
+S32 dVsprintf(char *buffer, U32 bufferSize, const char *format, va_list arglist)
 {
 #ifdef TNL_COMPILER_VISUALC
-   S32 len = _vsnprintf(buffer, bufferSize, format, (va_list) arglist);
+   S32 len = _vsnprintf(buffer, bufferSize, format, arglist);
 #else
-   S32 len = vsnprintf(buffer, bufferSize, format, (char *) arglist);
+   S32 len = vsnprintf(buffer, bufferSize, format, arglist);
 #endif
    return len;
 }
