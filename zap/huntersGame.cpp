@@ -38,11 +38,20 @@ namespace Zap
 
 TNL_IMPLEMENT_NETOBJECT(HuntersGameType);
 
+
 TNL_IMPLEMENT_NETOBJECT_RPC(HuntersGameType, s2cSetNexusTimer, (U32 nexusTime, bool canCap),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
    mNexusReturnTimer.reset(nexusTime);
    mCanNexusCap = canCap;
+}
+
+GAMETYPE_RPC_S2C(HuntersGameType, s2cAddYardSaleWaypoint, (F32 x, F32 y))
+{
+   YardSaleWaypoint w;
+   w.timeLeft.reset(YardSaleWaypointTime);
+   w.pos.set(x,y);
+   mYardSaleWaypoints.push_back(w);
 }
 
 TNL_IMPLEMENT_NETOBJECT_RPC(HuntersGameType, s2cHuntersMessage, (U32 msgIndex, StringTableEntryRef clientName, U32 flagCount),
@@ -85,6 +94,11 @@ HuntersGameType::HuntersGameType() : GameType()
    mNexusCapDelay = 15 * 1000;
    mNexusReturnTimer.reset(mNexusReturnDelay);
    mNexusCapTimer.reset(0);
+}
+
+void HuntersGameType::addNexus(HuntersNexusObject *nexus)
+{
+   mNexus = nexus;
 }
 
 void HuntersGameType::processArguments(S32 argc, const char **argv)
@@ -149,6 +163,13 @@ void HuntersGameType::idle(GameObject::IdleCallPath path)
    if(isGhost())
    {
       mNexusReturnTimer.update(deltaT);
+      for(S32 i = 0; i < mYardSaleWaypoints.size();)
+      {
+         if(mYardSaleWaypoints[i].timeLeft.update(deltaT))
+            mYardSaleWaypoints.erase_fast(i);
+         else
+            i++;
+      }
       return;
    }
 
@@ -157,12 +178,20 @@ void HuntersGameType::idle(GameObject::IdleCallPath path)
       mNexusCapTimer.reset(mNexusCapDelay);
       mCanNexusCap = true;
       s2cSetNexusTimer(mNexusCapTimer.getCurrent(), mCanNexusCap);
+      static StringTableEntry msg("The Nexus is now OPEN!");
+      for(S32 i = 0; i < mClientList.size(); i++)
+         mClientList[i]->clientConnection->s2cDisplayMessage(
+         GameConnection::ColorNuclearGreen, SFXFlagSnatch, msg);
    }
    else if(mNexusCapTimer.update(deltaT))
    {
       mNexusReturnTimer.reset(mNexusReturnDelay);
       mCanNexusCap = false;
       s2cSetNexusTimer(mNexusReturnTimer.getCurrent(), mCanNexusCap);
+      static StringTableEntry msg("The Nexus is now CLOSED.");
+      for(S32 i = 0; i < mClientList.size(); i++)
+         mClientList[i]->clientConnection->s2cDisplayMessage(
+         GameConnection::ColorNuclearGreen, SFXFlagDrop, msg);
    }
 }
 
@@ -176,6 +205,9 @@ void HuntersGameType::renderInterfaceOverlay(bool scoreboardVisible)
    U32 secsRemaining = (timeLeft - (minsRemaining * 60000)) / 1000;
    UserInterface::drawStringf(UserInterface::canvasWidth - UserInterface::horizMargin - 65,
       UserInterface::canvasHeight - UserInterface::vertMargin - 45, 20, "%02d:%02d", minsRemaining, secsRemaining);
+   for(S32 i = 0; i < mYardSaleWaypoints.size(); i++)
+      renderObjectiveArrow(mYardSaleWaypoints[i].pos, Color(1,1,1));
+   renderObjectiveArrow(mNexus, mCanNexusCap ? Color(0,1,0) : Color(0.5, 0, 0));
 }
 
 void HuntersGameType::controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject)
@@ -193,8 +225,12 @@ void HuntersGameType::controlObjectForClientKilled(GameConnection *theClient, Ga
       HuntersFlagItem *theFlag = dynamic_cast<HuntersFlagItem *>(theItem);
       if(theFlag)
       {
-         if(theFlag->getFlagCount() > 2)
+         if(theFlag->getFlagCount() >= YardSaleCount)
+         {
+            Point pos = theFlag->getActualPos();
+            s2cAddYardSaleWaypoint(pos.x, pos.y);
             s2cHuntersMessage(HuntersMsgYardSale, theShip->mPlayerName.getString(), 0);
+         }
 
          return;
       }
@@ -374,18 +410,27 @@ void HuntersNexusObject::onAddedToGame(Game *theGame)
 {
    if(!isGhost())
       setScopeAlways();
+   ((HuntersGameType *) theGame->getGameType())->addNexus(this);
 }
 
 void HuntersNexusObject::render()
 {
-   F32 alpha = 0.2;
+   Color c;
    HuntersGameType *theGameType = dynamic_cast<HuntersGameType *>(getGame()->getGameType());
    if(theGameType && theGameType->mCanNexusCap)
-      alpha = 0.5;
+      c.set(0,1,0);
+   else
+      c.set(0.5, 0, 0);
 
-   Color theColor = getGame()->getGameType()->mTeams[0].color;
-   glColor(theColor * alpha);
+   glColor(c * 0.5);
    glBegin(GL_POLYGON);
+   glVertex2f(nexusBounds.min.x, nexusBounds.min.y);
+   glVertex2f(nexusBounds.min.x, nexusBounds.max.y);
+   glVertex2f(nexusBounds.max.x, nexusBounds.max.y);
+   glVertex2f(nexusBounds.max.x, nexusBounds.min.y);
+   glEnd();
+   glColor(c);
+   glBegin(GL_LINE_LOOP);
       glVertex2f(nexusBounds.min.x, nexusBounds.min.y);
       glVertex2f(nexusBounds.min.x, nexusBounds.max.y);
       glVertex2f(nexusBounds.max.x, nexusBounds.max.y);
@@ -396,7 +441,9 @@ void HuntersNexusObject::render()
 bool HuntersNexusObject::getCollisionPoly(Vector<Point> &polyPoints)
 {
    polyPoints.push_back(nexusBounds.min);
+   polyPoints.push_back(Point(nexusBounds.max.x, nexusBounds.min.y));
    polyPoints.push_back(nexusBounds.max);
+   polyPoints.push_back(Point(nexusBounds.min.x, nexusBounds.max.y));
    return true;
 }
 

@@ -176,7 +176,7 @@ void InstructionsUserInterface::renderPage1()
    {
       glColor3f(1,1,1);
       drawString(col1, y, 20, controls[i].controlString);
-      if(OptionsMenuUserInterface::joystickType == PS2DualShock && (i == 2 || i == 3))
+      if((OptionsMenuUserInterface::joystickType == LogitechDualAction || OptionsMenuUserInterface::joystickType == PS2DualShock) && (i == 2 || i == 3))
          renderControllerButton(col2, y + 4, i + 4, i + 4);
       else if(gamepad && !controls[i].primaryControl[0])
          renderControllerButton(col2, y + 4, i - 4, i - 4);

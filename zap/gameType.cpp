@@ -240,26 +240,21 @@ void GameType::renderObjectiveArrow(GameObject *target, Color c, F32 alphaMod)
    if(r.min.y > nearestPoint.y)
       nearestPoint.y = r.min.y;
 
-   Point rp = gClientGame->worldToScreenPoint(nearestPoint);
+   renderObjectiveArrow(nearestPoint, c, alphaMod);
+}
 
-   Point center(400, 300);
-   Point arrowDir = rp - center;
-   /*
-   if(rp.x > UserInterface::horizMargin && 
-      rp.x < UserInterface::canvasWidth - UserInterface::horizMargin && 
-      rp.y > UserInterface::vertMargin && 
-      rp.y < UserInterface::canvasHeight - UserInterface::vertMargin)
+void GameType::renderObjectiveArrow(Point nearestPoint, Color c, F32 alphaMod)
+{
+   GameConnection *gc = gClientGame->getConnectionToServer();
+   GameObject *co = NULL;
+   if(gc)
+      co = gc->getControlObject();
+   if(!co)
       return;
 
-   if(rp.x < UserInterface::horizMargin)
-      rp.x = UserInterface::horizMargin;
-   if(rp.x > UserInterface::canvasWidth - UserInterface::horizMargin)
-      rp.x = UserInterface::canvasWidth - UserInterface::horizMargin;
-   if(rp.y < UserInterface::vertMargin)
-      rp.y = UserInterface::vertMargin;
-   if(rp.y > UserInterface::canvasHeight - UserInterface::vertMargin)
-      rp.y = UserInterface::canvasHeight - UserInterface::vertMargin;
-   */
+   Point rp = gClientGame->worldToScreenPoint(nearestPoint);
+   Point center(400, 300);
+   Point arrowDir = rp - center;
 
    F32 er = arrowDir.x * arrowDir.x / (350 * 350) + arrowDir.y * arrowDir.y / (250 * 250);
    if(er < 1)

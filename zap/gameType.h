@@ -155,6 +155,7 @@ public:
 
    virtual void renderInterfaceOverlay(bool scoreboardVisible);
    void renderObjectiveArrow(GameObject *target, Color c, F32 alphaMod = 1.0f);
+   void renderObjectiveArrow(Point p, Color c, F32 alphaMod = 1.0f);
 
    void renderTimeLeft();
    void renderTalkingClients();

@@ -46,12 +46,20 @@ class HuntersGameType : public GameType
    Timer mNexusReturnTimer;
    Timer mNexusCapTimer;
 
+   struct YardSaleWaypoint
+   {
+      Timer timeLeft;
+      Point pos;
+   };
+   Vector<YardSaleWaypoint> mYardSaleWaypoints;
+   SafePtr<HuntersNexusObject> mNexus;
 public:
    bool mCanNexusCap;
 
    HuntersGameType();
    void processArguments(S32 argc, const char **argv);
    
+   void addNexus(HuntersNexusObject *theObject);
    void shipTouchNexus(Ship *theShip, HuntersNexusObject *theNexus);
    void onGhostAvailable(GhostConnection *theConnection);
    void idle(GameObject::IdleCallPath path);
@@ -63,12 +71,19 @@ public:
    const char *getInstructionString() { return "Collect flags from opposing players and bring them to the Nexus!"; }
    
    enum {
+      DefaultNexusReturnDelay = 60000,
+      DefaultNexusCapDelay = 15000,
+      YardSaleWaypointTime = 5000,
+      YardSaleCount = 8,
+   };
+   enum {
       HuntersMsgScore,
       HuntersMsgYardSale,
       HuntersMsgGameOverWin,
       HuntersMsgGameOverTie,
    };
 
+   TNL_DECLARE_RPC(s2cAddYardSaleWaypoint, (F32 x, F32 y));
    TNL_DECLARE_RPC(s2cSetNexusTimer, (U32 nexusTime, bool canCap));
    TNL_DECLARE_RPC(s2cHuntersMessage, (U32 msgIndex, StringTableEntryRef clientName, U32 flagCount));
    TNL_DECLARE_CLASS(HuntersGameType);

@@ -123,11 +123,12 @@ BOOL CALLBACK EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance,
    if(FAILED(gDirectInput->CreateDevice( pdidInstance->guidInstance, &gJoystick, NULL )))
       return DIENUM_CONTINUE;
    strcpy(gJoystickName, pdidInstance->tszProductName);
+   logprintf("Joystick found: %s", gJoystickName);
    return DIENUM_STOP;
 }
 
 
-bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask)
+bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask, U32 &hatMask)
 {
    // mark: it's ok
    // mark: it's called "winJoystick"
@@ -177,28 +178,28 @@ bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask)
    switch(pov)
    {
    case 0:
-      buttonMask |= ControllerButtonDPadUp;
+      hatMask |= ControllerButtonDPadUp;
       break;
    case 4500:
-      buttonMask |= ControllerButtonDPadUp | ControllerButtonDPadRight;
+      hatMask |= ControllerButtonDPadUp | ControllerButtonDPadRight;
       break;
    case 9000:
-      buttonMask |= ControllerButtonDPadRight;
-      break;
+      hatMask |= ControllerButtonDPadRight;
+      break; 
    case 13500:
-      buttonMask |= ControllerButtonDPadRight | ControllerButtonDPadDown;
+      hatMask |= ControllerButtonDPadRight | ControllerButtonDPadDown;
       break;
    case 18000:
-      buttonMask |= ControllerButtonDPadDown;
+      hatMask |= ControllerButtonDPadDown;
       break;
    case 22500:
-      buttonMask |= ControllerButtonDPadDown | ControllerButtonDPadLeft;
+      hatMask |= ControllerButtonDPadDown | ControllerButtonDPadLeft;
       break;
    case 27000:
-      buttonMask |= ControllerButtonDPadLeft;
+      hatMask |= ControllerButtonDPadLeft;
       break;
    case 31500:
-      buttonMask |= ControllerButtonDPadLeft | ControllerButtonDPadUp;
+      hatMask |= ControllerButtonDPadLeft | ControllerButtonDPadUp;
       break;
    }
    return true;

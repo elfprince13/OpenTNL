@@ -31,17 +31,231 @@
 #include "tnlJournal.h"
 #include <math.h>
 #include "glutInclude.h"
+#include "gameObjectRender.h"
 
 namespace Zap
 {
+
+extern void drawCircle(Point pos, F32 radius);
+void renderControllerButton(F32 x, F32 y, U32 buttonIndex, U32 keyIndex)
+{
+   S32 joy = OptionsMenuUserInterface::joystickType;
+
+   if(joy == -1)
+      UserInterface::drawStringf(x, y, 15, "%c", keyIndex);
+   else if(joy == LogitechWingman)
+   {
+      glColor3f(1,1,1);
+      const char buttons[] = "ABCXYZ";
+      drawCircle(Point(x + 8, y + 8), 8);
+      UserInterface::drawStringf(x + 4, y + 2, 12, "%c", buttons[buttonIndex]);
+   }
+   else if(joy == LogitechDualAction)
+   {
+      glColor3f(1,1,1);
+      const char buttons[] = "12347856";
+      drawCircle(Point(x + 8, y + 8), 8);
+      UserInterface::drawStringf(x + 4, y + 2, 12, "%c", buttons[buttonIndex]);
+   }
+   else if(joy == SaitekDualAnalog)
+   {
+      glColor3f(1,1,1);
+      const char buttons[] = "123456";
+      drawCircle(Point(x + 8, y + 8), 8);
+      UserInterface::drawStringf(x + 4, y + 2, 12, "%c", buttons[buttonIndex]);
+   }
+   else if(joy == PS2DualShock)
+   {
+      static F32 color[6][3] = { { 0.5, 0.5, 1 },
+      { 1, 0.5, 0.5 },
+      { 1, 0.5, 1 },
+      { 0.5, 1, 0.5 },
+      { 0.7, 0.7, 0.7 },
+      { 0.7, 0.7, 0.7 }
+      };
+      Color c(color[buttonIndex][0], color[buttonIndex][1], color[buttonIndex][2]);
+      glColor3f(1.0, 1.0, 1.0);
+      Point center(x + 8, y + 8);
+      if(buttonIndex < 4)
+      {
+         drawCircle(center, 8);
+         glColor(c);
+         switch(buttonIndex)
+         {
+         case 0:
+            glBegin(GL_LINES);
+            glVertex(center + Point(-5, -5));
+            glVertex(center + Point(5, 5));
+            glVertex(center + Point(-5, 5));
+            glVertex(center + Point(5, -5));
+            glEnd();
+            break;
+         case 1:
+            drawCircle(center, 5);
+            break;
+         case 2:
+            glBegin(GL_LINE_LOOP);
+            glVertex(center + Point(-5, -5));
+            glVertex(center + Point(-5, 5));
+            glVertex(center + Point(5, 5));
+            glVertex(center + Point(5, -5));
+            glEnd();
+            break;
+         case 3:
+            glBegin(GL_LINE_LOOP);
+            glVertex(center + Point(0, -5));
+            glVertex(center + Point(5, 3));
+            glVertex(center + Point(-5, 3));
+            glEnd();
+            break;
+         }
+      }
+      else
+      {
+         glBegin(GL_LINE_LOOP);
+         glVertex(center + Point(-8, -8));
+         glVertex(center + Point(-8, 8));
+         glVertex(center + Point(10, 8));
+         glVertex(center + Point(10, -8));
+         glEnd();
+         static const char *buttonIndexString[4] = { 
+            "L2", "R2", "L1", "R1"
+         };
+         UserInterface::drawString(x + 2, y + 2, 11, buttonIndexString[buttonIndex - 4]);
+      }
+   }
+   else if(joy == XBoxController || joy == XBoxControllerOnXBox)
+   {
+      static F32 color[6][3] = { { 0, 1, 0 }, 
+      { 1, 0, 0 }, 
+      { 0, 0, 1 }, 
+      { 1, 1, 0 }, 
+      { 1, 1, 1 },
+      { 0, 0, 0} };
+      Color c(color[buttonIndex][0], color[buttonIndex][1], color[buttonIndex][2]);
+
+      glColor(c * 0.8f);
+      fillCircle(Point(x + 8, y + 8), 8);
+      const char buttons[] = "ABXY  ";
+      glColor3f(1,1,1);
+      drawCircle(Point(x + 8, y + 8), 8);
+      glColor(c);
+      UserInterface::drawStringf(x + 4, y + 2, 12, "%c", buttons[buttonIndex]);
+   }
+}
+
+static U32 gShootAxisRemaps[ControllerTypeCount][2] =
+{
+   { 5, 6 }, { 2, 5 }, { 5, 2 }, { 2, 5 }, { 3, 4 }, { 3, 4 },
+};
+
+static U32 gControllerButtonRemaps[ControllerTypeCount][MaxJoystickButtons] =
+{
+   { // LogitechWingman
+      ControllerButton1,
+      ControllerButton2,
+      ControllerButton3,
+      ControllerButton4,
+      ControllerButton5,
+      ControllerButton6,
+      ControllerButtonLeftTrigger,
+      ControllerButtonRightTrigger,
+      ControllerButtonBack,
+      0,
+      0,
+      0,
+      0,
+      0,
+   },
+   { // LogitechDualAction
+      ControllerButton1,
+      ControllerButton2,
+      ControllerButton3,
+      ControllerButton4,
+      ControllerButtonLeftTrigger,
+      ControllerButtonRightTrigger,
+      ControllerButton5,
+      ControllerButton6,
+      ControllerButtonBack,
+      ControllerButtonStart,
+      0,
+      0,
+      0,
+      0,
+   },
+   { // SaitekDualAnalog
+      ControllerButton1,
+      ControllerButton2,
+      ControllerButton3,
+      ControllerButton4,
+      ControllerButton5,
+      ControllerButton6,
+      ControllerButtonLeftTrigger,
+      ControllerButtonRightTrigger,
+      0,
+      0,
+      ControllerButtonBack,
+      0,
+      0,
+      0,
+   },
+   { // PS2DualShock
+      ControllerButton4,
+      ControllerButton2,
+      ControllerButton1,
+      ControllerButton3,
+      ControllerButton5,
+      ControllerButton6,
+      ControllerButtonLeftTrigger,
+      ControllerButtonRightTrigger,
+      ControllerButtonBack,
+      0,
+      0,
+      ControllerButtonStart,
+      0,
+      0,
+   },
+   { // XBoxController
+      ControllerButton1,
+      ControllerButton2,
+      ControllerButton3,
+      ControllerButton4,
+      ControllerButton6,
+      ControllerButton5,
+      ControllerButtonStart,
+      ControllerButtonBack,
+      0,
+      0,
+      ControllerButtonLeftTrigger,
+      ControllerButtonRightTrigger,
+      0,
+      0,
+   },
+   { // XBoxControllerOnXBox
+      1 << 0,
+      1 << 1,
+      1 << 2,
+      1 << 3,
+      1 << 4,
+      1 << 5,
+      1 << 6,
+      1 << 7,
+      1 << 8,
+      1 << 9,
+      1 << 10,
+      1 << 11,
+      1 << 12,
+      1 << 13,
+   }
+};
 
 static bool updateMoveInternal( Move *theMove, U32 &buttonMask )
 {
    F32 axes[MaxJoystickAxes];
    static F32 minValues[2] = { - 0.5, -0.5 };
    static F32 maxValues[2] = { 0.5, 0.5 };
-
-   if(!ReadJoystick(axes, buttonMask))
+   U32 hatMask = 0;
+   if(!ReadJoystick(axes, buttonMask, hatMask))
       return false;
 
    // All axes return -1 to 1
@@ -92,26 +306,8 @@ static bool updateMoveInternal( Move *theMove, U32 &buttonMask )
       controls[0] = dir.x;
       controls[1] = dir.y;
    }
-   switch(OptionsMenuUserInterface::joystickType)
-   {
-      case LogitechWingman:
-         controls[2] = axes[5];
-         controls[3] = axes[6];
-         break;
-      case SaitekDualAnalog:
-         controls[2] = axes[5];
-         controls[3] = axes[2];
-         break;
-      case PS2DualShock:
-         controls[2] = axes[2];
-         controls[3] = axes[5];
-         break;
-      case XBoxController:
-      case XBoxControllerOnXBox:
-         controls[2] = axes[3];
-         controls[3] = axes[4];
-         break;
-   }
+   controls[2] = axes[gShootAxisRemaps[OptionsMenuUserInterface::joystickType][0]];
+   controls[3] = axes[gShootAxisRemaps[OptionsMenuUserInterface::joystickType][1]];
 
    for(U32 i = 0; i < 4; i++)
    {
@@ -155,82 +351,12 @@ static bool updateMoveInternal( Move *theMove, U32 &buttonMask )
    else
       theMove->fire = false;
 
-   
-   // Remap crazy xbox inputs...
-   if(OptionsMenuUserInterface::joystickType == LogitechWingman)
-   {
-      if(buttonMask & (1 << 8))
-      {
-         buttonMask |= ControllerButtonBack;
-         buttonMask &= ~(1 << 8);
-      }
-   }
-   else if(OptionsMenuUserInterface::joystickType == SaitekDualAnalog)
-   {
-      static U32 retMasks[12] = {
-         ControllerButton1,
-         ControllerButton2,
-         ControllerButton3,
-         ControllerButton4,
-         ControllerButton5,
-         ControllerButton6,
-         ControllerButtonLeftTrigger,
-         ControllerButtonRightTrigger,
-         0,
-         0,
-         ControllerButtonBack,
-         0,
-      };
-      U32 retMask = 0;
-      for(S32 i = 0; i < 12; i++)
-         if(buttonMask & (1 << i))
-            retMask |= retMasks[i];
-      buttonMask = retMask;
-   }
-   else if(OptionsMenuUserInterface::joystickType == PS2DualShock)
-   {
-      static U32 retMasks[12] = {
-         ControllerButton4,
-         ControllerButton2,
-         ControllerButton1,
-         ControllerButton3,
-         ControllerButton5,
-         ControllerButton6,
-         ControllerButtonLeftTrigger,
-         ControllerButtonRightTrigger,
-         ControllerButtonBack,
-         0,
-         0,
-         ControllerButtonStart,
-      };
-      U32 retMask = 0;
-      for(S32 i = 0; i < 12; i++)
-         if(buttonMask & (1 << i))
-            retMask |= retMasks[i];
-      buttonMask = retMask;
-   }
-   else if(OptionsMenuUserInterface::joystickType == XBoxController)
-   {
-      static U32 retMasks[12] = {
-         ControllerButton1,
-         ControllerButton2,
-         ControllerButton3,
-         ControllerButton4,
-         ControllerButton6,
-         ControllerButton5,
-         ControllerButtonStart,
-         ControllerButtonBack,
-         0,
-         0,
-         ControllerButtonLeftTrigger,
-         ControllerButtonRightTrigger,
-      };
-      U32 retMask = 0;
-      for(S32 i = 0; i < 12; i++)
-         if(buttonMask & (1 << i))
-            retMask |= retMasks[i];
-      buttonMask = retMask;
-   }
+   // remap button inputs
+   U32 retMask = 0;
+   for(S32 i = 0; i < MaxJoystickButtons; i++)
+      if(buttonMask & (1 << i))
+         retMask |= gControllerButtonRemaps[OptionsMenuUserInterface::joystickType][i];
+   buttonMask = retMask | hatMask;
    return true;
 }
 
@@ -252,6 +378,8 @@ S32 autodetectJoystickType()
       ret = PS2DualShock;
    else if(strstr(joystickName, "P880"))
       ret = SaitekDualAnalog;
+   else if(strstr(joystickName, "Logitech Dual Action"))
+      ret = LogitechDualAction;
    TNL_JOURNAL_WRITE_BLOCK(JoystickAutodetect,
       TNL_JOURNAL_WRITE((ret));
    )

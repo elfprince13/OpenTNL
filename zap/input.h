@@ -32,13 +32,15 @@ using namespace TNL;
 namespace Zap
 {
 
-enum JoystickType
+enum ControllerTypeType
 {
    LogitechWingman,
+   LogitechDualAction,
    SaitekDualAnalog,
    PS2DualShock,
    XBoxController,
    XBoxControllerOnXBox,
+   ControllerTypeCount,
 };
 
 enum ButtonInfo {
@@ -53,12 +55,12 @@ enum ButtonInfo {
    ControllerButtonLeftTrigger = 1 << 6,
    ControllerButtonRightTrigger = 1 << 7,
    ControllerGameButtonCount = 8,
-   ControllerButtonStart = 1 << 16,
-   ControllerButtonBack = 1 << 17,
-   ControllerButtonDPadUp = 1 << 18,
-   ControllerButtonDPadDown = 1 << 19,
-   ControllerButtonDPadLeft = 1 << 20,
-   ControllerButtonDPadRight = 1 << 21,
+   ControllerButtonStart = 1 << 8,
+   ControllerButtonBack = 1 << 9,
+   ControllerButtonDPadUp = 1 << 10,
+   ControllerButtonDPadDown = 1 << 11,
+   ControllerButtonDPadLeft = 1 << 12,
+   ControllerButtonDPadRight = 1 << 13,
 };
 
 // the following functions are defined differently on each platform
@@ -70,7 +72,7 @@ void InitJoystick();
 const char *GetJoystickName();
 S32 autodetectJoystickType();
 void ShutdownJoystick();
-bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask);
+bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask, U32 &hatMask);
 
 };
 

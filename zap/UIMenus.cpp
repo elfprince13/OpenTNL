@@ -33,6 +33,7 @@
 #include "gameType.h"
 #include "UIEditor.h"
 #include "UIInstructions.h"
+#include "input.h"
 
 #include "glutInclude.h"
 
@@ -284,19 +285,22 @@ void OptionsMenuUserInterface::setupMenus()
       case -1:
          menuItems.push_back(MenuItem("INPUT: KEYBOARD + MOUSE",2));
          break;
-      case 0:
+      case LogitechWingman:
          menuItems.push_back(MenuItem("INPUT: LOGITECH WINGMAN DUAL-ANALOG",2));
          break;
-      case 1:
+      case LogitechDualAction:
+         menuItems.push_back(MenuItem("INPUT: LOGITECH DUAL ACTION",2));
+         break;
+      case SaitekDualAnalog:
          menuItems.push_back(MenuItem("INPUT: SAITEK P-880 DUAL-ANALOG",2));
          break;
-      case 2:
+      case PS2DualShock:
          menuItems.push_back(MenuItem("INPUT: PS2 DUALSHOCK USB",2));
          break;
-      case 3:
+      case XBoxController:
          menuItems.push_back(MenuItem("INPUT: XBOX CONTROLLER USB",2));
          break;
-      case 4:
+      case XBoxControllerOnXBox:
          menuItems.push_back(MenuItem("INPUT: XBOX CONTROLLER",2));
          break;
       default:
@@ -333,7 +337,7 @@ void OptionsMenuUserInterface::processSelection(U32 index)
       break;
    case 2:
       joystickType++;
-      if(joystickType > 3)
+      if(joystickType > XBoxController)
          joystickType = -1;
       break;
    case 3:
