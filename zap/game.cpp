@@ -338,6 +338,9 @@ void ServerGame::idle(U32 timeDelta)
    mNetInterface->checkBanlistTimeouts(timeDelta);
    mNetInterface->checkIncomingPackets();
    Game::checkConnectionToMaster(timeDelta);
+   for(GameConnection *walk = GameConnection::getClientList(); walk ; walk = walk->getNextClient())
+      walk->addToTimeCredit(timeDelta);
+
    for(S32 i = 0; i < mGameObjects.size(); i++)
    {
       if(mGameObjects[i]->getObjectTypeMask() & DeletedType)

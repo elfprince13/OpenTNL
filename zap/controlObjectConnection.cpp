@@ -38,6 +38,7 @@ ControlObjectConnection::ControlObjectConnection()
    highSendIndex[2] = 0;
    mLastClientControlCRC = 0;
    firstMoveIndex = 1;
+   mMoveTimeCredit = 0;
 }
 
 void ControlObjectConnection::setControlObject(GameObject *theObject)
@@ -158,8 +159,11 @@ void ControlObjectConnection::readPacket(BitStream *bstream)
          theMove.unpack(bstream, true);
          // process the move, including crediting time to the client
          // and all that joy.
-         if(controlObject.isValid() && !(controlObject->getObjectTypeMask() & DeletedType))
+         // The time crediting prevents clients from hacking speed cheats
+         // that feed more moves to the server than are allowed.
+         if(mMoveTimeCredit >= theMove.time && controlObject.isValid() && !(controlObject->getObjectTypeMask() & DeletedType))
          {
+            mMoveTimeCredit -= theMove.time;
             controlObject->setCurrentMove(theMove);
             controlObject->idle(GameObject::ServerIdleControlFromClient);
          }

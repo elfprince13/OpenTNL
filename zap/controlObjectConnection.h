@@ -46,6 +46,7 @@ class ControlObjectConnection : public GhostConnection
    // move management
    enum {
       MaxPendingMoves = 63,
+      MaxMoveTimeCredit = 512,
    };
    Vector<Move> pendingMoves;
    SafePtr<GameObject> controlObject;
@@ -56,6 +57,7 @@ class ControlObjectConnection : public GhostConnection
 
    U32 firstMoveIndex;
    U32 highSendIndex[3];
+   U32 mMoveTimeCredit;
 
 public:
    ControlObjectConnection();
@@ -83,6 +85,12 @@ public:
 
    void packetReceived(PacketNotify *notify);
    void processMoveServer(Move *theMove);
+   void addToTimeCredit(U32 timeAmount)
+   { 
+      mMoveTimeCredit += timeAmount; 
+      if(mMoveTimeCredit > MaxMoveTimeCredit)
+         mMoveTimeCredit = MaxMoveTimeCredit;
+   }
 
    bool isDataToTransmit() { return true; }
 
