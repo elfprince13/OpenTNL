@@ -44,7 +44,11 @@ public:
    void shipTouchFlag(Ship *theShip, FlagItem *theFlag);
    void flagDropped(Ship *theShip, FlagItem *theFlag);
    void addZone(GoalZone *z);
-   void addFlag(FlagItem *theFlag) { mFlag = theFlag; }
+   void addFlag(FlagItem *theFlag)
+   {
+      mFlag = theFlag;
+      addItemOfInterest(theFlag);
+   }
    void shipTouchZone(Ship *s, GoalZone *z);
    const char *getGameTypeString() { return "Zone Control"; }
    const char *getInstructionString() { return "Carry the flag into each of the capture zones!"; }
@@ -194,7 +198,7 @@ void ZoneControlGameType::renderInterfaceOverlay(bool scoreboardVisible)
          }
          for(S32 i = 0; i < mZones.size(); i++)
          {
-            if(mZones[i]->didRecentlyChangeTeam())
+            if(mZones[i]->didRecentlyChangeTeam() && mZones[i]->getTeam() != -1)
             {
                Color c = getTeamColor(mZones[i]->getTeam());
                if(mZones[i]->isFlashing())

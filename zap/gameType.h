@@ -38,6 +38,7 @@ namespace Zap
 class FlagItem;
 class GoalZone;
 struct MenuItem;
+class Item;
 
 class ClientRef : public Object
 {
@@ -93,6 +94,16 @@ public:
 
    StringTableEntry mLevelName;
    StringTableEntry mLevelDescription;
+
+   struct ItemOfInterest
+   {
+      SafePtr<Item> theItem;
+      U32 teamVisMask;
+   };
+
+   Vector<ItemOfInterest> mItemsOfInterest;
+
+   void addItemOfInterest(Item *theItem);
 
    Timer mScoreboardUpdateTimer;
    Timer mGameTimer;
@@ -162,6 +173,7 @@ public:
    virtual void addZone(GoalZone *theZone) {}
    virtual void shipTouchZone(Ship *theShip, GoalZone *theZone) {}
 
+   void queryItemsOfInterest();
    void performScopeQuery(GhostConnection *connection);
    virtual void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);
 

@@ -67,6 +67,7 @@ void GameType::idle(GameObject::IdleCallPath path)
       mGameTimer.update(deltaT);
       return;
    }
+   queryItemsOfInterest();
    if(mScoreboardUpdateTimer.update(deltaT))
    {
       mScoreboardUpdateTimer.reset();
@@ -270,10 +271,20 @@ void GameType::renderObjectiveArrow(GameObject *target, Color c)
    if(dist < 50)
       alpha *= dist * 0.02;
 
+   Point p2 = rp - arrowDir * 23 + crossVec * 8;
+   Point p3 = rp - arrowDir * 23 - crossVec * 8;
+
+   glColor3f(0,0,0);
+   glLineWidth(4);
+   glBegin(GL_LINE_LOOP);
+   glVertex(rp);
+   glVertex(p2);
+   glVertex(p3);
+   glEnd();
+   glLineWidth(2);
+
    glEnable(GL_BLEND);
    glColor(c * 0.7, alpha);
-   Point p2 = rp - arrowDir * 20 + crossVec * 10;
-   Point p3 = rp - arrowDir * 20 - crossVec * 10;
    glBegin(GL_POLYGON);
    glVertex(rp);
    glVertex(p2);
@@ -531,10 +542,63 @@ void GameType::performScopeQuery(GhostConnection *connection)
    }
 }
 
+void GameType::addItemOfInterest(Item *theItem)
+{
+   ItemOfInterest i;
+   i.theItem = theItem;
+   i.teamVisMask = 0;
+   mItemsOfInterest.push_back(i);
+}
+
+void GameType::queryItemsOfInterest()
+{
+   static Vector<GameObject *> fillVector;
+   for(S32 i = 0; i < mItemsOfInterest.size(); i++)
+   {
+      ItemOfInterest &ioi = mItemsOfInterest[i];
+      ioi.teamVisMask = 0;
+      Point pos = ioi.theItem->getActualPos();
+      Point scopeRange(Game::PlayerSensorHorizVisDistance,
+         Game::PlayerSensorVertVisDistance);
+      Rect queryRect(pos, pos);
+
+      queryRect.expand(scopeRange);
+      findObjects(ShipType, fillVector, queryRect);
+      for(S32 j = 0; j < fillVector.size(); j++)
+      {
+         Ship *theShip = (Ship *) fillVector[j];
+         Point delta = theShip->getActualPos() - pos;
+         delta.x = fabs(delta.x);
+         delta.y = fabs(delta.y);
+
+         if( (theShip->isSensorActive() && delta.x < Game::PlayerSensorHorizVisDistance &&
+               delta.y < Game::PlayerSensorVertVisDistance) ||
+               (delta.x < Game::PlayerHorizVisDistance &&
+               delta.y < Game::PlayerVertVisDistance))
+               ioi.teamVisMask |= (1 << theShip->getTeam());
+      }
+      fillVector.clear();
+   }
+}
+
 void GameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection)
 {
    static Vector<GameObject *> fillVector;
    fillVector.clear();
+
+   if(mTeams.size() > 1)
+   {
+      for(S32 i = 0; i < mItemsOfInterest.size(); i++)
+      {
+         if(mItemsOfInterest[i].teamVisMask & (1 << scopeObject->getTeam()))
+         {
+            Item *theItem = mItemsOfInterest[i].theItem;
+            connection->objectInScope(theItem);
+            if(theItem->isMounted())
+               connection->objectInScope(theItem->getMount());
+         }
+      }
+   }
 
    if(connection->isInCommanderMap() && mTeams.size() > 1)
    {
