@@ -103,6 +103,7 @@ EngineeredObject::EngineeredObject(S32 team, Point anchorPoint, Point anchorNorm
 {
    mHealth = 1.f;
    mTeam = team;
+   mOriginalTeam = mTeam;
    mAnchorPoint = anchorPoint;
    mAnchorNormal= anchorNormal;
    mObjectTypeMask = EngineeredType | CommandMapVisType;
@@ -115,6 +116,9 @@ void EngineeredObject::processArguments(S32 argc, const char **argv)
       return;
    Point p;
    mTeam = atoi(argv[0]);
+   mOriginalTeam = mTeam;
+   if(mTeam == -1)
+      mHealth = 0;
    p.read(argv + 1);
    p *= getGame()->getGridSize();
 
@@ -145,7 +149,8 @@ void EngineeredObject::processArguments(S32 argc, const char **argv)
    mAnchorPoint = anchor + normal;
    mAnchorNormal = normal;
    computeExtent();
-   onEnabled();
+   if(mHealth != 0)
+      onEnabled();
 }
 
 void EngineeredObject::setResource(Item *resource)
@@ -179,9 +184,26 @@ void EngineeredObject::damageObject(DamageInfo *di)
    setMaskBits(HealthMask);
 
    if(prevHealth >= disabledLevel && mHealth < disabledLevel)
+   {
+      if(mTeam != mOriginalTeam)
+      {
+         mTeam = mOriginalTeam;
+         setMaskBits(TeamMask);
+      }
       onDisabled();
+   }
    else if(prevHealth < disabledLevel && mHealth >= disabledLevel)
+   {
+      if(mTeam == -1)
+      {
+         if(di->damagingObject)
+         {
+            mTeam = di->damagingObject->getTeam();
+            setMaskBits(TeamMask);
+         }
+      }
       onEnabled();
+   }
 
    if(mHealth == 0 && mResource.isValid())
    {
@@ -311,12 +333,14 @@ U32 EngineeredObject::packUpdate(GhostConnection *connection, U32 updateMask, Bi
 {
    if(stream->writeFlag(updateMask & InitialMask))
    {
-      stream->write(mTeam);
       stream->write(mAnchorPoint.x);
       stream->write(mAnchorPoint.y);
       stream->write(mAnchorNormal.x);
       stream->write(mAnchorNormal.y);
    }
+   if(stream->writeFlag(updateMask & TeamMask))
+      stream->write(mTeam);
+   
    if(stream->writeFlag(updateMask & HealthMask))
    {
       stream->writeFloat(mHealth, 6);
@@ -331,13 +355,14 @@ void EngineeredObject::unpackUpdate(GhostConnection *connection, BitStream *stre
    if(stream->readFlag())
    {
       initial = true;
-      stream->read(&mTeam);
       stream->read(&mAnchorPoint.x);
       stream->read(&mAnchorPoint.y);
       stream->read(&mAnchorNormal.x);
       stream->read(&mAnchorNormal.y);
       computeExtent();
    }
+   if(stream->readFlag())
+      stream->read(&mTeam);
    if(stream->readFlag())
    {
       mHealth = stream->readFloat(6);
@@ -553,10 +578,10 @@ void Turret::render()
 {
    Color c, lightColor;
 
-   if(gClientGame->getGameType())
+   if(mTeam != -1 && gClientGame->getGameType())
       c = gClientGame->getGameType()->mTeams[mTeam].color;
    else
-      c = Color(1,0,1);
+      c = Color(1,1,1);
 
    glColor3f(c.r, c.g, c.b);
 

@@ -72,7 +72,10 @@ Projectile::Projectile(U32 type, Point p, Point v, U32 t, GameObject *shooter)
    alive = true;
    mShooter = shooter;
    if(shooter)
+   {
       setOwner(shooter->getOwner());
+      mTeam = shooter->getTeam();
+   }
    mType = type;
 }
 
@@ -455,7 +458,10 @@ GrenadeProjectile::GrenadeProjectile(Point pos, Point vel, U32 liveTime, GameObj
    ttl = liveTime;
    exploded = false;
    if(shooter)
+   {
       setOwner(shooter->getOwner());
+      mTeam = shooter->getTeam();
+   }
 }
 
 void GrenadeProjectile::idle(IdleCallPath path)

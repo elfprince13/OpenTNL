@@ -53,8 +53,8 @@ BarrierMaker 4 10 3.9 10 1 12 1 14 1.1 14 4 10.1 4 10
 Turret 0 5.1 2
 ForceFieldProjector 0 4.2 2.6
 ForceFieldProjector 0 7 2.9
-Turret 0 2.9 8
+Turret -1 2.9 8
 Turret 1 6.9 14
 ForceFieldProjector 1 7.8 13.4
 ForceFieldProjector 1 5 13.1
-Turret 1 9.1 8
+Turret -1 9.1 8

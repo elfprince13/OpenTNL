@@ -47,12 +47,14 @@ protected:
    Point mAnchorPoint;
    Point mAnchorNormal;
    bool mIsDestroyed;
+   S32 mOriginalTeam;
 
    enum MaskBits
    {
-      InitialMask  = BIT(0),
-      HealthMask   = BIT(1),
-      NextFreeMask = BIT(2),
+      InitialMask = BIT(0),
+      HealthMask = BIT(1),
+      TeamMask = BIT(2),
+      NextFreeMask = BIT(3),
    };
    
 public:
