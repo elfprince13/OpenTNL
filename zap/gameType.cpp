@@ -294,7 +294,8 @@ void GameType::setClientShipLoadout(S32 clientIndex, const Vector<U32> &loadout)
       return;
    Ship *theShip = (Ship *) mClientList[clientIndex].clientConnection->getControlObject();
 
-   theShip->setLoadout(loadout[0], loadout[1], loadout[2], loadout[3], loadout[4]);
+   if(theShip)
+      theShip->setLoadout(loadout[0], loadout[1], loadout[2], loadout[3], loadout[4]);
 }
 
 void GameType::clientRequestLoadout(GameConnection *client, const Vector<U32> &loadout)
