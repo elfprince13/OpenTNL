@@ -1,0 +1,100 @@
+CTFGameType 10 8
+Team Blue 0 0 1
+Team Red 1 0 0
+GridSize 300
+ResourceItem 27.2 4.5
+ResourceItem 23 10
+ResourceItem 30 10
+ResourceItem 26.5 19
+ResourceItem 26.5 1
+CTFFlagItem 0 26.5 4.5
+Teleporter 33 1 33.8 8.2
+CTFFlagItem 1 26.5 15.5
+BarrierMaker 24 5 25 6 28 6 29 5
+BarrierMaker 25.5 3.5 25 4 25 5 25.5 5.5
+BarrierMaker 27.5 3.5 28 4 28 5 27.5 5.5
+BarrierMaker 24 4 25.5 2.5
+BarrierMaker 29 4 27.5 2.5
+BarrierMaker 26.5 2.5 26 3 27 3 26.5 2.5
+BarrierMaker 25 2 25.5 1.5 27.5 1.5 28 2
+BarrierMaker 25 1 24.5 0.5 24.5 1.5 25 1
+BarrierMaker 28 1 28.5 0.5 28.5 1.5 28 1
+BarrierMaker 23 4.5 22 4 22 5 23 4.5
+BarrierMaker 30 4.5 31 4 31 5 30 4.5
+BarrierMaker 32 4 31 3 30 3 30 2 29 1 29.5 1 30.5 2 30.5 2.5 31 2.5 32 3.5 32 4
+BarrierMaker 21 4 22 3 23 3 23 2 24 1 23.5 1 22.5 2 22.5 2.5 22 2.5 21 3.5 21 4
+BarrierMaker 20 5 19 4 20 4 20 5
+BarrierMaker 33 5 34 4 33 4 33 5
+BarrierMaker 21 2 20 3 20 2 21 1 21 2
+BarrierMaker 32 2 33 3 33 2 32 1 32 2
+BarrierMaker 19 7 19 1 20 0 25.5 0 26.5 0.5 27.5 0 33 0 34 1 34 7 30 6 29 7 27.5 7 26.5 6.5 25.5 7 24 7 23 6 19 7
+Teleporter 26 9 20 6
+Teleporter 27 9 33 6
+Teleporter 20 1 19.2 8.2
+BarrierMaker 21 8 20 8.5 21 8.5 21 8
+BarrierMaker 21 8.9 21 9.1 21.9 9 21 8.9
+BarrierMaker 22 8 21.6 8.4 22.4 8.8 22 8
+BarrierMaker 23 8 23 9.5 23.5 8 23 8
+BarrierMaker 24 10 24 9.5 25 10 26 10 26.5 9 26 8.4 26.5 8.4
+BarrierMaker 21 12 20 11.5 21 11.5 21 12
+BarrierMaker 21 11.1 21 10.9 21.9 11 21 11.1
+BarrierMaker 22 12 21.6 11.6 22.4 11.2 22 12
+BarrierMaker 23 12 23 10.5 23.5 12 23 12
+BarrierMaker 24 10 24 10.5 25 10 26 10 26.5 11 26 11.6 26.5 11.6
+BarrierMaker 32 8 33 8.5 32 8.5 32 8
+BarrierMaker 32 8.9 32 9.1 31.1 9 32 8.9
+BarrierMaker 31 8 31.4 8.4 30.6 8.8 31 8
+BarrierMaker 30 8 30 9.5 29.5 8 30 8
+BarrierMaker 29 10 29 9.5 28 10 27 10 26.5 9 27 8.4 26.5 8.4
+BarrierMaker 32 12 33 11.5 32 11.5 32 12
+BarrierMaker 32 11.1 32 10.9 31.2 11 32 11.1
+BarrierMaker 31 12 31.4 11.6 30.6 11.2 31 12
+BarrierMaker 30 12 30 10.5 29.5 12 30 12
+BarrierMaker 28 12 29 11.5 29 12
+BarrierMaker 29 10 29 10.5 28 10 27 10 26.5 11 27 11.6 26.5 11.6
+BarrierMaker 24 15 25 14 28 14 29 15
+BarrierMaker 25.5 16.5 25 16 25 15 25.5 14.5
+BarrierMaker 27.5 16.5 28 16 28 15 27.5 14.5
+BarrierMaker 24 16 25.5 17.5
+BarrierMaker 29 16 27.5 17.5
+BarrierMaker 26.5 17.5 26 17 27 17 26.5 17.5
+BarrierMaker 25 18 25.5 18.5 27.5 18.5 28 18
+BarrierMaker 25 19 24.5 19.5 24.5 18.5 25 19
+BarrierMaker 28 19 28.5 19.5 28.5 18.5 28 19
+BarrierMaker 23 15.5 22 16 22 15 23 15.5
+BarrierMaker 30 15.5 31 16 31 15 30 15.5
+BarrierMaker 32 16 31 17 30 17 30 18 29 19 29.5 19 30.5 18 30.5 17.5 31 17.5 32 16.5 32 16
+BarrierMaker 21 16 22 17 23 17 23 18 24 19 23.5 19 22.5 18 22.5 17.5 22 17.5 21 16.5 21 16
+BarrierMaker 20 15 19 16 20 16 20 15
+BarrierMaker 33 15 34 16 33 16 33 15
+BarrierMaker 21 18 20 17 20 18 21 19 21 18
+BarrierMaker 32 18 33 17 33 18 32 19 32 18
+BarrierMaker 19 13 19 19 20 20 25.5 20 26.5 19.5 27.5 20 33 20 34 19 34 13 30 14 29 13 27.5 13 26.5 13.5 25.5 13 24 13 23 14 19 13
+Teleporter 33 19 33.8 11.8
+Teleporter 26 11 20 14
+Teleporter 27 11 33 14
+Teleporter 20 19 19.2 11.8
+RepairItem 22.3 17.7
+RepairItem 30.7 17.7
+RepairItem 22.3 2.3
+RepairItem 30.7 2.3
+Spawn 1 25.1 13.5
+Spawn 1 21.7 15.5
+Spawn 1 27.9 13.5
+Spawn 1 31.3 15.5
+Spawn 1 19.2 13.3
+Spawn 1 33.8 13.3
+Spawn 1 23.2 12.3
+Spawn 1 29.8 12.3
+Spawn 0 23.2 7.7
+Spawn 0 19.2 6.7
+Spawn 0 25.1 6.5
+Spawn 0 21.7 4.5
+Spawn 0 29.8 7.7
+Spawn 0 33.8 6.7
+Spawn 0 27.9 6.5
+Spawn 0 31.3 4.5
+BarrierMaker 19 8 19 8.6 19.4 8.6 19.6 9 19.6 10 19.6 11 19.4 11.4 19 11.4 19 12 23 13 24 12 24 11.5 25 12 25.5 12 26.5 12.5 27.5 12 28 12 29 11.5 29 12 30 13 34 12 34 11.4 33.6 11.4 33.4 11 33.4 10 33.4 9 33.6 8.6 34 8.6 34 8 30 7 29 8 29 8.5 28 8 27.5 8 26.5 7.5 25.5 8 25 8 24 8.5 24 8 23 7 19 8
+BarrierMaker 22 10 20 11 20 9 22 10
+BarrierMaker 31 10 33 11 33 9 31 10
+BarrierMaker 25 10

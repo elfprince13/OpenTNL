@@ -190,7 +190,7 @@ void GameUserInterface::renderReticle()
 {
    // draw the reticle
 
-   if(!OptionsMenuUserInterface::joystickEnabled)
+   if(OptionsMenuUserInterface::joystickType == -1)
    {
 #if 0 // TNL_OS_WIN32
       Point realMousePoint = mMousePoint;
@@ -372,15 +372,22 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
          switch(buttonIndex)
          {
             case 0:
-               mVoiceRecorder.start();
+            {
+               GameType *g = gClientGame->getGameType();
+               if(g)
+                  g->c2sAdvanceWeapon();
                break;
+            }
             case 1:
-               enterLoadout(true);
-               break;
-            case 2:
                gClientGame->zoomCommanderMap();
                break;
+            case 2:
+               enterVChat(true);
+               break;
             case 3:
+               enterLoadout(true);
+               break;
+            case 4:
             {
                mInScoreboardMode = true;
                GameType *g = gClientGame->getGameType();
@@ -388,16 +395,8 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
                   g->c2sRequestScoreboardUpdates(true);
                break;
             }
-            case 4:
-            {
-               GameType *g = gClientGame->getGameType();
-               if(g)
-                  g->c2sAdvanceWeapon();
-               break;
-            }
-
             case 5:
-               enterVChat(true);
+               mVoiceRecorder.start();
                break;
          }
       }
@@ -428,10 +427,7 @@ void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
       {
          switch(buttonIndex)
          {
-            case 0:
-               mVoiceRecorder.stop();
-               break;
-            case 3:
+            case 5:
             {
                mInScoreboardMode = false;
                GameType *g = gClientGame->getGameType();
@@ -439,6 +435,9 @@ void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
                   g->c2sRequestScoreboardUpdates(false);
                break;
             }
+            case 6:
+               mVoiceRecorder.stop();
+               break;
          }
       }
    }

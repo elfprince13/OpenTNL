@@ -29,176 +29,6 @@
 #include "tnlLog.h"
 #include "tnlRandom.h"
 
-#ifdef TNL_OS_WIN32
-
-#include <dsound.h>
-#include <stdio.h>
-
-namespace Zap
-{
-
-extern bool gIsCrazyBot;
-
-static LPDIRECTSOUNDCAPTURE8 capture = NULL;
-static LPDIRECTSOUNDCAPTUREBUFFER captureBuffer = NULL;
-static bool recording = false;
-static bool captureInit = false;
-
-enum {
-   BufferBytes = 16000,
-};
-
-static U32 lastReadOffset = 0;
-
-bool SFXObject::startRecording()
-{
-   if(recording)
-      return true;
-
-   if(!captureInit)
-   {
-      captureInit = true;
-	   DirectSoundCaptureCreate8(NULL, &capture, NULL);   
-   }
-   if(!capture)
-      return false;
-
-   if(!captureBuffer)
-   {
-      HRESULT hr;
-      DSCBUFFERDESC dscbd;
-
-      // wFormatTag, nChannels, nSamplesPerSec, mAvgBytesPerSec,
-      // nBlockAlign, wBitsPerSample, cbSize
-      WAVEFORMATEX wfx = { WAVE_FORMAT_PCM, 1, 8000, 16000, 2, 16, 0};
-       
-      dscbd.dwSize = sizeof(DSCBUFFERDESC);
-      dscbd.dwFlags = 0;
-      dscbd.dwBufferBytes = BufferBytes;
-      dscbd.dwReserved = 0;
-      dscbd.lpwfxFormat = &wfx;
-      dscbd.dwFXCount = 0;
-      dscbd.lpDSCFXDesc = NULL;
-       
-      if (FAILED(hr = capture->CreateCaptureBuffer(&dscbd, &captureBuffer, NULL)))
-      {
-         captureBuffer = NULL;
-         return false;
-      }
-   }
-   recording = true;
-   lastReadOffset = 0;
-   captureBuffer->Start(DSCBSTART_LOOPING);
-   return true;
-}
-
-void SFXObject::captureSamples(ByteBufferPtr buffer)
-{
-   if(!recording)
-   {
-      return;
-   }
-   else
-   {
-      DWORD capturePosition;
-      DWORD readPosition;
-
-      captureBuffer->GetCurrentPosition(&capturePosition, &readPosition);
-      S32 byteCount = readPosition - lastReadOffset;
-      if(byteCount < 0)
-         byteCount += BufferBytes;
-
-      void *buf1;
-      void *buf2;
-      DWORD count1;
-      DWORD count2;
-
-      //printf("Capturing samples... %d ... %d\n", lastReadOffset, readPosition);
-
-      if(!byteCount)
-         return;
-
-      captureBuffer->Lock(lastReadOffset, byteCount, &buf1, &count1, &buf2, &count2, 0);
-
-      U32 sizeAdd = count1 + count2;
-      U32 start = buffer->getBufferSize();
-
-      buffer->resize(start + sizeAdd);
-
-      memcpy(buffer->getBuffer() + start, buf1, count1);
-      if(count2)
-         memcpy(buffer->getBuffer() + start + count1, buf2, count2);
-
-      captureBuffer->Unlock(buf1, count1, buf2, count2);
-
-      // Write our own random noise in...
-      if(gIsCrazyBot)
-      {
-         S16 *buff = (S16*)buffer->getBuffer() + start/2;
-         static U32 synthCount = 0;
-         static U16  synthGoal  = 100;
-         static U16  curSynth   = 0;
-         for(U32 i=0; i<sizeAdd/2; i++)
-         {
-            if(synthCount == 0)
-            {
-               if(Random::readI(0, 16) < 4)
-                  curSynth = Random::readI(0, 65535);
-
-               synthGoal = Random::readI(0, 32000);
-               synthCount = 25;
-            }
-            synthCount--;
-
-            curSynth = (U32)((U32)curSynth+(U32)curSynth+(U32)synthGoal)/3;
-
-            buff[i] =  curSynth;
-         }
-      }
-
-      lastReadOffset += sizeAdd;
-      lastReadOffset %= BufferBytes;
-   }
-}
-
-void SFXObject::stopRecording()
-{
-   if(recording)
-   {
-      recording = false;
-      if(!captureBuffer)
-         return;
-      captureBuffer->Stop();
-      if(captureBuffer)
-         captureBuffer->Release();
-      captureBuffer = NULL;
-   }
-}
-
-};
-
-#else
-
-namespace Zap
-{
-
-bool SFXObject::startRecording()
-{
-   return false;
-}
-
-void SFXObject::captureSamples(ByteBufferPtr buffer)
-{
-}
-
-void SFXObject::stopRecording()
-{
-}
-
-};
-
-#endif
-
 #if !defined (ZAP_DEDICATED)
 
 #include "alInclude.h"
@@ -544,10 +374,12 @@ void SFXObject::init()
       ALvoid   *data;
       ALboolean loop;
 
+      char fileBuffer[256];
+      dSprintf(fileBuffer, sizeof(fileBuffer), "sfx/%s", gSFXProfiles[i].fileName);
 #ifdef TNL_OS_MAC_OSX
-      alutLoadWAVFile((ALbyte *) gSFXProfiles[i].fileName, &format, &data, &size, &freq);
+      alutLoadWAVFile((ALbyte *) fileBuffer, &format, &data, &size, &freq);
 #else
-      alutLoadWAVFile((ALbyte *) gSFXProfiles[i].fileName, &format, &data, &size, &freq, &loop);
+      alutLoadWAVFile((ALbyte *) fileBuffer, &format, &data, &size, &freq, &loop);
 #endif
       if(alGetError() != AL_NO_ERROR)
       {
@@ -781,3 +613,174 @@ void SFXObject::shutdown()
 };
 
 #endif
+
+#ifdef TNL_OS_WIN32
+
+#include <dsound.h>
+#include <stdio.h>
+
+namespace Zap
+{
+
+extern bool gIsCrazyBot;
+
+static LPDIRECTSOUNDCAPTURE8 capture = NULL;
+static LPDIRECTSOUNDCAPTUREBUFFER captureBuffer = NULL;
+static bool recording = false;
+static bool captureInit = false;
+
+enum {
+   BufferBytes = 16000,
+};
+
+static U32 lastReadOffset = 0;
+
+bool SFXObject::startRecording()
+{
+   if(recording)
+      return true;
+
+   if(!captureInit)
+   {
+      captureInit = true;
+	   DirectSoundCaptureCreate8(NULL, &capture, NULL);   
+   }
+   if(!capture)
+      return false;
+
+   if(!captureBuffer)
+   {
+      HRESULT hr;
+      DSCBUFFERDESC dscbd;
+
+      // wFormatTag, nChannels, nSamplesPerSec, mAvgBytesPerSec,
+      // nBlockAlign, wBitsPerSample, cbSize
+      WAVEFORMATEX wfx = { WAVE_FORMAT_PCM, 1, 8000, 16000, 2, 16, 0};
+       
+      dscbd.dwSize = sizeof(DSCBUFFERDESC);
+      dscbd.dwFlags = 0;
+      dscbd.dwBufferBytes = BufferBytes;
+      dscbd.dwReserved = 0;
+      dscbd.lpwfxFormat = &wfx;
+      dscbd.dwFXCount = 0;
+      dscbd.lpDSCFXDesc = NULL;
+       
+      if (FAILED(hr = capture->CreateCaptureBuffer(&dscbd, &captureBuffer, NULL)))
+      {
+         captureBuffer = NULL;
+         return false;
+      }
+   }
+   recording = true;
+   lastReadOffset = 0;
+   captureBuffer->Start(DSCBSTART_LOOPING);
+   return true;
+}
+
+void SFXObject::captureSamples(ByteBufferPtr buffer)
+{
+   if(!recording)
+   {
+      return;
+   }
+   else
+   {
+      DWORD capturePosition;
+      DWORD readPosition;
+
+      captureBuffer->GetCurrentPosition(&capturePosition, &readPosition);
+      S32 byteCount = readPosition - lastReadOffset;
+      if(byteCount < 0)
+         byteCount += BufferBytes;
+
+      void *buf1;
+      void *buf2;
+      DWORD count1;
+      DWORD count2;
+
+      //printf("Capturing samples... %d ... %d\n", lastReadOffset, readPosition);
+
+      if(!byteCount)
+         return;
+
+      captureBuffer->Lock(lastReadOffset, byteCount, &buf1, &count1, &buf2, &count2, 0);
+
+      U32 sizeAdd = count1 + count2;
+      U32 start = buffer->getBufferSize();
+
+      buffer->resize(start + sizeAdd);
+
+      memcpy(buffer->getBuffer() + start, buf1, count1);
+      if(count2)
+         memcpy(buffer->getBuffer() + start + count1, buf2, count2);
+
+      captureBuffer->Unlock(buf1, count1, buf2, count2);
+
+      // Write our own random noise in...
+      if(gIsCrazyBot)
+      {
+         S16 *buff = (S16*)buffer->getBuffer() + start/2;
+         static U32 synthCount = 0;
+         static U16  synthGoal  = 100;
+         static U16  curSynth   = 0;
+         for(U32 i=0; i<sizeAdd/2; i++)
+         {
+            if(synthCount == 0)
+            {
+               if(Random::readI(0, 16) < 4)
+                  curSynth = Random::readI(0, 65535);
+
+               synthGoal = Random::readI(0, 32000);
+               synthCount = 25;
+            }
+            synthCount--;
+
+            curSynth = (U32)((U32)curSynth+(U32)curSynth+(U32)synthGoal)/3;
+
+            buff[i] =  curSynth;
+         }
+      }
+
+      lastReadOffset += sizeAdd;
+      lastReadOffset %= BufferBytes;
+   }
+}
+
+void SFXObject::stopRecording()
+{
+   if(recording)
+   {
+      recording = false;
+      if(!captureBuffer)
+         return;
+      captureBuffer->Stop();
+      if(captureBuffer)
+         captureBuffer->Release();
+      captureBuffer = NULL;
+   }
+}
+
+};
+
+#else
+
+namespace Zap
+{
+
+bool SFXObject::startRecording()
+{
+   return false;
+}
+
+void SFXObject::captureSamples(ByteBufferPtr buffer)
+{
+}
+
+void SFXObject::stopRecording()
+{
+}
+
+};
+
+#endif
+

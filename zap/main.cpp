@@ -54,7 +54,6 @@ bool gIsServer = false;
 const char *gHostName = "ZAP Game";
 const char *gWindowTitle = "ZAP II - The Return";
 U32 gMaxPlayers = 128;
-U32 gJoystickType = 0;
 U32 gSimulatedPing = 0;
 F32 gSimulatedPacketLoss = 0;
 
@@ -467,9 +466,8 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *
       }
       else if(!stricmp(argv[i], "-joystick"))
       {
-         OptionsMenuUserInterface::joystickEnabled = true;
          if(hasAdditionalArg)
-            gJoystickType = atoi(argv[i+1]);
+            OptionsMenuUserInterface::joystickType = atoi(argv[i+1]);
       }
       else if(!stricmp(argv[i], "-loss"))
       {

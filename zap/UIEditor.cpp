@@ -40,7 +40,9 @@ EditorUserInterface gEditorUserInterface;
 void EditorUserInterface::setEditName(const char *name)
 {
    mGameType[0] = 0;
-   initLevelFromFile(name);
+   char fileBuffer[256];
+   dSprintf(fileBuffer, sizeof(fileBuffer), "levels/%s", name);
+   initLevelFromFile(fileBuffer);
    if(mTeams.size() == 0)
    {
       Team t;
@@ -927,7 +929,9 @@ void EditorUserInterface::idle(U32 timeDelta)
 
 void EditorUserInterface::saveLevel()
 {
-   FILE *f = fopen(mEditFileName, "w");
+   char fileNameBuffer[256];
+   dSprintf(fileNameBuffer, sizeof(fileNameBuffer), "levels/%s", mEditFileName);
+   FILE *f = fopen(fileNameBuffer, "w");
    fprintf(f, "%sGameType", mGameType);
    for(S32 i = 0; i < mGameTypeArgs.size(); i++)
       fprintf(f, " %s", mGameTypeArgs[i]);
@@ -993,6 +997,7 @@ void EditorMenuUserInterface::onActivate()
 
 void EditorMenuUserInterface::setupMenus()
 {
+   Parent::onActivate();
    menuItems.clear();
    menuItems.push_back("RETURN TO EDITOR");
    if(OptionsMenuUserInterface::fullscreen)

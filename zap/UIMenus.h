@@ -57,6 +57,7 @@ public:
    void render();
    void onSpecialKeyDown(U32 key);
    void onKeyDown(U32 key);
+   void onActivate() { selectionIndex = 0; }
 
    virtual void onEscape();
    virtual void processSelection(U32 index) = 0;
@@ -79,7 +80,7 @@ class OptionsMenuUserInterface : public MenuUserInterface
 public:
    static bool controlsRelative;
    static bool fullscreen;
-   static bool joystickEnabled;
+   static S32 joystickType;
    static bool echoVoice;
 
    OptionsMenuUserInterface();

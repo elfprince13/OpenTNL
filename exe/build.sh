@@ -36,7 +36,8 @@ echo Writing to dir "$DIR"
 rm -rf "$DIR"
 mkdir "$DIR"
 
-cp *.txt *.WAV *.wav "$DIR"
+cp README.txt "$DIR"
+cp -r sfx levels "$DIR"
 
 if [ "$PLATFORM" = "win32" ]; then
    ../../upx/upx.exe --best --crp-ms=999999 --nrv2d -o "$DIR"/glut32.dll glut32.dll

@@ -111,12 +111,10 @@ void MenuUserInterface::onKeyDown(U32 key)
    {
       UserInterface::playBoop();
       processSelection(selectionIndex);
-      selectionIndex = 0;
    }
    else if(key == 27)
    {
       UserInterface::playBoop();
-      selectionIndex = 0;
       onEscape();
    }
 }
@@ -174,7 +172,7 @@ OptionsMenuUserInterface gOptionsMenuUserInterface;
 
 bool OptionsMenuUserInterface::controlsRelative = false;
 bool OptionsMenuUserInterface::fullscreen = false;
-bool OptionsMenuUserInterface::joystickEnabled = false;
+S32 OptionsMenuUserInterface::joystickType = -1;
 bool OptionsMenuUserInterface::echoVoice = false;
 
 OptionsMenuUserInterface::OptionsMenuUserInterface()
@@ -184,6 +182,7 @@ OptionsMenuUserInterface::OptionsMenuUserInterface()
 
 void OptionsMenuUserInterface::onActivate()
 {
+   Parent::onActivate();
    setupMenus();
 }
 
@@ -202,10 +201,26 @@ void OptionsMenuUserInterface::setupMenus()
    else
       menuItems.push_back("SET FULLSCREEN MODE");
 
-   if(joystickEnabled)
-      menuItems.push_back("DISABLE JOYSTICK/CONTROLLER");
-   else
-      menuItems.push_back("ENABLE JOYSTICK/CONTROLLER");
+   switch(joystickType)
+   {
+      case -1:
+         menuItems.push_back("CONTROLS: KEYBOARD + MOUSE");
+         break;
+      case 0:
+         menuItems.push_back("CONTROLS: LOGITECH WINGMAN DUAL-ANALOG");
+         break;
+      case 1:
+         menuItems.push_back("CONTROLS: SAITEK P-880 DUAL-ANALOG");
+         break;
+      case 2:
+         menuItems.push_back("CONTROLS: PS2 DUALSHOCK USB");
+         break;
+      case 3:
+         menuItems.push_back("CONTROLS: XBOX CONTROLLER USB");
+         break;
+      default:
+         menuItems.push_back("CONTROLS: UNKNOWN");
+   }
 
    if(echoVoice)
       menuItems.push_back("DISABLE VOICE ECHO");
@@ -256,7 +271,9 @@ void OptionsMenuUserInterface::processSelection(U32 index)
       fullscreen = !fullscreen;
       break;
    case 2:
-      joystickEnabled = !joystickEnabled;
+      joystickType++;
+      if(joystickType > 3)
+         joystickType = -1;
       break;
    case 3:
       echoVoice = !echoVoice;
@@ -290,6 +307,7 @@ GameMenuUserInterface::GameMenuUserInterface()
 
 void GameMenuUserInterface::onActivate()
 {
+   Parent::onActivate();
    menuItems.clear();
    menuItems.push_back("RETURN TO GAME");
    menuItems.push_back("OPTIONS");

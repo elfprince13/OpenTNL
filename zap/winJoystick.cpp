@@ -34,12 +34,12 @@
 #include "UI.h"
 #include "UIMenus.h"
 #include "tnlJournal.h"
+#include "UIMenus.h"
 
 namespace Zap
 {
 
 extern const char *gWindowTitle;
-extern U32 gJoystickType;
 
 void checkMousePos(S32 maxdx, S32 maxdy)
 {
@@ -153,22 +153,22 @@ static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
    controls[0] = F32( js.lX ) - 32768.0f;
    controls[1] = F32( js.lY ) - 32768.0f;
 
-   if(gJoystickType == 0)
+   if(OptionsMenuUserInterface::joystickType == 0)
    {
       controls[2] = F32( js.lRz ) - 32768.0f;
       controls[3] = F32( js.rglSlider[0] ) - 32768.0f;
    }
-   else if(gJoystickType == 1)
+   else if(OptionsMenuUserInterface::joystickType == 1)
    {
       controls[3] = F32( js.lZ ) - 32768.0f;      
       controls[2] = F32( js.lRz ) - 32768.0f;
    }
-   else if(gJoystickType == 2)
+   else if(OptionsMenuUserInterface::joystickType == 2)
    {
       controls[2] = F32( js.lZ ) - 32768.0f;
       controls[3] = F32( js.lRz ) - 32768.0f;
    }
-   else if(gJoystickType == 3)
+   else if(OptionsMenuUserInterface::joystickType == 3)
    {
       controls[2] = F32( js.lRx ) - 32768.0f;
       controls[3] = F32( js.lRy ) - 32768.0f;
@@ -221,7 +221,7 @@ static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
       buttonPressed[i] = (js.rgbButtons[i] & 0x80) != 0;
 
    // Remap crazy xbox inputs...
-   if(gJoystickType == 3)
+   if(OptionsMenuUserInterface::joystickType == 3)
    {
       bool b[12];
 

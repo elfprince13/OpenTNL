@@ -80,7 +80,9 @@ or IP:www.foobar.com:24601
         
         Known controllers:
 		Logitech Wingman cordless - joystick 0
+		Saitek P880 Dual Analog - joystick 1
 		PS 2 Dual Shock w/USB - joystick 2
+		XBox controller - joystick 3
         
 -jsave [journalName] saves the log of the play session to the specified
         journal file.

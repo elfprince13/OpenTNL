@@ -249,7 +249,9 @@ void ServerGame::cycleLevel()
 void ServerGame::loadLevel(const char *fileName)
 {
    mGridSize = DefaultGridSize;
-   initLevelFromFile(fileName);
+   char fileBuffer[256];
+   dSprintf(fileBuffer, sizeof(fileBuffer), "levels/%s", fileName);
+   initLevelFromFile(fileBuffer);
 }
 
 void ServerGame::processLevelLoadLine(int argc, const char **argv)
@@ -384,7 +386,7 @@ void ClientGame::idle(U32 timeDelta)
    Move *theMove = gGameUserInterface.getCurrentMove();
 
 #ifdef TNL_OS_WIN32
-   if(OptionsMenuUserInterface::joystickEnabled)
+   if(OptionsMenuUserInterface::joystickType != -1)
       JoystickUpdateMove(theMove);
 #endif
    theMove->time = timeDelta;
