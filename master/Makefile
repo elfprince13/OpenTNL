@@ -11,7 +11,8 @@ CC=g++ -g -I../tnl #-O2
 
 OBJECTS_MASTER=\
 	main.o\
-	masterInterface.o
+	masterInterface.o\
+	config.o
 
 CFLAGS=
 

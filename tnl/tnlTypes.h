@@ -209,6 +209,13 @@ typedef unsigned _int64 U64;
 // disable performance warning of integer to bool conversions
 #pragma warning(disable: 4800)
 
+#elif defined(__MWERKS__) && defined(_WIN32)
+
+typedef signed long long    S64;  ///< Compiler independent signed 64-bit integer
+typedef unsigned long long  U64;  ///< Compiler independent unsigned 64-bit integer
+
+#define TNL_COMPILER_STRING "Metrowerks CW Win32"
+
 #elif defined(__GNUC__)
 
 typedef signed long long    S64;  ///< Compiler independent signed 64-bit integer
@@ -292,6 +299,8 @@ typedef unsigned long long  U64;  ///< Compiler independent unsigned 64-bit inte
 #      error "TNL: Unsupported version of GCC (see tnlMethodDispatch.cpp)"
 #    endif
 #    define TNL_SUPPORTS_GCC_INLINE_X86_ASM
+#  elif defined (__MWERKS__)
+#    define TNL_SUPPORTS_MWERKS_INLINE_X86_ASM
 #  else
 #    define TNL_SUPPORTS_VC_INLINE_X86_ASM
 #  endif

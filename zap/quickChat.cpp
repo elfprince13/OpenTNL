@@ -174,8 +174,10 @@ void renderControllerButton(F32 x, F32 y, U32 buttonIndex, U32 keyIndex)
          glVertex(center + Point(10, 8));
          glVertex(center + Point(10, -8));
          glEnd();
-         
-         UserInterface::drawString(x + 2, y + 2, 11, buttonIndex == 4 ? "L2" : "R2");
+         static const char *buttonIndexString[4] = { 
+            "L2", "R2", "L1", "R1"
+         };
+         UserInterface::drawString(x + 2, y + 2, 11, buttonIndexString[buttonIndex - 4]);
       }
    }
    else if(joy == XBoxController || joy == XBoxControllerOnXBox)

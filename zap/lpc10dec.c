@@ -28,7 +28,11 @@
 #include <malloc.h>
 #endif
 #include <stdlib.h>
+#ifdef __MWERKS__
+#include <string.h>
+#else
 #include <memory.h>
+#endif
 #ifdef _MSC_VER
 #pragma warning (disable:4711) /* to disable automatic inline warning */
 #endif

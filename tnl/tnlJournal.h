@@ -107,6 +107,7 @@ struct JournalEntryRecord
             fptr = &className::func##_body; \
             m.v1 = *((U32 *) &fptr); \
             if(sizeof(fptr) > sizeof(U32)) m.v2 = *(((U32 *) &fptr) + 1); \
+            if(sizeof(fptr) > 2*sizeof(U32)) m.v3 = *(((U32 *) &fptr) + 2); \
          }; \
          Journal_##className##_##func##_er(const char *name, MethodArgList *methodArgList) : JournalEntryRecord(name, methodArgList) {} \
       } gJournal_##className##_##func##_er(#func, &Journal_##className##_##func); \

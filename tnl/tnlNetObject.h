@@ -414,7 +414,9 @@ public:
          { mFuncPtr = &className::name##_remote; } \
       TNL_DECLARE_CLASS( RPCEV_##className##_##name ); \
       bool checkClassType(TNL::Object *theObject) { return dynamic_cast<className *>(theObject) != NULL; } \
-      void getFuncPtr(TNL::MethodPointer &p) { p.v1=*((TNL::U32 *) &mFuncPtr); p.v2 = *(((TNL::U32 *) &mFuncPtr) + 1); } }; \
+      void getFuncPtr(TNL::MethodPointer &p) { p.v1=*((TNL::U32 *) &mFuncPtr); \
+         if(sizeof(mFuncPtr) > sizeof(TNL::U32)) p.v2 = *(((TNL::U32 *) &mFuncPtr) + 1); \
+         if(sizeof(mFuncPtr) > 2*sizeof(TNL::U32)) p.v3 = *(((TNL::U32 *) &mFuncPtr) + 2); } }; \
       TNL_IMPLEMENT_NETEVENT( RPCEV_##className##_##name, groupMask, rpcVersion ); \
       TNL::MethodArgList RPC##className##name (#className, #args); \
       void FN_CDECL className::name args { SAVE_PARAMS RPCEV_##className##_##name *theEvent = new RPCEV_##className##_##name(this); theEvent->marshallArguments(); postRPCEvent(theEvent); } \

@@ -116,11 +116,9 @@ public:
    bool mArmed;
    Timer mScanTimer;
    SafePtr<GameConnection> mOwnerConnection;
-
-   bool collide(GameObject *otherObj) { return (otherObj->getObjectTypeMask() & (ProjectileType)); };
-
+   bool collide(GameObject *otherObj);
    void idle(IdleCallPath path);
-   void handleCollision(GameObject *theObject, Point colPoint);
+  
    void damageObject(DamageInfo *damageInfo);
    void renderItem(Point p);
 

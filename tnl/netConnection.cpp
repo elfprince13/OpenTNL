@@ -105,6 +105,9 @@ NetConnection::NetConnection()
    cwnd = 2;
    ssthresh = 30;
    mLastSeqRecvdAck = 0;
+
+   mPingTimeout = DefaultPingTimeout;
+   mPingRetryCount = DefaultPingRetryCount;
 }
 
 void NetConnection::setInitialRecvSequence(U32 sequence)
@@ -150,8 +153,8 @@ bool NetConnection::checkTimeout(U32 time)
    if(!mLastPingSendTime)
       mLastPingSendTime = time;
 
-   U32 timeout = PingTimeout;
-   U32 timeoutCount = PingRetryCount;
+   U32 timeout = mPingTimeout;
+   U32 timeoutCount = mPingRetryCount;
 
    if(isAdaptive())
    {

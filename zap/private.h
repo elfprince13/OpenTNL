@@ -33,6 +33,8 @@
 
 #ifdef __GNUC__
   #define INLINE extern __inline__
+#elif defined(__MWERKS__)
+  #define INLINE __inline
 #else
   #ifdef _MSC_VER
     #define INLINE __inline
@@ -43,7 +45,11 @@
   #endif
 #endif
 
-#include <memory.h>
+#if defined(__MWERKS__)
+  #include <string.h>
+#else
+  #include <memory.h>
+#endif
 #include "gsm.h"
 #define	GSM_MAGIC		0xD		  	/* 13 kbit/s RPE-LTP */
 

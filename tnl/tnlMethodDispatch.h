@@ -113,6 +113,7 @@ struct MethodPointer
 {
    U32 v1;
    U32 v2;
+   U32 v3;
 };
 
 struct MarshalledCall
@@ -144,11 +145,11 @@ struct MarshalledCall
    void dispatch(void *thisPointer, MethodPointer *method);
 };
 
-#if defined(TNL_SUPPORTS_VC_INLINE_X86_ASM)
+#if defined(TNL_SUPPORTS_VC_INLINE_X86_ASM) || defined(TNL_SUPPORTS_MWERKS_INLINE_X86_ASM)
 };
 
-// VC 6.0 has problems with the usage of a namespace reference inside an inline assembly block
-// so we close the namespace and add this as a global global.
+// VC 6.0 and Codewarrior have problems with the usage of a namespace reference inside an 
+// inline assembly block, so we close the namespace and add this as a global global.
 
 extern void *TNL_gBasePtr;
 namespace TNL {

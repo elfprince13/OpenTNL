@@ -163,14 +163,6 @@ class NetConnection : public Object
 
       MessageSignatureBytes = 5, ///< Special data bytes written into the end of the packet to guarantee data consistency
    };
-   /// Constants controlling the behavior of pings and timeouts
-   enum PingConstants {
-      AdaptiveInitialPingTimeout = 60000,
-      AdaptivePingRetryCount = 4,
-      PingTimeout = 5000,  ///< Milliseconds to wait before sending a ping packet.
-      PingRetryCount = 10, ///< Number of unacknowledged pings to send before timing out.
-   };
-
    U32 mLastPacketRecvTime; ///< Time of the receipt of the last data packet.
    U32 mLastSeqRecvdAtSend[MaxPacketWindowSize]; ///< The sequence number of the last packet received from the remote host when we sent the packet with sequence X & PacketWindowMask.
    U32 mLastSeqRecvd;                            ///< The sequence number of the most recently received packet from the remote host.
@@ -192,6 +184,15 @@ class NetConnection : public Object
       AckPacket,  ///< Packet sent in response to a ping packet.  Sending an ack packet does not increment the sequence number.
       InvalidPacketType,
    };
+   /// Constants controlling the behavior of pings and timeouts
+   enum DefaultPingConstants {
+      AdaptiveInitialPingTimeout = 60000,
+      AdaptivePingRetryCount = 4,
+      DefaultPingTimeout = 5000,  ///< Default milliseconds to wait before sending a ping packet.
+      DefaultPingRetryCount = 10, ///< Default number of unacknowledged pings to send before timing out.
+   };
+   U32 mPingTimeout; ///< Milliseconds to wait before sending a ping packet.
+   U32 mPingRetryCount; ///< Number of unacknowledged pings to send before timing out.
 public:
    struct PacketNotify;
 
@@ -435,6 +436,10 @@ public:
    /// Returns the class group of objects that can be transmitted over this NetConnection.
    virtual NetClassGroup getNetClassGroup() const { return NetClassGroupInvalid; }
 
+   /// Sets the ping/timeout characteristics for a fixed-rate connection.  Total timeout is msPerPing * pingRetryCount.
+   void setPingTimeouts(U32 msPerPing, U32 pingRetryCount)
+      { mPingRetryCount = pingRetryCount; mPingTimeout = msPerPing; }
+   
    /// Simulates a network situation with a percentage random packet loss and a connection one way latency as specified.
    void setSimulatedNetParams(F32 packetLoss, U32 latency)
       { mSimulatedPacketLoss = packetLoss; mSimulatedLatency = latency; }

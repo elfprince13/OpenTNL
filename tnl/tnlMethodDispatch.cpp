@@ -614,6 +614,7 @@ void MarshalledCall::dispatch(void *thisPtr, MethodPointer *method)
    U32 funcOffset;
    func = method->v1;
    funcOffset = method->v2;
+   void *mptr = &method->v1;
    void *args = unmarshalledData.getBuffer();
 
 #ifdef TNL_CPU_X86
@@ -649,6 +650,56 @@ void MarshalledCall::dispatch(void *thisPtr, MethodPointer *method)
       pop   edi
       pop   esi
    }
+   
+#elif defined(TNL_SUPPORTS_MWERKS_INLINE_X86_ASM)
+   _asm
+   {
+      push  esi
+      push  edi
+      push  ecx
+      push  edx
+      push  ebx
+      mov   saveESP, esp
+
+      mov   ecx, sz       // get size of buffer
+      mov   esi, args     // get buffer
+      sub   esp, ecx      // allocate stack space
+      mov   edi, esp      // start of destination stack frame
+      shr   ecx, 2        // make it dwords
+      rep   movsd         // copy it
+      mov   ecx, thisPtr  // set "this"
+      push  ecx
+	  mov   eax, mptr 
+      push  eax
+      call  jmp_method
+      mov   esp, saveESP
+
+      pop   ebx
+      pop   edx
+      pop   ecx
+      pop   edi
+      pop   esi
+      jmp   jmp_continue
+
+jmp_method: 
+      pop      eax
+      pop      edx                        
+      mov      ecx,dword ptr [esp]            
+      push     eax                            
+      add      ecx,dword ptr [edx]            
+      mov      dword ptr [esp+0x4],ecx        
+      cmp      dword ptr [edx+0x4],0xffffffff 
+      je       jmp_now
+      mov      eax,dword ptr [edx+0x8]        
+      mov      eax,dword ptr [ecx+eax]        
+      add      eax,dword ptr [edx+0x4]        
+      jmp      dword ptr [eax]            
+      lea      eax,dword ptr [eax+0x0]        
+jmp_now:
+      jmp      dword ptr [edx+0x8]        
+
+jmp_continue:
+}
 
 #elif defined(TNL_SUPPORTS_GCC_INLINE_X86_ASM)
 

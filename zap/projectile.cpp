@@ -313,12 +313,11 @@ void Mine::idle(IdleCallPath path)
    }
 }
 
-void Mine::handleCollision(GameObject *theObject, Point colPoint)
+bool Mine::collide(GameObject *otherObj)
 {
-   explode(colPoint);
-
-   // No velocity for us.
-   mMoveState[0].vel.set(0,0);
+   if(otherObj->getObjectTypeMask() & (ProjectileType))
+      explode(getActualPos());
+   return false;
 }
 
 void Mine::damageObject(DamageInfo *info)

@@ -27,6 +27,10 @@
 #ifndef _TNL_NETSTRINGTABLE_H_
 #define _TNL_NETSTRINGTABLE_H_
 
+#ifndef _TNL_TYPES_H_
+#include "tnlTypes.h"
+#endif
+
 namespace TNL {
 
 

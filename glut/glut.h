@@ -143,7 +143,14 @@ extern "C" {
 
 #if defined(_WIN32)
 # ifndef GLUT_BUILDING_LIB
-extern _CRTIMP void __cdecl exit(int);
+/* CodeWarrior for Win32 does a "using std::exit;" in stdlib.h. 
+   So declaring ::exit(int) would cause an ambiguous error if 
+   someone would include stdlib.h before glut.h. */
+#  if defined(__MWERKS__) && defined(__cplusplus)
+     extern _CRTIMP void __cdecl std::exit(int);
+#  else
+     extern _CRTIMP void __cdecl exit(int);
+#  endif
 # endif
 #else
 /* non-Win32 case. */

@@ -459,7 +459,7 @@ void EventConnection::readPacket(BitStream *bstream)
 bool EventConnection::postNetEvent(NetEvent *theEvent)
 {   
    S32 classId = theEvent->getClassId(getNetClassGroup());
-   if(classId >= mEventClassCount)
+   if(U32(classId) >= mEventClassCount)
       return false;
 
    theEvent->notifyPosted(this);

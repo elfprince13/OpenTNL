@@ -33,6 +33,7 @@
 #include "ship.h"
 #include "teleporter.h"
 #include "engineeredObjects.h"
+#include "input.h"
 
 namespace Zap
 {
@@ -109,7 +110,7 @@ struct ControlString
    const char *primaryControl;
 };
 
-static ControlString gControls[] = {
+static ControlString gControlsKeyboard[] = {
    { "Move ship up (forward)", "W" },
    { "Move ship down (backward)", "S" },
    { "Move ship left (strafe left)", "A" },
@@ -129,6 +130,23 @@ static ControlString gControls[] = {
    { NULL, NULL },
 };
 
+static ControlString gControlsGamepad[] = {
+   { "Move Ship", "Left Stick" },
+   { "Aim Ship/Fire Weapon", "Right Stick" },
+   { "Activate primary module", "Left Trigger" },
+   { "Activate secondary module", "Right Trigger" },
+   { "Cycle current weapon", "" },
+   { "Toggle map view", "" },
+   { "Open QuickChat menu", "" },
+   { "Open loadout selection menu", "" },
+   { "Show scoreboard", "" },
+   { "Record voice chat", "" },
+   { "Chat to team", "Keyboard T" },
+   { "Chat to everyone", "Keyboard G" },
+   { NULL, NULL },
+};
+
+extern void renderControllerButton(F32 x, F32 y, U32 buttonIndex, U32 keyIndex);
 
 void InstructionsUserInterface::renderPage1()
 {
@@ -140,14 +158,30 @@ void InstructionsUserInterface::renderPage1()
    glVertex2f(750, y + 26);
    glEnd();
    glColor3f(1,1,1);
+   ControlString *controls;
+   bool gamepad = false;
+
+   if(OptionsMenuUserInterface::joystickType == -1)
+      controls = gControlsKeyboard;
+   else
+   {
+      gamepad = true;
+      controls = gControlsGamepad;
+   }
 
    drawString(col1, y, 20, "Action");
    drawString(col2, y, 20, "Control");
    y += 28;
-   for(S32 i = 0; gControls[i].controlString; i++)
+   for(S32 i = 0; controls[i].controlString; i++)
    {
-      drawString(col1, y, 20, gControls[i].controlString);
-      drawString(col2, y, 20, gControls[i].primaryControl);
+      glColor3f(1,1,1);
+      drawString(col1, y, 20, controls[i].controlString);
+      if(OptionsMenuUserInterface::joystickType == PS2DualShock && (i == 2 || i == 3))
+         renderControllerButton(col2, y + 4, i + 4, i + 4);
+      else if(gamepad && !controls[i].primaryControl[0])
+         renderControllerButton(col2, y + 4, i - 4, i - 4);
+      else
+         drawString(col2, y, 20, controls[i].primaryControl);
       y += 26;
    }
 }
@@ -382,11 +416,9 @@ void InstructionsUserInterface::onSpecialKeyDown(U32 key)
    switch(key)
    {
       case GLUT_KEY_LEFT:
-      case GLUT_KEY_UP:
          prevPage();
          break;
       case GLUT_KEY_RIGHT:
-      case GLUT_KEY_DOWN:
          nextPage();
          break;
    }

@@ -157,7 +157,7 @@ public:
       FlagItem *mountedFlag = dynamic_cast<FlagItem *>(theItem);
       if(mountedFlag)
       {
-         static StringTableEntry capString("%e0 retrieved %e1 flag!");
+         static StringTableEntry capString("%e0 retrieved %e1 flag.  Team %e2 holds %e1 flag!");
 
          Vector<StringTableEntry> e;
          e.push_back(cl->name);
@@ -165,6 +165,7 @@ public:
             e.push_back(theString);
          else
             e.push_back(aString);
+         e.push_back(mTeams[cl->teamId].name);
 
          for(S32 i = 0; i < mClientList.size(); i++)
             mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, 
