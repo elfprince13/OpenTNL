@@ -24,6 +24,7 @@ A - activate secondary module (default = shield)
 
 TAB - show scores
 
+W - next weapon
 Q - select weapon and module loadout
 
 Mouse:
@@ -43,6 +44,7 @@ button 1 - record voice chat
 button 2 - select weapon and module loadout
 button 3 - toggle commander map
 button 4 - show scores
+button 5 - next weapon
 button 6 - open quick chat menu
 
 In the game you can press ESC to go to the game options screen.  
