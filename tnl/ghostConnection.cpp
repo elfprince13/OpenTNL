@@ -866,7 +866,7 @@ void GhostConnection::activateGhosting()
       mGhostArray[j]->updateMask = 0;
       ghostPushToZero(mGhostArray[j]);
       mGhostArray[j]->flags &= ~GhostInfo::NotYetGhosted;
-      mGhostArray[j]->flags |= GhostInfo::ScopedEvent;
+      mGhostArray[j]->flags |= GhostInfo::Ghosting | GhostInfo::ScopedEvent;
 
       postNetEvent(new GhostAlwaysObjectEvent(mGhostArray[j]->obj, mGhostArray[j]->index));
    }

@@ -90,7 +90,7 @@ protected:
 
    struct DeleteRef
    {
-      GameObject *theObject;
+      SafePtr<GameObject> theObject;
       U32 delay;
 
       DeleteRef(GameObject *o = NULL, U32 d = 0);
