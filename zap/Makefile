@@ -10,6 +10,7 @@ OBJECTS_ZAP=\
 	CTFGame.o\
 	game.o\
 	gameConnection.o\
+	controlObjectConnection.o\
 	gameItems.o\
 	gameLoader.o\
 	gameNetInterface.o\
@@ -61,7 +62,8 @@ zapded: ../exe/zapded
 ../exe/zap: $(OBJECTS_ZAP)
 	$(CC) -o ../exe/zap $(OBJECTS_ZAP) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a ../openal/linux/libopenal.a -lpthread -lstdc++ -lGL -lGLU -lglut -lm
 
-../exe/zapded $(OBJECTS_ZAP) CFLAGS=$(CFLAGS) -DZAP_DEDICATED
+../exe/zapded: CFLAGS=-DZAP_DEDICATED
+../exe/zapded: $(OBJECTS_ZAP)
 	$(CC) -o ../exe/zap $(OBJECTS_ZAP) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a ../openal/linux/libopenal.a -lpthread -lstdc++ -lm
 
 ../master/masterInterface.o:

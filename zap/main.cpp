@@ -32,7 +32,6 @@
 
 #include "glutInclude.h"
 #include <stdarg.h>
-#include <direct.h>
 
 using namespace TNL;
 #include "UI.h"
