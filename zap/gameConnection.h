@@ -161,7 +161,7 @@ class GameConnection : public GhostConnection
 public:
    // move management
    enum {
-      MaxPendingMoves = 31,
+      MaxPendingMoves = 63,
    };
    Vector<Move> pendingMoves;
    SafePtr<GameObject> controlObject;
