@@ -135,13 +135,15 @@ void GameUserInterface::render()
       Point realMousePoint = mMousePoint;
 
 #ifdef TNL_OS_WIN32
+      if(!OptionsMenuUserInterface::controlsRelative)
+      {
+         F32 len = mMousePoint.len();
+         checkMousePos(windowWidth * 100 / canvasWidth,
+                     windowHeight * 100 / canvasHeight);
 
-      F32 len = mMousePoint.len();
-      checkMousePos(windowWidth * 100 / canvasWidth,
-                    windowHeight * 100 / canvasHeight);
-
-      if(len > 100)
-         realMousePoint *= 100 / len;
+         if(len > 100)
+            realMousePoint *= 100 / len;
+      }
 #endif
 
       glPushMatrix();

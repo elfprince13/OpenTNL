@@ -253,12 +253,11 @@ void Ship::processClientMove(Move *theMove, bool replay)
    else
       return;
 
-   //mMoveState[RenderState] = mMoveState[ActualState];
    updateInterpolation(theMove->time);
    lastMove = *theMove;
 
    // Emit some particles
-   emitMovementSparks();
+   emitMovementSparks(theMove->time);
 
    for(U32 i=0; i<TrailCount; i++)
       mTrail[i].tick(theMove->time);
@@ -275,7 +274,7 @@ void Ship::processClient(U32 deltaT)
    processMove(&lastMove, ActualState);
    updateInterpolation(deltaT);
    // Emit some particles
-   emitMovementSparks();
+   emitMovementSparks(deltaT);
 
    for(U32 i=0; i<TrailCount; i++)
       mTrail[i].tick(deltaT);
@@ -641,10 +640,15 @@ void Ship::emitShipExplosion(Point pos)
    SparkManager::emitBurst(pos, Point(b,d), Color(1,1,0), Color(0,0.75,0));
 }
 
-void Ship::emitMovementSparks()
+void Ship::emitMovementSparks(U32 deltaT)
 {
-   // Do nothing if we're under 0.001 vel
+   // Do nothing if we're under 0.1 vel
    if(hasExploded || mMoveState[ActualState].vel.len() < 0.1)
+      return;
+
+   mSparkElapsed += deltaT;
+
+   if(mSparkElapsed <= 32)
       return;
 
    Point corners[3];
@@ -750,14 +754,14 @@ void Ship::emitMovementSparks()
           if(th > 0.1)
           {
              // shoot some sparks...
-             if(th >= 1*TNL::Random::readF() * velDir.len())
+             if(th >= 0.2*velDir.len())
              {
                 Point chaos(TNL::Random::readF(),TNL::Random::readF());
                 chaos *= 5;
  
                 //interp give us some nice enginey colors...
                 Color dim(1, 0, 0);
-                Color light(1, 1, 0);
+                Color light(1, 1, mTurbo ? 1.f : 0.f);
                 Color thrust;
   
                 F32 t = TNL::Random::readF();

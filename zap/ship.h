@@ -77,6 +77,7 @@ public:
    bool mShield, mTurbo, mCooldown;
    SFXHandle mTurboNoise;
 
+   U32     mSparkElapsed;
    S32     mLastTrailPoint[TrailCount];
    fxTrail mTrail[TrailCount];
 
@@ -96,7 +97,7 @@ public:
    F32 getHealth() { return mHealth; }
 
    void burnEnergy(U32 dT);
-   void emitMovementSparks();
+   void emitMovementSparks(U32 deltaT);
    void emitShipExplosion(Point pos);
 
    void processServerMove(Move *theMove);

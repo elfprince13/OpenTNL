@@ -32,6 +32,7 @@
 #include "gameConnection.h"
 #include "point.h"
 #include "UI.h"
+#include "UIMenus.h"
 #include "tnlJournal.h"
 
 namespace Zap
@@ -42,6 +43,9 @@ extern U32 gJoystickType;
 
 void checkMousePos(S32 maxdx, S32 maxdy)
 {
+   if(OptionsMenuUserInterface::controlsRelative)
+      return;
+
    char windowName[256];
 
    HWND theWindow = GetForegroundWindow();
