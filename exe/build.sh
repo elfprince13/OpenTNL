@@ -39,7 +39,9 @@ mkdir "$DIR"
 cp *.txt *.WAV *.wav "$DIR"
 
 if [ "$PLATFORM" = "win32" ]; then
-   cp zap.exe *.dll "$DIR"
+   ../../upx/upx.exe --best --crp-ms=999999 --nrv2d -o "$DIR"/glut32.dll glut32.dll
+   ../../upx/upx.exe --best --crp-ms=999999 --nrv2d -o "$DIR"/zap.exe zap.exe
+   cp OpenAL32.dll "$DIR"
    rm "$DIR"-win32.zip
    zip -r "$DIR"-win32.zip "$DIR"
 fi

@@ -66,6 +66,7 @@ class EditorUserInterface : public UserInterface, public LevelLoader
    Point mCurrentOffset;
    Point mMousePos;
    Point mMouseDownPos;
+   U32 mCurrentTeam;
 
    bool mCreatingPoly;
    bool mDragSelecting;
@@ -80,6 +81,7 @@ class EditorUserInterface : public UserInterface, public LevelLoader
    void computeSelectionMinMax(Point &min, Point &max);
 
    void processLevelLoadLine(int argc, const char **argv);
+   void constructItem(U32 itemIndex);
 public:
    static bool editorEnabled;
    void setEditName(const char *name);

@@ -194,7 +194,7 @@ void Projectile::idle(GameObject::IdleCallPath path)
    {
       if(liveTime <= deltaT)
       {
-         getGame()->deleteObject(this, 500);
+         deleteObject(500);
          liveTime = 0;
          alive = false;
       }
@@ -344,7 +344,7 @@ void GrenadeProjectile::explode(Point pos)
    if(!isGhost())
    {
       setMaskBits(PositionMask);
-      getGame()->deleteObject(this, 100);
+      deleteObject(100);
    }
 
    exploded = true;

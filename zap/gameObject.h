@@ -49,6 +49,7 @@ enum GameObjectType
    EngineeredType    = BIT(7),
    ForceFieldType    = BIT(8),
 
+   DeletedType       = BIT(30),
    CommandMapVisType = BIT(31),
    AllObjectTypes = 0xFFFFFFFF,
 };
@@ -89,6 +90,7 @@ public:
 
    Game *getGame() { return mGame; }
 
+   void deleteObject(U32 deleteTimeInterval = 0);
    bool isInDatabase() { return mInDatabase; }
    void setExtent(Rect &extentRect);
    Rect getExtent() { return extent; }

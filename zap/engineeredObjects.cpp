@@ -115,7 +115,7 @@ void EngineeredObject::damageObject(DamageInfo *di)
    mResource->addToDatabase();
    mResource->setActualPos(mAnchorPoint + mAnchorNormal * mResource->getRadius());
 
-   getGame()->deleteObject(this, 0);
+   deleteObject(0);
 }
 
 void EngineeredObject::onDestroyed()
@@ -227,7 +227,7 @@ TNL_IMPLEMENT_NETOBJECT(ForceFieldProjector);
 void ForceFieldProjector::onDestroyed()
 {
    if(mField.isValid())
-      getGame()->deleteObject(mField, 0);
+      mField->deleteObject(0);
 }
 
 void ForceFieldProjector::onAddedToGame(Game *theGame)

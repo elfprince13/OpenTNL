@@ -120,7 +120,7 @@ public:
    Game(const Address &theBindAddress);
    Rect computeWorldObjectExtents();
 
-   void deleteObject(GameObject *theObject, U32 delay);
+   void addToDeleteList(GameObject *theObject, U32 delay);
 
    void addToGameObjectList(GameObject *theObject);
    void removeFromGameObjectList(GameObject *theObject);
@@ -218,7 +218,7 @@ extern void hostGame(bool dedicated, Address bindAddress);
 extern void joinGame(Address remoteAddress, bool isFromMaster, bool local = false);
 extern void endGame();
 
-#define ZAP_GAME_STRING "ZAP 1.3.0 rc 4"
+#define ZAP_GAME_STRING "ZAP 1.3.0 rc 5"
 };
 
 #endif

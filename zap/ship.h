@@ -81,8 +81,7 @@ public:
       ExplosionMask = BIT(4),
       HealthMask = BIT(5),
       PowersMask = BIT(6),
-      WeaponMask = BIT(7),
-      LoadoutMask = BIT(8),      
+      LoadoutMask = BIT(7),  
    };
 
    Timer mFireTimer;

@@ -112,7 +112,7 @@ Game::DeleteRef::DeleteRef(GameObject *o, U32 d)
    delay = d;
 }
 
-void Game::deleteObject(GameObject *theObject, U32 delay)
+void Game::addToDeleteList(GameObject *theObject, U32 delay)
 {
    mPendingDeleteObjects.push_back(DeleteRef(theObject, delay));
 }

@@ -164,7 +164,6 @@ void Ship::selectWeapon()
 void Ship::selectWeapon(U32 weaponIdx)
 {
    mActiveWeapon = weaponIdx % ShipWeaponCount;
-   setMaskBits(WeaponMask);
 }
 
 void Ship::processWeaponFire()
@@ -570,6 +569,7 @@ void Ship::writeControlState(BitStream *stream)
    stream->writeRangedU32(mEnergy, 0, EnergyMax);
    stream->writeFlag(mCooldown);
    stream->writeRangedU32(mFireTimer.getCurrent(), 0, MaxFireDelay);
+   stream->writeRangedU32(mActiveWeapon, 0, WeaponCount);
 }
 
 void Ship::readControlState(BitStream *stream)
@@ -582,6 +582,7 @@ void Ship::readControlState(BitStream *stream)
    mCooldown = stream->readFlag();
    U32 fireTimer = stream->readRangedU32(0, MaxFireDelay);
    mFireTimer.reset(fireTimer);
+   mActiveWeapon = stream->readRangedU32(0, WeaponCount);
 }
 
 U32  Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
@@ -616,15 +617,6 @@ U32  Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *st
    {
       stream->writeRangedU32(mModule[0], 0, ModuleCount);
       stream->writeRangedU32(mModule[1], 0, ModuleCount);
-
-      stream->writeRangedU32(mWeapon[0], 0, WeaponCount);
-      stream->writeRangedU32(mWeapon[1], 0, WeaponCount);
-      stream->writeRangedU32(mWeapon[2], 0, WeaponCount);
-   }
-
-   if(stream->writeFlag(updateMask & WeaponMask))
-   {
-      stream->writeRangedU32(mActiveWeapon, 0, WeaponCount);
    }
 
    stream->writeFlag(hasExploded);
@@ -693,15 +685,6 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
    {
       mModule[0] = stream->readRangedU32(0, ModuleCount);
       mModule[1] = stream->readRangedU32(0, ModuleCount);
-
-      mWeapon[0] = stream->readRangedU32(0, WeaponCount);
-      mWeapon[1] = stream->readRangedU32(0, WeaponCount);
-      mWeapon[2] = stream->readRangedU32(0, WeaponCount);
-   }
-
-   if(stream->readFlag())
-   {
-      mActiveWeapon = stream->readRangedU32(0, WeaponCount);
    }
 
    bool explode = stream->readFlag();
@@ -832,7 +815,7 @@ void Ship::setLoadout(U32 module1, U32 module2, U32 weapon1, U32 weapon2, U32 we
 
 void Ship::kill()
 {
-   getGame()->deleteObject(this, KillDeleteDelay);
+   deleteObject(KillDeleteDelay);
    hasExploded = true;
    setMaskBits(ExplosionMask);
    disableCollision();

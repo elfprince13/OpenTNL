@@ -46,6 +46,15 @@ void GameObject::setControllingClient(GameConnection *c)
    mControllingClient = c;
 }
 
+void GameObject::deleteObject(U32 deleteTimeInterval)
+{
+   mObjectTypeMask = DeletedType;
+   if(!mGame)
+      delete this;
+   else
+      mGame->addToDeleteList(this, deleteTimeInterval);
+}
+
 Point GameObject::getRenderPos()
 {
    return Point();

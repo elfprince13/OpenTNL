@@ -119,6 +119,12 @@ E - zoom in
 R - reset view to 0,0 in the top left corner
 F - flip current selection horizontally
 V - flip current selection vertically
+
+0...9 - set the active team for item construction
+T - construct a ResourceItem at the mouse point
+G - construct a Spawn point at the mouse point
+B - construct a RepairItem at the mouse point
+
 CTRL-D - duplicate current selection
 CTRL-Z - undo last operation
 

@@ -53,6 +53,8 @@ void EditorUserInterface::setEditName(const char *name)
    mDragSelecting = false;
    mUp = mDown = mLeft = mRight = mIn = mOut = false;
    mCreatingPoly = false;
+   mCurrentTeam = 0;
+
    strcpy(mEditFileName, name);
    mOriginalItems = mItems;
 }
@@ -73,6 +75,10 @@ enum GameItems
    ItemCTFFlag,
    ItemBarrierMaker,
    ItemTeleporter,
+   ItemRepair,
+   ItemSoccerGoal,
+   ItemTest,
+   ItemResource, 
 };
 
 GameItemRec gGameItemRecs[] = {
@@ -84,6 +90,7 @@ GameItemRec gGameItemRecs[] = {
    { "RepairItem", false, false },
    { "SoccerGoalObject", true, true },
    { "TestItem", false, false },
+   { "ResourceItem", false, false },
    { NULL, false, false },
 };
 
@@ -245,10 +252,11 @@ void EditorUserInterface::render()
    {
       glColor3f(1,1,1);
       glBegin(GL_LINE_LOOP);
-      glVertex2f(mMouseDownPos.x, mMouseDownPos.y);
-      glVertex2f(mMousePos.x, mMouseDownPos.y);
+      Point downPos = convertLevelToCanvasCoord(mMouseDownPos);
+      glVertex2f(downPos.x, downPos.y);
+      glVertex2f(mMousePos.x, downPos.y);
       glVertex2f(mMousePos.x, mMousePos.y);
-      glVertex2f(mMouseDownPos.x, mMousePos.y);
+      glVertex2f(downPos.x, mMousePos.y);
       glEnd();
    }
 }
@@ -585,7 +593,7 @@ void EditorUserInterface::onMouseDown(S32 x, S32 y)
       mCreatingPoly = false;
    }
 
-   mMouseDownPos = mMousePos;
+   mMouseDownPos = convertCanvasToLevelCoord(mMousePos);
 
    // rules for mouse down:
    // if the click has no shift- modifier, then
@@ -655,7 +663,7 @@ void EditorUserInterface::onMouseUp(S32 x, S32 y)
    if(mDragSelecting)
    {
       Rect r(convertCanvasToLevelCoord(mMousePos),
-             convertCanvasToLevelCoord(mMouseDownPos));
+             mMouseDownPos);
       for(S32 i = 0; i < mItems.size(); i++)
       {
          S32 j;
@@ -676,7 +684,8 @@ void EditorUserInterface::onMouseDragged(S32 x, S32 y)
    mMousePos = convertWindowToCanvasCoord(Point(x,y));
    if(mCreatingPoly || mDragSelecting)
       return;
-   Point delta = snapToLevelGrid(convertCanvasToLevelCoord(mMousePos) - convertCanvasToLevelCoord(mMouseDownPos));
+   Point delta = convertCanvasToLevelCoord(mMousePos);
+   delta = snapToLevelGrid(delta - mMouseDownPos);
 
    for(S32 i = 0; i < mItems.size(); i++)
    {
@@ -705,6 +714,8 @@ void EditorUserInterface::onRightMouseDown(S32 x, S32 y)
    if(itemHit != -1 && gGameItemRecs[mItems[itemHit].index].isPoly &&
       mItems[itemHit].index != ItemTeleporter)
    {
+      clearSelection();
+
       Point newVertex = snapToLevelGrid(convertCanvasToLevelCoord(mMousePos));
       // insert an extra vertex at the mouse clicked point,
       // and then select it.
@@ -712,6 +723,8 @@ void EditorUserInterface::onRightMouseDown(S32 x, S32 y)
       mItems[itemHit].verts[edgeHit + 1] = newVertex;
       mItems[itemHit].vertSelected.insert(edgeHit + 1);
       mItems[itemHit].vertSelected[edgeHit + 1] = true;
+      mMouseDownPos = newVertex;
+      mOriginalItems = mItems;
    }
    else
    {
@@ -776,9 +789,31 @@ void EditorUserInterface::deleteSelection()
    }
 }
 
+void EditorUserInterface::constructItem(U32 itemIndex)
+{
+   clearSelection();
+   WorldItem w;
+   w.index = itemIndex;
+   if(gGameItemRecs[itemIndex].hasTeam)
+      w.team = mCurrentTeam;
+   else
+      w.team = -1;
+   w.selected = false;
+   Point pos = convertCanvasToLevelCoord(mMousePos);
+   w.verts.push_back(snapToLevelGrid(pos));
+   w.vertSelected.push_back(false);
+   mItems.push_back(w);
+}
+
 void EditorUserInterface::onKeyDown(U32 key)
 {
    bool ctrlActive = glutGetModifiers() & GLUT_ACTIVE_CTRL;
+
+   if(key >= '0' && key < ('0' + mTeams.size()))
+   {
+      mCurrentTeam = key - '0';
+      return;
+   }
 
    switch(tolower(key))
    {
@@ -818,6 +853,15 @@ void EditorUserInterface::onKeyDown(U32 key)
          break;
       case 'c':
          mOut = true;
+         break;
+      case 't':
+         constructItem(ItemResource);
+         break;
+      case 'g':
+         constructItem(ItemSpawn);
+         break;
+      case 'b':
+         constructItem(ItemRepair);
          break;
       case 8:
       case 127:
