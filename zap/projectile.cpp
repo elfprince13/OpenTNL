@@ -71,6 +71,8 @@ Projectile::Projectile(U32 type, Point p, Point v, U32 t, GameObject *shooter)
    collided = false;
    alive = true;
    mShooter = shooter;
+   if(shooter)
+      setOwner(shooter->getOwner());
    mType = type;
 }
 
@@ -137,7 +139,7 @@ void Projectile::handleCollision(GameObject *hitObject, Point collisionPoint)
       theInfo.collisionPoint = collisionPoint;
       theInfo.damageAmount = gProjInfo[mType].damageAmount;
       theInfo.damageType = 0;
-      theInfo.damagingObject = mShooter;
+      theInfo.damagingObject = this;
       theInfo.impulseVector = velocity;
 
       hitObject->damageObject(&theInfo);
@@ -300,8 +302,8 @@ Mine::Mine(Point pos, Ship *planter)
 
    if(planter)
    {
-      mOwnerConnection = planter->getControllingClient();
-      mTeam            = planter->getTeam();
+      setOwner(planter->getOwner());
+      mTeam = planter->getTeam();
    }
    else
    {
@@ -452,6 +454,8 @@ GrenadeProjectile::GrenadeProjectile(Point pos, Point vel, U32 liveTime, GameObj
 
    ttl = liveTime;
    exploded = false;
+   if(shooter)
+      setOwner(shooter->getOwner());
 }
 
 void GrenadeProjectile::idle(IdleCallPath path)

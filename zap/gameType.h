@@ -122,7 +122,7 @@ public:
    virtual void serverAddClient(GameConnection *theClient);
    virtual void serverRemoveClient(GameConnection *theClient);
 
-   virtual bool objectCanDamageObject(GameObject *damager, GameObject *victim) { return true; }
+   virtual bool objectCanDamageObject(GameObject *damager, GameObject *victim);
    virtual void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
 
    virtual void spawnShip(GameConnection *theClient);

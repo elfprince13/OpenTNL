@@ -51,7 +51,6 @@ public:
    void shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag);
    void renderInterfaceOverlay(bool scoreboardVisible);
    void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
-   bool objectCanDamageObject(GameObject *damager, GameObject *victim);
    void gameOverManGameOver();
    void flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex);
 

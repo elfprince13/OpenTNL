@@ -215,24 +215,9 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
    }
 }
 
-bool CTFGameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
-{
-   if(damager == victim)
-      return true;
-
-   GameConnection *c1 = (damager ? damager->getControllingClient() : NULL);
-   GameConnection *c2 = (victim ? victim->getControllingClient() : NULL);
-
-   if(!c1 || !c2)
-      return true;
-
-   return mClientList[findClientIndexByConnection(c1)].teamId !=
-          mClientList[findClientIndexByConnection(c2)].teamId;
-}
-
 void CTFGameType::controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject)
 {
-   GameConnection *killer = killerObject ? killerObject->getControllingClient() : NULL;
+   GameConnection *killer = killerObject ? killerObject->getOwner() : NULL;
    S32 killerIndex = findClientIndexByConnection(killer);
    S32 clientIndex = findClientIndexByConnection(theClient);
 

@@ -43,6 +43,16 @@ GameObject::GameObject()
    mInDatabase = false;
 }
 
+void GameObject::setOwner(GameConnection *c)
+{
+   mOwner = c;
+}
+
+GameConnection *GameObject::getOwner()
+{
+   return mOwner;
+}
+
 void GameObject::setControllingClient(GameConnection *c)
 {
    mControllingClient = c;

@@ -104,20 +104,27 @@ void RabbitGameType::spawnShip(GameConnection *theClient)
 
 bool RabbitGameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
 {
-   if(damager == victim)
+   if(!damager)
       return true;
 
    //if one of them isn't a ship, default to whatever the parent is
-   if (!(damager->getObjectTypeMask() & ShipType) || !(victim->getObjectTypeMask() & ShipType))
+   if(!(damager->getObjectTypeMask() & victim->getObjectTypeMask() & ShipType))
       return Parent::objectCanDamageObject(damager, victim);
 
-   //only hunters can hurt rabbits and only rabbits can hurt hunters
-   Ship *damnShip = dynamic_cast<Ship *>(damager);
-   Ship *victimShip = dynamic_cast<Ship *>(victim);
-   if ( shipHasFlag(damnShip) != shipHasFlag(victimShip) )
+   GameConnection *c1 = damager->getOwner();
+   GameConnection *c2 = victim->getOwner();
+
+   if( (!c1 || !c2) || (c1 == c2))
       return true;
 
-   return false;
+   Ship *damnShip = (Ship *) c1->getControlObject();
+   Ship *victimShip = (Ship *) c2->getControlObject();
+
+   if(!damnShip || !victimShip)
+      return true;
+
+   //only hunters can hurt rabbits and only rabbits can hurt hunters
+   return shipHasFlag(damnShip) != shipHasFlag(victimShip);
 }
 
 bool RabbitGameType::shipHasFlag(Ship *ship)
@@ -152,7 +159,11 @@ void RabbitGameType::controlObjectForClientKilled(GameConnection *theClient, Gam
 {
    Parent::controlObjectForClientKilled(theClient, clientObject, killerObject);
 
-   Ship *killerShip = dynamic_cast<Ship *>(killerObject);
+   Ship *killerShip = NULL;
+   GameConnection *ko = killerShip->getOwner();
+   if(ko)
+      killerShip = (Ship *) ko->getControlObject();
+
    Ship *victimShip = dynamic_cast<Ship *>(clientObject);
 
    if (killerShip)

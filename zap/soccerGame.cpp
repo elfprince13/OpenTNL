@@ -133,7 +133,7 @@ void SoccerGameType::renderInterfaceOverlay(bool scoreboardVisible)
 
 void SoccerGameType::controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject)
 {
-   GameConnection *killer = killerObject ? killerObject->getControllingClient() : NULL;
+   GameConnection *killer = killerObject ? killerObject->getOwner() : NULL;
    S32 killerIndex = findClientIndexByConnection(killer);
    S32 clientIndex = findClientIndexByConnection(theClient);
 
@@ -148,21 +148,6 @@ void SoccerGameType::controlObjectForClientKilled(GameConnection *theClient, Gam
       s2cKillMessage(mClientList[clientIndex].name, mClientList[killerIndex].name);
    }
    mClientList[clientIndex].respawnTimer.reset(RespawnDelay);
-}
-
-bool SoccerGameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
-{
-   if(damager == victim)
-      return true;
-
-   GameConnection *c1 = (damager ? damager->getControllingClient() : NULL);
-   GameConnection *c2 = (victim ? victim->getControllingClient() : NULL);
-
-   if(!c1 || !c2)
-      return true;
-
-   return mClientList[findClientIndexByConnection(c1)].teamId !=
-          mClientList[findClientIndexByConnection(c2)].teamId;
 }
 
 TNL_IMPLEMENT_NETOBJECT_RPC(SoccerGameType, s2cSoccerScoreMessage, (U32 msgIndex, StringTableEntryRef clientName, U32 teamIndex),

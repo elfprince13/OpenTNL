@@ -47,7 +47,6 @@ class SoccerGameType : public GameType
 public:
    void renderInterfaceOverlay(bool scoreboardVisible);
    void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
-   bool objectCanDamageObject(GameObject *damager, GameObject *victim);
    void scoreGoal(StringTableEntry playerName, U32 goalTeamIndex);
    void gameOverManGameOver();
 

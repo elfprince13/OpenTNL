@@ -300,6 +300,8 @@ void GameType::spawnShip(GameConnection *theClient)
    Ship *newShip = new Ship(mClientList[clientIndex].name, teamIndex, spawnPoint);
    newShip->addToGame(getGame());
    theClient->setControlObject(newShip);
+   newShip->setOwner(theClient);
+
    //setClientShipLoadout(clientIndex, theClient->getLoadout());
 }
 
@@ -461,9 +463,27 @@ void GameType::serverAddClient(GameConnection *theClient)
    spawnShip(theClient);
 }
 
+
+bool GameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
+{
+   if(!damager)
+      return true;
+
+   GameConnection *damagerOwner = damager->getOwner();
+   GameConnection *victimOwner = victim->getOwner();
+
+   if(damagerOwner == victimOwner)
+      return true;
+
+   if(mTeams.size() <= 1)
+      return true;
+
+   return damager->getTeam() != victim->getTeam();
+}
+
 void GameType::controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject)
 {
-   GameConnection *killer = killerObject ? killerObject->getControllingClient() : NULL;
+   GameConnection *killer = killerObject ? killerObject->getOwner() : NULL;
    S32 killerIndex = findClientIndexByConnection(killer);
    S32 clientIndex = findClientIndexByConnection(theClient);
 

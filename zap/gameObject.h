@@ -82,6 +82,7 @@ class GameObject : public NetObject
    Game *mGame;
    U32 mLastQueryId;
    SafePtr<GameConnection> mControllingClient;
+   SafePtr<GameConnection> mOwner;
    U32 mDisableCollisionCount;
    bool mInDatabase;
 
@@ -112,7 +113,10 @@ public:
 
    bool isControlled() { return mControllingClient.isValid(); }
    void setControllingClient(GameConnection *c);
+   void setOwner(GameConnection *c);
+
    GameConnection *getControllingClient();
+   GameConnection *getOwner();
 
    U32 getObjectTypeMask() { return mObjectTypeMask; }
 
