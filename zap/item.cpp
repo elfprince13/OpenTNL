@@ -49,6 +49,7 @@ void Item::processArguments(S32 argc, const char **argv)
    pos *= getGame()->getGridSize();
    for(U32 i = 0; i < MoveStateCount; i++)
       mMoveState[i].pos = pos;
+   updateExtent();
 }
 
 void Item::render()
@@ -168,7 +169,6 @@ U32 Item::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
    {
       stream->write(mMoveState[RenderState].pos.x);
       stream->write(mMoveState[RenderState].pos.y);
-      stream->write(mMoveState[RenderState].angle);
       stream->write(mMoveState[RenderState].vel.x);
       stream->write(mMoveState[RenderState].vel.y);
       stream->writeFlag(updateMask & WarpPositionMask);
@@ -197,7 +197,6 @@ void Item::unpackUpdate(GhostConnection *connection, BitStream *stream)
    {
       stream->read(&mMoveState[ActualState].pos.x);
       stream->read(&mMoveState[ActualState].pos.y);
-      stream->read(&mMoveState[ActualState].angle);
       stream->read(&mMoveState[ActualState].vel.x);
       stream->read(&mMoveState[ActualState].vel.y);
       //posSegments.push_back(mMoveState[ActualState].pos);
@@ -239,41 +238,39 @@ bool Item::collide(GameObject *otherObject)
    return mIsCollideable && !mIsMounted;
 }
 
-TNL_IMPLEMENT_NETOBJECT(TestItem);
-
-TestItem::TestItem() : Item(Point(0,0), true, 60, 4)
+PickupItem::PickupItem(Point p, float radius) 
+   : Item(p, false, radius, 1)
 {
-   mNetFlags.set(Ghostable);
+   mIsVisible = true;
+   mRepopDelay = 0;
 }
 
-void TestItem::renderItem(Point pos)
+void PickupItem::processServer(U32 deltaT)
 {
-   glPushMatrix();
-   glTranslatef(pos.x, pos.y, 0);
-
-   glColor3f(1, 1, 0);
-   glBegin(GL_LINE_LOOP);
-
-   glVertex2f(-60, 0);
-   glVertex2f(-40, 40);
-   glVertex2f(0, 60);
-   glVertex2f(40, 40);
-   glVertex2f(60, 0);
-   glVertex2f(40, -40);
-   glVertex2f(0, -60);
-   glVertex2f(-40, -40);
-
-   glEnd();
-   glPopMatrix();
+   if(!mIsVisible)
+   {
+      if(deltaT > mRepopDelay)
+      {
+         mIsVisible = true;
+         addToDatabase();
+      }
+      else
+         mRepopDelay -= deltaT;
+   }
 }
 
-void TestItem::damageObject(DamageInfo *theInfo)
+bool PickupItem::collide(GameObject *otherObject)
 {
-   // compute impulse direction
-   Point dv = theInfo->impulseVector - mMoveState[ActualState].vel;
-   Point iv = mMoveState[ActualState].pos - theInfo->collisionPoint;
-   iv.normalize();
-   mMoveState[ActualState].vel += iv * dv.dot(iv) * 0.3;
+   if(!isGhost() && otherObject->getObjectTypeMask() & ShipType)
+   {  
+      if(pickup((Ship *) otherObject))
+      {
+         mRepopDelay = getRepopDelay();
+         mIsVisible = false;
+         removeFromDatabase();
+      }
+   }
+   return false;
 }
 
 };

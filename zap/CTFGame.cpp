@@ -199,7 +199,7 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
    {
       if(!theFlag->isAtHome())
       {
-         s2cCTFMessage(CTFMsgReturnFlag, cl.clientId, theFlag->getTeamIndex());
+         s2cCTFMessage(CTFMsgReturnFlag, cl.name, theFlag->getTeamIndex());
          theFlag->sendHome();
          cl.score += Scores::ReturnScore;
       }
@@ -214,7 +214,7 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
             {
                mTeams[cl.teamId].score++;
                s2cSetTeamScore(cl.teamId, mTeams[cl.teamId].score);
-               s2cCTFMessage(CTFMsgCaptureFlag, cl.clientId, mountedFlag->getTeamIndex());
+               s2cCTFMessage(CTFMsgCaptureFlag, cl.name, mountedFlag->getTeamIndex());
                // score the flag for the client's team...
                mountedFlag->dismount();
                mountedFlag->sendHome();
@@ -225,7 +225,7 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
    }
    else
    {
-      s2cCTFMessage(CTFMsgTakeFlag, cl.clientId, theFlag->getTeamIndex());
+      s2cCTFMessage(CTFMsgTakeFlag, cl.name, theFlag->getTeamIndex());
       theFlag->mountToShip(theShip);
    }
 }
@@ -252,7 +252,7 @@ U32 CTFGameType::checkFlagDrop(GameObject *theObject)
       CTFFlagItem *mountedFlag = dynamic_cast<CTFFlagItem *>(theItem);
       if(mountedFlag)
       {
-         s2cCTFMessage(CTFMsgDropFlag, cl.clientId, mountedFlag->getTeamIndex());
+         s2cCTFMessage(CTFMsgDropFlag, cl.name, mountedFlag->getTeamIndex());
          mountedFlag->dismount();
          flagCount++;
       }
@@ -260,6 +260,18 @@ U32 CTFGameType::checkFlagDrop(GameObject *theObject)
          i++;
    }
    return flagCount;
+}
+
+bool CTFGameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
+{
+   GameConnection *c1 = damager->getControllingClient();
+   GameConnection *c2 = victim->getControllingClient();
+
+   if(!c1 || !c2)
+      return true;
+
+   return mClientList[findClientIndexByConnection(c1)].teamId !=
+          mClientList[findClientIndexByConnection(c2)].teamId;
 }
 
 void CTFGameType::controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject)
@@ -303,10 +315,10 @@ static U32 CTFFlagSounds[] =
    SFXFlagDrop,
 };
 
-TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cCTFMessage, (U32 messageIndex, U32 clientId, U32 teamIndex),
+TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cCTFMessage, (U32 messageIndex, StringTableEntry clientName, U32 teamIndex),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
-   S32 clientIndex = findClientIndexById(clientId);
+   S32 clientIndex = findClientIndexByName(clientName);
 
    gGameUserInterface.displayMessage(Color(0.6f, 1.0f, 0.8f), 
             CTFMessages[messageIndex], 

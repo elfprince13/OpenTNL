@@ -54,6 +54,9 @@ public:
    void processServer(U32 deltaT);
    void processClient(U32 deltaT);
 
+   virtual Point getRenderVel() { return velocity; }
+   virtual Point getActualVel() { return velocity; }
+
    void render();
 
    TNL_DECLARE_CLASS(Projectile);

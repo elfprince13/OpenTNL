@@ -44,7 +44,7 @@ namespace Zap
 //------------------------------------------------------------------------
 TNL_IMPLEMENT_NETOBJECT(Ship);
 
-Ship::Ship(StringTableEntry playerName, Point p, Color c, F32 m) : MoveObject(p, CollisionRadius)
+Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, CollisionRadius)
 {
    mObjectTypeMask = ShipType | MoveableType;
 
@@ -56,7 +56,6 @@ Ship::Ship(StringTableEntry playerName, Point p, Color c, F32 m) : MoveObject(p,
       mMoveState[i].angle = 0;
    }
    mHealth = 1.0;
-   color = c;
    interpTime = 0;
    mass = m;
    hasExploded = false;
@@ -149,13 +148,18 @@ void Ship::processServerMove(Move *theMove)
 
 void Ship::damageObject(DamageInfo *theInfo)
 {
-   mHealth -= 0.21;
+   if(!getGame()->getGameType()->objectCanDamageObject(theInfo->damagingObject, this))
+      return;
+
+   mHealth -= theInfo->damageAmount;
    setMaskBits(HealthMask);
    if(mHealth <= 0)
    {
       mHealth = 0;
       kill(theInfo);
    }
+   else if(mHealth > 1)
+      mHealth = 1;
 }
 
 void Ship::processClientMove(Move *theMove, bool replay)
@@ -291,9 +295,6 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
    if(stream->writeFlag(updateMask & InitialMask))
    {
       connection->packStringTableEntry(stream, mPlayerName);
-      stream->writeFloat(color.r, 8);
-      stream->writeFloat(color.g, 8);
-      stream->writeFloat(color.b, 8);
       stream->write(mass);
 
       // now write all the mounts:
@@ -351,9 +352,10 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
    if(stream->readFlag())
    {
       mPlayerName = connection->unpackStringTableEntry(stream);
-      color.r = stream->readFloat(8);
-      color.g = stream->readFloat(8);
-      color.b = stream->readFloat(8);
+      GameType *g = gClientGame->getGameType();
+      if(g)
+         color = g->getClientColor(mPlayerName);
+
       stream->read(&mass);
 
       // read mounted items:

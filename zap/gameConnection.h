@@ -158,8 +158,6 @@ public:
    Game *theGame;
 
    StringTableEntry playerName;
-   static U32 currentClientId;
-   U32 mClientId;
    U32 mLastClientControlCRC;
 
    U32 firstMoveIndex;

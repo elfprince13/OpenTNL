@@ -107,10 +107,10 @@ S32 GameType::findClientIndexByConnection(GameConnection *theConnection)
    return -1;
 }
 
-S32 GameType::findClientIndexById(U32 clientId)
+S32 GameType::findClientIndexByName(const StringTableEntry &name)
 {
    for(S32 clientIndex = 0; clientIndex < mClientList.size(); clientIndex++)
-      if(mClientList[clientIndex].clientId == clientId)
+      if(mClientList[clientIndex].name == name)
          return clientIndex;
    return -1;
 }
@@ -124,7 +124,7 @@ void GameType::spawnShip(GameConnection *theClient)
    S32 spawnIndex = Random::readI() % mTeams[teamIndex].spawnPoints.size();
    spawnPoint = mTeams[teamIndex].spawnPoints[spawnIndex];
 
-   Ship *newShip = new Ship(mClientList[clientIndex].name, spawnPoint, mTeams[teamIndex].color);
+   Ship *newShip = new Ship(mClientList[clientIndex].name, spawnPoint);
    newShip->addToGame(getGame());
    theClient->setControlObject(newShip);
 }
@@ -141,7 +141,6 @@ void GameType::countTeamPlayers()
 void GameType::serverAddClient(GameConnection *theClient)
 {
    ClientRef cref;
-   cref.clientId = theClient->mClientId;
    cref.name = theClient->playerName;
 
    cref.clientConnection = theClient;
@@ -164,8 +163,8 @@ void GameType::serverAddClient(GameConnection *theClient)
    cref.teamId = minTeamIndex;
    mClientList.push_back(cref);
 
-   s2cAddClient(cref.clientId, cref.name, false);
-   s2cClientJoinedTeam(cref.clientId, cref.teamId);
+   s2cAddClient(cref.name, false);
+   s2cClientJoinedTeam(cref.name, cref.teamId);
    spawnShip(theClient);
 }
 
@@ -208,15 +207,14 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sChangeTeams, (),
 
    U32 newTeamId = (mClientList[clientIndex].teamId + 1) % mTeams.size();
    mClientList[clientIndex].teamId = newTeamId;
-   s2cClientJoinedTeam(mClientList[clientIndex].clientId, newTeamId);
+   s2cClientJoinedTeam(mClientList[clientIndex].name, newTeamId);
    spawnShip(source);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddClient, (U32 id, StringTableEntry name, bool isMyClient),
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddClient, (StringTableEntry name, bool isMyClient),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
    ClientRef cref;
-   cref.clientId = id;
    cref.name = name;
    cref.teamId = 0;
    cref.wantsScoreboardUpdates = false;
@@ -224,7 +222,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddClient, (U32 id, StringTableEntry na
    mClientList.push_back(cref);
 
    if(isMyClient)
-      mThisClientId = id;
+      mThisClientName = name;
    gGameUserInterface.displayMessage(Color(0.6f, 0.6f, 0.8f), "%s joined the game.", name.getString());
 }
 
@@ -238,13 +236,13 @@ void GameType::serverRemoveClient(GameConnection *theClient)
    if(theControlObject)
       getGame()->deleteObject(theControlObject, 0);
 
-   s2cRemoveClient(theClient->mClientId);
+   s2cRemoveClient(theClient->playerName);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cRemoveClient, (U32 id),
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cRemoveClient, (StringTableEntry name),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
-   S32 clientIndex = findClientIndexById(id);
+   S32 clientIndex = findClientIndexByName(name);
    mClientList.erase(clientIndex);
 }
 
@@ -265,10 +263,10 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cSetTeamScore, (U32 teamIndex, U32 score
    mTeams[teamIndex].score = score;
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cClientJoinedTeam, (U32 clientId, U32 teamIndex),
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cClientJoinedTeam, (StringTableEntry name, U32 teamIndex),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
-   S32 clientIndex = findClientIndexById(clientId);
+   S32 clientIndex = findClientIndexByName(name);
    mClientList[clientIndex].teamId = teamIndex;
    gGameUserInterface.displayMessage(Color(0.6f, 0.6f, 0.8f), "%s joined team %s.", mClientList[clientIndex].name.getString(), mTeams[teamIndex].name.getString());
 }
@@ -286,8 +284,8 @@ void GameType::onGhostAvailable(GhostConnection *theConnection)
    // add all the client and team information
    for(S32 i = 0; i < mClientList.size(); i++)
    {
-      s2cAddClient(mClientList[i].clientId, mClientList[i].name, mClientList[i].clientConnection == theConnection);
-      s2cClientJoinedTeam(mClientList[i].clientId, mClientList[i].teamId);
+      s2cAddClient(mClientList[i].name, mClientList[i].clientConnection == theConnection);
+      s2cClientJoinedTeam(mClientList[i].name, mClientList[i].teamId);
    }
    NetObject::setRPCDestConnection(NULL);
 }

@@ -37,8 +37,7 @@ class GameType : public GameObject
 public:
    struct ClientRef
    {
-      U32 clientId;
-      StringTableEntry name;
+      StringTableEntry name;  /// Name of client - guaranteed to be unique of current clients
       S32 teamId;
       U32 score;
       bool wantsScoreboardUpdates;
@@ -58,13 +57,21 @@ public:
       Team() { numPlayers = 0; score = 0; }
    };
    Vector<Team> mTeams;
-   U32 mThisClientId; ///< Set to the client ID of this client (only on the ghost of the GameType)
+   U32 mThisClientName; ///< Set to the client name of this client (only on the ghost of the GameType)
    U32 mTimeUntilScoreboardUpdate;
 
    GameType();
    void countTeamPlayers();
 
-   S32 findClientIndexById(U32 clientId);
+   Color getClientColor(const StringTableEntry &clientName)
+   {
+      S32 index = findClientIndexByName(clientName);
+      if(index != -1)
+         return mTeams[mClientList[index].teamId].color;
+      return Color();
+   }
+
+   S32 findClientIndexByName(const StringTableEntry &name);
    S32 findClientIndexByConnection(GameConnection *theConnection);
 
    void processArguments(S32 argc, const char **argv);
@@ -76,6 +83,7 @@ public:
    virtual void serverAddClient(GameConnection *theClient);
    virtual void serverRemoveClient(GameConnection *theClient);
 
+   virtual bool objectCanDamageObject(GameObject *damager, GameObject *victim) { return true; }
    virtual void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
    virtual void controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject);
 
@@ -89,11 +97,11 @@ public:
 
    TNL_DECLARE_RPC(s2cAddTeam, (StringTableEntry teamName, F32 r, F32 g, F32 b));
    TNL_DECLARE_RPC(s2cSetTeamScore, (U32 teamIndex, U32 score));
-   TNL_DECLARE_RPC(s2cAddClient, (U32 clientId, StringTableEntry clientName, bool isMyClient));
-   TNL_DECLARE_RPC(s2cRemoveClient, (U32 clientId));
+   TNL_DECLARE_RPC(s2cAddClient, (StringTableEntry clientName, bool isMyClient));
+   TNL_DECLARE_RPC(s2cRemoveClient, (StringTableEntry clientName));
 
    TNL_DECLARE_RPC(c2sChangeTeams, ());
-   TNL_DECLARE_RPC(s2cClientJoinedTeam, (U32 clientId, U32 teamIndex));
+   TNL_DECLARE_RPC(s2cClientJoinedTeam, (StringTableEntry clientName, U32 teamIndex));
 
    TNL_DECLARE_RPC(c2sSendChat, (bool global, const char *message));
    TNL_DECLARE_RPC(s2cDisplayChatMessage, (bool global, StringTableEntry clientName, const char *message));

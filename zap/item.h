@@ -68,18 +68,15 @@ public:
 
 class PickupItem : public Item
 {
-   
-};
-
-class TestItem : public Item
-{
-   U32 teamIndex;
+   typedef Item Parent;
+   bool mIsVisible;
+   U32 mRepopDelay;
 public:
-   TestItem();
-   void renderItem(Point pos);
-   void damageObject(DamageInfo *theInfo);
-
-   TNL_DECLARE_CLASS(TestItem);
+   PickupItem(Point p = Point(), float radius = 1);
+   void processServer(U32 deltaT);
+   bool collide(GameObject *otherObject);
+   virtual bool pickup(Ship *theShip) = 0;
+   virtual U32 getRepopDelay() = 0;
 };
 
 };

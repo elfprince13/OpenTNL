@@ -110,6 +110,9 @@ public:
 
    virtual Point getRenderPos();
    virtual Point getActualPos();
+   virtual Point getRenderVel() { return Point(); }
+   virtual Point getActualVel() { return Point(); }
+
    virtual void setActualPos(Point p);
 
    virtual bool collide(GameObject *hitObject) { return false; }
@@ -119,6 +122,8 @@ public:
    bool onGhostAdd(GhostConnection *theConnection);
    void disableCollision() { mDisableCollisionCount++; }
    void enableCollision() { mDisableCollisionCount--; }
+   void addToDatabase();
+   void removeFromDatabase();
    bool isCollisionEnabled() { return mDisableCollisionCount == 0; }
 
 

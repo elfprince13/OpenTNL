@@ -49,7 +49,7 @@ bool gQuit = false;
 bool gIsServer = false;
 const char *gHostName = "ZAP Game";
 U32 gMaxPlayers = 128;
-const char *gMasterAddressString = "IP:master.opentnl.org:29002";
+const char *gMasterAddressString = "IP:master.opentnl.org:29005";
 Address gMasterAddress;
 const char *gLoadLevel = "level1.txt";
 

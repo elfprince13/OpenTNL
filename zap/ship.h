@@ -75,7 +75,9 @@ class Ship : public MoveObject
    Vector<SafePtr<Item> > mMountedItems;
 
    void render();
-   Ship(StringTableEntry playerName="", Point p = Point(0,0), Color c = Color(), F32 m = 1.0);
+   Ship(StringTableEntry playerName="", Point p = Point(0,0), F32 m = 1.0);
+
+   F32 getHealth() { return mHealth; }
 
    void emitMovementSparks();
    void emitShipExplosion(Point pos);

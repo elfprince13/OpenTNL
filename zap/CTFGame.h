@@ -52,6 +52,8 @@ public:
    void updateClientScoreboard(S32 clientIndex);
    void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
    void controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject);
+   bool objectCanDamageObject(GameObject *damager, GameObject *victim);
+
    U32 checkFlagDrop(GameObject *theObject);
 
    enum {
@@ -68,7 +70,7 @@ public:
       CTFMsgDropFlag,
    };
 
-   TNL_DECLARE_RPC(s2cCTFMessage, (U32 messageIndex, U32 clientId, U32 teamIndex));
+   TNL_DECLARE_RPC(s2cCTFMessage, (U32 messageIndex, StringTableEntry clientName, U32 teamIndex));
    TNL_DECLARE_RPC(s2cKillMessage, (StringTableEntry victim, StringTableEntry killer));
    TNL_DECLARE_RPC(s2cScoreboardUpdate, (const Vector<RangedU32<0, MaxPing> > &pingTimes, const Vector<Int<24> > &scores));
    TNL_DECLARE_CLASS(CTFGameType);

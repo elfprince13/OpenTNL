@@ -229,8 +229,6 @@ checkPlayerName:
    return true;
 }
 
-U32 GameConnection::currentClientId = 0;
-
 void GameConnection::onConnectionEstablished(bool isInitiator)
 {
    Parent::onConnectionEstablished(isInitiator);
@@ -244,8 +242,6 @@ void GameConnection::onConnectionEstablished(bool isInitiator)
    }
    else
    {
-      mClientId = ++currentClientId;
-
       linkToClientList();
       gServerGame->addClient(this);
       setGhostFrom(true);

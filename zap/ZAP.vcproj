@@ -140,6 +140,9 @@
 			RelativePath=".\gameConnection.h">
 		</File>
 		<File
+			RelativePath=".\gameItems.cpp">
+		</File>
+		<File
 			RelativePath=".\gameLoader.cpp">
 		</File>
 		<File

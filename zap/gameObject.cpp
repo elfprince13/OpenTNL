@@ -80,9 +80,25 @@ F32 GameObject::getUpdatePriority(NetObject *scopeObject, U32 updateMask, S32 up
    else
       nearest.y = center.y;
 
+   Point deltap = nearest - center;
+
    F32 distance = (nearest - center).len();
 
-   return (200 / distance) + updateSkips;
+   Point deltav = getActualVel() - so->getActualVel();
+
+   F32 add = 0;
+
+   // initial scoping factor is distance based.
+   F32 distFactor = (500 - distance) / 500;
+
+   // give some extra love to things that are moving towards the scope object
+   if(deltav.dot(deltap) < 0)
+      add = 0.7;
+
+   // and a little more love if this object has not yet been scoped.
+   if(updateMask == 0xFFFFFFFF)
+      add += 0.5;
+   return distFactor + add + updateSkips * 0.5f;
 }
 
 void GameObject::damageObject(DamageInfo *theInfo)
@@ -121,12 +137,22 @@ GameObject *GameObject::findObjectLOS(U32 typeMask, U32 stateIndex, Point raySta
    return mGame->getGridDatabase()->findObjectLOS(typeMask, stateIndex, rayStart, rayEnd, collisionTime);
 }
 
+void GameObject::addToDatabase()
+{
+   mGame->getGridDatabase()->addToExtents(this, extent);
+}
+
+void GameObject::removeFromDatabase()
+{
+   mGame->getGridDatabase()->removeFromExtents(this, extent);
+}
+
 void GameObject::addToGame(Game *theGame)
 {
    TNLAssert(mGame == NULL, "Error, already in a game.");
    theGame->addToGameObjectList(this);
    mGame = theGame;
-   mGame->getGridDatabase()->addToExtents(this, extent);
+   addToDatabase();
    onAddedToGame(theGame);
 }
 
@@ -138,7 +164,7 @@ void GameObject::removeFromGame()
 {
    if(mGame)
    {
-      mGame->getGridDatabase()->removeFromExtents(this, extent);
+      removeFromDatabase();
       mGame->removeFromGameObjectList(this);
       mGame = NULL;
    }
