@@ -233,7 +233,7 @@ void ServerGame::cycleLevel()
 void ServerGame::loadLevel(const char *fileName)
 {
    mGridSize = DefaultGridSize;
-   GameLoader::initGameFromFile(this, fileName);
+   initLevelFromFile(fileName);
 }
 
 void ServerGame::processLevelLoadLine(int argc, const char **argv)

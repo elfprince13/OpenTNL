@@ -24,11 +24,11 @@
 //
 //------------------------------------------------------------------------------------
 
-#include "../tnl/tnl.h"
-#include "../tnl/tnlRandom.h"
-#include "../tnl/tnlGhostConnection.h"
-#include "../tnl/tnlNetInterface.h"
-#include "../tnl/tnlJournal.h"
+#include "tnl.h"
+#include "tnlRandom.h"
+#include "tnlGhostConnection.h"
+#include "tnlNetInterface.h"
+#include "tnlJournal.h"
 
 #include "glutInclude.h"
 #include <stdarg.h>
@@ -38,6 +38,7 @@ using namespace TNL;
 #include "UIGame.h"
 #include "UINameEntry.h" 
 #include "UIMenus.h"
+#include "UIEditor.h"
 #include "game.h"
 #include "gameNetInterface.h"
 #include "masterConnection.h"
@@ -428,6 +429,7 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *
    bool connectLocal = false;
    bool connectRemote = false;
    bool nameSet = false;
+   bool hasEditor = false;
 
    S32 argc = argv.size();
 
@@ -499,6 +501,14 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *
          if(hasAdditionalArg)
             gMaxPlayers = atoi(argv[i+1]);
       }
+      else if(!stricmp(argv[i], "-edit"))
+      {
+         if(hasAdditionalArg)
+         {
+            hasEditor = true;
+            gEditorUserInterface.setEditName(argv[i+1]);
+         }
+      }
    }
    gMasterAddress.set(gMasterAddressString);
 #ifdef ZAP_DEDICATED
@@ -511,17 +521,22 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *
    if(hasClient)
       gClientGame = new ClientGame(Address());
 
-   if(hasServer)
-      hostGame(hasClient == false, gBindAddress);
-   else if(connectRemote)
-      joinGame(gConnectAddress, false);
-
-   if(!connectLocal && !connectRemote)
+   if(hasEditor)
+      gEditorUserInterface.activate();
+   else
    {
-      if(!nameSet)
-         gNameEntryUserInterface.activate();
-      else
-         gMainMenuUserInterface.activate();
+      if(hasServer)
+         hostGame(hasClient == false, gBindAddress);
+      else if(connectRemote)
+         joinGame(gConnectAddress, false);
+
+      if(!connectLocal && !connectRemote)
+      {
+         if(!nameSet)
+            gNameEntryUserInterface.activate();
+         else
+            gMainMenuUserInterface.activate();
+      }
    }
 }
 
@@ -583,7 +598,7 @@ int main(int argc, char **argv)
       glutDisplayFunc(display);
       glutReshapeFunc(reshape);
       glutPassiveMotionFunc(passivemotion);
-      glutMotionFunc(passivemotion);
+      glutMotionFunc(motion);
       glutKeyboardFunc(key);
       glutKeyboardUpFunc(keyup);
       glutSpecialFunc(specialkey);

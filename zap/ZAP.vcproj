@@ -154,6 +154,12 @@
 				RelativePath=".\UICredits.h">
 			</File>
 			<File
+				RelativePath=".\UIEditor.cpp">
+			</File>
+			<File
+				RelativePath=".\UIEditor.h">
+			</File>
+			<File
 				RelativePath=".\UIGame.cpp">
 			</File>
 			<File

@@ -29,9 +29,10 @@
 
 #include "point.h"
 #include "gameConnection.h"
-#include "../tnl/tnlNetObject.h"
+#include "tnlNetObject.h"
 #include "gridDB.h"
 #include "timer.h"
+#include "gameLoader.h"
 
 ///
 /// Zap - a 2D space game demonstrating the full capabilities of the
@@ -141,7 +142,7 @@ public:
    void processDeleteList(U32 timeDelta);
 };
 
-class ServerGame : public Game
+class ServerGame : public Game, public LevelLoader
 {
    enum {
       LevelSwitchTime = 5000,

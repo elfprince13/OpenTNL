@@ -26,17 +26,17 @@
 #ifndef _GAMELOADER_H_
 #define _GAMELOADER_H_
 
-#include "../tnl/tnl.h"
-#include "game.h"
-#include "gameObject.h"
-
 namespace Zap
 {
 
-class GameLoader
+class LevelLoader
 {
+protected:
+   virtual void processLevelLoadLine(int argc, const char **argv) = 0;
+
+   int parseArgs(const char *string);
 public:
-   static void initGameFromFile(ServerGame *g, const char *file);
+   void initLevelFromFile(const char *file);
 };
 
 };

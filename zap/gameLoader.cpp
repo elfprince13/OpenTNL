@@ -25,9 +25,12 @@
 //------------------------------------------------------------------------------------
 
 #include "gameLoader.h"
-#include "../tnl/tnlPlatform.h"
+#include "tnl.h"
+#include "tnlLog.h"
+
 #include <stdio.h>
 
+using namespace TNL;
 namespace Zap
 {
 
@@ -68,7 +71,7 @@ inline void addArg()
    }
 }
 
-int parseArgs(const char *string, ServerGame *g)
+int LevelLoader::parseArgs(const char *string)
 {
    int numObjects = 0;
 
@@ -153,7 +156,7 @@ stateEatingComment:
       goto stateEatingComment;
 stateLineParseDone:
    if(argc)
-      g->processLevelLoadLine(argc, (const char **) argv);
+      processLevelLoadLine(argc, (const char **) argv);
    argc = 0;
    argLen = 0;
    if(c)
@@ -161,7 +164,7 @@ stateLineParseDone:
    return numObjects;
 }      
 
-void GameLoader::initGameFromFile(ServerGame *g, const char *file)
+void LevelLoader::initLevelFromFile(const char *file)
 {
    FILE *f = fopen(file, "r");
    if(!f)
@@ -175,7 +178,7 @@ void GameLoader::initGameFromFile(ServerGame *g, const char *file)
    size_t bytesRead = fread(fileData, 1, sizeof(fileData), f);
    fileData[bytesRead] = 0;
 
-   parseArgs(fileData, g);
+   parseArgs(fileData);
 
    fclose(f);
 }
