@@ -40,11 +40,14 @@ public:
    bool doSplash;
    U32 timeout;
 
+   F32 spinFactor;
+
    enum {
       InitMask     = BIT(0),
       TeleportMask = BIT(1),
 
-      TeleporterRadius = 50,
+      TeleporterRadius        = 75,
+      TeleporterTriggerRadius = 50,
       TeleporterDelay = 1500,
    };
 

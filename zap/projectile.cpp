@@ -121,7 +121,7 @@ void Projectile::explode(GameObject *hitObject, Point thePos)
    // Do some particle spew...
    if(isGhost())
    {
-      SparkManager::emitExplosion(thePos, 0.4, SparkColors, NumSparkColors);
+      SparkManager::emitExplosion(thePos, 0.3, SparkColors, NumSparkColors);
 
       Ship *s = dynamic_cast<Ship*>(hitObject);
       if(s && s->isShieldActive())

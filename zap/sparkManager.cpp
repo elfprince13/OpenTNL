@@ -125,7 +125,7 @@ void SparkManager::render()
 
 void emitExplosion(Point pos, F32 size, Color *colorArray, U32 numColors)
 {
-   for(U32 i = 0; i < (500.0 * size); i++)
+   for(U32 i = 0; i < (250.0 * size); i++)
    {
 
       F32 th = Random::readF() * 2 * 3.14;
@@ -176,7 +176,7 @@ fxTrail::~fxTrail()
    unregisterTrail();
 }
 
-void fxTrail::update(Point pos, bool boosted)
+void fxTrail::update(Point pos, bool boosted, bool invisible)
 {
    if(mNodes.size() < mLength)
    {
@@ -184,13 +184,16 @@ void fxTrail::update(Point pos, bool boosted)
       t.pos = pos;
       t.ttl = mDropFreq;
       t.boosted = boosted;
+      t.invisible = invisible;
 
       mNodes.push_front(t);
    }
    else
    {
       mNodes[0].pos = pos;
-      if(boosted)
+      if(invisible)
+         mNodes[0].invisible = true;      
+      else if(boosted)
          mNodes[0].boosted = true;
    }
 }
@@ -213,7 +216,9 @@ void fxTrail::render()
    {
       F32 t = ((F32)i/(F32)mNodes.size());
 
-      if(mNodes[i].boosted)
+      if(mNodes[i].invisible)
+         glColor4f(0.f,0.f,0.f,0.f);
+      else if(mNodes[i].boosted)
          glColor4f(1.f - t, 1.f - t, 0.f, 1.f-t);
       else
          glColor4f(1.f - 2*t, 1.f - 2*t, 1.f, 0.7f-0.7*t);

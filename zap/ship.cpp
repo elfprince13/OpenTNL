@@ -304,6 +304,15 @@ void Ship::processEnergy()
       if(mCurrentMove.module[i] && !mCooldown)
          mModuleActive[mModule[i]] = true;
 
+    if(mModuleActive[ModuleBoost] && 
+       mCurrentMove.up == 0 && 
+       mCurrentMove.down == 0 && 
+       mCurrentMove.left == 0 && 
+       mCurrentMove.right == 0) 
+   { 
+      mModuleActive[ModuleBoost] = false; 
+   } 
+
    F32 scaleFactor = mCurrentMove.time * 0.001;
 
    // Update things based on available energy...
@@ -678,9 +687,6 @@ void Ship::emitShipExplosion(Point pos)
 
 void Ship::emitMovementSparks()
 {
-   if(isCloakActive())
-      return;
-
    U32 deltaT = mCurrentMove.time;
 
    // Do nothing if we're under 0.1 vel
@@ -693,6 +699,7 @@ void Ship::emitMovementSparks()
       return;
 
    bool boostActive = isBoostActive();
+   bool cloakActive = isCloakActive();
 
    Point corners[3];
    Point shipDirs[3];
@@ -755,25 +762,28 @@ void Ship::emitMovementSparks()
    // Stitch things up if we must...
    if(leftId == mLastTrailPoint[0] && rightId == mLastTrailPoint[1])
    {
-      mTrail[0].update(leftPt, boostActive);
-      mTrail[1].update(rightPt, boostActive); 
+      mTrail[0].update(leftPt,  boostActive, cloakActive);
+      mTrail[1].update(rightPt, boostActive, cloakActive); 
       mLastTrailPoint[0] = leftId;
       mLastTrailPoint[1] = rightId;
    }
    else if(leftId == mLastTrailPoint[1] && rightId == mLastTrailPoint[0])
    {
-      mTrail[1].update(leftPt, boostActive);
-      mTrail[0].update(rightPt, boostActive);
+      mTrail[1].update(leftPt,  boostActive, cloakActive);
+      mTrail[0].update(rightPt, boostActive, cloakActive);
       mLastTrailPoint[1] = leftId;
       mLastTrailPoint[0] = rightId;
    }
    else
    {
-      mTrail[0].update(leftPt, boostActive);
-      mTrail[1].update(rightPt, boostActive);
+      mTrail[0].update(leftPt,  boostActive, cloakActive);
+      mTrail[1].update(rightPt, boostActive, cloakActive);
       mLastTrailPoint[0] = leftId;
       mLastTrailPoint[1] = rightId;
    }
+
+   if(isCloakActive())
+      return;
 
    // Finally, do some particles
    Point velDir(mCurrentMove.right - mCurrentMove.left, mCurrentMove.down - mCurrentMove.up);

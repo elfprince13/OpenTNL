@@ -44,6 +44,7 @@ Teleporter::Teleporter(Point start, Point end)
    pos = start;
    dest = end;
    timeout = 0;
+   spinFactor = 0.f;
 
    Rect r(pos, pos);
    r.expand(Point(TeleporterRadius, TeleporterRadius));
@@ -69,6 +70,8 @@ void Teleporter::processArguments(S32 argc, const char **argv)
 
 U32 Teleporter::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
+   bool isInitial = (updateMask & BIT(3));
+
    if(stream->writeFlag(updateMask & InitMask))
    {
       stream->write(pos.x);
@@ -77,7 +80,7 @@ U32 Teleporter::packUpdate(GhostConnection *connection, U32 updateMask, BitStrea
       stream->write(dest.y);
    }
 
-   stream->writeFlag(updateMask & TeleportMask);
+   stream->writeFlag((updateMask & TeleportMask) && !isInitial);
 
    return 0;
 }
@@ -125,6 +128,11 @@ void Teleporter::idle(GameObject::IdleCallPath path)
    else
       timeout = 0;
 
+   // Update our spin...
+   spinFactor += 10 * F32(deltaT)/1000.f;
+   while(spinFactor > 720.f)
+      spinFactor -= 720.f;
+
    if(path != GameObject::ServerIdleMainLoop)
       return;
 
@@ -136,35 +144,88 @@ void Teleporter::idle(GameObject::IdleCallPath path)
    fillVector2.clear();
    findObjects(ShipType, fillVector2, queryRect);
 
+   // First see if we're triggered...
+   bool isTriggered = false;
+
    for(S32 i=0; i<fillVector2.size(); i++)
    {
       Ship *s = (Ship*)fillVector2[i];
-      if((pos - s->getActualPos()).len() < TeleporterRadius)
+      if((pos - s->getActualPos()).len() < TeleporterTriggerRadius)
       {
-         s->setActualPos(dest);
+         isTriggered = true;
          setMaskBits(TeleportMask);
          timeout = TeleporterDelay;
       }
    }
+   
+   if(!isTriggered)
+      return;
+
+   for(S32 i=0; i<fillVector2.size(); i++)
+   {
+      Ship *s = (Ship*)fillVector2[i];
+      if((pos - s->getActualPos()).len() < TeleporterRadius)
+         s->setActualPos(s->getActualPos() - pos + dest);
+   }
+}
+
+inline Point polarToRect(Point p)
+{
+   F32 &r  = p.x;
+   F32 &th = p.y;
+
+   return Point(
+      cos(th) * r,
+      sin(th) * r
+      );
+
 }
 
 void Teleporter::render()
 {
    glPushMatrix();
    glTranslatef(pos.x, pos.y, 0);
-
-   glBegin(GL_LINE_LOOP);
+   glRotatef(spinFactor, 0, 0, 1);
 
    glColor3f(0.5, 1, 0.5);
 
-   F32 r = TeleporterRadius * F32(TeleporterDelay - timeout) / F32(TeleporterDelay);
+   F32 r = F32(TeleporterDelay - timeout) / F32(TeleporterDelay);
+
+   // Draw spirals (line segs) with three points
+   //    - point 1 a little ways out from center
+   //    - point 2 at trigger radius, rotated from 1
+   //    - point 3 at teleport radius, rotated from 2
+
+   // We'll do 7 arms...
+   for(U32 i=0; i<7; i++)
+   {
+      const F32 step = (2.f*3.14f/7.f);
+      const F32 th = F32(i) * step;
+      
+      Point in2 ( 5*r,                        th );
+      Point mid2( TeleporterTriggerRadius*r,  th + 0.8 * step);
+      Point out2( TeleporterRadius*r,         th + step);
+
+      Point in  = polarToRect(in2);
+      Point mid = polarToRect(mid2);
+      Point out = polarToRect(out2);
+
+      glBegin(GL_LINE_STRIP);
+         glColor3f(0, 0, 1);
+         glVertex2f( in.x, in.y );
+
+         glColor3f(0, 1, 1);
+         glVertex2f( mid.x, mid.y );
+
+         glColor3f(0.9, 0.9, 0.9);
+         glVertex2f( out.x, out.y );
+      glEnd();
+   }
 
    glVertex2f(-r,  r);
    glVertex2f(-r, -r);
    glVertex2f( r, -r);
    glVertex2f( r,  r);
-
-   glEnd();
 
    glPopMatrix();
 }

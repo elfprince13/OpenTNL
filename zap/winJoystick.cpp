@@ -124,6 +124,10 @@ BOOL CALLBACK EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance,
 
 static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
 {
+   // mark: it's ok
+   // mark: it's called "winJoystick"
+   // mark: it's supposed to be gross.
+
    DIJOYSTATE2 js;       // DInput joystick state 
 
    if(!gJoystick)
@@ -162,8 +166,13 @@ static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
    }
    else if(gJoystickType == 2)
    {
-      controls[2] = F32( js.lZ ) - 32768.0f;      
+      controls[2] = F32( js.lZ ) - 32768.0f;
       controls[3] = F32( js.lRz ) - 32768.0f;
+   }
+   else if(gJoystickType == 3)
+   {
+      controls[2] = F32( js.lRx ) - 32768.0f;
+      controls[3] = F32( js.lRy ) - 32768.0f;
    }
 
    for(U32 i = 0; i < 4; i++)
@@ -185,6 +194,7 @@ static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
       theMove->left = 0;
       theMove->right = controls[0];
    }
+
    if(controls[1] < 0)
    {
       theMove->up = -controls[1];
@@ -208,6 +218,35 @@ static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
    // check the state of the buttons:
    for( U32 i = 0; i < 12; i++ )
       buttonPressed[i] = (js.rgbButtons[i] & 0x80) != 0;
+
+   // Remap crazy xbox inputs...
+   if(gJoystickType == 3)
+   {
+      bool b[12];
+
+      // Get the first six buttons...
+      b[0] = buttonPressed[2];
+      b[1] = buttonPressed[0];
+      b[2] = buttonPressed[5];
+
+      b[3] = buttonPressed[3];
+      b[4] = buttonPressed[1];
+      b[5] = buttonPressed[4];
+
+      // And the shoulder buttons...
+      b[6] = buttonPressed[10];
+      b[7] = buttonPressed[11];
+
+      // Fill in rest with false...
+      for( U32 i=8; i<12; i++)
+         b[i] = false;
+
+      // Now put it all back into the array (this is O(1), really!)
+      for( U32 i=0; i<12; i++)
+         buttonPressed[i] = b[i];
+   }
+
+   
 
    return true;
 }

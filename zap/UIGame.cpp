@@ -188,39 +188,6 @@ void GameUserInterface::renderReticle()
 {
    // draw the reticle
 
-/*
-      glTranslatef(realMousePoint.x, realMousePoint.y, 0);
-
-      static U32 cursorSpin = 90;
-      cursorSpin++;
-
-      glRotatef((cursorSpin % 720) * 0.9, 0, 0, 1);
-
-      glColor3f(1, 0, 0);
-      glBegin(GL_LINE_LOOP);
-      glVertex2f(-8, -6);
-      glVertex2f(-6, -8);
-      glVertex2f(-3, -3);
-      glEnd();
-      glBegin(GL_LINE_LOOP);
-      glVertex2f( 8, 6);
-      glVertex2f( 6, 8);
-      glVertex2f( 3, 3);
-      glEnd();
-      glBegin(GL_LINE_LOOP);
-      //glColor3f(1, 0, 0);
-      glVertex2f(8, -6);
-      glVertex2f(6, -8);
-      glVertex2f(3, -3);
-      glEnd();
-      glBegin(GL_LINE_LOOP);
-      glVertex2f(-8, 6);
-      glVertex2f(-6, 8);
-      glVertex2f(-3, 3);
-
-      glEnd();
-      glPopMatrix();*/
-
    if(!OptionsMenuUserInterface::joystickEnabled)
    {
 #if 0 // TNL_OS_WIN32

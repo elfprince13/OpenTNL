@@ -50,6 +50,7 @@ private:
       Point pos;
       S32   ttl;
       bool  boosted;
+      bool  invisible;
    };
 
    Vector<TrailNode> mNodes;
@@ -70,7 +71,7 @@ public:
    ~fxTrail();
 
    /// Update the point this trail is attached to.
-   void update(Point pos, bool boosted = false);
+   void update(Point pos, bool boosted = false, bool invisible = false);
 
    void tick(U32 dT);
 
