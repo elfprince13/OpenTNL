@@ -149,7 +149,7 @@ bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask)
    if(FAILED(gJoystick->GetDeviceState( sizeof(DIJOYSTATE2), &js ) ) )
       return false; // The device should have been acquired during the Poll()
 
-   F32 scale = 1 / 32768.0f;
+   F32 scale = 1.15 / 32768.0f;
    axes[0] = (F32(js.lX) - 32768.0f) * scale;
    axes[1] = (F32(js.lY) - 32768.0f) * scale;
    axes[2] = (F32(js.lZ) - 32768.0f) * scale;
@@ -162,13 +162,54 @@ bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask)
    axes[9] = 0;
    axes[10] = 0;
    axes[11] = 0;
+   for(S32 i = 0; i < 12; i++)
+   {
+      if(axes[i] > 1)
+         axes[i] = 1;
+      if(axes[i] < -1)
+         axes[i] = -1;
+   }
 
    // check the state of the buttons:
    buttonMask = 0;
+   U32 pov = js.rgdwPOV[0];
 
    for( U32 i = 0; i < 12; i++ )
+   {
       if((js.rgbButtons[i] & 0x80) != 0)
+      {
+         logprintf("Button down %d", i);
          buttonMask |= BIT(i);
+      }
+   }
+
+   switch(pov)
+   {
+   case 0:
+      buttonMask |= ControllerButtonDPadUp;
+      break;
+   case 4500:
+      buttonMask |= ControllerButtonDPadUp | ControllerButtonDPadRight;
+      break;
+   case 9000:
+      buttonMask |= ControllerButtonDPadRight;
+      break;
+   case 13500:
+      buttonMask |= ControllerButtonDPadRight | ControllerButtonDPadDown;
+      break;
+   case 18000:
+      buttonMask |= ControllerButtonDPadDown;
+      break;
+   case 22500:
+      buttonMask |= ControllerButtonDPadDown | ControllerButtonDPadLeft;
+      break;
+   case 27000:
+      buttonMask |= ControllerButtonDPadLeft;
+      break;
+   case 31500:
+      buttonMask |= ControllerButtonDPadLeft | ControllerButtonDPadUp;
+      break;
+   }
    return true;
 }
 

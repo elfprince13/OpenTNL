@@ -115,15 +115,20 @@ Saitek P880 Dual Analog
 6 - record voice
 
 PS 2 Dual Shock w/USB
-?
+X or depress right stick - cycle to next weapon
+O - toggle commander map
+square - open quick chat menu
+triangle - select weapon and module loadout
+L2 - show scores
+R2 - record voice
 
 XBox controller
-A (green) -
-B (red) -
-X (blue) -
-Y (yellow) -
-white -
-black -
+A (green) - cycle to weapon
+B (red) - toggle commander map
+X (blue) - open quick chat menu
+Y (yellow) - select weapon and module loadout
+white - show scores
+black - record voice
 
 In the game you can press ESC to go to the game options screen.  
 From there you can access the main options which include setting 

@@ -38,11 +38,27 @@ enum JoystickType
    SaitekDualAnalog,
    PS2DualShock,
    XBoxController,
+   XBoxControllerOnXBox,
 };
 
-enum {
+enum ButtonInfo {
    MaxJoystickAxes = 12,
-   MaxJoystickButtons = 12,
+   MaxJoystickButtons = 14,
+   ControllerButton1 = 1 << 0,
+   ControllerButton2 = 1 << 1,
+   ControllerButton3 = 1 << 2,
+   ControllerButton4 = 1 << 3,
+   ControllerButton5 = 1 << 4,
+   ControllerButton6 = 1 << 5,
+   ControllerButtonLeftTrigger = 1 << 6,
+   ControllerButtonRightTrigger = 1 << 7,
+   ControllerGameButtonCount = 8,
+   ControllerButtonStart = 1 << 16,
+   ControllerButtonBack = 1 << 17,
+   ControllerButtonDPadUp = 1 << 18,
+   ControllerButtonDPadDown = 1 << 19,
+   ControllerButtonDPadLeft = 1 << 20,
+   ControllerButtonDPadRight = 1 << 21,
 };
 
 // the following functions are defined differently on each platform

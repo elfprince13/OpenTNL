@@ -115,7 +115,7 @@ void MenuUserInterface::render()
 
 void MenuUserInterface::onSpecialKeyDown(U32 key)
 {
-   if(key == GLUT_KEY_UP || key == GLUT_KEY_LEFT)
+   if(key == GLUT_KEY_UP)
    {
       selectionIndex--;
       if(selectionIndex < 0)
@@ -130,7 +130,7 @@ void MenuUserInterface::onSpecialKeyDown(U32 key)
       }
       UserInterface::playBoop();
    }
-   else if(key == GLUT_KEY_DOWN || key == GLUT_KEY_RIGHT)
+   else if(key == GLUT_KEY_DOWN)
    {
       selectionIndex++;
       if(selectionIndex >= menuItems.size())
@@ -295,6 +295,9 @@ void OptionsMenuUserInterface::setupMenus()
          break;
       case 3:
          menuItems.push_back(MenuItem("INPUT: XBOX CONTROLLER USB",2));
+         break;
+      case 4:
+         menuItems.push_back(MenuItem("INPUT: XBOX CONTROLLER",2));
          break;
       default:
          menuItems.push_back(MenuItem("INPUT: UNKNOWN",2));

@@ -30,6 +30,7 @@
 #include "gameType.h"
 #include "UIMenus.h"
 #include "gameObjectRender.h"
+#include "input.h"
 #include <ctype.h>
 namespace Zap
 {
@@ -105,32 +106,91 @@ void renderControllerButton(F32 x, F32 y, U32 buttonIndex, U32 keyIndex)
 
    if(joy == -1)
       UserInterface::drawStringf(x, y, 15, "%c", keyIndex);
-   else if(joy == 0)
+   else if(joy == LogitechWingman)
    {
       glColor3f(1,1,1);
       const char buttons[] = "ABCXYZ";
       drawCircle(Point(x + 8, y + 8), 8);
       UserInterface::drawStringf(x + 4, y + 2, 12, "%c", buttons[buttonIndex]);
    }
-   else if(joy == 1)
+   else if(joy == SaitekDualAnalog)
    {
       glColor3f(1,1,1);
       const char buttons[] = "123456";
       drawCircle(Point(x + 8, y + 8), 8);
       UserInterface::drawStringf(x + 4, y + 2, 12, "%c", buttons[buttonIndex]);
    }
-   else if(joy == 2)
+   else if(joy == PS2DualShock)
    {
-      UserInterface::drawStringf(x, y, 15, "%c", buttonIndex + '1');
+      static F32 color[6][3] = { { 0.5, 0.5, 1 },
+                                 { 1, 0.5, 0.5 },
+                                 { 1, 0.5, 1 },
+                                 { 0.5, 1, 0.5 },
+                                 { 0.7, 0.7, 0.7 },
+                                 { 0.7, 0.7, 0.7 }
+                              };
+      Color c(color[buttonIndex][0], color[buttonIndex][1], color[buttonIndex][2]);
+      glColor3f(1.0, 1.0, 1.0);
+      Point center(x + 8, y + 8);
+      if(buttonIndex < 4)
+      {
+         drawCircle(center, 8);
+         glColor(c);
+         switch(buttonIndex)
+         {
+         case 0:
+            glBegin(GL_LINES);
+            glVertex(center + Point(-5, -5));
+            glVertex(center + Point(5, 5));
+            glVertex(center + Point(-5, 5));
+            glVertex(center + Point(5, -5));
+            glEnd();
+            break;
+         case 1:
+            drawCircle(center, 5);
+            break;
+         case 2:
+            glBegin(GL_LINE_LOOP);
+            glVertex(center + Point(-5, -5));
+            glVertex(center + Point(-5, 5));
+            glVertex(center + Point(5, 5));
+            glVertex(center + Point(5, -5));
+            glEnd();
+            break;
+         case 3:
+            glBegin(GL_LINE_LOOP);
+            glVertex(center + Point(0, -5));
+            glVertex(center + Point(5, 3));
+            glVertex(center + Point(-5, 3));
+            glEnd();
+            break;
+         }
+      }
+      else
+      {
+         glBegin(GL_LINE_LOOP);
+         glVertex(center + Point(-8, -8));
+         glVertex(center + Point(-8, 8));
+         glVertex(center + Point(10, 8));
+         glVertex(center + Point(10, -8));
+         glEnd();
+         
+         UserInterface::drawString(x + 2, y + 2, 11, buttonIndex == 4 ? "L2" : "R2");
+      }
    }
-   else if(joy == 3)
+   else if(joy == XBoxController || joy == XBoxControllerOnXBox)
    {
-      static F32 color[6][3] = { { 0, 0, 1 }, { 0, 1, 0 }, { 1, 1, 1 }, { 1, 1, 0 }, { 1, 0, 0}, { 0, 0, 0} };
+      static F32 color[6][3] = { { 0, 1, 0 }, 
+                                 { 1, 0, 0 }, 
+                                 { 0, 0, 1 }, 
+                                 { 1, 1, 0 }, 
+                                 { 1, 1, 1 },
+                                 { 0, 0, 0} };
       Color c(color[buttonIndex][0], color[buttonIndex][1], color[buttonIndex][2]);
 
       glColor(c * 0.8f);
       fillCircle(Point(x + 8, y + 8), 8);
-      const char buttons[] = "XA YB ";
+      const char buttons[] = "ABXY  ";
       glColor3f(1,1,1);
       drawCircle(Point(x + 8, y + 8), 8);
       glColor(c);

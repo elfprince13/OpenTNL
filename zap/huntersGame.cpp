@@ -174,7 +174,8 @@ void HuntersGameType::renderInterfaceOverlay(bool scoreboardVisible)
    U32 timeLeft = mNexusReturnTimer.getCurrent();
    U32 minsRemaining = timeLeft / (60000);
    U32 secsRemaining = (timeLeft - (minsRemaining * 60000)) / 1000;
-   UserInterface::drawStringf(720, 550, 20, "%02d:%02d", minsRemaining, secsRemaining);
+   UserInterface::drawStringf(UserInterface::canvasWidth - UserInterface::horizMargin - 65,
+      UserInterface::canvasHeight - UserInterface::vertMargin - 45, 20, "%02d:%02d", minsRemaining, secsRemaining);
 }
 
 void HuntersGameType::controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject)
