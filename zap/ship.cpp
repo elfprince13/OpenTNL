@@ -275,13 +275,6 @@ void Ship::idle(GameObject::IdleCallPath path)
       {
          // on the client, update the interpolation of this object
          // only if we are not replaying control moves.
-
-         // Turn off interp if our velocity is high
-         if(getActualVel().len () > MaxVelocity)
-            mInterpolating = false;
-         else
-            mInterpolating = true;
-
          updateInterpolation();
       }
    }
