@@ -184,7 +184,7 @@ static SFXProfile gSFXProfiles[] = {
  {  "phaser_impact.wav",   false, 0.7f,  false, 150, 600 },
  {  "ship_explode.wav",    false, 1.0,   false, 300, 1000 },
  {  "ship_heal.wav",       false, 1.0,   false, 300, 1000 },
- {  "ship_turbo.wav",      false, 0.15,   true,  150, 500 },
+ {  "ship_turbo.wav",      false, 0.15f, true,  150, 500 },
  {  "flag_capture.wav",    true,  0.45f, false, 0,   0 },
  {  "flag_drop.wav",       true,  0.45f, false, 0,   0 },
  {  "flag_return.wav",     true,  0.45f, false, 0,   0 },
@@ -340,6 +340,9 @@ void SFXObject::queueBuffer(ByteBufferPtr p)
    mInitialBuffer = p;
    if(mSourceIndex != -1)
    {
+      if(!gVoiceFreeBuffers.size())
+         return;
+
       ALuint source = gSources[mSourceIndex];
       ALuint buffer = gVoiceFreeBuffers.first();
       gVoiceFreeBuffers.pop_front();
@@ -358,6 +361,11 @@ void SFXObject::queueBuffer(ByteBufferPtr p)
       alBufferData(buffer, AL_FORMAT_MONO16, mInitialBuffer->getBuffer(),
             mInitialBuffer->getBufferSize(), 8000);
       alSourceQueueBuffers(source, 1, &buffer);
+
+      ALint state;
+      alGetSourcei(mSourceIndex, AL_SOURCE_STATE, &state);
+      if(state == AL_STOPPED)
+         alSourcePlay(mSourceIndex);
    }
    else
       play();
@@ -371,6 +379,9 @@ void SFXObject::playOnSource()
 
    if(mInitialBuffer.isValid())
    {
+      if(!gVoiceFreeBuffers.size())
+         return;
+
       ALuint buffer = gVoiceFreeBuffers.first();
       gVoiceFreeBuffers.pop_front();
 
@@ -532,13 +543,13 @@ void SFXObject::process()
    for(S32 i = 0; i < NumSources; i++)
    {
       ALint state;
+      unqueueBuffers(i);
       alGetSourcei(gSources[i], AL_SOURCE_STATE, &state);
       gSourceActive[i] = state != AL_STOPPED && state != AL_INITIAL;
    }
    for(S32 i = 0; i < gPlayList.size(); )
    {
       SFXHandle &s = gPlayList[i];
-      unqueueBuffers(s->mSourceIndex);
 
       if(s->mSourceIndex != -1 && !gSourceActive[s->mSourceIndex])
       {
