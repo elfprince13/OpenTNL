@@ -35,14 +35,22 @@ namespace Zap
 class GameType : public GameObject
 {
 public:
+   enum
+   {
+      RespawnDelay = 1500,
+   };
+
    struct ClientRef
    {
       StringTableEntry name;  /// Name of client - guaranteed to be unique of current clients
       S32 teamId;
       U32 score;
+      U32 respawnDelay;
+
       bool wantsScoreboardUpdates;
       SafePtr<GameConnection> clientConnection;
       U32 ping;
+      ClientRef() { ping = 0; score = 0; respawnDelay = 0; }
    };
 
    Vector<ClientRef> mClientList;

@@ -51,7 +51,7 @@ public:
       InterpMS = 15, // default interpolation time to new position
       CollisionRadius = 24,
       VisibilityRadius = 30,
-      KillDeleteDelay = 500,
+      KillDeleteDelay = 1500,
       ExplosionFadeTime = 300,
       FireDelay = 100,
    };

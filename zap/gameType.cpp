@@ -61,6 +61,17 @@ void GameType::processServer(U32 deltaT)
    }
    else
       mTimeUntilScoreboardUpdate -= deltaT;
+
+   for(S32 i = 0; i < mClientList.size(); i++)
+   {
+      if(mClientList[i].respawnDelay)
+      {
+         if(mClientList[i].respawnDelay < deltaT)
+            spawnShip(mClientList[i].clientConnection);
+         else
+            mClientList[i].respawnDelay -= deltaT;
+      }
+   }
 }
 
 void GameType::onAddedToGame(Game *theGame)
@@ -121,6 +132,7 @@ void GameType::spawnShip(GameConnection *theClient)
    S32 clientIndex = findClientIndexByConnection(theClient);
    S32 teamIndex = mClientList[clientIndex].teamId;
 
+   mClientList[clientIndex].respawnDelay = 0;
    Point spawnPoint;
    S32 spawnIndex = Random::readI() % mTeams[teamIndex].spawnPoints.size();
    spawnPoint = mTeams[teamIndex].spawnPoints[spawnIndex];
@@ -145,7 +157,6 @@ void GameType::serverAddClient(GameConnection *theClient)
    cref.name = theClient->playerName;
 
    cref.clientConnection = theClient;
-   cref.score = 0;
    cref.wantsScoreboardUpdates = false;
 
    countTeamPlayers();
@@ -171,7 +182,9 @@ void GameType::serverAddClient(GameConnection *theClient)
 
 void GameType::controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject)
 {
-   spawnShip(theClient);
+   S32 clientIndex = findClientIndexByConnection(theClient);
+   if(clientIndex != -1)
+      mClientList[clientIndex].respawnDelay = RespawnDelay;
 }
 
 void GameType::controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject)

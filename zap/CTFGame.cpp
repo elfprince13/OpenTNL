@@ -295,7 +295,7 @@ void CTFGameType::controlObjectForClientKilled(GameConnection *theClient, GameOb
       s2cKillMessage(mClientList[clientIndex].name, mClientList[killerIndex].name);
    }
    checkFlagDrop(clientObject);
-   spawnShip(theClient);
+   mClientList[clientIndex].respawnDelay = RespawnDelay;
 }
 
 void CTFGameType::controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject)

@@ -333,9 +333,12 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
 {
    bool interpolate = false;
    bool positionChanged = false;
+   bool wasInitialUpdate = false;
 
    if(stream->readFlag())
    {
+      wasInitialUpdate = true;
+
       mPlayerName = connection->unpackStringTableEntry(stream);
       GameType *g = gClientGame->getGameType();
       if(g)
@@ -394,7 +397,8 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
       hasExploded = true;
       disableCollision();
 
-      emitShipExplosion(mMoveState[ActualState].pos);
+      if(!wasInitialUpdate)
+         emitShipExplosion(mMoveState[ActualState].pos);
    }
 }
 
@@ -743,19 +747,12 @@ void Ship::render()
    glVertex2f(12.5, 10);
    glVertex2f(12.5, 0);
    glEnd();
-   glColor4f(1,1,1, alpha);
-   glBegin(GL_LINE_LOOP);
-   glVertex2f(-20, -15);
-   glVertex2f(0, 25);
-   glVertex2f(20, -15);
-   glEnd();
    glColor4f(color.r,color.g,color.b, alpha);
    glBegin(GL_LINE_LOOP);
    glVertex2f(-12, -13);
    glVertex2f(0, 22);
    glVertex2f(12, -13);
    glEnd();
-
    U32 health = 14 * mHealth;
    glBegin(GL_LINES);
    for(U32 i = 0; i < health; i++)
@@ -764,6 +761,13 @@ void Ship::render()
       glVertex2f(-2, -11 + yo);
       glVertex2f(2, -11 + yo);
    }
+   glEnd();
+
+   glColor4f(1,1,1, alpha);
+   glBegin(GL_LINE_LOOP);
+   glVertex2f(-20, -15);
+   glVertex2f(0, 25);
+   glVertex2f(20, -15);
    glEnd();
 
    if(hasExploded)
