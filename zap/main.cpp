@@ -380,8 +380,7 @@ void display(void)
 TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, display, ())
 {
    glFlush();
-   if(UserInterface::current)
-      UserInterface::current->render();
+   UserInterface::renderCurrent();
 
    // Render master connection state...
    if(gClientGame && gClientGame->getConnectionToMaster() 

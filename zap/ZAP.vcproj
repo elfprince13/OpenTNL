@@ -199,6 +199,12 @@
 				RelativePath=".\UIGame.h">
 			</File>
 			<File
+				RelativePath=".\UIInstructions.cpp">
+			</File>
+			<File
+				RelativePath=".\UIInstructions.h">
+			</File>
+			<File
 				RelativePath=".\UIMenus.cpp">
 			</File>
 			<File
@@ -249,9 +255,6 @@
 			</File>
 			<File
 				RelativePath=".\voiceCodec.cpp">
-			</File>
-			<File
-				RelativePath=".\voiceCodec.h">
 			</File>
 		</Filter>
 		<Filter
@@ -337,6 +340,9 @@
 			</File>
 			<File
 				RelativePath=".\teleporter.h">
+			</File>
+			<File
+				RelativePath=".\voiceCodec.h">
 			</File>
 		</Filter>
 		<Filter

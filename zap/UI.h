@@ -41,6 +41,8 @@ public:
 
    static S32 windowWidth, windowHeight, canvasWidth, canvasHeight;
 
+   static void renderCurrent();
+
    virtual void render();
    virtual void idle(U32 timeDelta);
    virtual void onActivate();

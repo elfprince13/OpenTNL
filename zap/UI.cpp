@@ -57,6 +57,20 @@ void UserInterface::onActivate()
 {
 }
 
+void UserInterface::renderCurrent()
+{
+   glViewport(0, 0, windowWidth, windowHeight);
+
+   glClearColor(0, 0, 0, 1.0);
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+
+   if(current)
+      current->render();
+}
+
 void UserInterface::drawString(S32 x, S32 y, S32 size, const char *string)
 {
    F32 scaleFactor = size / 120.0f;

@@ -80,14 +80,6 @@ void CreditsUserInterface::onActivate()
 
 void CreditsUserInterface::render()
 {
-   glViewport(0, 0, windowWidth, windowHeight);
-
-   glClearColor(0, 0, 0, 1.0);
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
-
    // loop through all the attached effects and 
    // call their render function
    for(S32 i = 0; i < fxList.size(); i++)

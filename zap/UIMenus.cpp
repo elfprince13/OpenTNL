@@ -32,6 +32,7 @@
 #include "game.h"
 #include "gameType.h"
 #include "UIEditor.h"
+#include "UIInstructions.h"
 
 #include "glutInclude.h"
 
@@ -40,17 +41,6 @@ namespace Zap
 
 void MenuUserInterface::render()
 {
-   glViewport(0, 0, windowWidth, windowHeight);
-
-   if(clearBackground)
-   {
-      glClearColor(0, 0, 0, 1.0);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   }
-
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
-
    glColor3f(1,1,1);
    drawCenteredString( 10, 30, menuTitle);
    drawCenteredString( 45, 18, menuSubTitle);
@@ -150,6 +140,9 @@ void MainMenuUserInterface::processSelection(U32 index)
       case 1:
          hostGame(false, Address(IPProtocol, Address::Any, 28000));
          break;
+      case 2:
+         gInstructionsUserInterface.activate();
+         break;
       case 3:
          gOptionsMenuUserInterface.activate();
          break;
@@ -189,40 +182,40 @@ void OptionsMenuUserInterface::setupMenus()
 
    menuItems.clear();
    if(controlsRelative)
-      menuItems.push_back("SET CONTROLS TO ABSOLUTE");
+      menuItems.push_back("CONTROLS: RELATIVE");
    else
-      menuItems.push_back("SET CONTROLS TO RELATIVE");
+      menuItems.push_back("CONTROLS: ABSOLUTE");
 
    if(fullscreen)
-      menuItems.push_back("SET WINDOWED MODE");
+      menuItems.push_back("VIDEO: FULLSCREEN");
    else
-      menuItems.push_back("SET FULLSCREEN MODE");
+      menuItems.push_back("VIDEO: WINDOW");
 
    switch(joystickType)
    {
       case -1:
-         menuItems.push_back("CONTROLS: KEYBOARD + MOUSE");
+         menuItems.push_back("INPUT: KEYBOARD + MOUSE");
          break;
       case 0:
-         menuItems.push_back("CONTROLS: LOGITECH WINGMAN DUAL-ANALOG");
+         menuItems.push_back("INPUT: LOGITECH WINGMAN DUAL-ANALOG");
          break;
       case 1:
-         menuItems.push_back("CONTROLS: SAITEK P-880 DUAL-ANALOG");
+         menuItems.push_back("INPUT: SAITEK P-880 DUAL-ANALOG");
          break;
       case 2:
-         menuItems.push_back("CONTROLS: PS2 DUALSHOCK USB");
+         menuItems.push_back("INPUT: PS2 DUALSHOCK USB");
          break;
       case 3:
-         menuItems.push_back("CONTROLS: XBOX CONTROLLER USB");
+         menuItems.push_back("INPUT: XBOX CONTROLLER USB");
          break;
       default:
-         menuItems.push_back("CONTROLS: UNKNOWN");
+         menuItems.push_back("INPUT: UNKNOWN");
    }
 
    if(echoVoice)
-      menuItems.push_back("DISABLE VOICE ECHO");
+      menuItems.push_back("VOICE ECHO: ENABLED");
    else
-      menuItems.push_back("ENABLE VOICE ECHO");
+      menuItems.push_back("VOICE ECHO: DISABLED");
 
    if(gClientGame->getConnectionToServer())
       menuItems.push_back("RETURN TO GAME");

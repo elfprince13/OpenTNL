@@ -28,6 +28,7 @@
 #include "gameType.h"
 #include "glutInclude.h"
 #include "gameNetInterface.h"
+#include "UI.h"
 
 namespace Zap
 {
@@ -62,6 +63,21 @@ public:
       for(S32 i = 0; i < mPolyBounds.size(); i++)
          glVertex2f(mPolyBounds[i].x, mPolyBounds[i].y);
       glEnd();
+      Rect ext = getExtent();
+
+      Point extents = ext.getExtents();
+      Point center = ext.getCenter();
+
+      glPushMatrix();
+      glTranslatef(center.x, center.y, 0);
+      if(extents.x < extents.y)
+         glRotatef(90, 0, 0, 1);
+      glColor3f(theColor.r, theColor.g, theColor.b);
+      const char *string = "LOADOUT ZONE";
+      F32 fontSize = 25;
+      F32 width = UserInterface::getStringWidth(fontSize, string);
+      UserInterface::drawString(-width * 0.5, -fontSize * 0.5, fontSize, string);
+      glPopMatrix();
    }
 
    S32 getRenderSortValue()

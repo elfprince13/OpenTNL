@@ -259,13 +259,6 @@ void QueryServersUserInterface::render()
       shouldSort = false;
       sort();
    }
-   glViewport(0, 0, windowWidth, windowHeight);
-
-   glClearColor(0, 0, 0, 1.0);
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
-
    glColor3f(1,1,1);
 
    drawCenteredString(0, 25, "CHOOSE A SERVER TO JOIN:");

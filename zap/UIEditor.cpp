@@ -196,14 +196,7 @@ Point EditorUserInterface::snapToLevelGrid(Point p)
 
 void EditorUserInterface::render()
 {
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
    glColor3f(0.0, 0.0, 0.0);
-   glViewport(0, 0, U32(windowWidth), U32(windowHeight));
-
-   glClearColor(0, 0, 0, 1.0);
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
    if(mCurrentScale >= 100)
    {
       F32 gridScale = mCurrentScale * 0.1;

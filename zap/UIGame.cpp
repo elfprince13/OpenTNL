@@ -116,14 +116,7 @@ extern void checkMousePos(S32 maxdx, S32 maxdy);
 
 void GameUserInterface::render()
 {
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
    glColor3f(0.0, 0.0, 0.0);
-   glViewport(0, 0, U32(windowWidth), U32(windowHeight));
-
-   glClearColor(0, 0, 0, 1.0);
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
    if(!gClientGame->isConnectedToServer())
    {
       glColor3f(1,1,1);
