@@ -1,11 +1,13 @@
-ZAP 1.2.1
+ZAP 1.2.2
 
 Welcome to ZAP, the retro multiplayer team action game!
 
 Changes since version 1.2.1:
-- Fixed more crashes
+- Fixed the big one! (crash)
 - Improved smoothness of play on higher ping connections
 - Improved packet space utilization
+- Fixed multiple other crashes
+- Added a crazy bot option to slam test the game.
 
 Controls:
 

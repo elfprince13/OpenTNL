@@ -104,6 +104,9 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
          if(mTeams[i].numPlayers > maxTeamPlayers)
             maxTeamPlayers = mTeams[i].numPlayers;
 
+      if(!maxTeamPlayers)
+         return;
+
       U32 teamAreaHeight = 40;
       if(mTeams.size() < 2)
          teamAreaHeight = 0;

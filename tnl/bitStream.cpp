@@ -98,29 +98,112 @@ bool BitStream::writeBits(U32 bitCount, const void *bitPtr)
    if(bitCount + bitNum > maxWriteBitNum)
       if(!resizeBits(bitCount + bitNum - maxWriteBitNum))
          return false;
-   const U8 *ptr = (U8 *) bitPtr;
-   U8 *stPtr = getBuffer() + (bitNum >> 3);
-   U8 *endPtr = getBuffer() + ((bitCount + bitNum - 1) >> 3);
-   U8 lastByte = *endPtr;
 
    U32 upShift  = bitNum & 0x7;
    U32 downShift= 8 - upShift;
-   U8 lastMask  = 0xFF >> (7 - ((bitNum + bitCount - 1) & 0x7));
-   U8 startMask = 0xFF >> downShift;
 
-   U8 curB = *ptr++;
-   *stPtr = (curB << upShift) | (*stPtr & startMask);
+   const U8 *sourcePtr = (U8 *) bitPtr;
+   U8 *destPtr = getBuffer() + (bitNum >> 3);
 
-   stPtr++;
-   while(stPtr <= endPtr)
+   // if this write is for <= 1 byte, and it will all fit in the
+   // first dest byte, then do some special masking.
+   if(downShift >= bitCount)
    {
-      U8 nextB = *ptr++;
-      *stPtr++ = (curB >> downShift) | (nextB << upShift);
-      curB = nextB;
+      U8 mask = ((1 << bitCount) - 1) << upShift;
+      *destPtr = (*destPtr & ~mask) | ((*sourcePtr << upShift) & mask);
+      bitNum += bitCount;
+      return true;
    }
-   *endPtr = (*endPtr & lastMask) | (lastByte & ~lastMask);
-   
+
+   // check for byte aligned writes -- this will be
+   // much faster than the shifting writes.
+   if(!upShift) 
+   {
+      bitNum += bitCount;
+      for(; bitCount >= 8; bitCount -= 8)
+         *destPtr++ = *sourcePtr++;
+      if(bitCount)
+      {
+         U8 mask = (1 << bitCount) - 1;
+         *destPtr = (*sourcePtr & mask) | (*destPtr & ~mask);
+      }
+      return true;
+   }
+
+   // the write destination is not byte aligned.
+   U8 sourceByte;
+   U8 destByte = *destPtr & (0xFF >> downShift);
+   U8 lastMask  = 0xFF >> (7 - ((bitNum + bitCount - 1) & 0x7));
+
    bitNum += bitCount;
+
+   for(;bitCount >= 8; bitCount -= 8)
+   {
+      sourceByte = *sourcePtr++;
+      *destPtr++ = destByte | (sourceByte << upShift);
+      destByte = sourceByte >> downShift;
+   }
+   if(bitCount == 0)
+   {
+      *destPtr = (*destPtr & ~lastMask) | (destByte & lastMask);
+      return true;
+   }
+   if(bitCount <= downShift)
+   {
+      *destPtr = (*destPtr & ~lastMask) | ((destByte | (*sourcePtr << upShift)) & lastMask);
+      return true;
+   }
+   sourceByte = *sourcePtr;
+
+   *destPtr++ = destByte | (sourceByte << upShift);
+   *destPtr = (*destPtr & ~lastMask) | ((sourceByte >> downShift) & lastMask);
+   return true;
+}
+
+bool BitStream::readBits(U32 bitCount, void *bitPtr)
+{
+   if(!bitCount)
+      return true;
+   if(bitCount + bitNum > maxReadBitNum)
+   {
+      error = true;
+      return false;
+   }
+
+   U8 *sourcePtr = getBuffer() + (bitNum >> 3);
+   U32 byteCount = (bitCount + 7) >> 3;
+
+   U8 *destPtr = (U8 *) bitPtr;
+
+   U32 downShift = bitNum & 0x7;
+   U32 upShift = 8 - downShift;
+
+   if(!downShift)
+   {
+      while(byteCount--)
+         *destPtr++ = *sourcePtr++;
+      bitNum += bitCount;
+      return true;
+   }
+
+   U8 sourceByte = *sourcePtr >> downShift;
+   bitNum += bitCount;
+
+   for(; bitCount >= 8; bitCount -= 8)
+   {
+      U8 nextByte = *++sourcePtr;
+      *destPtr++ = sourceByte | (nextByte << upShift);
+      sourceByte = nextByte >> downShift;
+   }
+   if(bitCount)
+   {
+      if(bitCount <= upShift)
+      {
+         *destPtr = sourceByte;
+         return true;
+      }
+      *destPtr = sourceByte | ( (*++sourcePtr) << upShift);
+   }
    return true;
 }
 
@@ -152,35 +235,6 @@ bool BitStream::writeFlag(bool val)
       *(getBuffer() + (bitNum >> 3)) &= ~(1 << (bitNum & 0x7));
    bitNum++;
    return (val);
-}
-
-bool BitStream::readBits(U32 bitCount, void *bitPtr)
-{
-   if(!bitCount)
-      return true;
-   if(bitCount + bitNum > maxReadBitNum)
-   {
-      error = true;
-      return false;
-   }
-   U8 *stPtr = getBuffer() + (bitNum >> 3);
-   U32 byteCount = (bitCount + 7) >> 3;
-
-   U8 *ptr = (U8 *) bitPtr;
-
-   U32 downShift = bitNum & 0x7;
-   U32 upShift = 8 - downShift;
-
-   U8 curB = *stPtr;
-   while(byteCount--)
-   {
-      U8 nextB = *++stPtr;
-      *ptr++ = (curB >> downShift) | (nextB << upShift);
-      curB = nextB;
-   }
-
-   bitNum += bitCount;
-   return true;
 }
 
 bool BitStream::write(const ByteBuffer *theBuffer)

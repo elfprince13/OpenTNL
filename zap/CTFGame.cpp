@@ -76,6 +76,9 @@ void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
          if(mTeams[i].numPlayers > maxTeamPlayers)
             maxTeamPlayers = mTeams[i].numPlayers;
 
+      if(!maxTeamPlayers)
+         return;
+
       U32 totalHeight = 580;
       U32 maxHeight = (totalHeight - 40) / maxTeamPlayers;
       if(maxHeight > 30)
