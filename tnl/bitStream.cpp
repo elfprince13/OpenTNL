@@ -486,7 +486,7 @@ void BitStream::writeString(const char *string, U8 maxLen)
    U8 j;
    for(j = 0; j < maxLen && mStringBuffer[j] == string[j] && string[j];j++)
       ;
-   strncpy(mStringBuffer, string, maxLen);
+   strncpy(mStringBuffer + j, string + j, maxLen - j);
    mStringBuffer[maxLen] = 0;
 
    if(writeFlag(j > 2))

@@ -45,6 +45,57 @@ U32 Journal::mWritePosition = 0;
 U32 Journal::mBreakBlockIndex = 0;
 U32 Journal::mBlockIndex = 0;
 
+JournalBlockTypeToken *JournalBlockTypeToken::mList = NULL;
+bool JournalBlockTypeToken::mInitialized = false;
+
+JournalBlockTypeToken::JournalBlockTypeToken(const char *typeString)
+{
+   mString = typeString;
+   mValue = 0xFFFFFFFF;
+   mNext = mList;
+   mList = this;
+}
+
+S32 QSORT_CALLBACK JBTTCompare(JournalBlockTypeToken **a, JournalBlockTypeToken **b)
+{
+   return strcmp((*a)->getString(), (*b)->getString());
+}
+
+U32 JournalBlockTypeToken::getValue()
+{
+   if(!mInitialized)
+   {
+      mInitialized = true;
+      Vector<JournalBlockTypeToken *> vec;
+      for(JournalBlockTypeToken *walk = mList; walk; walk = walk->mNext)
+         vec.push_back(walk);
+
+      vec.sort(JBTTCompare);
+      U32 lastValue = 0;
+      const char *lastString = "";
+      for(S32 i = 0; i < vec.size(); i++)
+      {
+         if(!strcmp(vec[i]->mString, lastString))
+            vec[i]->mValue = lastValue;
+         else
+         {
+            lastValue++;
+            vec[i]->mValue = lastValue;
+            lastString = vec[i]->mString;
+         }
+      }
+   }
+   return mValue;
+}
+
+const char *JournalBlockTypeToken::findName(U32 value)
+{
+   for(JournalBlockTypeToken *walk = mList; walk; walk = walk->mNext)
+      if(walk->mValue == value)
+         return walk->mString;
+   return "INVALID";
+}
+
 JournalEntryRecord::JournalEntryRecord(const char *functionName, MethodArgList *methodArgList)
 {
    S32 i;
@@ -216,7 +267,7 @@ void Journal::beginBlock(U32 blockId, bool writeBlock)
       TNL_JOURNAL_READ( (&startToken) );
       if((startToken ^ 0x1234) != blockId)
       {
-         logprintf("Expected token %d - got %d", blockId, startToken ^ 0x1234);
+         logprintf("Expected token %s - got %s", JournalBlockTypeToken::findName(blockId), JournalBlockTypeToken::findName(startToken ^ 0x1234));
          TNL_DEBUGBREAK();
       }
 #endif
@@ -239,7 +290,7 @@ void Journal::endBlock(U32 blockId, bool writeBlock)
       TNL_JOURNAL_READ( (&endToken) );
       if((endToken ^ 0x5678) != blockId)
       {
-         logprintf("Expected token %d - got %d", blockId, endToken ^ 0x5678);
+         logprintf("Expected token %s - got %s", JournalBlockTypeToken::findName(blockId), JournalBlockTypeToken::findName(endToken ^ 0x5678));
          TNL_DEBUGBREAK();
       }
 #endif

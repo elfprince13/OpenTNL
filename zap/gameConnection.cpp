@@ -147,7 +147,7 @@ void GameConnection::onConnectionEstablished()
       setGhostFrom(true);
       setGhostTo(false);
       activateGhosting();
-      logprintf("%s - client connected.", getNetAddressString());
+      logprintf("%s - client \"%s\" connected.", getNetAddressString(), mClientName.getString());
       setFixedRateParameters(50, 50, 2000, 2000);
    }
 }

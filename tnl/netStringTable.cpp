@@ -55,17 +55,17 @@ enum {
    CompactThreshold = 32768, ///< Number of string bytes freed before compaction occurs.
 };
 
-static Node **mNodeList = NULL; ///< Master list of string table entry nodes
-static StringTableEntryId *mBuckets = NULL; ///< Hash table buckets, organized by string index
+Node **mNodeList = NULL; ///< Master list of string table entry nodes
+StringTableEntryId *mBuckets = NULL; ///< Hash table buckets, organized by string index
 
-static U32 mNumBuckets = 0; ///< number of hash buckets in the table
-static U32 mNodeListSize = 0; ///< number of elements in the node list
-static StringTableEntryId mNodeListFreeEntry = 0; ///< index of first free entry in the node list
+U32 mNumBuckets = 0; ///< number of hash buckets in the table
+U32 mNodeListSize = 0; ///< number of elements in the node list
+StringTableEntryId mNodeListFreeEntry = 0; ///< index of first free entry in the node list
 
-static U32 mItemCount = 0; ///< number of strings in the table
+U32 mItemCount = 0; ///< number of strings in the table
 
-static DataChunker *mMemPool = NULL; ///< memory pool from which string table data is allocated
-static U32 mFreeStringDataSize = 0; ///< number of bytes freed by deallocated strings.  When this number exceeds CompactThreshold, the table is compacted.
+DataChunker *mMemPool = NULL; ///< memory pool from which string table data is allocated
+U32 mFreeStringDataSize = 0; ///< number of bytes freed by deallocated strings.  When this number exceeds CompactThreshold, the table is compacted.
 
 // a little note about the free list...
 // the free list is essentially an index linked list encoded in the node

@@ -136,11 +136,26 @@ public:
    }
 };
 
+class JournalBlockTypeToken
+{
+   const char *mString;
+   U32 mValue;
+   JournalBlockTypeToken *mNext;
+   static bool mInitialized;
+   static JournalBlockTypeToken *mList;
+public:
+   JournalBlockTypeToken(const char *typeString);
+   U32 getValue();
+   static const char *findName(U32 value);
+   const char *getString() { return mString; }
+};
+
 #define TNL_JOURNAL_WRITE_BLOCK(blockType, x) \
 { \
    if(TNL::Journal::getCurrentMode() == TNL::Journal::Record && TNL::Journal::isInEntrypoint()) \
    { \
-      TNL::JournalToken dummy(blockType, true); \
+      static TNL::JournalBlockTypeToken typeToken(#blockType);\
+      TNL::JournalToken dummy(typeToken.getValue(), true); \
       { \
       x \
       } \
@@ -151,7 +166,8 @@ public:
 { \
    if(TNL::Journal::getCurrentMode() == TNL::Journal::Playback && TNL::Journal::isInEntrypoint()) \
    { \
-      TNL::JournalToken dummy(blockType, false); \
+      static TNL::JournalBlockTypeToken typeToken(#blockType);\
+      TNL::JournalToken dummy(typeToken.getValue(), false); \
       { \
       x \
       } \

@@ -141,16 +141,14 @@ void Platform::forceQuit()
 U32 Platform::getRealMilliseconds()
 {
    U32 tickCount;
-   TNL_JOURNAL_READ_BLOCK
-   ( 2001,
+   TNL_JOURNAL_READ_BLOCK ( getRealMilliseconds,
       TNL_JOURNAL_READ( (&tickCount) );
       return tickCount;
    )
 
    tickCount = GetTickCount();
 
-   TNL_JOURNAL_WRITE_BLOCK
-   ( 2001,
+   TNL_JOURNAL_WRITE_BLOCK ( getRealMilliseconds,
       TNL_JOURNAL_WRITE( (tickCount) );
    )
    return tickCount;
@@ -195,16 +193,14 @@ static WinTimer gTimer;
 S64 Platform::getHighPrecisionTimerValue()
 {
    S64 currentTime;
-   TNL_JOURNAL_READ_BLOCK
-   ( 2003,
+   TNL_JOURNAL_READ_BLOCK ( getHighPrecisionTimerValue,
       TNL_JOURNAL_READ( (&currentTime) );
       return currentTime;
    )
 
    currentTime = gTimer.getCurrentTime();
 
-   TNL_JOURNAL_WRITE_BLOCK
-   ( 2003,
+   TNL_JOURNAL_WRITE_BLOCK ( getHighPrecisionTimerValue,
       TNL_JOURNAL_WRITE( (currentTime) );
    )
 
@@ -214,16 +210,14 @@ S64 Platform::getHighPrecisionTimerValue()
 F64 Platform::getHighPrecisionMilliseconds(S64 timerDelta)
 {
    F64 timerValue;
-   TNL_JOURNAL_READ_BLOCK
-   ( 2002,
+   TNL_JOURNAL_READ_BLOCK ( getHighPrecisionMilliseconds,
       TNL_JOURNAL_READ( (&timerValue) );
       return timerValue;
    )
 
    timerValue = gTimer.convertToMS(timerDelta);
 
-   TNL_JOURNAL_WRITE_BLOCK
-   ( 2002,
+   TNL_JOURNAL_WRITE_BLOCK ( getHighPrecisionMilliseconds,
       TNL_JOURNAL_WRITE( (timerValue) );
    )
 

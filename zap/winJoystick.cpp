@@ -160,6 +160,11 @@ static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
       controls[3] = F32( js.lZ ) - 32768.0f;      
       controls[2] = F32( js.lRz ) - 32768.0f;
    }
+   else if(gJoystickType == 2)
+   {
+      controls[2] = F32( js.lZ ) - 32768.0f;      
+      controls[3] = F32( js.lRz ) - 32768.0f;
+   }
 
    for(U32 i = 0; i < 4; i++)
    {
@@ -209,7 +214,7 @@ static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
 
 static bool updateMoveInternalJournaled( Move *theMove, bool buttonPressed[12] )
 {
-   TNL_JOURNAL_READ_BLOCK(3000,
+   TNL_JOURNAL_READ_BLOCK(JoystickUpdate,
       BitStream *readStream = Journal::getReadStream();
       if(!readStream->readFlag())
          return false;
@@ -224,7 +229,7 @@ static bool updateMoveInternalJournaled( Move *theMove, bool buttonPressed[12] )
 
    bool ret = updateMoveInternal(theMove, buttonPressed);
 
-   TNL_JOURNAL_WRITE_BLOCK(3000,
+   TNL_JOURNAL_WRITE_BLOCK(JoystickUpdate,
       BitStream *writeStream = Journal::getWriteStream();
       if(writeStream->writeFlag(ret))
       {

@@ -47,6 +47,7 @@ void RPCEvent::marshallArguments()
 
 void RPCEvent::pack(EventConnection *ps, BitStream *bstream)
 {
+   bstream->clearStringBuffer();
    bstream->writeBits(mCall.marshalledData.getBitPosition(), mCall.marshalledData.getBuffer());
    for(S32 i = 0; i < mCall.mSTEs.size(); i++)
       ps->packStringTableEntry(bstream, mCall.mSTEs[i]);
@@ -54,7 +55,9 @@ void RPCEvent::pack(EventConnection *ps, BitStream *bstream)
 
 void RPCEvent::unpack(EventConnection *ps, BitStream *bstream)
 {
+   bstream->clearStringBuffer();
    mCall.unmarshall(bstream);
+   bstream->clearStringBuffer();
    for(S32 i = 0; i < mCall.mSTEs.size(); i++)
       mCall.mSTEs[i] = ps->unpackStringTableEntry(bstream);
 }

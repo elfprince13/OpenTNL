@@ -44,7 +44,7 @@ private:
       S32 buttonIndex;
       bool teamOnly;
       const char *caption;
-      StringTableEntry msg;
+      const char *msg;
    };
 
    static VChatNode mChatTree[];

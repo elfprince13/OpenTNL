@@ -78,7 +78,7 @@ public:
    TNL_DECLARE_JOURNAL_ENTRYPOINT(specialkeyup, (S32 key));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(idle, (U32 timeDelta));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(display, ());
-   TNL_DECLARE_JOURNAL_ENTRYPOINT(startup, (bool hasClient, bool hasServer, bool connectLocal, bool connectRemote, bool nameSet));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(startup, (const Vector<const char *> &theArgv));
 };
 
 ZapJournal gZapJournal;
@@ -231,120 +231,35 @@ void idle()
    {
       gIsCrazyBot = false; // Reenable input events
       static S64 lastMove = Platform::getHighPrecisionTimerValue();
+      static const char keyBuffer[] = "wasdwasdwasdwasdwasdwasdwasdwasdwasd\r\r\r\r\r\r\rabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 \r\t\n?{}_+-=[]\\";
+
+      static Vector<S8> keyDownVector;
 
       F64 delta = Platform::getHighPrecisionMilliseconds(currentTimer - lastMove);
-      if(delta > 200.0)
+      if(delta > 5)
       {
-         // See if we feel like chatting
-         if(Random::readB() && Random::readB())
+         U32 rklen = strlen(keyBuffer);
+         // generate some random keys:
+         for(S32 i = 0; i < 32; i++)
          {
-            if(Random::readB())
+            bool found = false;
+            S8 key = keyBuffer[Random::readI() % rklen];
+            for(S32 i = 0; i < keyDownVector.size(); i++)
             {
-               // Global chat
-               gZapJournal.key('g');
-               gZapJournal.keyup('g');
+               if(keyDownVector[i] == key)
+               {
+                  keyDownVector.erase_fast(i);
+                  gZapJournal.keyup(key);
+                  found = true;
+                  break;
+               }
             }
-            else
+            if(!found)
             {
-               // Team chat
-               gZapJournal.key('t');
-               gZapJournal.keyup('t');
-            }
-
-            char *msg[13] = 
-            {
-               "GIMME THE YUM YUM!",
-               "Weasels! Oh yeah!",
-               "Here, pony-pony-pony!",
-               "ERMINES!",
-               "fr0hnzed!",
-               "m1lked!",
-               "Ben IS love",
-               "Blame Joe.",
-               "Just ask the ponies.",
-               "the ponies know.",
-               "EVIL!@#$%^&*()",
-               "EVIL\\1\\2\\3\\4\\5\\6\\7\\8\\9\\0",
-               "EVIL\\n\\r\\t\\b\\",
-            };
-
-            U32 msgId = Random::readI(0, 12);
-
-            char *w = msg[msgId];
-
-            while(*w)
-            {
-               gZapJournal.key(*w);
-               gZapJournal.keyup(*w);
-               w++;
-            }
-            
-            // Occasionally add gibberish text
-            if(Random::readI(0, 16) < 3)
-            {
-               U8 gibChar = Random::readI(0, 256);
-               gZapJournal.key(gibChar);
-               gZapJournal.keyup(gibChar);
-
-            }
-
-            // Occasionally drop the enter
-            if(Random::readI(0, 16) != 4)
-            {
-               gZapJournal.key('\r');
-               gZapJournal.keyup('\r');
+               keyDownVector.push_back(key);
+               gZapJournal.key(key);
             }
          }
-      
-         // Do movement craziness
-         if(Random::readB())
-            gZapJournal.key('w');
-         else
-            gZapJournal.keyup('w');
-
-         if(Random::readB())
-            gZapJournal.key('a');
-         else
-            gZapJournal.keyup('a');
-
-         if(Random::readB())
-            gZapJournal.key('s');
-         else
-            gZapJournal.keyup('s');
-
-         if(Random::readB())
-            gZapJournal.key('d');
-         else
-            gZapJournal.keyup('d');
-
-         static S32 voiceCount = 1;
-
-         voiceCount--;
-         if(voiceCount <= 0 && Random::readB() && Random::readB() && Random::readB())
-         {
-            gZapJournal.key('r');
-            voiceCount = Random::readI(0, 15);
-         }
-
-         if(voiceCount == 0)
-         {
-            gZapJournal.keyup('r');
-         }
-
-         if(Random::readB() && false)
-            gZapJournal.key('c');
-         else
-            gZapJournal.keyup('c');
-
-         if(Random::readB())
-            gZapJournal.key('\t');
-         else
-            gZapJournal.keyup('\t');
-
-         if(Random::readB())
-            gZapJournal.key(' ');
-         else
-            gZapJournal.keyup(' ');
 
          // Do mouse craziness
          S32 x = Random::readI(0, 800);
@@ -507,73 +422,21 @@ void onExit()
 
 extern void InitController();
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (bool hasClient, bool hasServer, bool connectLocal, bool connectRemote, bool nameSet))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *> &argv))
 {
-   if(hasClient)
-      gClientGame = new ClientGame(Address());
-
-   if(hasServer)
-      hostGame(hasClient == false, gBindAddress);
-   else if(connectRemote)
-      joinGame(gConnectAddress, false);
-
-   if(!connectLocal && !connectRemote)
-   {
-      if(!nameSet)
-         gNameEntryUserInterface.activate();
-      else
-         gMainMenuUserInterface.activate();
-   }
-}
-
-};
-
-using namespace Zap;
-
-int main(int argc, char **argv)
-{
-   //TNLLogEnable(LogConnectionProtocol, true);
-   //TNLLogEnable(LogNetConnection, true);
-   TNLLogEnable(LogNetInterface, true);
-   TNLLogEnable(LogPlatform, true);
-   TNLLogEnable(LogNetBase, true);
-   //TNLLogEnable(LogBlah, true);
-
    bool hasClient = true;
    bool hasServer = false;
    bool connectLocal = false;
    bool connectRemote = false;
    bool nameSet = false;
 
-   U32 maxPlayers = 128;
+   S32 argc = argv.size();
 
-   for(S32 i = 1; i < argc;i+=2)
+   for(S32 i = 0; i < argc;i+=2)
    {
       bool hasAdditionalArg = (i != argc - 1);
 
-      if(!stricmp(argv[i], "-crazybot"))
-      {
-         gIsCrazyBot = true;
-
-         // Generate a name...
-         char journalPath[512];
-         getcwd(journalPath, 512);
-
-         char *name = tmpnam(NULL);
-         nameSet = true;
-         gNameEntryUserInterface.setText(name);
-
-         strcat(journalPath, name);
-         strcat(journalPath, "journal");
-         gZapJournal.record(journalPath);
-
-         // Connect to specified server
-         connectRemote = true;
-         if(hasAdditionalArg)
-            gConnectAddress.set(argv[i+1]);
-
-      }
-      else if(!stricmp(argv[i], "-server"))
+      if(!stricmp(argv[i], "-server"))
       {
          hasServer = true;
          connectLocal = true;
@@ -607,16 +470,6 @@ int main(int argc, char **argv)
          if(hasAdditionalArg)
             gSimulatedPing = atoi(argv[i+1]);
       }
-      else if(!stricmp(argv[i], "-jsave"))
-      {
-         if(hasAdditionalArg)
-            gZapJournal.record(argv[i+1]);
-      }
-      else if(!stricmp(argv[i], "-jplay"))
-      {
-         if(hasAdditionalArg)
-            gZapJournal.load(argv[i+1]);
-      }
       else if(!stricmp(argv[i], "-dedicated"))
       {
          hasClient = false;
@@ -635,12 +488,12 @@ int main(int argc, char **argv)
       else if(!stricmp(argv[i], "-levels"))
       {
          if(hasAdditionalArg)
-            gLevelList = argv[i+1];
+            gLevelList = strdup(argv[i+1]);
       }
       else if(!stricmp(argv[i], "-hostname"))
       {
          if(hasAdditionalArg)
-            gHostName = argv[i+1];
+            gHostName = strdup(argv[i+1]);
       }
       else if(!stricmp(argv[i], "-maxplayers"))
       {
@@ -649,9 +502,73 @@ int main(int argc, char **argv)
       }
    }
    gMasterAddress.set(gMasterAddressString);
-   gZapJournal.startup(hasClient, hasServer, connectLocal, connectRemote, nameSet);
 
    if(hasClient)
+      gClientGame = new ClientGame(Address());
+
+   if(hasServer)
+      hostGame(hasClient == false, gBindAddress);
+   else if(connectRemote)
+      joinGame(gConnectAddress, false);
+
+   if(!connectLocal && !connectRemote)
+   {
+      if(!nameSet)
+         gNameEntryUserInterface.activate();
+      else
+         gMainMenuUserInterface.activate();
+   }
+}
+
+};
+
+using namespace Zap;
+
+int main(int argc, char **argv)
+{
+   //TNLLogEnable(LogConnectionProtocol, true);
+   //TNLLogEnable(LogNetConnection, true);
+   TNLLogEnable(LogNetInterface, true);
+   TNLLogEnable(LogPlatform, true);
+   TNLLogEnable(LogNetBase, true);
+   //TNLLogEnable(LogBlah, true);
+
+   for(S32 i = 0; i < argc;i++)
+      logprintf(argv[i]);
+
+   Vector<const char *> theArgv;
+
+   for(S32 i = 1; i < argc; i++)
+   {
+      if(!stricmp(argv[i], "-crazybot"))
+         gIsCrazyBot = true;
+      else if(!stricmp(argv[i], "-jsave"))
+      {
+         if(i != argc - 1)
+         {
+            gZapJournal.record(argv[i+1]);
+            i++;
+         }
+      }
+      else if(!stricmp(argv[i], "-jplay"))
+      {
+         if(i != argc - 1)
+         {
+            gZapJournal.load(argv[i+1]);
+            i++;
+         }
+      }
+      else
+         theArgv.push_back(argv[i]);
+   }
+
+   gZapJournal.startup(theArgv);
+
+   // we need to process the startup code if this is playing back
+   // a journal.
+   gZapJournal.processNextJournalEntry();
+
+   if(gClientGame)
    {
       SFXObject::init();
       glutInitWindowSize(800, 600);

@@ -28,6 +28,7 @@
 #include <mycrypt.h>
 #include "tnl.h"
 #include "tnlRandom.h"
+#include "tnlJournal.h"
 
 namespace TNL {
 
@@ -69,10 +70,17 @@ void addEntropy(const U8 *randomData, U32 dataLen)
 
 void read(U8 *outBuffer, U32 randomLen)
 {
+   TNL_JOURNAL_READ_BLOCK(Random::read,
+      TNL_JOURNAL_READ( (randomLen, outBuffer) );
+      return;
+   )
    if(!initialized)
       initialize();
 
    yarrow_read(outBuffer, randomLen, &prng);
+   TNL_JOURNAL_WRITE_BLOCK(Random::read,
+      TNL_JOURNAL_WRITE( (randomLen, outBuffer) );
+   )
 }
 
 U32 readI()

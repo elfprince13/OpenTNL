@@ -8,6 +8,9 @@ Changes since version 1.2.1:
 - Improved packet space utilization
 - Fixed multiple other crashes
 - Added a crazy bot option to slam test the game.
+- Many cosmetic game screen fixes
+- Removed some items from V-chat menu
+- Added controller support for V-chats
 
 Controls:
 
@@ -42,6 +45,7 @@ right trigger - boost
 button 1 - record voice chat
 button 3 - toggle commander map
 button 4 - show scores
+button 6 - open quick chat menu
 
 In the game you can press ESC to go to the game options screen.  
 From there you can access the main options which include setting 
@@ -71,8 +75,13 @@ or IP:www.foobar.com:24601
 -maxplayers [number] sets the maximum number of players allowed 
         on the server
 -joystick [joystickType] enables dual analog control pad.  The
-        joystickType argument can be either 0 or 1.  If the right
-        stick doesn't aim shots properly with 0, try 1.
+        joystickType argument can be either 0, 1 or 2.  If the right
+        stick doesn't aim shots properly with 0, try 1 or 2.
+        
+        Known controllers:
+		Logitech Wingman cordless - joystick 0
+		PS 2 Dual Shock w/USB - joystick 2
+        
 -jsave [journalName] saves the log of the play session to the specified
         journal file.
 -jplay [journalName] replays a saved journal.

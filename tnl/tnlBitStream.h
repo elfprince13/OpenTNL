@@ -102,6 +102,9 @@ public:
    /// resets the read/write position to 0 and clears any error state.
    void reset();
 
+   /// clears the string compression buffer.
+   void clearStringBuffer() { mStringBuffer[0] = 0; }
+
    /// Returns a pointer to the next byte in the BitStream from the current bit position
    U8*  getBytePtr();
 

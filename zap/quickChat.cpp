@@ -190,8 +190,9 @@ void VChatHelper::processKey(U32 key)
          {
             GameType *gt = gClientGame->getGameType();
 
+            StringTableEntry entry(mCurNode->msg);
             if(gt)
-               gt->c2sSendChatSTE(!mCurNode->teamOnly, mCurNode->msg);
+               gt->c2sSendChatSTE(!mCurNode->teamOnly, entry);
 
             mVisible = false;
 
