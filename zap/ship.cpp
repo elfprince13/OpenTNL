@@ -845,8 +845,6 @@ void Ship::kill(DamageInfo *theInfo)
    if(isGhost())
       return;
 
-   kill();
-
    GameConnection *controllingClient = getControllingClient();
    if(controllingClient)
    {
@@ -854,6 +852,7 @@ void Ship::kill(DamageInfo *theInfo)
       if(gt)
          gt->controlObjectForClientKilled(controllingClient, this, theInfo->damagingObject);
    }
+   kill();
 }
 
 enum {
@@ -1310,7 +1309,7 @@ void Ship::render()
             
             glEnd();
          }
-         else
+         else if(mRepairTargets[i])
          {
             glBegin(GL_LINES);
             glVertex2f(pos.x, pos.y);
