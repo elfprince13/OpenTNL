@@ -56,8 +56,10 @@ void GameType::processServer(U32 deltaT)
          if(mClientList[i].wantsScoreboardUpdates)
             updateClientScoreboard(i);
 
-      mTimeUntilScoreboardUpdate = 0;
+      mTimeUntilScoreboardUpdate = 1000;
    }
+   else
+      mTimeUntilScoreboardUpdate -= deltaT;
 }
 
 void GameType::onAddedToGame(Game *theGame)
