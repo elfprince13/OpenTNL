@@ -260,6 +260,7 @@ using namespace Zap;
 int main(int argc, char **argv)
 {
    TNLLogEnable(LogNetInterface, true);
+   TNLLogEnable(LogPlatform, true);
    bool hasClient = true;
    bool hasServer = false;
    bool connectLocal = false;
