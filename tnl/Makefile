@@ -14,6 +14,7 @@ OBJECTS=\
 	asymmetricKey.o\
 	bitStream.o\
 	byteBuffer.o\
+	certificate.o\
 	clientPuzzle.o\
 	connectionStringTable.o\
 	dataChunker.o\
