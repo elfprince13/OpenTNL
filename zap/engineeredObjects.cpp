@@ -418,39 +418,47 @@ inline void glVertex(Point p)
 
 void Turret::render()
 {
-   Color teamColor;
+   Color c;
 
    if(gClientGame->getGameType())
-      teamColor = gClientGame->getGameType()->mTeams[mTeam].color;
+      c = gClientGame->getGameType()->mTeams[mTeam].color;
    else
-      teamColor = Color(1,0,1);
+      c = Color(1,0,1);
 
-   glColor3f(teamColor.r, teamColor.g, teamColor.b);
-   drawCircle(mAnchorPoint + mAnchorNormal * 25, 20);
+   if(c.r < 0.5)
+      c.r = 0.5;
+   if(c.g < 0.5)
+      c.g = 0.5;
+   if(c.b < 0.5)
+      c.b = 0.5;
 
-   glColor3f(0,0,0);
+
+   glColor3f(c.r, c.g, c.b);
    Point cross(mAnchorNormal.y, -mAnchorNormal.x);
+   Point aimCenter = mAnchorPoint + mAnchorNormal * TurretAimOffset;
 
-   glBegin(GL_POLYGON);
-   glVertex(mAnchorPoint + cross * 25);
-   glVertex(mAnchorPoint + cross * 25 + mAnchorNormal * TurretAimOffset);
-   glVertex(mAnchorPoint - cross * 25 + mAnchorNormal * TurretAimOffset);
-   glVertex(mAnchorPoint - cross * 25);
+   glBegin(GL_LINE_STRIP);
+
+   for(S32 x = -10; x <= 10; x++)
+   {
+      F32 theta = x * FloatHalfPi * 0.1;
+      Point pos = mAnchorNormal * cos(theta) + cross * sin(theta);
+      glVertex(aimCenter + pos * 20);
+   }
    glEnd();
-   glColor3f(teamColor.r, teamColor.g, teamColor.b);
+
    glBegin(GL_LINE_LOOP);
    glVertex(mAnchorPoint + cross * 25);
    glVertex(mAnchorPoint + cross * 25 + mAnchorNormal * TurretAimOffset);
    glVertex(mAnchorPoint - cross * 25 + mAnchorNormal * TurretAimOffset);
    glVertex(mAnchorPoint - cross * 25);
    glEnd();
-   glLineWidth(3);
 
+   glLineWidth(3);
    glBegin(GL_LINES);
-   Point aimCenter = mAnchorPoint + mAnchorNormal * TurretAimOffset;
-   Point aimDelta(cos(mCurrentAngle) * 25, sin(mCurrentAngle) * 25);
-   glVertex(aimCenter);
-   glVertex(aimCenter + aimDelta);
+   Point aimDelta(cos(mCurrentAngle), sin(mCurrentAngle));
+   glVertex(aimCenter + aimDelta * 20);
+   glVertex(aimCenter + aimDelta * 35);
    glEnd();
    glLineWidth(1);
 }
