@@ -93,7 +93,7 @@ public:
       InitialMask = BIT(0),
       StatusMask = BIT(1),
 
-      FieldDownTime = 1000,
+      FieldDownTime = 250,
    };
 
    ForceField(S32 team = -1, Point start = Point(), Point end = Point());

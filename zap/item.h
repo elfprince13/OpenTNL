@@ -60,9 +60,11 @@ public:
    Item(Point p = Point(0,0), bool collideable = false, float radius = 1, float mass = 1);
 
    void setActualPos(Point p);
+   void setActualVel(Point vel);
 
    void mountToShip(Ship *theShip);
    bool isMounted() { return mIsMounted; }
+   Ship *getMount();
    void dismount();
    void render();
    virtual void renderItem(Point pos) = 0;

@@ -49,7 +49,7 @@ class CTFGameType : public GameType
    };
 public:
    void shipTouchFlag(Ship *theShip, FlagItem *theFlag);
-   void flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex);
+   void flagDropped(Ship *theShip, FlagItem *theFlag);
    const char *getGameTypeString() { return "Capture the Flag"; }
    const char *getInstructionString() { return "Take the opposing team's flag and touch it to your flag!"; }
    TNL_DECLARE_CLASS(CTFGameType);

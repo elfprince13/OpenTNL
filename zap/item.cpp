@@ -103,6 +103,17 @@ void Item::setActualPos(Point p)
    setMaskBits(WarpPositionMask | PositionMask);
 }
 
+void Item::setActualVel(Point vel)
+{
+   mMoveState[ActualState].vel = vel;
+   setMaskBits(WarpPositionMask | PositionMask);
+}
+
+Ship *Item::getMount()
+{
+   return mMount;
+}
+
 void Item::idle(GameObject::IdleCallPath path)
 {
    if(!isInDatabase())

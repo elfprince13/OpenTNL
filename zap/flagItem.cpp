@@ -80,6 +80,7 @@ bool FlagItem::isAtHome()
 void FlagItem::sendHome()
 {
    mMoveState[ActualState].pos = mMoveState[RenderState].pos = initialPos;
+   mMoveState[ActualState].vel = Point(0,0);
    setMaskBits(PositionMask);
    updateExtent();
 }
@@ -101,13 +102,12 @@ void FlagItem::renderItem(Point pos)
 
 bool FlagItem::collide(GameObject *hitObject)
 {
-   if(isGhost() || mIsMounted)
+   if(mIsMounted)
       return false;
-
    if(!(hitObject->getObjectTypeMask() & ShipType))
-      return false;
+      return true;
 
-   if(((Ship *) hitObject)->hasExploded)
+   if(isGhost() || ((Ship *) hitObject)->hasExploded)
       return false;
 
    GameType *gt = getGame()->getGameType();
@@ -125,7 +125,7 @@ void FlagItem::onMountDestroyed()
    if(!mMount.isValid())
       return;
 
-   gt->flagDropped(mMount->mPlayerName, getTeam());
+   gt->flagDropped(mMount, this);
    dismount();
 }
 

@@ -150,10 +150,11 @@ public:
 
    void setClientShipLoadout(ClientRef *cl, const Vector<U32> &loadout);
 
+   virtual Color getShipColor(Ship *s);
    Color getTeamColor(S32 team);
    // game type flag methods for CTF, Rabbit, Football
    virtual void addFlag(FlagItem *theFlag) {}
-   virtual void flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex) {}
+   virtual void flagDropped(Ship *theShip, FlagItem *theFlag) {}
    virtual void shipTouchFlag(Ship *theShip, FlagItem *theFlag) {}
 
    virtual void addZone(GoalZone *theZone) {}

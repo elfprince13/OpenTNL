@@ -40,7 +40,7 @@ QueryServersUserInterface gQueryServersUserInterface;
 void QueryServersUserInterface::onActivate()
 {
    servers.clear();
-   for(U32 i = 0;i < 512; i++)
+   /*for(U32 i = 0;i < 512; i++)
    {
       ServerRef s;
       dSprintf(s.serverName, MaxServerNameLen, "Svr%8x", Random::readI());
@@ -51,7 +51,7 @@ void QueryServersUserInterface::onActivate()
       s.maxPlayers = Random::readF() * 16 + 8;
       s.playerCount = Random::readF() * s.maxPlayers;
       servers.push_back(s);
-   }
+   }*/
    sortColumn = 0;
    pendingPings = 0;
    pendingQueries = 0;

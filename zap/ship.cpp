@@ -111,7 +111,6 @@ void Ship::processArguments(S32 argc, const char **argv)
       mMoveState[i].angle = 0;
    }
 
-   color.read(argv + 2);
    updateExtent();
 }
 
@@ -665,10 +664,6 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
       playSpawnEffect = stream->readFlag();
 
       mPlayerName = connection->unpackStringTableEntry(stream);
-      GameType *g = gClientGame->getGameType();
-      if(g)
-         color = g->getClientColor(mPlayerName);
-
       stream->read(&mass);
       mTeam = stream->readRangedU32(0, gClientGame->getTeamCount()) - 1;
 
@@ -1059,6 +1054,11 @@ void Ship::render()
 {
    if(hasExploded)
       return;
+
+   GameType *g = gClientGame->getGameType();
+   Color color;
+   if(g)
+      color = g->getShipColor(this);
 
    F32 alpha = 1.0;
    if(isCloakActive())

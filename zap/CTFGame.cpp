@@ -98,12 +98,12 @@ void CTFGameType::shipTouchFlag(Ship *theShip, FlagItem *theFlag)
    }
 }
 
-void CTFGameType::flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex)
+void CTFGameType::flagDropped(Ship *theShip, FlagItem *theFlag)
 {
    static StringTableEntry dropString("%e0 dropped the %e1 flag!");
    Vector<StringTableEntry> e;
-   e.push_back(playerName);
-   e.push_back(mTeams[flagTeamIndex].name);
+   e.push_back(theShip->mPlayerName);
+   e.push_back(mTeams[theFlag->getTeam()].name);
    for(S32 i = 0; i < mClientList.size(); i++)
       mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagDrop, dropString, e);
 }

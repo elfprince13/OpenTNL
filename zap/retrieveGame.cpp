@@ -101,11 +101,11 @@ public:
       mFlagZones[flagIndex] = NULL;
    }
 
-   void flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex)
+   void flagDropped(Ship *theShip, FlagItem *theFlag)
    {
       static StringTableEntry dropString("%e0 dropped a flag!");
       Vector<StringTableEntry> e;
-      e.push_back(playerName);
+      e.push_back(theShip->mPlayerName);
       for(S32 i = 0; i < mClientList.size(); i++)
          mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagDrop, dropString, e);
    }

@@ -207,12 +207,9 @@ protected:
    NetClassRep *mNextClass;
 
    static NetClassRep *mClassLinkList;                                      ///< Head of the linked class list.
-   static NetClassRep **mClassTable[NetClassGroupCount][NetClassTypeCount]; ///< Table of NetClassReps for construction by class ID.
+   static Vector<NetClassRep *> mClassTable[NetClassGroupCount][NetClassTypeCount]; ///< Table of NetClassReps for construction by class ID.
    static U32 mClassCRC[NetClassGroupCount];                                ///< Internally computed class group CRC.
    static bool mInitialized;                                                ///< Set once the class tables are built, from initialize.
-
-   /// mNetClassCount holds the number of classes of each group and type.
-   static U32 mNetClassCount[NetClassGroupCount][NetClassTypeCount];
 
    /// mNetClassBitSize is the number of bits needed to transmit the class ID for a group and type.
    static U32 mNetClassBitSize[NetClassGroupCount][NetClassTypeCount];
@@ -253,7 +250,7 @@ public:
 
    /// Returns the number of classes registered under classGroup and classType.
    static U32 getNetClassCount(U32 classGroup, U32 classType)
-      { return mNetClassCount[classGroup][classType]; }
+      { return mClassTable[classGroup][classType].size(); }
 
    /// Returns the number of bits necessary to transmit class ids of the specified classGroup and classType.
    static U32 getNetClassBitSize(U32 classGroup, U32 classType)
@@ -261,7 +258,7 @@ public:
 
    /// Returns true if the given class count is on a version boundary
    static bool isVersionBorderCount(U32 classGroup, U32 classType, U32 count)
-      { return count == mNetClassCount[classGroup][classType] ||
+      { return count == U32(mClassTable[classGroup][classType].size()) ||
                (count > 0 && mClassTable[classGroup][classType][count]->getClassVersion() !=
                         mClassTable[classGroup][classType][count - 1]->getClassVersion()); }
 

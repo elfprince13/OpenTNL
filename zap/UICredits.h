@@ -100,7 +100,9 @@ public:
             fxList[i]->updateFX(t);
    }
    void render();
-   void onKeyDown(U32 key) { exit(0); }   // exit for now
+   void quit();
+   void onControllerButtonDown(U32 button) { quit(); }
+   void onKeyDown(U32 key) { quit(); }   // exit for now
 };
 extern CreditsUserInterface gCreditsUserInterface;
 

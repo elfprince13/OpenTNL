@@ -521,6 +521,11 @@ Color GameType::getTeamColor(S32 team)
       return mTeams[team].color;
 }
 
+Color GameType::getShipColor(Ship *s)
+{
+   return getTeamColor(s->getTeam());
+}
+
 void GameType::countTeamPlayers()
 {
    for(S32 i = 0; i < mTeams.size(); i ++)

@@ -87,6 +87,16 @@ void CreditsUserInterface::render()
          fxList[i]->render();
 }
 
+void CreditsUserInterface::quit()
+{
+#ifdef TNL_OS_XBOX
+   extern void xboxexit();
+   xboxexit();
+#else
+   exit(0);
+#endif
+}
+
 //-----------------------------------------------------
 // CreditsFX Objects
 //-----------------------------------------------------

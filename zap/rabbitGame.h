@@ -41,7 +41,9 @@ class RabbitGameType : public GameType
 {
    typedef GameType Parent;
 
-   S32 mScoreLimit;
+   FlagItem *mRabbitFlag;
+   Timer mFlagReturnTimer;
+   Timer mFlagScoreTimer;
 
 public:
 
@@ -64,15 +66,23 @@ public:
 
    RabbitGameType()
    {
-      mScoreLimit = 100;
+      mTeamScoreLimit = 100;
+      mRabbitFlag = NULL;
    }
    
    void processArguments(S32 argc, const char **argv);
    void spawnShip(GameConnection *theClient);
 
+   void idle(GameObject::IdleCallPath path);
+
+   void addFlag(FlagItem *theFlag);
+   void flagDropped(Ship *theShip, FlagItem *theFlag);
+   void shipTouchFlag(Ship *theShip, FlagItem *theFlag);
+
    bool objectCanDamageObject(GameObject *damager, GameObject *victim);
    void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
    bool shipHasFlag(Ship *ship);
+   Color getShipColor(Ship *s);
 
    void onFlagGrabbed(Ship *ship, RabbitFlagItem *flag);
    void onFlagHeld(Ship *ship);
@@ -87,33 +97,6 @@ public:
 
    TNL_DECLARE_RPC(s2cRabbitMessage, (U32 msgIndex, StringTableEntryRef clientName));
    TNL_DECLARE_CLASS(RabbitGameType);
-};
-
-class RabbitFlagItem : public Item
-{
-   typedef Item Parent;
-
-   Timer mReturnTimer;
-   Timer mScoreTimer;
-
-   Point initialPos;
-
-public:
-   RabbitFlagItem(Point pos = Point());
-   void processArguments(S32 argc, const char **argv);
-   void onAddedToGame(Game *theGame);
-
-   void renderItem(Point pos);
-   bool collide(GameObject *hitObject);
-
-   void idle(GameObject::IdleCallPath path);
-   void onMountDestroyed();
-
-   void sendHome();
-
-
-   TNL_DECLARE_CLASS(RabbitFlagItem);
-
 };
 
 };

@@ -41,7 +41,7 @@ class ZoneControlGameType : public GameType
    Vector<GoalZone*> mZones;
 public:
    void shipTouchFlag(Ship *theShip, FlagItem *theFlag);
-   void flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex);
+   void flagDropped(Ship *theShip, FlagItem *theFlag);
    void addZone(GoalZone *z);
    void shipTouchZone(Ship *s, GoalZone *z);
    const char *getGameTypeString() { return "Zone Control"; }
@@ -69,11 +69,11 @@ void ZoneControlGameType::shipTouchFlag(Ship *theShip, FlagItem *theFlag)
    theFlag->mountToShip(theShip);
 }
 
-void ZoneControlGameType::flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex)
+void ZoneControlGameType::flagDropped(Ship *theShip, FlagItem *theFlag)
 {
    static StringTableEntry dropString("%e0 dropped the flag!");
    Vector<StringTableEntry> e;
-   e.push_back(playerName);
+   e.push_back(theShip->mPlayerName);
    for(S32 i = 0; i < mClientList.size(); i++)
       mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagDrop, dropString, e);
 }

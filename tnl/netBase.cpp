@@ -35,9 +35,8 @@ namespace TNL
 #define INITIAL_CRC_VALUE 0xFFFFFFFF
 
 NetClassRep *NetClassRep::mClassLinkList = NULL;
-U32 NetClassRep::mNetClassCount[NetClassGroupCount][NetClassTypeCount] = {{0, },};
 U32 NetClassRep::mNetClassBitSize[NetClassGroupCount][NetClassTypeCount] = {{0, },};
-NetClassRep **NetClassRep::mClassTable[NetClassGroupCount][NetClassTypeCount];
+Vector<NetClassRep *> NetClassRep::mClassTable[NetClassGroupCount][NetClassTypeCount];
 U32 NetClassRep::mClassCRC[NetClassGroupCount] = {INITIAL_CRC_VALUE, };
 
 bool NetClassRep::mInitialized = false;
@@ -66,7 +65,7 @@ Object* NetClassRep::create(const char* className)
 Object* NetClassRep::create(const U32 groupId, const U32 typeId, const U32 classId)
 {
    TNLAssert(mInitialized, "creating an object before NetClassRep::initialize.");
-   TNLAssert(classId < mNetClassCount[groupId][typeId], "Class id out of range.");
+   TNLAssert(classId < U32(mClassTable[groupId][typeId].size()), "Class id out of range.");
    TNLAssert(mClassTable[groupId][typeId][classId] != NULL, "No class with declared id type.");
 
    if(mClassTable[groupId][typeId][classId])
@@ -104,8 +103,7 @@ void NetClassRep::initialize()
             if(walk->getClassType() == type && walk->mClassGroupMask & groupMask)
                dynamicTable.push_back(walk);
          }
-         mNetClassCount[group][type] = dynamicTable.size();
-         if(!mNetClassCount[group][type])
+         if(!dynamicTable.size())
             continue;
 
          qsort((void *) &dynamicTable[0], dynamicTable.size(), sizeof(NetClassRep *), ACRCompare);
@@ -117,16 +115,13 @@ void NetClassRep::initialize()
                logprintf("%s", dynamicTable[i]->getClassName());
          )
 
-         mClassTable[group][type] = new NetClassRep*[mNetClassCount[group][type]];
+         mClassTable[group][type] = dynamicTable;
    
-         for(U32 i = 0; i < mNetClassCount[group][type];i++)
-         {
-            mClassTable[group][type][i] = dynamicTable[i];
-            dynamicTable[i]->mClassId[group] = i;
+         for(U32 i = 0; i < mClassTable[group][type].size();i++)
+            mClassTable[group][type][i]->mClassId[group] = i;
 
-         }
          mNetClassBitSize[group][type] = 
-               getBinLog2(getNextPow2(mNetClassCount[group][type] + 1));
+               getBinLog2(getNextPow2(mClassTable[group][type].size() + 1));
          dynamicTable.clear();
       }
    }

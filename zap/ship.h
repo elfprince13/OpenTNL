@@ -114,7 +114,6 @@ public:
    S32 mLastTrailPoint[TrailCount];
    FXTrail mTrail[TrailCount];
 
-   Color color; // color of the ship
    F32 mass; // mass of ship
    bool hasExploded;
 
