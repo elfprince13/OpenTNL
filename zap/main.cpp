@@ -44,6 +44,7 @@ using namespace TNL;
 #include "masterConnection.h"
 #include "sfx.h"
 #include "sparkManager.h"
+#include "input.h"
 
 namespace Zap
 {
@@ -486,10 +487,9 @@ void onExit()
 {
    endGame();
    SFXObject::shutdown();
+   ShutdownJoystick();
    NetClassRep::logBitUsage();
 }
-
-extern void InitController();
 
 TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *> &argv))
 {
@@ -662,6 +662,8 @@ int main(int argc, char **argv)
    if(gClientGame)
    {
       SFXObject::init();
+      InitJoystick();
+
       glutInitWindowSize(800, 600);
       glutInit(&argc, argv);
       glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);
@@ -676,10 +678,6 @@ int main(int argc, char **argv)
       glutSpecialUpFunc(specialkeyup);
       glutMouseFunc(mouse);
       glutIdleFunc(idle);
-
-#ifdef TNL_OS_WIN32
-      InitController();
-#endif
 
       glutSetCursor(GLUT_CURSOR_NONE);
       glMatrixMode(GL_PROJECTION);

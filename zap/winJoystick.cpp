@@ -32,9 +32,7 @@
 #include "gameConnection.h"
 #include "point.h"
 #include "UI.h"
-#include "UIMenus.h"
-#include "tnlJournal.h"
-#include "UIMenus.h"
+#include "input.h"
 
 namespace Zap
 {
@@ -50,9 +48,6 @@ void getModifierState( bool &shiftDown, bool &controlDown, bool &altDown )
 
 void checkMousePos(S32 maxdx, S32 maxdy)
 {
-   if(OptionsMenuUserInterface::controlsRelative)
-      return;
-
    char windowName[256];
 
    HWND theWindow = GetForegroundWindow();
@@ -98,7 +93,7 @@ BOOL CALLBACK EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance, VOID*
 LPDIRECTINPUT8 gDirectInput = NULL;
 LPDIRECTINPUTDEVICE8 gJoystick = NULL;
 
-void InitController()
+void InitJoystick()
 {
    if(FAILED(DirectInput8Create ( GetModuleHandle(NULL), DIRECTINPUT_VERSION, 
          IID_IDirectInput8, (VOID**)&gDirectInput, NULL ) ) )
@@ -129,7 +124,7 @@ BOOL CALLBACK EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance,
 }
 
 
-static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
+bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask)
 {
    // mark: it's ok
    // mark: it's called "winJoystick"
@@ -154,160 +149,30 @@ static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
    if(FAILED(gJoystick->GetDeviceState( sizeof(DIJOYSTATE2), &js ) ) )
       return false; // The device should have been acquired during the Poll()
 
-   S32 x = js.lX;
-
-   F32 controls[4];
-   controls[0] = F32( js.lX ) - 32768.0f;
-   controls[1] = F32( js.lY ) - 32768.0f;
-
-   if(OptionsMenuUserInterface::joystickType == 0)
-   {
-      controls[2] = F32( js.lRz ) - 32768.0f;
-      controls[3] = F32( js.rglSlider[0] ) - 32768.0f;
-   }
-   else if(OptionsMenuUserInterface::joystickType == 1)
-   {
-      controls[3] = F32( js.lZ ) - 32768.0f;      
-      controls[2] = F32( js.lRz ) - 32768.0f;
-   }
-   else if(OptionsMenuUserInterface::joystickType == 2)
-   {
-      controls[2] = F32( js.lZ ) - 32768.0f;
-      controls[3] = F32( js.lRz ) - 32768.0f;
-   }
-   else if(OptionsMenuUserInterface::joystickType == 3)
-   {
-      controls[2] = F32( js.lRx ) - 32768.0f;
-      controls[3] = F32( js.lRy ) - 32768.0f;
-   }
-
-   for(U32 i = 0; i < 4; i++)
-   {
-      F32 deadZone = i < 2 ? 8192.0f : 1024.0f;
-      if(controls[i] < -deadZone)
-         controls[i] = -(-controls[i] - deadZone) / F32(32768.0f - deadZone);
-      else if(controls[i] > deadZone)
-         controls[i] = (controls[i] - deadZone) / F32(32768.0f - deadZone);
-      else
-         controls[i] = 0;
-   }
-   if(controls[0] < 0)
-   {
-      theMove->left = -controls[0];
-      theMove->right = 0;
-   }
-   else
-   {
-      theMove->left = 0;
-      theMove->right = controls[0];
-   }
-
-   if(controls[1] < 0)
-   {
-      theMove->up = -controls[1];
-      theMove->down = 0;
-   }
-   else
-   {
-      theMove->down = controls[1];
-      theMove->up = 0;
-   }
-
-   Point p(controls[2], controls[3]);
-   F32 plen = p.len();
-   if(plen > 0.3)
-   {
-      theMove->angle = atan2(p.y, p.x);
-      theMove->fire = (plen > 0.5);
-   }
-   else
-      theMove->fire = false;
+   F32 scale = 1 / 32768.0f;
+   axes[0] = (F32(js.lX) - 32768.0f) * scale;
+   axes[1] = (F32(js.lY) - 32768.0f) * scale;
+   axes[2] = (F32(js.lZ) - 32768.0f) * scale;
+   axes[3] = (F32(js.lRx) - 32768.0f) * scale;
+   axes[4] = (F32(js.lRy) - 32768.0f) * scale;
+   axes[5] = (F32(js.lRz) - 32768.0f) * scale;
+   axes[6] = (F32(js.rglSlider[0]) - 32768.0f) * scale;
+   axes[7] = (F32(js.rglSlider[1]) - 32768.0f) * scale;
+   axes[8] = 0;
+   axes[9] = 0;
+   axes[10] = 0;
+   axes[11] = 0;
 
    // check the state of the buttons:
+   buttonMask = 0;
+
    for( U32 i = 0; i < 12; i++ )
-      buttonPressed[i] = (js.rgbButtons[i] & 0x80) != 0;
-
-   // Remap crazy xbox inputs...
-   if(OptionsMenuUserInterface::joystickType == 3)
-   {
-      bool b[12];
-
-      // Get the first six buttons...
-      b[0] = buttonPressed[2];
-      b[1] = buttonPressed[0];
-      b[2] = buttonPressed[5];
-
-      b[3] = buttonPressed[3];
-      b[4] = buttonPressed[1];
-      b[5] = buttonPressed[4];
-
-      // And the shoulder buttons...
-      b[6] = buttonPressed[10];
-      b[7] = buttonPressed[11];
-
-      // Fill in rest with false...
-      for( U32 i=8; i<12; i++)
-         b[i] = false;
-
-      // Now put it all back into the array (this is O(1), really!)
-      for( U32 i=0; i<12; i++)
-         buttonPressed[i] = b[i];
-   }
-
-   
-
+      if((js.rgbButtons[i] & 0x80) != 0)
+         buttonMask |= BIT(i);
    return true;
 }
 
-static bool updateMoveInternalJournaled( Move *theMove, bool buttonPressed[12] )
-{
-   TNL_JOURNAL_READ_BLOCK(JoystickUpdate,
-      BitStream *readStream = Journal::getReadStream();
-      if(!readStream->readFlag())
-         return false;
-
-      Move aMove;
-      aMove.unpack(readStream, false);
-      *theMove = aMove;
-      for(U32 i = 0; i < 12; i++)
-         buttonPressed[i] = readStream->readFlag();
-      return true;
-   )
-
-   bool ret = updateMoveInternal(theMove, buttonPressed);
-
-   TNL_JOURNAL_WRITE_BLOCK(JoystickUpdate,
-      BitStream *writeStream = Journal::getWriteStream();
-      if(writeStream->writeFlag(ret))
-      {
-         Move dummy;
-         theMove->pack(writeStream, &dummy, false);
-         for(U32 i = 0;i < 12; i++)
-            writeStream->writeFlag(buttonPressed[i]);
-      }
-   )
-   return ret;
-}
-
-void JoystickUpdateMove( Move *theMove )
-{
-   static bool buttonDown[12] = { 0, };
-   bool buttonPressed[12];
-
-   if(!updateMoveInternalJournaled( theMove, buttonPressed ))
-      return;
-
-   for(U32 i = 0; i < 12; i++)
-   {
-      if(buttonPressed[i] && !buttonDown[i])
-         UserInterface::current->onControllerButtonDown(i);
-      else if(!buttonPressed[i] && buttonDown[i])
-         UserInterface::current->onControllerButtonUp(i);
-      buttonDown[i] = buttonPressed[i];
-   }
-}
-
-void FreeDirectInput()
+void ShutdownJoystick()
 {
     // Unacquire the device one last time just in case 
     // the app tried to exit while the device is still acquired.

@@ -425,6 +425,12 @@
 			RelativePath=".\gridDB.h">
 		</File>
 		<File
+			RelativePath=".\input.cpp">
+		</File>
+		<File
+			RelativePath=".\input.h">
+		</File>
+		<File
 			RelativePath=".\main.cpp">
 		</File>
 		<File

@@ -166,7 +166,7 @@ void Projectile::idle(GameObject::IdleCallPath path)
       float collisionTime;
       disableVector.clear();
 
-      if(mShooter.isValid() && mAliveTime < 100)
+      if(mShooter.isValid() && mAliveTime < 750)
       {
          disableVector.push_back(mShooter);
          mShooter->disableCollision();
