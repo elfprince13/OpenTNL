@@ -120,6 +120,22 @@ SOURCE=.\engineeredObjects.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\flagItem.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\flagItem.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\footballGame.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ftol.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\game.cpp
 # End Source File
 # Begin Source File
@@ -164,6 +180,14 @@ SOURCE=.\gameObject.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\gameObjectRender.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\gameObjectRender.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\gameType.cpp
 # End Source File
 # Begin Source File
@@ -177,6 +201,14 @@ SOURCE=.\gameWeapons.cpp
 # Begin Source File
 
 SOURCE=.\gameWeapons.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\goalZone.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\goalZone.h
 # End Source File
 # Begin Source File
 
@@ -212,6 +244,14 @@ SOURCE=.\huntersGame.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\input.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\input.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\item.cpp
 # End Source File
 # Begin Source File
@@ -225,6 +265,10 @@ SOURCE=.\loadoutSelect.cpp
 # Begin Source File
 
 SOURCE=.\loadoutSelect.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\LoadoutZone.cpp
 # End Source File
 # Begin Source File
 
@@ -256,6 +300,10 @@ SOURCE=..\master\masterInterface.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\move.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\moveObject.cpp
 # End Source File
 # Begin Source File
@@ -265,6 +313,10 @@ SOURCE=.\moveObject.h
 # Begin Source File
 
 SOURCE=.\point.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\private.h
 # End Source File
 # Begin Source File
 
@@ -281,6 +333,18 @@ SOURCE=.\quickChat.cpp
 # Begin Source File
 
 SOURCE=.\quickChat.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\rabbitGame.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\rabbitGame.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\retrieveGame.cpp
 # End Source File
 # Begin Source File
 
@@ -308,6 +372,10 @@ SOURCE=.\soccerGame.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\soccerGame.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\sparkManager.cpp
 # End Source File
 # Begin Source File
@@ -329,6 +397,10 @@ SOURCE=.\teleporter.cpp
 # Begin Source File
 
 SOURCE=.\teleporter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\timer.h
 # End Source File
 # Begin Source File
 
@@ -361,6 +433,14 @@ SOURCE=.\UIGame.cpp
 # Begin Source File
 
 SOURCE=.\UIGame.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\UIInstructions.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\UIInstructions.h
 # End Source File
 # Begin Source File
 
@@ -397,6 +477,10 @@ SOURCE=.\voiceCodec.h
 # Begin Source File
 
 SOURCE=.\winJoystick.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\winmain.cpp
 # End Source File
 # End Target
 # End Project

@@ -27,9 +27,10 @@
 #include "tnlMethodDispatch.h"
 #include "tnlNetStringTable.h"
 
+void *TNL_gBasePtr = NULL;
+
 namespace TNL
 {
-void *gBasePtr = NULL;
 void *gThisPtr = NULL;
 void *gStackPtr = NULL;
 
@@ -232,7 +233,7 @@ void MethodArgList::marshall(MarshalledCall *theEvent)
    intArg++; // get rid of the "this" pointer.
    bool floatInRegs = true;
 #else
-   U8 *ptr = (U8 *) gBasePtr;
+   U8 *ptr = (U8 *) TNL_gBasePtr;
    ptr += 4; // get rid of the return address and saved base ptr.
 #endif
    U32 whichSTE = 0;

@@ -145,14 +145,21 @@ struct MarshalledCall
 };
 
 #if defined(TNL_SUPPORTS_VC_INLINE_X86_ASM)
+};
 
-extern void *gBasePtr;
-#define SAVE_PARAMS __asm { lea eax, this }; __asm { mov TNL::gBasePtr, eax };
+// VC 6.0 has problems with the usage of a namespace reference inside an inline assembly block
+// so we close the namespace and add this as a global global.
+
+extern void *TNL_gBasePtr;
+namespace TNL {
+#define SAVE_PARAMS __asm { lea eax, this }; __asm { mov TNL_gBasePtr, eax };
 
 #elif defined(TNL_SUPPORTS_GCC_INLINE_X86_ASM )
 
-extern void *gBasePtr;
-#define SAVE_PARAMS TNL::gBasePtr = (void *) ((U8 *) __builtin_frame_address(0) + 8);
+};
+extern void *TNL_gBasePtr;
+namespace TNL {
+#define SAVE_PARAMS TNL_gBasePtr = (void *) ((U8 *) __builtin_frame_address(0) + 8);
 
 #elif defined(TNL_SUPPORTS_GCC_INLINE_PPC_ASM )
 extern U32 gRegisterSaves[8 + 13 + 1];
