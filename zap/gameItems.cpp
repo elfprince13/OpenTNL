@@ -33,9 +33,14 @@ namespace Zap
 
 class RepairItem : public PickupItem
 {
+private:
+   typedef PickupItem Parent;
+   F32 spin;
+
 public:
    RepairItem(Point p = Point()) : PickupItem(p, 20)
    {
+      spin=0.f;
       mNetFlags.set(Ghostable);
    }
 
@@ -76,11 +81,18 @@ public:
       glEnd();
    }
 
+   void processClient(U32 deltaT)
+   {
+      Parent::processClient(deltaT);
+      spin += 50.f * (F32)deltaT / 1000.f;
+   }
+
    void renderItem(Point pos)
    {
 
       glPushMatrix();
       glTranslatef(pos.x, pos.y, 0);
+      glRotatef(spin, 0, 0, 1.f);
 
       glColor3f(1, 1, 0);
       
@@ -146,5 +158,6 @@ public:
 };
 
 TNL_IMPLEMENT_NETOBJECT(TestItem);
+
 
 };
