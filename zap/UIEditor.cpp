@@ -29,6 +29,7 @@
 #include "UICredits.h"
 #include <stdio.h>
 #include <ctype.h>
+#include "gameObjectRender.h"
 
 namespace Zap
 {
@@ -69,8 +70,6 @@ struct GameItemRec
    bool isPoly;
    char letter;
 };
-
-extern void renderFlag(Point pos, Color c);
 
 enum GameItems
 {
@@ -340,7 +339,7 @@ void EditorUserInterface::renderItem(S32 index)
       else
       {
          Color c = mTeams[i.team].color;
-         glColor3f(c.r, c.g, c.b);
+         glColor(c);
       }
 
       if(i.index != ItemBarrierMaker)
@@ -392,7 +391,7 @@ void EditorUserInterface::renderItem(S32 index)
       }
       else
       {
-         glColor3f(c.r, c.g, c.b);
+         glColor(c);
          glBegin(GL_POLYGON);
          glVertex2f(pos.x - 8, pos.y - 8);
          glVertex2f(pos.x + 8, pos.y - 8);

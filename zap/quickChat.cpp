@@ -29,6 +29,7 @@
 #include "glutInclude.h"
 #include "gameType.h"
 #include "UIMenus.h"
+#include "gameObjectRender.h"
 #include <ctype.h>
 namespace Zap
 {
@@ -125,12 +126,14 @@ void renderControllerButton(F32 x, F32 y, U32 buttonIndex, U32 keyIndex)
    else if(joy == 3)
    {
       static F32 color[6][3] = { { 0, 0, 1 }, { 0, 1, 0 }, { 1, 1, 1 }, { 1, 1, 0 }, { 1, 0, 0}, { 0, 0, 0} };
-      glColor3f(color[buttonIndex][0] * 0.8f,color[buttonIndex][1] * 0.8f,color[buttonIndex][2] * 0.8f);
+      Color c(color[buttonIndex][0], color[buttonIndex][1], color[buttonIndex][2]);
+
+      glColor(c * 0.8f);
       fillCircle(Point(x + 8, y + 8), 8);
       const char buttons[] = "XA YB ";
       glColor3f(1,1,1);
       drawCircle(Point(x + 8, y + 8), 8);
-      glColor3f(color[buttonIndex][0],color[buttonIndex][1],color[buttonIndex][2]);
+      glColor(c);
       UserInterface::drawStringf(x + 4, y + 2, 12, "%c", buttons[buttonIndex]);
    }
 }

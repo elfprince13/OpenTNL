@@ -103,6 +103,7 @@ protected:
    Vector<GameObject *> mGameObjects;
    Vector<DeleteRef> mPendingDeleteObjects;
    Vector<SafePtr<GameObject> > mScopeAlwaysList;
+   U32 mCurrentTime;
 
    RefPtr<GameNetInterface> mNetInterface;
 
@@ -132,7 +133,7 @@ public:
    void setGridSize(F32 gridSize) { mGridSize = gridSize; }
 
    F32 getGridSize() { return mGridSize; }
-
+   U32 getCurrentTime() { return mCurrentTime; }
    virtual bool isServer() = 0;
    virtual void idle(U32 timeDelta) = 0;
 

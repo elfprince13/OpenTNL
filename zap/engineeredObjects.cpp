@@ -543,9 +543,9 @@ void ForceField::render()
    getCollisionPoly(p);
 
    if(mFieldUp)
-      glColor3f(c.r, c.g, c.b);
+      glColor(c);
    else
-      glColor3f(c.r * 0.5, c.g * 0.5, c.b * 0.5);
+      glColor(c * 0.5);
    glBegin(GL_LINE_LOOP);
    for(S32 i = 0; i < p.size(); i++)
       glVertex2f(p[i].x, p[i].y);

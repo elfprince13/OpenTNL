@@ -108,7 +108,7 @@ void Teleporter::unpackUpdate(GhostConnection *connection, BitStream *stream)
    }
    if(stream->readFlag() && isGhost())
    {
-      FXManager::emitTeleportInEffect(dest);
+      FXManager::emitTeleportInEffect(dest, 0);
       SFXObject::play(SFXTeleportIn, dest, Point());
       SFXObject::play(SFXTeleportOut, pos, Point());
       timeout = TeleporterDelay;
@@ -190,7 +190,7 @@ void Teleporter::render()
       r = (timeout - TeleporterExpandTime) / F32(TeleporterDelay - TeleporterExpandTime);
    else
       r = F32(TeleporterExpandTime - timeout) / F32(TeleporterExpandTime);
-   renderTeleporter(mTime, r, TeleporterRadius, 1.0);
+   renderTeleporter(0, mTime, r, TeleporterRadius, 1.0);
    glPopMatrix();
 }
 

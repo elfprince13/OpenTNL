@@ -73,6 +73,7 @@ public:
       CloakCheckRadius = 200,
       RepairHundredthsPerSecond = 16,
       MaxEngineerDistance = 100,
+      WarpFadeInTime = 500,
    };
 
    enum MaskBits {
@@ -87,6 +88,7 @@ public:
    };
 
    Timer mFireTimer;
+   Timer mWarpInTimer;
    F32 mHealth;
    S32 mEnergy;
    StringTableEntry mPlayerName;

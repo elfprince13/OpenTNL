@@ -31,6 +31,7 @@
 #include "sfx.h"
 #include "gameNetInterface.h"
 #include "ship.h"
+#include "gameObjectRender.h"
 
 namespace Zap
 {
@@ -382,7 +383,7 @@ void HuntersNexusObject::render()
       alpha = 0.5;
 
    Color theColor = getGame()->getGameType()->mTeams[0].color;
-   glColor3f(theColor.r * alpha, theColor.g * alpha, theColor.b * alpha);
+   glColor(theColor * alpha);
    glBegin(GL_POLYGON);
       glVertex2f(nexusBounds.min.x, nexusBounds.min.y);
       glVertex2f(nexusBounds.min.x, nexusBounds.max.y);

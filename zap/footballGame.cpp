@@ -28,6 +28,7 @@
 #include "ship.h"
 #include "flagItem.h"
 #include "glutInclude.h"
+#include "gameObjectRender.h"
 
 namespace Zap
 {
@@ -82,15 +83,15 @@ public:
    {
       F32 alpha = 0.5;
       Color theColor = getGame()->getGameType()->getTeamColor(getTeam());
-      glColor3f(theColor.r * 0.5, theColor.g * 0.5, theColor.b * 0.5);
+      glColor(theColor * 0.5f);
       glBegin(GL_POLYGON);
       for(S32 i = 0; i < mPolyBounds.size(); i++)
          glVertex2f(mPolyBounds[i].x, mPolyBounds[i].y);
       glEnd();
       if(mFlashCount & 1)
-         glColor3f(theColor.r, theColor.g, theColor.b);
+         glColor(theColor);
       else
-         glColor3f(theColor.r * 0.7, theColor.g * 0.7, theColor.b * 0.7);
+         glColor(theColor * 0.7);
 
       glBegin(GL_LINE_LOOP);
       for(S32 i = 0; i < mPolyBounds.size(); i++)

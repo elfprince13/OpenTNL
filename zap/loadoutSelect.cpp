@@ -32,6 +32,7 @@
 #include "shipItems.h"
 #include "gameWeapons.h"
 #include <ctype.h>
+#include "gameObjectRender.h"
 
 namespace Zap
 {
@@ -106,14 +107,14 @@ void LoadoutHelper::render()
       if((mCurrentIndex == 1 && mModule[0] == i) ||
          (mCurrentIndex == 3 && mWeapon[0] == i) ||
          (mCurrentIndex == 4 && (mWeapon[0] == i || mWeapon[1] == i)))
-         c = Color(0.3, 0.7, 0.3);
+         c.set(0.3, 0.7, 0.3);
       else
-         c = Color(0.1, 1.0, 0.1);
+         c.set(0.1, 1.0, 0.1);
 
-      glColor3f(c.r,c.g,c.b);
+      glColor(c);
       renderControllerButton(20, curPos, list[i].button, list[i].key);
 
-      glColor3f(c.r,c.g,c.b);
+      glColor(c);
       UserInterface::drawStringf(40, curPos, fontSize, "- %s", 
          list[i].text);
       curPos += fontSize + 4;

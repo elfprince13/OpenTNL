@@ -30,6 +30,7 @@
 #include "sfx.h"
 #include "gameNetInterface.h"
 #include "ship.h"
+#include "gameObjectRender.h"
 
 namespace Zap
 {
@@ -188,7 +189,7 @@ void SoccerGoalObject::render()
 {
    F32 alpha = 0.5;
    Color theColor = getGame()->getGameType()->mTeams[getTeam()].color;
-   glColor3f(theColor.r * alpha, theColor.g * alpha, theColor.b * alpha);
+   glColor(theColor * alpha);
    glBegin(GL_POLYGON);
    for(S32 i = 0; i < mPolyBounds.size(); i++)
       glVertex2f(mPolyBounds[i].x, mPolyBounds[i].y);

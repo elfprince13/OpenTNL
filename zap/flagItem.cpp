@@ -32,32 +32,6 @@
 namespace Zap
 {
 
-void renderFlag(Point pos, Color c)
-{
-   glPushMatrix();
-   glTranslatef(pos.x, pos.y, 0);
-
-   glColor3f(c.r, c.g, c.b);
-   glBegin(GL_LINES);
-   glVertex2f(-15, -15);
-   glVertex2f(15, -5);
-
-   glVertex2f(15, -5);
-   glVertex2f(-15, 5);
-
-   glVertex2f(-15, -10);
-   glVertex2f(10, -5);
-
-   glVertex2f(10, -5);
-   glVertex2f(-15, 0);
-   glColor3f(1,1,1);
-   glVertex2f(-15, -15);
-   glVertex2f(-15, 15);
-   glEnd();
-
-   glPopMatrix();
-}
-
 TNL_IMPLEMENT_NETOBJECT(FlagItem);
 
 FlagItem::FlagItem(Point pos) : Item(pos, false, 20)

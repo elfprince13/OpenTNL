@@ -74,6 +74,7 @@ struct Color
 {
    float r, g, b;
 
+   Color(const Color &c) { r = c.r; g = c.g; b = c.b; }
    Color(float red = 1, float green = 1, float blue = 1) { r = red; g = green; b = blue; }
    void read(const char **argv) { r = (float) atof(argv[0]); g = (float) atof(argv[1]); b = (float) atof(argv[2]); }
 
@@ -84,6 +85,17 @@ struct Color
       g = c1.g * t + c2.g * oneMinusT;
       b = c1.b * t + c2.b * oneMinusT;
    }
+   void set(float _r, float _g, float _b) { r = _r; g = _g; b = _b; }
+   void set(const Color &c) { r = c.r; g = c.g; b = c.b; }
+
+   Color operator+(const Color &c) const { return Color (r + c.r, g + c.g, b + c.b); }
+   Color operator-(const Color &c) const { return Color (r - c.r, g - c.g, b - c.b); }
+   Color operator-() const { return Color(-r, -g, -b); }
+   Color &operator+=(const Color &c) { r += c.r; g += c.g; b += c.b; return *this; }
+   Color &operator-=(const Color &c) { r -= c.r; g -= c.g; b -= c.b; return *this; }
+
+   Color operator*(const float f) { return Color (r * f, g * f, b * f); }
+   Color &operator*=(const float f) { r *= f; g *= f; b *= f; return *this; }
 };
 
 struct Rect

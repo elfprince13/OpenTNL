@@ -31,6 +31,7 @@
 #include "flagItem.h"
 #include "glutInclude.h"
 #include "engineeredObjects.h"
+#include "gameObjectRender.h"
 
 namespace Zap
 {
@@ -226,7 +227,7 @@ void GameType::renderTalkingClients()
       if(mClientList[i]->voiceSFX->isPlaying())
       {
          Color teamColor = mTeams[mClientList[i]->teamId].color;
-         glColor3f(teamColor.r, teamColor.g, teamColor.b);
+         glColor(teamColor);
          UserInterface::drawString(10, y, 20, mClientList[i]->name.getString());
          y += 25;
       }

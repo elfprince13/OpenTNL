@@ -31,11 +31,35 @@
 namespace Zap
 {
 
-void glVertex(Point p)   
+void glVertex(Point &p)
 {
    glVertex2f(p.x, p.y);
 }
 
+void glColor(Color &c, float alpha)
+{
+   glColor4f(c.r, c.g, c.b, alpha);
+}
+
+void drawCircle(Point pos, F32 radius)
+{
+   glBegin(GL_LINE_LOOP);
+
+   for(F32 theta = 0; theta < 2 * 3.1415; theta += 0.2)
+      glVertex2f(pos.x + cos(theta) * radius, pos.y + sin(theta) * radius);
+
+   glEnd();
+}
+
+void fillCircle(Point pos, F32 radius)
+{
+   glBegin(GL_POLYGON);
+
+   for(F32 theta = 0; theta < 2 * 3.1415; theta += 0.2)
+      glVertex2f(pos.x + cos(theta) * radius, pos.y + sin(theta) * radius);
+
+   glEnd();
+}
 
 void renderShip(Color c, F32 alpha, F32 thrusts[], F32 health, F32 radius, bool cloakActive, bool shieldActive)
 {
@@ -193,11 +217,12 @@ void renderShip(Color c, F32 alpha, F32 thrusts[], F32 health, F32 radius, bool 
       glDisable(GL_BLEND);
 }
 
-void renderTeleporter(S32 time, F32 radiusFraction, F32 radius, F32 alpha)
+void renderTeleporter(U32 type, S32 time, F32 radiusFraction, F32 radius, F32 alpha)
 {
    enum {
       NumColors = 6,
-      NumParticles = 250,
+      NumTypes = 2,
+      NumParticles = 100,
    };
 
    static bool trackerInit = false;
@@ -212,13 +237,23 @@ void renderTeleporter(S32 time, F32 radiusFraction, F32 radius, F32 alpha)
    };
    static Tracker particles[NumParticles];
 
-   static float colors[NumColors][3] = {
-      { 0, 1, 0 },
-      { 0, 0.5, 1 },
-      { 0, 0, 1 },
-      { 0, 1, 1 },
-      { 0, 1, 0.5 },
-      { 0, 0, 1 },
+   static float colors[NumTypes][NumColors][3] = {
+      {
+         { 0, 1, 0 },
+         { 0, 0.5, 1 },
+         { 0, 0, 1 },
+         { 0, 1, 1 },
+         { 0, 1, 0.5 },
+         { 0, 0, 1 },
+      },
+      {
+         { 1, 0, 0.5 },
+         { 1, 0, 1 },
+         { 0, 0, 1 },
+         { 0.5, 0, 1 },
+         { 0, 0, 0.5 },
+         { 1, 0, 0 },
+      }
    };
    if(!trackerInit)
    {
@@ -234,48 +269,64 @@ void renderTeleporter(S32 time, F32 radiusFraction, F32 radius, F32 alpha)
       }
    }
 
+   glLineWidth(2);
    glEnable(GL_BLEND);
    glBegin(GL_LINES);
-   F32 arcLen = 0.3 + (1 - radiusFraction) * 0.8;
-   F32 white = 1 - radiusFraction;
+   F32 arcTime = 0.5 + (1 - radiusFraction) * 0.5;
+
+   Color tpColors[NumColors];
+   Color white(1,1,1);
+   for(S32 i = 0; i < NumColors; i++)
+   {
+      Color c(colors[type][i][0], colors[type][i][1], colors[type][i][2]);
+      tpColors[i].interp(radiusFraction, c, white);
+   }
    for(S32 i = 0; i < NumParticles; i++)
    {
       Tracker &t = particles[i];
       //glColor3f(t.c.r, t.c.g, t.c.b);
       F32 d = (t.dP - fmod(float(t.dI + time * 0.001), (float) t.dP)) / t.dP;
       F32 alphaMod = 1;
-      if(d > 0.95)
-         alphaMod = (1 - d) / 0.05;
+      if(d > 0.9)
+         alphaMod = (1 - d) * 10;
 
-      glColor4f(colors[t.ci][0] * radiusFraction + white, 
-                colors[t.ci][1] * radiusFraction + white,
-                colors[t.ci][2] * radiusFraction + white,
-                alpha * alphaMod);
       F32 theta = fmod(float( t.thetaI + time * 0.001 * t.thetaP), (float) Float2Pi);
-      Point p(cos(theta), sin(theta));
-      Point n(-p.y, p.x);
+      F32 arcRadius = radiusFraction * radius * d;
 
-      p *= radiusFraction * radius * d;
-      glVertex2f(p.x, p.y);
+      Point start(cos(theta), sin(theta));
+      start *= arcRadius;
 
-      glColor4f(colors[t.ci][0] * radiusFraction + white, 
-                colors[t.ci][1] * radiusFraction + white,
-                colors[t.ci][2] * radiusFraction + white,
-                0);
-      theta -= arcLen;
-      p.set(cos(theta), sin(theta));
-      p *= radiusFraction * radius * d;
-      glVertex2f(p.x, p.y);
+      theta -= arcTime * t.thetaP;
+      Point end(cos(theta), sin(theta));
+      end *= arcRadius;
 
-      //glVertex2f(p.x - n.x * 5, p.y - n.y * 5);
+      glColor(tpColors[t.ci], alpha * alphaMod);
+      glVertex(start);
+
+      F32 arcLength = (end - start).len();
+      U32 midpointCount = floor(arcLength / 10);
+
+      for(U32 j = 0; j < midpointCount; j++)
+      {
+         F32 frac = (j + 1) / F32(midpointCount + 2);
+         Point p = start * (1 - frac) + end * frac;
+         p.normalize(arcRadius);
+         glColor(tpColors[t.ci], alpha * alphaMod * (1 - frac));
+         glVertex(p);
+         glVertex(p);
+      }
+
+      glColor(tpColors[t.ci], 0);
+      glVertex(end);
    }
    glEnd();
    glDisable(GL_BLEND);
+   glLineWidth(1);
 }
 
 void renderTurret(Color c, Point anchor, Point normal, bool enabled, F32 health, F32 barrelAngle, F32 aimOffset)
 {
-   glColor3f(c.r, c.g, c.b);
+   glColor(c);
 
    Point cross(normal.y, -normal.x);
    Point aimCenter = anchor + normal * aimOffset;
@@ -309,7 +360,7 @@ void renderTurret(Color c, Point anchor, Point normal, bool enabled, F32 health,
    glVertex(anchor - cross * 18);
    glEnd();
 
-   glColor3f(c.r, c.g, c.b);
+   glColor(c);
    S32 lineHeight = U32(28 * health);
    glBegin(GL_LINES);
    for(S32 i = 0; i < lineHeight; i += 2)
@@ -329,5 +380,30 @@ void renderTurret(Color c, Point anchor, Point normal, bool enabled, F32 health,
    glEnd();
 }
 
+void renderFlag(Point pos, Color c)
+{
+   glPushMatrix();
+   glTranslatef(pos.x, pos.y, 0);
+
+   glColor3f(c.r, c.g, c.b);
+   glBegin(GL_LINES);
+   glVertex2f(-15, -15);
+   glVertex2f(15, -5);
+
+   glVertex2f(15, -5);
+   glVertex2f(-15, 5);
+
+   glVertex2f(-15, -10);
+   glVertex2f(10, -5);
+
+   glVertex2f(10, -5);
+   glVertex2f(-15, 0);
+   glColor3f(1,1,1);
+   glVertex2f(-15, -15);
+   glVertex2f(-15, 15);
+   glEnd();
+
+   glPopMatrix();
+}
 
 };

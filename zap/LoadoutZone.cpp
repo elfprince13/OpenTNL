@@ -29,6 +29,7 @@
 #include "glutInclude.h"
 #include "gameNetInterface.h"
 #include "UI.h"
+#include "gameObjectRender.h"
 
 namespace Zap
 {
@@ -53,12 +54,12 @@ public:
    {
       F32 alpha = 0.5;
       Color theColor = getGame()->getGameType()->mTeams[getTeam()].color;
-      glColor3f(theColor.r * 0.5, theColor.g * 0.5, theColor.b * 0.5);
+      glColor(theColor * 0.5);
       glBegin(GL_POLYGON);
       for(S32 i = 0; i < mPolyBounds.size(); i++)
          glVertex2f(mPolyBounds[i].x, mPolyBounds[i].y);
       glEnd();
-      glColor3f(theColor.r * 0.7, theColor.g * 0.7, theColor.b * 0.7);
+      glColor(theColor * 0.7);
       glBegin(GL_LINE_LOOP);
       for(S32 i = 0; i < mPolyBounds.size(); i++)
          glVertex2f(mPolyBounds[i].x, mPolyBounds[i].y);
@@ -72,7 +73,7 @@ public:
       glTranslatef(center.x, center.y, 0);
       if(extents.x < extents.y)
          glRotatef(90, 0, 0, 1);
-      glColor3f(theColor.r, theColor.g, theColor.b);
+      glColor(theColor);
       const char *string = "LOADOUT ZONE";
       F32 fontSize = 25;
       F32 width = UserInterface::getStringWidth(fontSize, string);

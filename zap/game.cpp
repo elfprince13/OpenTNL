@@ -44,6 +44,7 @@ using namespace TNL;
 #include "gameLoader.h"
 #include "gameType.h"
 #include "sfx.h"
+#include "gameObjectRender.h"
 
 namespace Zap
 {
@@ -58,6 +59,7 @@ ClientGame *gClientGame = NULL;
 Game::Game(const Address &theBindAddress)
 {
    mNextMasterTryTime = 0;
+   mCurrentTime = 0;
 
    mNetInterface = new GameNetInterface(theBindAddress, this);
 }
@@ -295,6 +297,7 @@ void ServerGame::removeClient(GameConnection *theConnection)
 
 void ServerGame::idle(U32 timeDelta)
 {
+   mCurrentTime += timeDelta;
    mNetInterface->checkIncomingPackets();
    Game::checkConnectionToMaster(timeDelta);
    for(S32 i = 0; i < mGameObjects.size(); i++)
@@ -361,6 +364,7 @@ extern void JoystickUpdateMove( Move *theMove );
 
 void ClientGame::idle(U32 timeDelta)
 {
+   mCurrentTime += timeDelta;
    mNetInterface->checkIncomingPackets();
 
    Game::checkConnectionToMaster(timeDelta);
@@ -559,7 +563,7 @@ void ClientGame::renderCommander()
       
       F32 colorFactor = zoomFrac * 0.35;
 
-      glColor3f(teamColor.r * colorFactor, teamColor.g * colorFactor, teamColor.b * colorFactor);
+      glColor(teamColor * colorFactor);
 
       for(S32 i = 0; i < renderObjects.size(); i++)
       {

@@ -83,6 +83,7 @@ class GameObject : public NetObject
    typedef NetObject Parent;
    Game *mGame;
    U32 mLastQueryId;
+   U32 mCreationTime;
    SafePtr<GameConnection> mControllingClient;
    SafePtr<GameConnection> mOwner;
    U32 mDisableCollisionCount;
@@ -106,6 +107,7 @@ public:
    Game *getGame() { return mGame; }
 
    void deleteObject(U32 deleteTimeInterval = 0);
+   U32 getCreationTime() { return mCreationTime; }
    bool isInDatabase() { return mInDatabase; }
    void setExtent(Rect &extentRect);
    Rect getExtent() { return extent; }
@@ -182,9 +184,6 @@ public:
    virtual void processArguments(S32 argc, const char**argv);
    void setScopeAlways();
 };
-
-extern void drawCircle(Point pos, F32 radius);
-extern void fillCircle(Point pos, F32 radius);
 
 };
 

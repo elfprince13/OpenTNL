@@ -29,6 +29,7 @@
 #include "gameLoader.h"
 #include "gameNetInterface.h"
 #include <math.h>
+#include "gameObjectRender.h"
 
 using namespace TNL;
 
@@ -220,7 +221,7 @@ void Barrier::render(U32 layerIndex)
    {
       Vector<Point> colPoly;
       getCollisionPoly(colPoly);
-      glColor3f(b.r, b.g, b.b);
+      glColor(b);
       glBegin(GL_POLYGON);
       for(S32 i = 0; i < colPoly.size(); i++)
          glVertex2f(colPoly[i].x, colPoly[i].y);
@@ -256,7 +257,7 @@ void Barrier::render(U32 layerIndex)
                clipRenderLinesToPoly(colPoly);
          }
       }
-      glColor3f(f.r, f.g, f.b);
+      glColor(f);
       glBegin(GL_LINES);
       for(S32 i = 0; i < mRenderLineSegments.size(); i++)
          glVertex2f(mRenderLineSegments[i].x, mRenderLineSegments[i].y);

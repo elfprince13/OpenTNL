@@ -29,6 +29,7 @@
 #include "sparkManager.h"
 #include "sfx.h"
 #include "gameObject.h"
+#include "gameObjectRender.h"
 
 #include "glutInclude.h"
 
@@ -258,7 +259,7 @@ void Projectile::render()
 
    ProjectileInfo *pi = gProjInfo + mType;
 
-   glColor3f(pi->projColors[0].r,pi->projColors[0].g,pi->projColors[0].b);
+   glColor(pi->projColors[0]);
    glPushMatrix();
    glTranslatef(pos.x, pos.y, 0);
    glScalef(pi->scaleFactor, pi->scaleFactor, 1);
@@ -280,7 +281,7 @@ void Projectile::render()
    glPopMatrix();
 
    glRotatef(180 - (mAliveTime % 360), 0, 0, 1);
-   glColor3f(pi->projColors[1].r,pi->projColors[1].g,pi->projColors[1].b);
+   glColor(pi->projColors[1]);
    glBegin(GL_LINE_LOOP);
    glVertex2f(-2, 2);
    glVertex2f(0, 8);

@@ -41,6 +41,7 @@ GameObject::GameObject()
    mObjectTypeMask = UnknownType;
    mDisableCollisionCount = 0;
    mInDatabase = false;
+   mCreationTime = 0;
 }
 
 void GameObject::setOwner(GameConnection *c)
@@ -248,6 +249,7 @@ void GameObject::addToGame(Game *theGame)
 {
    TNLAssert(mGame == NULL, "Error, already in a game.");
    theGame->addToGameObjectList(this);
+   mCreationTime = theGame->getCurrentTime();
    mGame = theGame;
    addToDatabase();
    onAddedToGame(theGame);
@@ -350,26 +352,6 @@ bool GameObject::onGhostAdd(GhostConnection *theConnection)
 {
    addToGame(gClientGame);
    return true;
-}
-
-void drawCircle(Point pos, F32 radius)
-{
-   glBegin(GL_LINE_LOOP);
-
-   for(F32 theta = 0; theta < 2 * 3.1415; theta += 0.2)
-      glVertex2f(pos.x + cos(theta) * radius, pos.y + sin(theta) * radius);
-
-   glEnd();
-}
-
-void fillCircle(Point pos, F32 radius)
-{
-   glBegin(GL_POLYGON);
-
-   for(F32 theta = 0; theta < 2 * 3.1415; theta += 0.2)
-      glVertex2f(pos.x + cos(theta) * radius, pos.y + sin(theta) * radius);
-
-   glEnd();
 }
 
 };

@@ -85,16 +85,18 @@ struct TeleporterEffect
 {
    Point pos;
    S32 time;
+   U32 type;
    TeleporterEffect *nextEffect;
 };
 
 TeleporterEffect *teleporterEffects = NULL;
 
-void emitTeleportInEffect(Point pos)
+void emitTeleportInEffect(Point pos, U32 type)
 {
    TeleporterEffect *e = new TeleporterEffect;
    e->pos = pos;
    e->time = 0;
+   e->type = type;
    e->nextEffect = teleporterEffects;
    teleporterEffects = e;
 }
@@ -159,7 +161,7 @@ void render()
          alpha = (1 - radius) / 0.5;
       glPushMatrix();
       glTranslatef(walk->pos.x, walk->pos.y, 0);
-      renderTeleporter(Teleporter::TeleportInExpandTime - walk->time, radius, Teleporter::TeleportInRadius, alpha);
+      renderTeleporter(walk->type, Teleporter::TeleportInExpandTime - walk->time, radius, Teleporter::TeleportInRadius, alpha);
       glPopMatrix();
    }
 }

@@ -54,18 +54,10 @@ Modules are special powers that can be activated by pressing the appropriate
 module activation key.  The modules in Zap, and their function are:
 
 1. Boost - Gives the ship a boost of speed
-2. Shield - Creates a defensive barrier around the ship that absorbs shots
+2. Shield - Creates a defensive barrier around the ship that reflects shots
 3. Repair - Repairs self and nearby teammates that are damaged
 4. Sensor - Boosts the screen visible distance of the player
 5. Cloak - Turns the ship invisible
-6. Engineer - Allows the ship to turn Resource items into base defense objects
-
-The Engineering bay allows the ship to pick up and use the white star
-"Resources".  Ships can only carry one resource at a time.  Using
-the engineering bay while carrying a resource will bring up a menu
-of items that can be built.  All constructed objects must be built
-on a wall of the level.
-
 
 Changes since version 1.2.2:
 ----------------------------

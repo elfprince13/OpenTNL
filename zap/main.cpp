@@ -99,7 +99,7 @@ ZapJournal gZapJournal;
 
 void reshape(int nw, int nh)
 {
-   gZapJournal.reshape(nw, nh);
+   gZapJournal.reshape(nw, nh); 
 }
 
 TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, reshape, (S32 newWidth, S32 newHeight))

@@ -337,6 +337,7 @@ void Ship::idle(GameObject::IdleCallPath path)
    if(path == GameObject::ClientIdleControlMain ||
       path == GameObject::ClientIdleMainRemote)
    {
+      mWarpInTimer.update(mCurrentMove.time);
       // Emit some particles, trail sections and update the turbo noise
       emitMovementSparks();
       for(U32 i=0; i<TrailCount; i++)
@@ -587,8 +588,9 @@ U32  Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *st
 {
    GameConnection *gameConnection = (GameConnection *) connection;
 
-   if(stream->writeFlag(updateMask & InitialMask))
+   if(isInitialUpdate())
    {
+      stream->writeFlag(getGame()->getCurrentTime() - getCreationTime() < 300);
       connection->packStringTableEntry(stream, mPlayerName);
       stream->write(mass);
       stream->writeRangedU32(mTeam + 1, 0, getGame()->getTeamCount());
@@ -622,6 +624,7 @@ U32  Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *st
    bool shouldWritePosition = (updateMask & InitialMask) || 
       gameConnection->getControlObject() != this;
 
+   stream->writeFlag(updateMask & WarpPositionMask);
    if(!shouldWritePosition)
    {
       stream->writeFlag(false);
@@ -634,7 +637,6 @@ U32  Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *st
       {
          gameConnection->writeCompressedPoint(mMoveState[RenderState].pos, stream);
          writeCompressedVelocity(mMoveState[RenderState].vel, BoostMaxVelocity + 1, stream);
-         stream->writeFlag(updateMask & WarpPositionMask);
       }
       if(stream->writeFlag(updateMask & MoveMask))
       {
@@ -651,13 +653,14 @@ U32  Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *st
 
 void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
 {
-   bool interpolate = false;
    bool positionChanged = false;
    bool wasInitialUpdate = false;
+   bool playSpawnEffect = false;
 
-   if(stream->readFlag())
+   if(isInitialUpdate())
    {
       wasInitialUpdate = true;
+      playSpawnEffect = stream->readFlag();
 
       mPlayerName = connection->unpackStringTableEntry(stream);
       GameType *g = gClientGame->getGameType();
@@ -686,13 +689,15 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
    }
 
    bool explode = stream->readFlag();
+   bool warp = stream->readFlag();
+   if(warp)
+      mWarpInTimer.reset(WarpFadeInTime);
 
    if(stream->readFlag())
    {
       ((GameConnection *) connection)->readCompressedPoint(mMoveState[ActualState].pos, stream);
       readCompressedVelocity(mMoveState[ActualState].vel, BoostMaxVelocity + 1, stream);
       positionChanged = true;
-      interpolate = !stream->readFlag();
    }
    if(stream->readFlag())
    {
@@ -720,7 +725,7 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
       mCurrentMove.time = (U32) connection->getOneWayTime();
       processMove(ActualState);
 
-      if(interpolate)
+      if(!warp)
       {
          mInterpolating = true;
          // if the actual velocity is in the direction of the actual position
@@ -742,6 +747,11 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
 
       if(!wasInitialUpdate)
          emitShipExplosion(mMoveState[ActualState].pos);
+   }
+   if(playSpawnEffect)
+   {
+      FXManager::emitTeleportInEffect(mMoveState[ActualState].pos, 1);
+      SFXObject::play(SFXTeleportIn, mMoveState[ActualState].pos, Point());
    }
 }
 
@@ -922,11 +932,13 @@ void Ship::emitMovementSparks()
 
    F32 sinTh = sin(th);
    F32 cosTh = cos(th);
+   F32 warpInScale = (WarpFadeInTime - mWarpInTimer.getCurrent()) / F32(WarpFadeInTime);
 
    for(S32 i=0; i<3; i++)
    {
       shipDirs[i].x = corners[i].x * cosTh + corners[i].y * sinTh;
       shipDirs[i].y = corners[i].y * cosTh - corners[i].x * sinTh;
+      shipDirs[i] *= warpInScale;
    }
 
    Point leftVec ( mMoveState[ActualState].vel.y, -mMoveState[ActualState].vel.x);
@@ -1054,27 +1066,6 @@ void Ship::render()
    else
       alpha = mCloakTimer.getFraction();
 
-   // Render name...
-   GameConnection *conn = gClientGame->getConnectionToServer();
-   if(conn && conn->getControlObject() != this)
-   {
-      static char buff[255];
-      sprintf(buff, "%s", mPlayerName.getString());
-
-      // Make it a nice pastel
-      glEnable(GL_BLEND);
-      glColor4f(1,1,1,0.5 * alpha);
-      //glColor3f(color.r*1.2,color.g*1.2,color.b*1.2);
-      UserInterface::drawString( U32( UserInterface::getStringWidth(14, buff) * -0.5), 30, 14, buff );
-      glDisable(GL_BLEND);
-   }
-   else
-   {
-      if(alpha < 0.25)
-         alpha = 0.25;
-   }
-   
-   // draw thrusters
    Point velDir(mCurrentMove.right - mCurrentMove.left, mCurrentMove.down - mCurrentMove.up);
    F32 len = velDir.len();
    F32 thrusts[4];
@@ -1114,7 +1105,24 @@ void Ship::render()
    // by the ship's angle, - 90 degrees
    glPushMatrix();
    glTranslatef(mMoveState[RenderState].pos.x, mMoveState[RenderState].pos.y, 0);
+   GameConnection *conn = gClientGame->getConnectionToServer();
+   if(conn && conn->getControlObject() != this)
+   {
+      const char *string = mPlayerName.getString();
+      glEnable(GL_BLEND);
+      glColor4f(1,1,1,0.5 * alpha);
+      UserInterface::drawString( U32( UserInterface::getStringWidth(14, string) * -0.5), 30, 14, string );
+      glDisable(GL_BLEND);
+   }
+   else
+   {
+      if(alpha < 0.25)
+         alpha = 0.25;
+   }
+   F32 warpInScale = (WarpFadeInTime - mWarpInTimer.getCurrent()) / F32(WarpFadeInTime);
+   
    glRotatef(radiansToDegrees(mMoveState[RenderState].angle) - 90, 0, 0, 1.0);
+   glScalef(warpInScale, warpInScale, 1);
    renderShip(color, alpha, thrusts, mHealth, mRadius, isCloakActive(), isShieldActive());
    glPopMatrix();
 
@@ -1132,14 +1140,7 @@ void Ship::render()
       for(S32 i = 0; i < mRepairTargets.size(); i++)
       {
          if(mRepairTargets[i].getPointer() == this)
-         {
-            glBegin(GL_LINE_LOOP);
-            for(F32 theta = 0; theta <= 2 * 3.1415; theta += 0.3)
-               glVertex2f(pos.x + cos(theta) * RepairDisplayRadius, 
-                          pos.y + sin(theta) * RepairDisplayRadius);
-            
-            glEnd();
-         }
+            drawCircle(pos, RepairDisplayRadius);
          else if(mRepairTargets[i])
          {
             glBegin(GL_LINES);

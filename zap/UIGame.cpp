@@ -38,6 +38,7 @@
 #include "glutInclude.h"
 #include <ctype.h>
 #include <stdio.h>
+#include "gameObjectRender.h"
 
 namespace Zap
 {
@@ -251,9 +252,7 @@ void GameUserInterface::renderMessageDisplay()
    {
       if(mDisplayMessage[i][0])
       {
-         glColor3f(mDisplayMessageColor[i].r, 
-                  mDisplayMessageColor[i].g,
-                  mDisplayMessageColor[i].b);
+         glColor(mDisplayMessageColor[i]);
 
          drawString(5, y, 20, mDisplayMessage[i]);
          y += 24;

@@ -38,7 +38,7 @@ namespace FXManager
    void emitSpark(Point pos, Point vel, Color color, F32 ttl=0);
    void emitExplosion(Point pos, F32 size, Color *colorArray, U32 numColors);
    void emitBurst(Point pos, Point scale, Color color1, Color color2);
-   void emitTeleportInEffect(Point pos);
+   void emitTeleportInEffect(Point pos, U32 type);
    void tick( F32 dT);
    void render();
 };
