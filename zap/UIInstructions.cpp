@@ -219,7 +219,7 @@ void InstructionsUserInterface::renderPage2()
                glLineWidth(3);
                glColor3f(1,0,0);
                drawCircle(Point(0,0), Ship::RepairDisplayRadius);
-               glLineWidth(1);
+               glLineWidth(DefaultLineWidth);
             }
             break;
          case 3:

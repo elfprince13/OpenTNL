@@ -689,6 +689,7 @@ int zapmain(int argc, char **argv)
       glLoadIdentity();
       glTranslatef(400, 300, 0);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glLineWidth(DefaultLineWidth);
 
       atexit(onExit);
 

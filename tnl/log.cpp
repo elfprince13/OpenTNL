@@ -103,6 +103,7 @@ void logprintf(const char *format, ...)
       walk->logString(buffer);
    va_end(s);
    Platform::outputDebugString(buffer);
+   Platform::outputDebugString("\n");
 }
 
 };

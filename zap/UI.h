@@ -34,6 +34,8 @@ using namespace TNL;
 namespace Zap
 {
 
+static const float DefaultLineWidth = 2.0f;
+
 class UserInterface
 {
 public:

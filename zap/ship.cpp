@@ -1168,7 +1168,7 @@ void Ship::render()
             glEnd();
          }
       }
-      glLineWidth(1);
+      glLineWidth(DefaultLineWidth);
    }
 }
 
