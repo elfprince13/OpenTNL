@@ -166,9 +166,8 @@ void Ship::damageObject(DamageInfo *theInfo)
 void Ship::processClientMove(Move *theMove, bool replay)
 {
    processMove(theMove, ActualState);
-   mMoveState[RenderState] = mMoveState[ActualState];
-
-   updateExtent();
+   //mMoveState[RenderState] = mMoveState[ActualState];
+   updateInterpolation(theMove->time);
    lastMove = *theMove;
 
    // Emit some particles
@@ -178,9 +177,15 @@ void Ship::processClientMove(Move *theMove, bool replay)
 
 void Ship::processClient(U32 deltaT)
 {
-   float timeDelta = deltaT * 1000.0f;
    lastMove.time = deltaT;
    processMove(&lastMove, ActualState);
+   updateInterpolation(deltaT);
+   // Emit some particles
+   emitMovementSparks();
+}
+
+void Ship::updateInterpolation(U32 deltaT)
+{
    mMoveState[RenderState].angle = mMoveState[ActualState].angle;
 
    if(interpTime)
@@ -238,9 +243,6 @@ interpDone:
       mMoveState[RenderState] = mMoveState[ActualState];
    }
    updateExtent();
-
-   // Emit some particles
-   emitMovementSparks();
 }
 
 void Ship::processServer(U32 deltaT)
@@ -273,6 +275,12 @@ void Ship::readControlState(BitStream *stream)
    stream->read(&mMoveState[ActualState].angle);
    stream->read(&mMoveState[ActualState].vel.x);
    stream->read(&mMoveState[ActualState].vel.y);
+
+   Point delta = mMoveState[ActualState].pos - mMoveState[RenderState].pos;
+   if(delta.len() > MaxControlObjectInterpDistance)
+      interpTime = 0;
+   else
+      interpTime = 1;
 }
 
 U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)

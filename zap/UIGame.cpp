@@ -253,6 +253,14 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
 {
    switch(buttonIndex)
    {
+      case 6:
+      {
+         mInScoreboardMode = true;
+         GameType *g = gClientGame->getGameType();
+         if(g)
+            g->c2sRequestScoreboardUpdates(true);
+         break;
+      }
       case 7:
          gClientGame->zoomCommanderMap();
          break;
@@ -261,7 +269,17 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
 
 void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
 {
-
+   switch(buttonIndex)
+   {
+      case 6:
+      {
+         mInScoreboardMode = false;
+         GameType *g = gClientGame->getGameType();
+         if(g)
+            g->c2sRequestScoreboardUpdates(false);
+         break;
+      }
+   }
 }
 
 void GameUserInterface::onKeyDown(U32 key)
@@ -361,6 +379,41 @@ void GameUserInterface::onKeyDown(U32 key)
    }
 }
 
+void GameUserInterface::onKeyUp(U32 key)
+{
+   if(mCurrentMode == PlayMode)
+   {
+      switch(toupper(key))
+      {
+         case '\t':
+         {
+            mInScoreboardMode = false;
+            GameType *g = gClientGame->getGameType();
+            if(g)
+               g->c2sRequestScoreboardUpdates(false);
+            break;
+         }
+         case 'W':
+            mCurrentMove.up = 0;
+            break;
+         case 'A':
+            mCurrentMove.left = 0;
+            break;
+         case 'S':
+            mCurrentMove.down = 0;
+            break;
+         case 'D':
+            mCurrentMove.right = 0;
+            break;
+      }
+   }
+   else if(mCurrentMode == ChatMode)
+   {
+
+
+   }
+}
+
 Move *GameUserInterface::getCurrentMove()
 {
    if(!OptionsMenuUserInterface::controlsRelative)
@@ -426,41 +479,6 @@ void GameUserInterface::issueChat()
          gt->c2sSendChat(mCurrentChatType == GlobalChat, mChatBuffer);
    }
    cancelChat();
-}
-
-void GameUserInterface::onKeyUp(U32 key)
-{
-   if(mCurrentMode == PlayMode)
-   {
-      switch(toupper(key))
-      {
-         case '\t':
-         {
-            mInScoreboardMode = false;
-            GameType *g = gClientGame->getGameType();
-            if(g)
-               g->c2sRequestScoreboardUpdates(false);
-            break;
-         }
-         case 'W':
-            mCurrentMove.up = 0;
-            break;
-         case 'A':
-            mCurrentMove.left = 0;
-            break;
-         case 'S':
-            mCurrentMove.down = 0;
-            break;
-         case 'D':
-            mCurrentMove.right = 0;
-            break;
-      }
-   }
-   else if(mCurrentMode == ChatMode)
-   {
-
-
-   }
 }
 
 };

@@ -33,7 +33,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="../glut/dxguid.lib ../glut/dinput8.lib ../glut/dinput.lib ../openal/OpenAL32.lib ../openal/alut.lib wsock32.lib ../glut/glut32.lib"
+				AdditionalDependencies="dxguid.lib dinput8.lib dinput.lib ../openal/OpenAL32.lib ../openal/alut.lib wsock32.lib ../glut/glut32.lib"
 				OutputFile="../exe/ZAPd.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="../lib"
@@ -70,6 +70,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
+				OptimizeForWindowsApplication="TRUE"
 				AdditionalIncludeDirectories="../tnl;../glut;../openal"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="4"
@@ -82,7 +83,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="../glut/dxguid.lib ../glut/dinput8.lib ../glut/dinput.lib ../openal/OpenAL32.lib ../openal/alut.lib wsock32.lib ../glut/glut32.lib"
+				AdditionalDependencies="dxguid.lib dinput8.lib dinput.lib ../openal/OpenAL32.lib ../openal/alut.lib wsock32.lib ../glut/glut32.lib"
 				OutputFile="../exe/ZAP.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"

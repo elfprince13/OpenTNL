@@ -39,7 +39,7 @@ namespace Zap
 BOOL CALLBACK EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance, VOID* pContext );
 
 LPDIRECTINPUT8 gDirectInput = NULL;
-LPDIRECTINPUTDEVICE8 gJoystick = NULL;     
+LPDIRECTINPUTDEVICE8 gJoystick = NULL;
 
 void InitController()
 {

@@ -386,43 +386,45 @@ void ClientGame::renderCommander()
    // Deal with rendering sensor volumes
 
    // get info about the current player
-   S32 playerId = gClientGame->getGameType()->findClientIndexByName(((Ship*)gClientGame->getConnectionToServer()->getControlObject())->mPlayerName);
-   S32 playerTeam = gClientGame->getGameType()->mClientList[playerId].teamId;
+   GameType *gt = gClientGame->getGameType();
+   GameObject *co = gClientGame->getConnectionToServer()->getControlObject();
 
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA);
-   glEnable(GL_BLEND);
-   glColor4f(0.1, 0.7, 0.2, 0.3 * zoomFrac);
-
-   for(S32 i = 0; i < renderObjects.size(); i++)
+   if(gt && co)
    {
-      // If it's a ship, add it to the list.
-      Ship * so = dynamic_cast<Ship*>(renderObjects[i]);
+      S32 playerId = gt->findClientIndexByName(((Ship *) co)->mPlayerName);
+      S32 playerTeam = gt->mClientList[playerId].teamId;
+      Color teamColor = gt->mTeams[playerTeam].color;
+      
+      F32 colorFactor = zoomFrac * 0.35;
 
-      if(so)
+      glColor3f(teamColor.r * colorFactor, teamColor.g * colorFactor, teamColor.b * colorFactor);
+
+      for(S32 i = 0; i < renderObjects.size(); i++)
       {
-          // Get team of this object.
-          S32 ourClientId = gClientGame->getGameType()->findClientIndexByName(so->mPlayerName);
-          S32 ourTeam     = gClientGame->getGameType()->mClientList[ourClientId].teamId;
+         // If it's a ship, add it to the list.
 
-          if(ourTeam == playerTeam)
-          {
-             glPushMatrix();
-             glTranslatef(so->getRenderPos().x, so->getRenderPos().y, 0);
+         if(renderObjects[i]->getObjectTypeMask() & ShipType)
+         {
+            Ship * so = (Ship*)(renderObjects[i]);
+            // Get team of this object.
+            S32 ourClientId = gClientGame->getGameType()->findClientIndexByName(so->mPlayerName);
+            S32 ourTeam     = gClientGame->getGameType()->mClientList[ourClientId].teamId;
 
-             glBegin(GL_TRIANGLE_FAN);
-             glVertex2f(0,0);
+            if(ourTeam == playerTeam)
+            {
+               Point p = so->getRenderPos();
+               
+               glBegin(GL_POLYGON);
+               glVertex2f(p.x - PlayerHorizScopeDistance, p.y - PlayerVertScopeDistance);
+               glVertex2f(p.x + PlayerHorizScopeDistance, p.y - PlayerVertScopeDistance);
+               glVertex2f(p.x + PlayerHorizScopeDistance, p.y + PlayerVertScopeDistance);
+               glVertex2f(p.x - PlayerHorizScopeDistance, p.y + PlayerVertScopeDistance);
+               glEnd();
 
-             for(F32 th=0; th<6.5f; th+=.2f)
-                   glVertex2f(sin(th) * 325, cos(th) * 325);
-
-             glEnd();
-
-             glPopMatrix();
-          }
+            }
+         }
       }
    }
-
-   glDisable(GL_BLEND);
 
    for(S32 i = 0; i < renderObjects.size(); i++)
    {

@@ -54,6 +54,7 @@ public:
       KillDeleteDelay = 1500,
       ExplosionFadeTime = 300,
       FireDelay = 100,
+      MaxControlObjectInterpDistance = 200,
    };
 
    enum MaskBits {
@@ -92,6 +93,7 @@ public:
    void processClientMove(Move *theMove, bool replay);
    void processServer(U32 deltaT);
    void processClient(U32 deltaT);
+   void updateInterpolation(U32 deltaT);
 
    void setActualPos(Point p);
 
