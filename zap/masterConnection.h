@@ -47,6 +47,7 @@ public:
       mIsGameServer = isGameServer;
       mCurrentQueryId = 0;
       setIsConnectionToServer();
+      setIsAdaptive();
    }
 
    void startGameTypesQuery();

@@ -72,7 +72,7 @@
 				Name="VCCLCompilerTool"
 				OptimizeForWindowsApplication="TRUE"
 				AdditionalIncludeDirectories="../tnl;../glut;../openal"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;TNL_ENABLE_LOGGING"
 				RuntimeLibrary="4"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"

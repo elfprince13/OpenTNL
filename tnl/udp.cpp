@@ -190,7 +190,7 @@ static void SocketToTNLAddress(const SOCKADDR *sockAddr, Address *address)
 
 Socket::Socket(const Address &bindAddress, U32 sendBufferSize, U32 recvBufferSize, bool acceptsBroadcast, bool nonblockingIO)
 {
-   TNL_JOURNAL_READ_BLOCK(
+   TNL_JOURNAL_READ_BLOCK(1001,
          TNL_JOURNAL_READ( (&mPlatformSocket) );
       return;
    )
@@ -270,16 +270,18 @@ Socket::Socket(const Address &bindAddress, U32 sendBufferSize, U32 recvBufferSiz
          mPlatformSocket = INVALID_SOCKET;
       }
    }
-   TNL_JOURNAL_WRITE_BLOCK(
+   TNL_JOURNAL_WRITE_BLOCK(1001,
       TNL_JOURNAL_WRITE( (mPlatformSocket) );
    )
 }
 
 Socket::~Socket()
 {
-   TNL_JOURNAL_READ_BLOCK(
+   TNL_JOURNAL_READ_BLOCK(1002,
       return;
    )
+
+   TNL_JOURNAL_WRITE_BLOCK(1002, ;)
 
    if(mPlatformSocket != INVALID_SOCKET)
       closesocket(mPlatformSocket);
@@ -288,8 +290,11 @@ Socket::~Socket()
 
 NetError Socket::sendto(const Address &address, const U8 *buffer, S32 bufferSize)
 {
-   TNL_JOURNAL_READ_BLOCK(
+   TNL_JOURNAL_READ_BLOCK(1003,
       return NoError;
+   )
+
+   TNL_JOURNAL_WRITE_BLOCK(1003, ;
    )
 
    if(address.transport != mTransportProtocol)
@@ -308,7 +313,7 @@ NetError Socket::sendto(const Address &address, const U8 *buffer, S32 bufferSize
 
 NetError Socket::recvfrom(Address *address, U8 *buffer, S32 bufferSize, S32 *outSize)
 {
-   TNL_JOURNAL_READ_BLOCK(
+   TNL_JOURNAL_READ_BLOCK(1004,
       bool wouldBlock;
       TNL_JOURNAL_READ( (&wouldBlock) );
       if(wouldBlock)
@@ -332,7 +337,7 @@ NetError Socket::recvfrom(Address *address, U8 *buffer, S32 bufferSize, S32 *out
    bytesRead = ::recvfrom(mPlatformSocket, (char *) buffer, bufferSize, 0, &sa, &addrLen);
    if(bytesRead == SOCKET_ERROR)
    {
-      TNL_JOURNAL_WRITE_BLOCK(
+      TNL_JOURNAL_WRITE_BLOCK(1004,
          TNL_JOURNAL_WRITE ( (true) );
       )
       return WouldBlock;
@@ -342,7 +347,7 @@ NetError Socket::recvfrom(Address *address, U8 *buffer, S32 bufferSize, S32 *out
 
    *outSize = bytesRead;
 
-   TNL_JOURNAL_WRITE_BLOCK(
+   TNL_JOURNAL_WRITE_BLOCK(1004,
       TNL_JOURNAL_WRITE( (false) );
       TNL_JOURNAL_WRITE( (address->transport) );
       TNL_JOURNAL_WRITE( (address->port) );

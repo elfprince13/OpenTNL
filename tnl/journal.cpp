@@ -26,6 +26,7 @@
 
 #include "tnlJournal.h"
 #include "tnlEndian.h"
+#include "tnlLog.h"
 
 namespace TNL
 {
@@ -34,12 +35,15 @@ Vector<JournalEntryRecord *> *JournalEntryRecord::mEntryVector;
 
 bool Journal::mInsideEntrypoint = false;
 Journal::Mode Journal::mCurrentMode = Journal::Inactive;
+U32 Journal::mReadBreakBitPos = 0;
 
 FILE *Journal::mJournalFile = NULL;
 BitStream Journal::mWriteStream;
 BitStream Journal::mReadStream;
 Journal *Journal::mJournal = NULL;
 U32 Journal::mWritePosition = 0;
+U32 Journal::mBreakBlockIndex = 0;
+U32 Journal::mBlockIndex = 0;
 
 JournalEntryRecord::JournalEntryRecord(const char *functionName, MethodArgList *methodArgList)
 {
@@ -140,6 +144,10 @@ void Journal::load(const char *fileName)
    fread(mReadStream.getBuffer(), 1, fileSize, theJournal);
    mReadStream.read(&bitCount);
    mReadStream.setMaxBitSizes(bitCount);
+
+   if(!mReadBreakBitPos || mReadBreakBitPos > bitCount)
+      mReadBreakBitPos = bitCount;
+
    fclose(theJournal);
    mCurrentMode = Playback;
 }
@@ -162,8 +170,14 @@ void Journal::callEntry(const char *funcName, MarshalledCall *theCall)
 
    if(mCurrentMode == Record)
    {
+#ifdef TNL_ENABLE_BIG_JOURNALS
+      TNL_JOURNAL_WRITE( (U16(0x1234)) );
+#endif
       mWriteStream.writeRangedU32(entryIndex, 0, JournalEntryRecord::mEntryVector->size() - 1);
       mWriteStream.writeBits(theCall->marshalledData.getBitPosition(), theCall->marshalledData.getBuffer());
+#ifdef TNL_ENABLE_BIG_JOURNALS
+      TNL_JOURNAL_WRITE( (U16(0x5678)) );
+#endif
       syncWriteStream();
    }
 
@@ -179,14 +193,71 @@ void Journal::callEntry(const char *funcName, MarshalledCall *theCall)
 
 void Journal::checkReadPosition()
 {
-   if(!mReadStream.isValid() || mReadStream.getBitPosition() == mReadStream.getMaxReadBitPosition())
+   if(!mReadStream.isValid() || mReadStream.getBitPosition() >= mReadBreakBitPos)
       TNL_DEBUGBREAK();
+}
+
+void Journal::beginBlock(U32 blockId, bool writeBlock)
+{
+   if(writeBlock)
+   {
+#ifdef TNL_ENABLE_BIG_JOURNALS
+      TNL_JOURNAL_WRITE( (U16(0x1234 ^ blockId)) );
+#endif
+   }
+   else
+   {
+      mBlockIndex++;
+      if(mBreakBlockIndex && mBlockIndex >= mBreakBlockIndex)
+         TNL_DEBUGBREAK();
+
+#ifdef TNL_ENABLE_BIG_JOURNALS
+      U16 startToken;
+      TNL_JOURNAL_READ( (&startToken) );
+      if((startToken ^ 0x1234) != blockId)
+      {
+         logprintf("Expected token %d - got %d", blockId, startToken ^ 0x1234);
+         TNL_DEBUGBREAK();
+      }
+#endif
+   }
+}
+
+void Journal::endBlock(U32 blockId, bool writeBlock)
+{
+   if(writeBlock)
+   {
+#ifdef TNL_ENABLE_BIG_JOURNALS
+      TNL_JOURNAL_WRITE( (U16(0x5678 ^ blockId)) );
+#endif
+      syncWriteStream();
+   }
+   else
+   {
+#ifdef TNL_ENABLE_BIG_JOURNALS
+      U16 endToken;
+      TNL_JOURNAL_READ( (&endToken) );
+      if((endToken ^ 0x5678) != blockId)
+      {
+         logprintf("Expected token %d - got %d", blockId, endToken ^ 0x5678);
+         TNL_DEBUGBREAK();
+      }
+#endif
+      checkReadPosition();
+   }
 }
 
 void Journal::processNextJournalEntry()
 {
    if(mCurrentMode != Playback)
       return;
+
+#ifdef TNL_ENABLE_BIG_JOURNALS
+   U16 token;
+   TNL_JOURNAL_READ( (&token) );
+   if(token != 0x1234)
+      TNL_DEBUGBREAK();
+#endif
 
    U32 index = mReadStream.readRangedU32(0, JournalEntryRecord::mEntryVector->size());
 
@@ -202,6 +273,13 @@ void Journal::processNextJournalEntry()
    theEntry->getFuncPtr(p);
    MarshalledCall theCall(theEntry->mMethodArgList);
    theCall.unmarshall(&mReadStream);
+
+#ifdef TNL_ENABLE_BIG_JOURNALS
+   TNL_JOURNAL_READ( (&token) );
+   if(token != 0x5678)
+      TNL_DEBUGBREAK();
+#endif
+
    checkReadPosition();
 
    mInsideEntrypoint = true;

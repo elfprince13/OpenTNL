@@ -56,6 +56,9 @@ U32 gJoystickType = 0;
 
 const char *gMasterAddressString = "IP:master.opentnl.org:29005";
 Address gMasterAddress;
+Address gConnectAddress;
+Address gBindAddress(IPProtocol, Address::Any, 28000);
+
 const char *gLevelList = "level4.txt level2.txt level1.txt level2.txt level3.txt level2.txt";
 
 class ZapJournal : public Journal
@@ -71,6 +74,7 @@ public:
    TNL_DECLARE_JOURNAL_ENTRYPOINT(specialkeyup, (S32 key));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(idle, (U32 timeDelta));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(display, ());
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(startup, (bool hasClient, bool hasServer, bool connectLocal, bool connectRemote, bool nameSet));
 };
 
 ZapJournal gZapJournal;
@@ -263,7 +267,7 @@ class StdoutLogConsumer : public LogConsumer
 public:
    void logString(const char *string)
    {
-      printf("%s\r\n", string);
+      printf("%s\n", string);
    }
 } gStdoutLogConsumer;
 
@@ -287,7 +291,10 @@ public:
    void logString(const char *string)
    {
       if(f)
-         fprintf(f, "%s\r\n", string);
+      {
+         fprintf(f, "%s\n", string);
+         fflush(f);
+      }
    }
 } gFileLogConsumer;
 
@@ -347,22 +354,43 @@ void onExit()
 
 extern void InitController();
 
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (bool hasClient, bool hasServer, bool connectLocal, bool connectRemote, bool nameSet))
+{
+   if(hasClient)
+      gClientGame = new ClientGame(Address());
+
+   if(hasServer)
+      hostGame(hasClient == false, gBindAddress);
+   else if(connectRemote)
+      joinGame(gConnectAddress, false);
+
+   if(!connectLocal && !connectRemote)
+   {
+      if(!nameSet)
+         gNameEntryUserInterface.activate();
+      else
+         gMainMenuUserInterface.activate();
+   }
+}
+
 };
 
 using namespace Zap;
 
 int main(int argc, char **argv)
 {
+   //TNLLogEnable(LogConnectionProtocol, true);
+   //TNLLogEnable(LogNetConnection, true);
    TNLLogEnable(LogNetInterface, true);
    TNLLogEnable(LogPlatform, true);
+   //TNLLogEnable(LogBlah, true);
+
    bool hasClient = true;
    bool hasServer = false;
    bool connectLocal = false;
    bool connectRemote = false;
    bool nameSet = false;
 
-   Address connectAddress;
-   Address bindAddress(IPProtocol, Address::Any, 28000);
    U32 maxPlayers = 128;
 
    for(S32 i = 1; i < argc;i+=2)
@@ -374,13 +402,13 @@ int main(int argc, char **argv)
          hasServer = true;
          connectLocal = true;
          if(hasAdditionalArg)
-            bindAddress.set(argv[i+1]);
+            gBindAddress.set(argv[i+1]);
       }
       else if(!stricmp(argv[i], "-connect"))
       {
          connectRemote = true;
          if(hasAdditionalArg)
-            connectAddress.set(argv[i+1]);
+            gConnectAddress.set(argv[i+1]);
       }
       else if(!stricmp(argv[i], "-master"))
       {
@@ -413,7 +441,7 @@ int main(int argc, char **argv)
          hasClient = false;
          hasServer = true;
          if(hasAdditionalArg)
-            bindAddress.set(argv[i+1]);
+            gBindAddress.set(argv[i+1]);
       }
       else if(!stricmp(argv[i], "-name"))
       {
@@ -440,22 +468,8 @@ int main(int argc, char **argv)
       }
    }
    gMasterAddress.set(gMasterAddressString);
+   gZapJournal.startup(hasClient, hasServer, connectLocal, connectRemote, nameSet);
 
-   if(hasClient)
-      gClientGame = new ClientGame(Address());
-
-   if(hasServer)
-      hostGame(hasClient == false, bindAddress);
-   else if(connectRemote)
-      joinGame(connectAddress, false);
-
-   if(!connectLocal && !connectRemote)
-   {
-      if(!nameSet)
-         gNameEntryUserInterface.activate();
-      else
-         gMainMenuUserInterface.activate();
-   }
    if(hasClient)
    {
       SFXObject::init();
@@ -486,12 +500,10 @@ int main(int argc, char **argv)
       glTranslatef(400, 300, 0);
 
       atexit(endGame);
+
       glutMainLoop();
    }
    else
-   {
       dedicatedServerLoop();
-   }
    return 0;
 }
-

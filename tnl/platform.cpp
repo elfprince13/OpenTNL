@@ -142,7 +142,7 @@ U32 Platform::getRealMilliseconds()
 {
    U32 tickCount;
    TNL_JOURNAL_READ_BLOCK
-   (
+   ( 2001,
       TNL_JOURNAL_READ( (&tickCount) );
       return tickCount;
    )
@@ -150,7 +150,7 @@ U32 Platform::getRealMilliseconds()
    tickCount = GetTickCount();
 
    TNL_JOURNAL_WRITE_BLOCK
-   (
+   ( 2001,
       TNL_JOURNAL_WRITE( (tickCount) );
    )
    return tickCount;
@@ -196,7 +196,7 @@ S64 Platform::getHighPrecisionTimerValue()
 {
    S64 currentTime;
    TNL_JOURNAL_READ_BLOCK
-   (
+   ( 2003,
       TNL_JOURNAL_READ( (&currentTime) );
       return currentTime;
    )
@@ -204,7 +204,7 @@ S64 Platform::getHighPrecisionTimerValue()
    currentTime = gTimer.getCurrentTime();
 
    TNL_JOURNAL_WRITE_BLOCK
-   (
+   ( 2003,
       TNL_JOURNAL_WRITE( (currentTime) );
    )
 
@@ -215,7 +215,7 @@ F64 Platform::getHighPrecisionMilliseconds(S64 timerDelta)
 {
    F64 timerValue;
    TNL_JOURNAL_READ_BLOCK
-   (
+   ( 2002,
       TNL_JOURNAL_READ( (&timerValue) );
       return timerValue;
    )
@@ -223,7 +223,7 @@ F64 Platform::getHighPrecisionMilliseconds(S64 timerDelta)
    timerValue = gTimer.convertToMS(timerDelta);
 
    TNL_JOURNAL_WRITE_BLOCK
-   (
+   ( 2002,
       TNL_JOURNAL_WRITE( (timerValue) );
    )
 

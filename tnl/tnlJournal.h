@@ -31,7 +31,7 @@
 #include <stdio.h>
 
 #define TNL_ENABLE_JOURNALING
-
+//#define TNL_ENABLE_BIG_JOURNALS
 namespace TNL
 {
 
@@ -47,6 +47,9 @@ class Journal : public Object
    static BitStream mWriteStream;
    static Journal *mJournal;
    static U32 mWritePosition;
+   static U32 mReadBreakBitPos;
+   static U32 mBreakBlockIndex;
+   static U32 mBlockIndex;
 public:
    enum Mode
    {
@@ -57,6 +60,8 @@ public:
 protected:
    static Mode mCurrentMode;
    static bool mInsideEntrypoint;
+   static void checkReadPosition();
+   static void syncWriteStream();
 public:
    Journal();
    void record(const char *fileName);
@@ -67,11 +72,12 @@ public:
 
    static Mode getCurrentMode() { return mCurrentMode; }
    static Journal *get() { return mJournal; }
-   static void checkReadPosition();
-   static void syncWriteStream();
    static BitStream *getReadStream() { return &mReadStream; }
    static BitStream *getWriteStream() { return &mWriteStream; }
    static bool isInEntrypoint() { return mInsideEntrypoint; }
+
+   static void beginBlock(U32 blockId, bool writeBlock);
+   static void endBlock(U32 blockId, bool writeBlock);
 };
 
 struct JournalEntryRecord
@@ -112,29 +118,40 @@ struct JournalEntryRecord
       } \
       void FN_CDECL className::func##_body args
 
-#define TNL_JOURNAL_WRITE_BLOCK(x) \
-{ \
-   if(TNL::Journal::getCurrentMode() == TNL::Journal::Record && TNL::Journal::isInEntrypoint()) \
-   { \
-   x \
-   } \
-   TNL::Journal::syncWriteStream(); \
-}
-
-class JournalReadChecker
+class JournalToken
 {
+   bool mWriting;
+   U32 mBlockType;
 public:
-   ~JournalReadChecker()
+   JournalToken(U32 blockType, bool writing)
    {
-      TNL::Journal::checkReadPosition();
+      mWriting = writing;
+      mBlockType = blockType;
+      TNL::Journal::beginBlock(mBlockType, mWriting);
+   }
+
+   ~JournalToken()
+   {
+      TNL::Journal::endBlock(mBlockType, mWriting);
    }
 };
 
-#define TNL_JOURNAL_READ_BLOCK(x) \
+#define TNL_JOURNAL_WRITE_BLOCK(blockType, x) \
 { \
-   if(TNL::Journal::isInEntrypoint()) { \
-      TNL::JournalReadChecker dummy; \
-      if(TNL::Journal::getCurrentMode() == TNL::Journal::Playback) \
+   if(TNL::Journal::getCurrentMode() == TNL::Journal::Record && TNL::Journal::isInEntrypoint()) \
+   { \
+      TNL::JournalToken dummy(blockType, true); \
+      { \
+      x \
+      } \
+   } \
+}
+
+#define TNL_JOURNAL_READ_BLOCK(blockType, x) \
+{ \
+   if(TNL::Journal::getCurrentMode() == TNL::Journal::Playback && TNL::Journal::isInEntrypoint()) \
+   { \
+      TNL::JournalToken dummy(blockType, false); \
       { \
       x \
       } \

@@ -205,7 +205,7 @@ void NetConnection::writeRawPacket(BitStream *bstream, NetPacketType packetType)
          mNotifyQueueTail->nextPacket = note;
       mNotifyQueueTail = note;
       note->nextPacket = NULL;
-      note->sendTime = mLastUpdateTime;
+      note->sendTime = Platform::getRealMilliseconds();
 
       writePacketRateInfo(bstream, note);
       S32 start = bstream->getBitPosition();
@@ -244,6 +244,9 @@ void NetConnection::readRawPacket(BitStream *bstream)
 
 void NetConnection::writePacketHeader(BitStream *stream, NetPacketType packetType)
 {
+   if(windowFull() && packetType == DataPacket)
+      TNL_DEBUGBREAK();
+
    S32 ackByteCount = ((mLastSeqRecvd - mLastRecvAckAck + 7) >> 3);
    TNLAssert(ackByteCount <= MaxAckByteCount, "ackByteCount exceeds MaxAckByteCount!");
    
@@ -276,6 +279,12 @@ void NetConnection::writePacketHeader(BitStream *stream, NetPacketType packetTyp
 
    if(packetType == DataPacket)
       mLastSeqRecvdAtSend[mLastSendSeq & PacketWindowMask] = mLastSeqRecvd;
+
+   //if(isNetworkConnection())
+   //{
+   //   TNLLogMessageV(LogBlah, ("SND: mLSQ: %08x  pkLS: %08x  pt: %d abc: %d",
+   //      mLastSendSeq, mLastSeqRecvd, packetType, ackByteCount));
+   //}
 
    TNLLogMessageV(LogConnectionProtocol, ("build hdr %d %d", mLastSendSeq, packetType));
 }
@@ -346,7 +355,7 @@ bool NetConnection::readPacketHeader(BitStream *pstream)
       // packet, discard.
       return false;
    }
-
+   
    if(!mSymmetricCipher.isNull())
    {
       mSymmetricCipher->setupCounter(pkSequenceNumber, pkHighestAck, pkPacketType, 0);
@@ -358,12 +367,18 @@ bool NetConnection::readPacketHeader(BitStream *pstream)
    if(pkAckByteCount > MaxAckByteCount || pkPacketType >= InvalidPacketType)
       return false;
          
-   U32 pkAckMask[MaxAckByteCount];
+   U32 pkAckMask[MaxAckMaskSize];
    U32 pkAckWordCount = (pkAckByteCount + 3) >> 2;
 
    for(U32 i = 0; i < pkAckWordCount; i++)
       pkAckMask[i] = pstream->readInt(i == pkAckWordCount - 1 ? 
             (pkAckByteCount - (i * 4)) * 8 : 32);
+
+   //if(isNetworkConnection())
+   //{
+   //   TNLLogMessageV(LogBlah, ("RCV: mHA: %08x  pkHA: %08x  mLSQ: %08x  pkSN: %08x  pkLS: %08x  pkAM: %08x",
+   //      mHighestAckedSeq, pkHighestAck, mLastSendSeq, pkSequenceNumber, mLastSeqRecvd, pkAckMask[0]));
+   //}
 
    U32 pkSendDelay = (pstream->readInt(8) << 3) + 4;
 
@@ -559,7 +574,7 @@ void NetConnection::handleNotify(U32 sequence, bool recvd)
          } else {
             // We are in normal state..
             if(cwnd < MaxPacketWindowSize-2)
-               cwnd += (1 < 1/cwnd) ? 1 : (1/cwnd); 
+               cwnd += 1/cwnd;
 
             TNLLogMessageV(LogNetConnection, ("PKT   OK - ssthresh = %f     cwnd=%f", ssthresh, cwnd));
 
@@ -636,8 +651,8 @@ void NetConnection::checkPacketSend(bool force, U32 curTime)
             mLastAckTime = curTime;
             sendAckPacket();
          }
-         return;
       }
+      return;
    }
    PacketStream stream(mCurrentPacketSendSize);
    mLastUpdateTime = curTime;
@@ -649,10 +664,11 @@ void NetConnection::checkPacketSend(bool force, U32 curTime)
 
 bool NetConnection::windowFull()
 {
+   if(mLastSendSeq - mHighestAckedSeq >= (MaxPacketWindowSize - 2))
+      return true;
    if(isAdaptive())
-      return mLastSendSeq - mHighestAckedSeq >= cwnd;   
-   else
-      return mLastSendSeq - mHighestAckedSeq >= (MaxPacketWindowSize - 2);
+      return mLastSendSeq - mHighestAckedSeq >= cwnd;
+   return false;
 }
 
 NetError NetConnection::sendPacket(BitStream *stream)
