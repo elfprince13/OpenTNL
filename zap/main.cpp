@@ -50,6 +50,7 @@ bool gIsServer = false;
 const char *gHostName = "ZAP Game";
 const char *gWindowTitle = "ZAP II - The Return";
 U32 gMaxPlayers = 128;
+
 const char *gMasterAddressString = "IP:master.opentnl.org:29005";
 Address gMasterAddress;
 const char *gLevelList = "level1.txt level3.txt";

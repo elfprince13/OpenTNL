@@ -97,6 +97,7 @@ public:
 
    F32 getUpdatePriority(NetObject *scopeObject, U32 updateMask, S32 updateSkips);
 
+   virtual S32 getRenderSortValue() { return 0; }
    virtual void render();
 
    virtual bool getCollisionPoly(Vector<Point> &polyPoints);

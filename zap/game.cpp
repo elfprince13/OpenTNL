@@ -196,6 +196,9 @@ void ServerGame::setLevelList(const char *levelList)
 
 void ServerGame::cycleLevel()
 {
+   // delete any objects on the delete list:
+   processDeleteList(0xFFFFFFFF);
+
    // delete any objects that may exist
    while(mGameObjects.size())
       delete mGameObjects[0];
@@ -212,10 +215,21 @@ void ServerGame::cycleLevel()
       GameType *g = new GameType;
       g->addToGame(this);
    }
+   Vector<GameConnection *> connectionList;
+
    for(GameConnection *walk = GameConnection::gClientList.mNext; walk != &GameConnection::gClientList; walk = walk->mNext)
+      connectionList.push_back(walk);
+
+   // now add the connections to the game type, in a random order
+   while(connectionList.size())
    {
-      addClient(walk);
-      walk->activateGhosting();
+      U32 index = Random::readI() % connectionList.size();
+      GameConnection *gc = connectionList[index];
+      connectionList.erase(index);
+
+      if(mGameType.isValid())
+         mGameType->serverAddClient(gc);
+      gc->activateGhosting();
    }
 }
 
@@ -254,12 +268,14 @@ void ServerGame::addClient(GameConnection *theConnection)
 {
    if(mGameType.isValid())
       mGameType->serverAddClient(theConnection);
+   mPlayerCount++;
 }
 
 void ServerGame::removeClient(GameConnection *theConnection)
 {
    if(mGameType.isValid())
       mGameType->serverRemoveClient(theConnection);
+   mPlayerCount--;
 }
 
 void ServerGame::idle(U32 timeDelta)
@@ -430,7 +446,10 @@ void ClientGame::drawStars(F32 alphaFrac, Point cameraPos, Point visibleExtent)
    glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-
+S32 QSORT_CALLBACK renderSortCompare(GameObject **a, GameObject **b)
+{
+   return (*a)->getRenderSortValue() - (*b)->getRenderSortValue();
+}
 
 void ClientGame::renderCommander()
 {
@@ -514,12 +533,10 @@ void ClientGame::renderCommander()
       }
    }
 
-   for(S32 i = 0; i < renderObjects.size(); i++)
-   {
-      renderObjects[i]->render();
-   }
+   renderObjects.sort(renderSortCompare);
 
-   //SparkManager::render();
+   for(S32 i = 0; i < renderObjects.size(); i++)
+      renderObjects[i]->render();
 
    glPopMatrix();
 }
@@ -544,6 +561,8 @@ void ClientGame::renderNormal()
    Point screenSize(PlayerHorizVisDistance, PlayerVertVisDistance);
    Rect extentRect(position - screenSize, position + screenSize);
    mDatabase.findObjects(AllObjectTypes, renderObjects, extentRect);
+
+   renderObjects.sort(renderSortCompare);
 
    for(S32 i = 0; i < renderObjects.size(); i++)
       renderObjects[i]->render();

@@ -206,6 +206,13 @@ bool GameConnection::readConnectRequest(BitStream *stream, const char **errorStr
 {
    if(!Parent::readConnectRequest(stream, errorString))
       return false;
+
+   if(gServerGame->isFull())
+   {
+      *errorString = "Server Full.";
+      return false;
+   }
+
    char buf[256];
    
    stream->readString(buf);
@@ -263,6 +270,11 @@ void GameConnection::onConnectionTerminated(const char *reason)
    {
       gServerGame->removeClient(this);
    }
+}
+
+void GameConnection::onConnectionRejected(const char *reason)
+{
+   gMainMenuUserInterface.activate();
 }
 
 void GameConnection::onDisconnect(const char *reason)

@@ -158,6 +158,7 @@ public:
    U32 getPlayerCount() { return mPlayerCount; }
    U32 getMaxPlayers() { return mMaxPlayers; }
    const char *getHostName() { return mHostName; }
+   bool isFull() { return mPlayerCount == mMaxPlayers; }
 
    void addClient(GameConnection *theConnection);
    void removeClient(GameConnection *theConnection);

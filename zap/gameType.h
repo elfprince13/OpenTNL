@@ -45,7 +45,7 @@ public:
    {
       StringTableEntry name;  /// Name of client - guaranteed to be unique of current clients
       S32 teamId;
-      U32 score;
+      S32 score;
       Timer respawnTimer;
 
       bool wantsScoreboardUpdates;
@@ -118,8 +118,10 @@ public:
    virtual void addClientGameMenuOptions(Vector<const char *> &menuOptions);
    virtual void processClientGameMenuOption(U32 index);
 
-   virtual void renderInterfaceOverlay(bool scoreboardVisible) {};
+   virtual void renderInterfaceOverlay(bool scoreboardVisible);
    virtual void updateClientScoreboard(S32 clientIndex);
+
+   virtual void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);
 
    TNL_DECLARE_RPC(s2cAddTeam, (StringTableEntry teamName, F32 r, F32 g, F32 b));
    TNL_DECLARE_RPC(s2cSetTeamScore, (U32 teamIndex, U32 score));

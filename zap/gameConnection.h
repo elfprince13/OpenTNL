@@ -216,6 +216,7 @@ public:
    /// Adds this connection to the doubly linked list of clients.
    void onConnectionEstablished(bool isInitiator);
 
+   void onConnectionRejected(const char *reason);
    void onDisconnect(const char *reason);
    void onTimedOut();
    void onConnectionTerminated(const char *reason);

@@ -525,45 +525,10 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
 
 static Vector<GameObject *> fillVector;
 
-void Ship::performInnerScopeQuery(GhostConnection *connection)
-{
-   Rect queryRect(mMoveState[ActualState].pos, mMoveState[ActualState].pos);
-   queryRect.expand(Point(Game::PlayerHorizScopeDistance, Game::PlayerVertScopeDistance));
-
-
-   fillVector.clear();
-   findObjects(AllObjectTypes, fillVector, queryRect);
-
-   for(S32 i = 0; i < fillVector.size(); i++)
-      connection->objectInScope(fillVector[i]);
-}
-
 void Ship::performScopeQuery(GhostConnection *connection)
 {
-   GameConnection *g = dynamic_cast<GameConnection*>(connection);
-
-   if(g && g->mInCommanderMap)
-   {
-      GameType *gt = gServerGame->getGameType();
-
-      S32 teamId = gt->mClientList[gt->findClientIndexByConnection(g)].teamId;
-
-      // Scope for all ships on our team.
-      for(S32 i=0; i<gt->mClientList.size(); i++)
-      {
-         if(gt->mClientList[i].teamId == teamId)
-         {
-            Ship *co = dynamic_cast<Ship*>(gt->mClientList[i].clientConnection->getControlObject());
-            if(co)
-               co->performInnerScopeQuery(connection);
-         }
-      }
-   }
-   else
-   {
-      // Just scope for the current ship...
-      performInnerScopeQuery(connection);
-   }
+   GameType *gt = gServerGame->getGameType();
+   gt->performProxyScopeQuery(this, (GameConnection *) connection);
 }
 
 F32 getAngleDiff(F32 a, F32 b)

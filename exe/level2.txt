@@ -2,7 +2,7 @@
 
 GridSize 128
 
-GameType 8 2 8 14
+GameType 0.5
 
 Team Blue 0 0 1
 

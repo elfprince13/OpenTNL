@@ -94,6 +94,7 @@ public:
 
    U32 getTeamIndex() { return teamIndex; }
    void render();
+   S32 getRenderSortValue() { return -1; }
    void processArguments(S32 argc, const char **argv);
    void onAddedToGame(Game *theGame);
    void computeExtent();

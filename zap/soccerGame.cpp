@@ -124,6 +124,7 @@ void SoccerGameType::renderInterfaceOverlay(bool scoreboardVisible)
          UserInterface::drawStringf(pos.x, pos.y, 32, "%d", mTeams[i].score);
       }
    }
+   glColor3f(1,1,1);
    U32 timeLeft = mGameTimer.getCurrent();
 
    U32 minsRemaining = timeLeft / (60000);
@@ -282,9 +283,13 @@ void SoccerBallItem::renderItem(Point pos)
 
 void SoccerBallItem::processServer(U32 deltaT)
 {
-   Parent::processServer(deltaT);
    if(sendHomeTime)
    {
+      F32 accelFraction = 1 - (0.98 * deltaT / 1000.0f);
+
+      mMoveState[ActualState].vel *= accelFraction;
+      mMoveState[RenderState].vel *= accelFraction;
+
       if(sendHomeTime > deltaT)
          sendHomeTime -= deltaT;
       else
@@ -293,6 +298,7 @@ void SoccerBallItem::processServer(U32 deltaT)
          sendHome();
       }
    }
+   Parent::processServer(deltaT);
 }
 
 void SoccerBallItem::damageObject(DamageInfo *theInfo)

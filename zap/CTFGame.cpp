@@ -127,7 +127,7 @@ void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
                UserInterface::drawString(xl + 40, curRowY, fontSize, mClientList[j].name.getString());
 
                static char buff[255] = "";
-               sprintf(buff, "%d", mClientList[j].score);
+               dSprintf(buff, sizeof(buff), "%d", mClientList[j].score);
 
                UserInterface::drawString(xr - (120 + UserInterface::getStringWidth(fontSize, buff)), curRowY, fontSize, buff);
                UserInterface::drawStringf(xr - 70, curRowY, fontSize, "%d", mClientList[j].ping);
@@ -146,6 +146,7 @@ void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
          UserInterface::drawStringf(pos.x, pos.y, 32, "%d", mTeams[i].score);
       }
    }
+   glColor3f(1,1,1);
    U32 timeLeft = mGameTimer.getCurrent();
 
    U32 minsRemaining = timeLeft / (60000);

@@ -28,6 +28,7 @@
 #include "ship.h"
 #include "UIGame.h"
 #include "gameNetInterface.h"
+#include "glutInclude.h"
 
 namespace Zap
 {
@@ -87,6 +88,91 @@ void GameType::processServer(U32 deltaT)
    {
       gameOverManGameOver();
    }
+}
+
+void GameType::renderInterfaceOverlay(bool scoreboardVisible)
+{
+   if((mGameOver || scoreboardVisible) && mTeams.size() > 0)
+   {
+      U32 totalWidth = 780;
+      U32 teamWidth = totalWidth / mTeams.size();
+      U32 maxTeamPlayers = 0;
+      countTeamPlayers();
+
+      for(S32 i = 0; i < mTeams.size(); i++)
+         if(mTeams[i].numPlayers > maxTeamPlayers)
+            maxTeamPlayers = mTeams[i].numPlayers;
+
+      U32 teamAreaHeight = 40;
+      if(mTeams.size() < 2)
+         teamAreaHeight = 0;
+
+      U32 totalHeight = 580;
+      U32 maxHeight = (totalHeight - teamAreaHeight) / maxTeamPlayers;
+      if(maxHeight > 30)
+         maxHeight = 30;
+
+      totalHeight = teamAreaHeight + maxHeight * maxTeamPlayers;
+      U32 yt = (600 - totalHeight) / 2;
+      U32 yb = yt + totalHeight;
+
+      for(S32 i = 0; i < mTeams.size(); i++)
+      {
+         U32 xl = 10 + i * teamWidth;
+         U32 xr = xl + teamWidth - 2;
+
+         Color c = mTeams[i].color;
+         glEnable(GL_BLEND);
+         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+         glColor4f(c.r, c.g, c.b, 0.6);
+         glBegin(GL_POLYGON);
+         glVertex2f(xl, yt);
+         glVertex2f(xr, yt);
+         glVertex2f(xr, yb);
+         glVertex2f(xl, yb);
+         glEnd();
+
+         glDisable(GL_BLEND);
+         glBlendFunc(GL_ONE, GL_ZERO);
+
+         glColor3f(1,1,1);
+         if(teamAreaHeight)
+         {
+            glBegin(GL_LINES);
+            glVertex2f(xl, yt + teamAreaHeight);
+            glVertex2f(xr, yt + teamAreaHeight);
+            glEnd();
+
+            UserInterface::drawString(xl + 40, yt + 2, 30, mTeams[i].name.getString());
+
+            UserInterface::drawStringf(xr - 140, yt + 2, 30, "%d", mTeams[i].score);
+         }
+
+         U32 curRowY = yt + teamAreaHeight + 1;
+         U32 fontSize = maxHeight * 0.8f;
+         for(S32 j = 0; j < mClientList.size(); j++)
+         {
+            if(mClientList[j].teamId == i)
+            {
+               UserInterface::drawString(xl + 40, curRowY, fontSize, mClientList[j].name.getString());
+
+               static char buff[255] = "";
+               dSprintf(buff, sizeof(buff), "%d", mClientList[j].score);
+
+               UserInterface::drawString(xr - (120 + UserInterface::getStringWidth(fontSize, buff)), curRowY, fontSize, buff);
+               UserInterface::drawStringf(xr - 70, curRowY, fontSize, "%d", mClientList[j].ping);
+               curRowY += maxHeight;
+            }
+         }
+      }
+   }
+   glColor3f(1,1,1);
+   U32 timeLeft = mGameTimer.getCurrent();
+
+   U32 minsRemaining = timeLeft / (60000);
+   U32 secsRemaining = (timeLeft - (minsRemaining * 60000)) / 1000;
+   UserInterface::drawStringf(720, 577, 20, "%02d:%02d", minsRemaining, secsRemaining);
 }
 
 void GameType::gameOverManGameOver()
@@ -170,6 +256,44 @@ void GameType::spawnShip(GameConnection *theClient)
    theClient->setControlObject(newShip);
 }
 
+void GameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection)
+{
+   static Vector<GameObject *> fillVector;
+   fillVector.clear();
+
+   if(connection->mInCommanderMap && mTeams.size() > 1)
+   {
+      S32 teamId = mClientList[findClientIndexByConnection(connection)].teamId;
+
+      for(S32 i = 0; i < mClientList.size(); i++)
+      {
+         if(mClientList[i].teamId == teamId)
+         {
+            GameObject *co = mClientList[i].clientConnection->getControlObject();
+            if(!co)
+               continue;
+
+            Point pos = co->getActualPos();
+
+            Rect queryRect(pos, pos);
+            queryRect.expand(Point(Game::PlayerHorizScopeDistance, Game::PlayerVertScopeDistance));
+            findObjects(scopeObject == co ? AllObjectTypes : CommandMapVisType, fillVector, queryRect);
+         }
+      }
+   }
+   else
+   {
+      Point pos = scopeObject->getActualPos();
+
+      Rect queryRect(pos, pos);
+      queryRect.expand(Point(Game::PlayerHorizScopeDistance, Game::PlayerVertScopeDistance));
+      findObjects(AllObjectTypes, fillVector, queryRect);
+   }
+
+   for(S32 i = 0; i < fillVector.size(); i++)
+      connection->objectInScope(fillVector[i]);
+}
+
 void GameType::countTeamPlayers()
 {
    for(S32 i = 0; i < mTeams.size(); i ++)
@@ -210,9 +334,21 @@ void GameType::serverAddClient(GameConnection *theClient)
 
 void GameType::controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject)
 {
+   GameConnection *killer = killerObject ? killerObject->getControllingClient() : NULL;
+   S32 killerIndex = findClientIndexByConnection(killer);
    S32 clientIndex = findClientIndexByConnection(theClient);
-   if(clientIndex != -1)
-      mClientList[clientIndex].respawnTimer.reset(RespawnDelay);
+
+   if(killerIndex != -1)
+   {
+      // Punish team killers slightly
+      if(mTeams.size() > 1 && mClientList[killerIndex].teamId == mClientList[clientIndex].teamId)
+         mClientList[killerIndex].score -= 1;
+      else
+         mClientList[killerIndex].score += 1;
+
+      s2cKillMessage(mClientList[clientIndex].name, mClientList[killerIndex].name);
+   }
+   mClientList[clientIndex].respawnTimer.reset(RespawnDelay);
 }
 
 void GameType::controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject)
