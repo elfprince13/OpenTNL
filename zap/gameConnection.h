@@ -28,6 +28,7 @@
 #define _GAMECONNECTION_H_
 
 #include "controlObjectConnection.h"
+#include "sfx.h"
 
 namespace Zap
 {
@@ -61,6 +62,18 @@ class GameConnection : public ControlObjectConnection
 
    void linkToClientList();
 public:
+   enum MessageColors
+   {
+      ColorWhite,
+      ColorRed,
+      ColorGreen,
+      ColorBlue,
+      ColorAqua,
+      ColorYellow,
+      ColorNuclearGreen,
+      ColorCount,
+   };
+
    GameConnection();
    ~GameConnection();
 
@@ -73,6 +86,12 @@ public:
 
    TNL_DECLARE_RPC(c2sRequestLoadout, (const Vector<U32> &loadout));
    TNL_DECLARE_RPC(c2sRequestEngineerBuild, (U32 buildObject));
+
+   TNL_DECLARE_RPC(s2cDisplayMessageESI, (RangedU32<0, ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString,
+                   const Vector<StringTableEntry> &e, const Vector<const char *> &s, const Vector<S32> &i));
+   TNL_DECLARE_RPC(s2cDisplayMessageE, (RangedU32<0, ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString,
+                   const Vector<StringTableEntry> &e));
+   TNL_DECLARE_RPC(s2cDisplayMessage, (RangedU32<0, ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString));
 
    static GameConnection *getClientList();
    GameConnection *getNextClient();

@@ -75,6 +75,9 @@ void engClientCreateObject(GameConnection *connection, U32 object)
    deployedObject->computeExtent();
    if(!deployedObject || !deployedObject->checkDeploymentPosition())
    {
+      static StringTableEntry message("Unable to deploy in that location.");
+
+      connection->s2cDisplayMessage(GameConnection::ColorAqua, SFXNone, message);
       delete deployedObject;
       return;
    }

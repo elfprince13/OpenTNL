@@ -101,6 +101,116 @@ TNL_IMPLEMENT_RPC(GameConnection, c2sRequestEngineerBuild, (U32 buildObject), Ne
       gt->clientRequestEngineerBuild(this, buildObject);
 }
 
+TNL_DECLARE_MEMBER_ENUM(GameConnection, ColorCount);
+TNL_DECLARE_ENUM(NumSFXBuffers);
+
+static void displayMessage(U32 colorIndex, U32 sfxEnum, const char *message)
+{
+   static Color colors[] = 
+   {
+      Color(1,1,1),
+      Color(1,0,0),
+      Color(0,1,0),
+      Color(0,0,1),
+      Color(0,1,1),
+      Color(1,1,0),
+      Color(0.2f, 1, 1),
+   };
+   gGameUserInterface.displayMessage(colors[colorIndex], "%s", message);
+   if(sfxEnum != SFXNone)
+      SFXObject::play(sfxEnum);
+}
+
+TNL_IMPLEMENT_RPC(GameConnection, s2cDisplayMessageESI, 
+                  (RangedU32<0, GameConnection::ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString,
+                  const Vector<StringTableEntry> &e, const Vector<const char *> &s, const Vector<S32> &i),
+                  NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirServerToClient, 1)
+{
+   char outputBuffer[256];
+   S32 pos = 0;
+   const char *src = formatString.getString();
+   while(*src)
+   {
+      if(src[0] == '%' && (src[1] == 'e' || src[1] == 's' || src[1] == 'i') && (src[2] >= '0' && src[2] <= '9'))
+      {
+         S32 index = src[2] - '0';
+         switch(src[1])
+         {
+            case 'e':
+               if(index < e.size())
+                  pos += dSprintf(outputBuffer + pos, 256 - pos, "%s", e[index].getString());
+               break;
+            case 's':
+               if(index < s.size())
+                  pos += dSprintf(outputBuffer + pos, 256 - pos, "%s", s[index]);
+               break;
+            case 'i':
+               if(index < i.size())
+                  pos += dSprintf(outputBuffer + pos, 256 - pos, "%d", i[index]);
+               break;
+         }
+         src += 3;
+      }
+      else
+         outputBuffer[pos++] = *src++;
+
+      if(pos >= 255)
+         break;
+   }
+   outputBuffer[pos] = 0;
+   displayMessage(color, sfx, outputBuffer);
+}                 
+
+TNL_IMPLEMENT_RPC(GameConnection, s2cDisplayMessageE, 
+                  (RangedU32<0, GameConnection::ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString,
+                  const Vector<StringTableEntry> &e),
+                  NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirServerToClient, 1)
+{
+   char outputBuffer[256];
+   S32 pos = 0;
+   const char *src = formatString.getString();
+   while(*src)
+   {
+      if(src[0] == '%' && (src[1] == 'e') && (src[2] >= '0' && src[2] <= '9'))
+      {
+         S32 index = src[2] - '0';
+         switch(src[1])
+         {
+            case 'e':
+               if(index < e.size())
+                  pos += dSprintf(outputBuffer + pos, 256 - pos, "%s", e[index].getString());
+               break;
+         }
+         src += 3;
+      }
+      else
+         outputBuffer[pos++] = *src++;
+
+      if(pos >= 255)
+         break;
+   }
+   outputBuffer[pos] = 0;
+   displayMessage(color, sfx, outputBuffer);
+}                 
+
+TNL_IMPLEMENT_RPC(GameConnection, s2cDisplayMessage, 
+                  (RangedU32<0, GameConnection::ColorCount> color, RangedU32<0, NumSFXBuffers> sfx, StringTableEntryRef formatString),
+                  NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirServerToClient, 1)
+{
+   char outputBuffer[256];
+   S32 pos = 0;
+   const char *src = formatString.getString();
+   while(*src)
+   {
+      outputBuffer[pos++] = *src++;
+
+      if(pos >= 255)
+         break;
+   }
+   outputBuffer[pos] = 0;
+   displayMessage(color, sfx, outputBuffer);
+}                 
+
 void GameConnection::writeConnectRequest(BitStream *stream)
 {
    Parent::writeConnectRequest(stream);

@@ -211,6 +211,7 @@ namespace Zap
 static SFXProfile gSFXProfiles[] = {
  {  "phaser.wav",          true,  1.0f,  false, 0,   0 }, 
  {  "phaser.wav",          false, 0.45f, false, 150, 600 },
+ {  "phaser.wav",          false, 0.45f, false, 150, 600 },
  {  "phaser_impact.wav",   false, 0.7f,  false, 150, 600 },
  {  "ship_explode.wav",    false, 1.0,   false, 300, 1000 },
  {  "ship_heal.wav",       false, 1.0,   false, 300, 1000 },

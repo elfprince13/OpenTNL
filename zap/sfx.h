@@ -39,6 +39,7 @@ namespace Zap
 
 enum SFXProfiles {
    SFXVoice,
+   SFXNone,
    SFXPhaser,
    SFXPhaserImpact,
    SFXShipExplode,

@@ -801,7 +801,7 @@ void GhostConnection::activateGhosting()
    //TNLAssert(validateGhostArray(), "Invalid ghost array!");
 }
 
-TNL_DECLARE_ENUM(GhostConnection::GhostCountBitSize);
+TNL_DECLARE_MEMBER_ENUM(GhostConnection, GhostCountBitSize);
 TNL_IMPLEMENT_RPC(GhostConnection, rpcGhostAlwaysStarting, (U32 sequence, Int<GhostConnection::GhostCountBitSize> ghostCount), 
       NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {

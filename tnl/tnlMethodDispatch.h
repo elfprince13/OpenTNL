@@ -66,7 +66,8 @@ struct MethodEnum
 };
 
 /// Declares a global enumeration as usable as a template argument in an RPC declaration
-#define TNL_DECLARE_ENUM(enumSymbol) namespace { TNL::MethodEnum gTNLEnum_##__LINE__(#enumSymbol, enumSymbol); };
+#define TNL_DECLARE_MEMBER_ENUM(className,symbol) static TNL::MethodEnum gTNLEnum_##className##symbol(#className "::" #symbol, className::symbol);
+#define TNL_DECLARE_ENUM(symbol) static TNL::MethodEnum gTNLEnum_##symbol(#symbol, symbol); 
 
 struct MarshalledCall;
 struct MethodArgInfo;

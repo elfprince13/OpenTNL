@@ -654,7 +654,7 @@ void GameType::updateClientScoreboard(S32 clientIndex)
    NetObject::setRPCDestConnection(NULL);
 }
 
-TNL_DECLARE_ENUM(GameType::MaxPing);
+TNL_DECLARE_MEMBER_ENUM(GameType, MaxPing);
 
 TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cScoreboardUpdate, (const Vector<RangedU32<0, GameType::MaxPing> > &pingTimes, const Vector<Int<24> > &scores),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
