@@ -240,7 +240,12 @@ typedef unsigned long long  U64;  ///< Compiler independent unsigned 64-bit inte
 #elif defined(__WIN32__) || defined(_WIN32) || defined(__CYGWIN__)
 #  define TNL_OS_STRING "Win32"
 #  define TNL_OS_WIN32
+
+#ifdef TNL_COMPILER_MINGW
+#  define FN_CDECL
+#else
 #  define FN_CDECL __cdecl
+#endif
 
 #elif defined(linux)
 #  define TNL_OS_STRING "Linux"

@@ -183,6 +183,9 @@
 			RelativePath=".\huffmanStringProcessor.cpp">
 		</File>
 		<File
+			RelativePath=".\journal.cpp">
+		</File>
+		<File
 			RelativePath=".\log.cpp">
 		</File>
 		<File
@@ -316,6 +319,9 @@
 		</File>
 		<File
 			RelativePath=".\tnlHuffmanStringProcessor.h">
+		</File>
+		<File
+			RelativePath=".\tnlJournal.h">
 		</File>
 		<File
 			RelativePath=".\tnlLog.h">

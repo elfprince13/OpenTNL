@@ -28,6 +28,7 @@
 #include "../tnl/tnlRandom.h"
 #include "../tnl/tnlGhostConnection.h"
 #include "../tnl/tnlNetInterface.h"
+#include "../tnl/tnlJournal.h"
 
 #include "glutInclude.h"
 #include <stdarg.h>
@@ -57,13 +58,40 @@ const char *gMasterAddressString = "IP:master.opentnl.org:29005";
 Address gMasterAddress;
 const char *gLevelList = "level4.txt level2.txt level1.txt level2.txt level3.txt level2.txt";
 
+class ZapJournal : public Journal
+{
+public:
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(reshape, (S32 newWidth, S32 newHeight));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(motion, (S32 x, S32 y));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(passivemotion, (S32 x, S32 y));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(key, (U8 key, S32 x, S32 y));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(keyup, (U8 key, S32 x, S32 y));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(mouse, (S32 button, S32 state, S32 x, S32 y));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(specialkey, (S32 key, S32 x, S32 y));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(specialkeyup, (S32 key, S32 x, S32 y));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(idle, ());
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(display, ());
+};
+
+ZapJournal gZapJournal;
+
 void reshape(int nw, int nh)
 {
-  UserInterface::windowWidth = nw;
-  UserInterface::windowHeight = nh;
+   gZapJournal.reshape(nw, nh);
+}
+
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, reshape, (S32 newWidth, S32 newHeight))
+{
+  UserInterface::windowWidth = newWidth;
+  UserInterface::windowHeight = newHeight;
 }
 
 void motion(int x, int y)
+{
+   gZapJournal.motion(x, y);
+}
+
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, motion, (S32 x, S32 y))
 {
    if(UserInterface::current)
       UserInterface::current->onMouseDragged(x, y);
@@ -71,11 +99,21 @@ void motion(int x, int y)
 
 void passivemotion(int x, int y)
 {
+   gZapJournal.passivemotion(x, y);
+}
+
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, passivemotion, (S32 x, S32 y))
+{
    if(UserInterface::current)
       UserInterface::current->onMouseMoved(x, y);
 }
 
 void key(unsigned char key, int x, int y)
+{
+   gZapJournal.key(key, x, y);
+}
+
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, key, (U8 key, S32 x, S32 y))
 {
    if(UserInterface::current)
       UserInterface::current->onKeyDown(key);
@@ -83,11 +121,21 @@ void key(unsigned char key, int x, int y)
 
 void keyup(unsigned char key, int x, int y)
 {
+   gZapJournal.keyup(key, x, y);
+}
+
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, keyup, (U8 key, S32 x, S32 y))
+{
    if(UserInterface::current)
       UserInterface::current->onKeyUp(key);
 }
 
 void mouse(int button, int state, int x, int y)
+{
+   gZapJournal.mouse(button, state, x, y);
+}
+
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, mouse, (S32 button, S32 state, S32 x, S32 y))
 {
    static int mouseState[2] = { 0, };
    if(!UserInterface::current)
@@ -123,17 +171,32 @@ void mouse(int button, int state, int x, int y)
 
 void specialkey(int key, int x, int y)
 {
+   gZapJournal.specialkey(key, x, y);
+}
+
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkey, (S32 key, S32 x, S32 y))
+{
    if(UserInterface::current)
       UserInterface::current->onSpecialKeyDown(key);
 }
 
 void specialkeyup(int key, int x, int y)
 {
+   gZapJournal.specialkeyup(key, x, y);
+}
+
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkeyup, (S32 key, S32 x, S32 y))
+{
    if(UserInterface::current)
       UserInterface::current->onSpecialKeyUp(key);
 }
 
 void idle()
+{
+   gZapJournal.idle();
+}
+
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, idle, ())
 {
    static S64 lastTimer = Platform::getHighPrecisionTimerValue();
    static F64 unusedFraction = 0;
@@ -170,6 +233,11 @@ void dedicatedServerLoop()
 }
 
 void display(void)
+{
+   gZapJournal.display();
+}
+
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, display, ())
 {
    if(UserInterface::current)
       UserInterface::current->render();

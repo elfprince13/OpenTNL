@@ -209,8 +209,6 @@ enum {
 };
 
 static ALuint gSources[NumSources];
-static bool gSourceActive[NumSources];
-static bool gQueuedBuffers[NumSources] = { false, };
 Point SFXObject::mListenerPosition;
 Point SFXObject::mListenerVelocity;
 F32 SFXObject::mMaxDistance = 500;
@@ -337,6 +335,9 @@ static void unqueueBuffers(S32 sourceIndex)
 
 void SFXObject::queueBuffer(ByteBufferPtr p)
 {
+   if(!gSFXValid)
+      return;
+
    mInitialBuffer = p;
    if(mSourceIndex != -1)
    {
@@ -388,13 +389,9 @@ void SFXObject::playOnSource()
       alBufferData(buffer, AL_FORMAT_MONO16, mInitialBuffer->getBuffer(),
             mInitialBuffer->getBufferSize(), 8000);
       alSourceQueueBuffers(source, 1, &buffer);
-      gQueuedBuffers[mSourceIndex] = true;
    }
    else
-   {
       alSourcei(source, AL_BUFFER, gBuffers[mSFXIndex]);
-      gQueuedBuffers[mSourceIndex] = false;
-   }
 
    alSourcei(source, AL_LOOPING, mProfile->isLooping);
    alSourcef(source, AL_REFERENCE_DISTANCE,9000);
@@ -408,6 +405,9 @@ void SFXObject::playOnSource()
 
 void SFXObject::setGain(F32 gain)
 {
+   if(!gSFXValid)
+      return;
+
    mGain = gain;
    if(mSourceIndex != -1)
       updateGain();
@@ -415,6 +415,9 @@ void SFXObject::setGain(F32 gain)
 
 void SFXObject::setMovementParams(Point position, Point velocity)
 {
+   if(!gSFXValid)
+      return;
+
    mPosition = position;
    mVelocity = velocity;
    if(mSourceIndex != -1)
@@ -423,6 +426,9 @@ void SFXObject::setMovementParams(Point position, Point velocity)
 
 void SFXObject::play()
 {
+   if(!gSFXValid)
+      return;
+
    if(mSourceIndex != -1)
       return;
    else
@@ -437,6 +443,9 @@ void SFXObject::play()
 
 void SFXObject::stop()
 {
+   if(!gSFXValid)
+      return;
+
    // remove from the play list, if this sound is playing:
    if(mSourceIndex != -1)
    {
@@ -540,18 +549,19 @@ void SFXObject::process()
    // ok, look through all the currently playing sources and see which
    // ones need to be retired:
 
+   bool sourceActive[NumSources];
    for(S32 i = 0; i < NumSources; i++)
    {
       ALint state;
       unqueueBuffers(i);
       alGetSourcei(gSources[i], AL_SOURCE_STATE, &state);
-      gSourceActive[i] = state != AL_STOPPED && state != AL_INITIAL;
+      sourceActive[i] = state != AL_STOPPED && state != AL_INITIAL;
    }
    for(S32 i = 0; i < gPlayList.size(); )
    {
       SFXHandle &s = gPlayList[i];
 
-      if(s->mSourceIndex != -1 && !gSourceActive[s->mSourceIndex])
+      if(s->mSourceIndex != -1 && !sourceActive[s->mSourceIndex])
       {
          // this sound was playing; now it is stopped,
          // so remove it from the list.
@@ -592,7 +602,7 @@ void SFXObject::process()
       SFXHandle &s = gPlayList[i];
       if(s->mSourceIndex != -1)
       {
-         gSourceActive[s->mSourceIndex] = false;
+         sourceActive[s->mSourceIndex] = false;
          s->mSourceIndex = -1;
       }
       if(!s->mProfile->isLooping)
@@ -611,10 +621,10 @@ void SFXObject::process()
       SFXHandle &s = gPlayList[i];
       if(s->mSourceIndex == -1)
       {
-         while(gSourceActive[firstFree])
+         while(sourceActive[firstFree])
             firstFree++;
          s->mSourceIndex = firstFree;
-         gSourceActive[firstFree] = true;
+         sourceActive[firstFree] = true;
          s->playOnSource();
       }
       else
