@@ -50,7 +50,8 @@ void GameType::processServer(U32 deltaT)
    if(deltaT > mTimeUntilScoreboardUpdate)
    {
       for(S32 i = 0; i < mClientList.size(); i++)
-         mClientList[i].ping = (U32) mClientList[i].clientConnection->getRoundTripTime();
+         if(mClientList[i].clientConnection)
+            mClientList[i].ping = (U32) mClientList[i].clientConnection->getRoundTripTime();
 
       for(S32 i = 0; i < mClientList.size(); i++)
          if(mClientList[i].wantsScoreboardUpdates)

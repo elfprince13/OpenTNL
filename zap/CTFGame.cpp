@@ -264,8 +264,8 @@ U32 CTFGameType::checkFlagDrop(GameObject *theObject)
 
 bool CTFGameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
 {
-   GameConnection *c1 = damager->getControllingClient();
-   GameConnection *c2 = victim->getControllingClient();
+   GameConnection *c1 = (damager ? damager->getControllingClient() : NULL);
+   GameConnection *c2 = (victim ? victim->getControllingClient() : NULL);
 
    if(!c1 || !c2)
       return true;
