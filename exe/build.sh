@@ -22,7 +22,7 @@ exit 1
 fi
 
 rm -rf tnl
-cvs -d:ext:"$USER"@cvs.sourceforge.net:/cvsroot/opentnl export tnl
+cvs -d:ext:"$USER"@cvs.sourceforge.net:/cvsroot/opentnl export -r HEAD tnl
 tar -czf tnl-"$VERSION"-source.tar.gz tnl
 zip -r tnl-"$VERSION"-source.zip tnl
 
