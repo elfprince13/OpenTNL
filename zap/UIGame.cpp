@@ -242,6 +242,16 @@ void GameUserInterface::render()
    }
 
    mVoiceRecorder.render();
+   if(mFPSVisible)
+   {
+      U32 sum = 0;
+      for(U32 i = 0; i < FPSAvgCount; i++)
+         sum += mIdleTimeDelta[i];
+      drawStringf(710, 10, 30, "%4.2f fps", (1000 * FPSAvgCount) / F32(sum));
+   }
+   if(mVChat->isActive())
+      mVChat->render();
+
 #if 0
    // some code for outputting the position of the ship for finding good spawns
    GameConnection *con = gClientGame->getConnectionToServer();
@@ -255,21 +265,12 @@ void GameUserInterface::render()
          drawStringf(10, 550, 30, "%0.2g, %0.2g", pos.x, pos.y);
       }
    }
-#endif
 
-   if(mFPSVisible)
-   {
-      U32 sum = 0;
-      for(U32 i = 0; i < FPSAvgCount; i++)
-         sum += mIdleTimeDelta[i];
-      drawStringf(710, 10, 30, "%4.2f fps", (1000 * FPSAvgCount) / F32(sum));
-   }
-   else if(mGotControlUpdate)
+   if(mGotControlUpdate)
    {
       drawString(710, 10, 30, "CU");
    }
-   if(mVChat->isActive())
-      mVChat->render();
+#endif
 }
 
 void GameUserInterface::onMouseDragged(S32 x, S32 y)
@@ -313,57 +314,75 @@ void GameUserInterface::onRightMouseUp(S32 x, S32 y)
 
 void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
 {
-   switch(buttonIndex)
+   if(buttonIndex == 6)
+      mCurrentMove.shield = true;
+   else if(buttonIndex == 7)
+      mCurrentMove.boost = true;
+   else
    {
-      case 0:
-         mVoiceRecorder.start();
-         break;
-
-      case 3:
+      if(mCurrentMode == PlayMode)
       {
-         mInScoreboardMode = true;
-         GameType *g = gClientGame->getGameType();
-         if(g)
-            g->c2sRequestScoreboardUpdates(true);
-         break;
+         switch(buttonIndex)
+         {
+            case 0:
+               mVoiceRecorder.start();
+               break;
+
+            case 2:
+               gClientGame->zoomCommanderMap();
+               break;
+            case 3:
+            {
+               mInScoreboardMode = true;
+               GameType *g = gClientGame->getGameType();
+               if(g)
+                  g->c2sRequestScoreboardUpdates(true);
+               break;
+            }
+            case 5:
+               UserInterface::playBoop();
+               mVChat->show(true);
+               mCurrentMode = VChatMode;
+               break;
+         }
       }
-      case 2:
-         gClientGame->zoomCommanderMap();
-         break;
-
-      case 7:
-         mCurrentMove.boost = true;
-         break;
-
-      case 6:
-         mCurrentMove.shield = true;
-         break;
+      else if(mCurrentMode == VChatMode)
+      {
+         mVChat->processKey(buttonIndex);
+      }
    }
 }
 
 void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
 {
-   switch(buttonIndex)
+   if(buttonIndex == 6)
+      mCurrentMove.shield = false;
+   else if(buttonIndex == 7)
+      mCurrentMove.boost = false;
+   else
    {
-      case 0:
-         mVoiceRecorder.stop();
-         break;
-      case 3:
+      if(mCurrentMode == PlayMode)
       {
-         mInScoreboardMode = false;
-         GameType *g = gClientGame->getGameType();
-         if(g)
-            g->c2sRequestScoreboardUpdates(false);
-         break;
+         switch(buttonIndex)
+         {
+            case 0:
+               mVoiceRecorder.stop();
+               break;
+            case 3:
+            {
+               mInScoreboardMode = false;
+               GameType *g = gClientGame->getGameType();
+               if(g)
+                  g->c2sRequestScoreboardUpdates(false);
+               break;
+            }
+         }
       }
-
-      case 7:
-         mCurrentMove.boost = false;
-         break;
-
-      case 6:
-         mCurrentMove.shield = false;
-         break;
+      else if(mCurrentMode == VChatMode)
+      {
+         if(!mVChat->isActive())
+            mCurrentMode = PlayMode;
+      }
    }
 }
 
@@ -425,7 +444,7 @@ void GameUserInterface::onKeyDown(U32 key)
             break;
          case 'V':
             UserInterface::playBoop();
-            mVChat->show();
+            mVChat->show(false);
             mCurrentMode = VChatMode;
             break;
          case 'C':
@@ -468,9 +487,6 @@ void GameUserInterface::onKeyDown(U32 key)
    else if(mCurrentMode == VChatMode)
    {
       mVChat->processKey(key);
-
-      if(!mVChat->isActive())
-         mCurrentMode = PlayMode;
    }
 }
 
@@ -516,6 +532,11 @@ void GameUserInterface::onKeyUp(U32 key)
    {
 
 
+   }
+   else if(mCurrentMode == VChatMode)
+   {
+      if(!mVChat->isActive())
+         mCurrentMode = PlayMode;
    }
 }
 

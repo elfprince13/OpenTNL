@@ -41,6 +41,7 @@ private:
    {
       U32 depth;
       U8  trigger;
+      S32 buttonIndex;
       bool teamOnly;
       const char *caption;
       StringTableEntry msg;
@@ -49,16 +50,16 @@ private:
    static VChatNode mChatTree[];
 
    bool mVisible; 
+   bool mFromController;
    VChatNode *mCurNode;
 
 public:
    VChatHelper();
 
    void render();
-   void show();
+   void show(bool fromController);
    bool isActive();
    void processKey(U32 key);
-
 };
 
 };

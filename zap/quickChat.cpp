@@ -34,63 +34,62 @@ namespace Zap
 VChatHelper::VChatNode VChatHelper::mChatTree[] =
 {
    // Root node
-   {0, ' ', true, "", ""},
-      {1, 'V', true, "Quick", ""},
-         {2, 'V', true, "Help!", "Help!" },
-         {2, 'A', true, "Attack!", "Attack!"},
-         {2, 'W', true, "Wait for signal", "Wait for my signal to attack."},
-         {2, 'Z', true, "Move out", "Move out."},
-         {2, 'E', true, "Regroup", "Regroup."},
-         {2, 'G', true, "Going offense", "Going offense."},
-         {2, 'O', true, "Go on the offensive", "Go on the offensive."},
-         {2, 'J', true, "Capture the objective", "Capture the objective."},
-      {1, 'D', true, "Defense", ""},
-         {2, 'A', true, "Attacked", "We are being attacked."},
-         {2, 'E', true, "Enemy Attacking Base", "The enemy is attacking our base."},
-         {2, 'N', true, "Need More Defense", "We need more defense."},
-         {2, 'T', true, "Base Taken", "Base is taken."},
-         {2, 'C', true, "Base Clear", "Base is secured."},
-         {2, 'Q', true, "Is Base Clear?", "Is our base clear?"},
-         {2, 'G', true, "Go On Defensive", "Go on the defensive."},
-         {2, 'D', true, "Defending Base", "Defending our base."},
-         {2, 'O', true, "Defend Our Base", "Defend our base."},
-      {1, 'F', true, "Flag", ""},
-         {2, 'G', true, "Flag gone", "Our flag is not in the base!"},
-         {2, 'E', true, "Enemy has flag", "The enemy has our flag!"},
-         {2, 'H', true, "Have enemy flag", "I have the enemy flag."},
-         {2, 'S', true, "Flag secure", "Our flag is secure."},
-         {2, 'R', true, "Return our flag", "Return our flag to base."},
-         {2, 'F', true, "Get enemy flag", "Get the enemy flag."},
-      {1, 'S', true, "Incoming Enemies - Direction", ""},
-         {2, 'V', true, "Incoming Enemies",  "Incoming enemies!"},
-         {2, 'W', true, "Incoming North",    "*** INCOMING NORTH ***"},
-         {2, 'D', true, "Incoming West",     "*** INCOMING WEST  ***"},
-         {2, 'A', true, "Incoming East",     "*** INCOMING EAST  ***"},
-         {2, 'S', true, "Incoming South",    "*** INCOMING SOUTH ***"},
-      {1, 'G', true, "Global", ""},
-         {2, 'Z', false, "Doh", "Doh!"},
-         {2, 'S', false, "Shazbot", "Shazbot!"},
-         {2, 'D', false, "Damnit", "Dammit!"},
-         {2, 'C', false, "Crap", "Ah Crap!"},
-         {2, 'E', false, "Duh", "Duh."},
-         {2, 'X', false, "You idiot!", "You idiot!"},
-         {2, 'T', false, "Thanks", "Thanks."},
-         {2, 'A', false, "No Problem", "No Problemo."},
-      {1, 'R', true, "Reponses", ""},
-         {2, 'D', true, "Dont know", "I don't know."},
-         {2, 'T', true, "Thanks", "Thanks."},
-         {2, 'S', true, "Sorry", "Sorry."},
-         {2, 'Y', true, "Yes", "Yes."},
-         {2, 'N', true, "No", "No."},
-         {2, 'A', true, "Acknowledge", "Acknowledged."},
-      {1, 'T', true, "Taunts", ""},
-         {2, 'E', false, "Yoohoo!", "Yoohoo!"},
-         {2, 'Q', false, "How'd THAT feel?", "How'd THAT feel?"},
-         {2, 'W', false, "I've had worse...", "I've had worse..."},
-         {2, 'X', false, "Missed me!", "Missed me!"},
-         {2, 'D', false, "Dance!", "Dance!"},
-         {2, 'C', false, "Come get some!", "Come get some!"},
-         {2, 'R', false, "Rawr", "RAWR!"},
+   {0, ' ', -1, true, "", ""},
+      {1, 'V', 5, true, "Quick", ""},
+         {2, 'V', 5, true, "Help!", "Help!" },
+         {2, 'G', 4, true, "Going offense", "Going offense."},
+         {2, 'E', 3, true, "Regroup", "Regroup."},
+         {2, 'Z', 2, true, "Move out", "Move out."},
+         {2, 'W', 1, true, "Wait for signal", "Wait for my signal to attack."},
+         {2, 'A', 0, true, "Attack!", "Attack!"},
+         {2, 'O', -1, true, "Go on the offensive", "Go on the offensive."},
+         {2, 'J', -1, true, "Capture the objective", "Capture the objective."},
+      {1, 'D', 4, true, "Defense", ""},
+         {2, 'A', -1, true, "Attacked", "We are being attacked."},
+         {2, 'E', 5, true, "Enemy Attacking Base", "The enemy is attacking our base."},
+         {2, 'N', 4, true, "Need More Defense", "We need more defense."},
+         {2, 'T', 3, true, "Base Taken", "Base is taken."},
+         {2, 'C', 2, true, "Base Clear", "Base is secured."},
+         {2, 'Q', 1, true, "Is Base Clear?", "Is our base clear?"},
+         {2, 'D', 0, true, "Defending Base", "Defending our base."},
+         {2, 'G', -1, true, "Defend Our Base", "Defend our base."},
+      {1, 'F', 3, true, "Flag", ""},
+         {2, 'G', 5, true, "Flag gone", "Our flag is not in the base!"},
+         {2, 'E', 4, true, "Enemy has flag", "The enemy has our flag!"},
+         {2, 'H', 3, true, "Have enemy flag", "I have the enemy flag."},
+         {2, 'S', 2, true, "Flag secure", "Our flag is secure."},
+         {2, 'R', 1, true, "Return our flag", "Return our flag to base."},
+         {2, 'F', 0, true, "Get enemy flag", "Get the enemy flag."},
+      {1, 'S', -1, true, "Incoming Enemies - Direction", ""},
+         {2, 'V', -1, true, "Incoming Enemies",  "Incoming enemies!"},
+         {2, 'W', -1, true, "Incoming North",    "*** INCOMING NORTH ***"},
+         {2, 'D', -1, true, "Incoming West",     "*** INCOMING WEST  ***"},
+         {2, 'A', -1, true, "Incoming East",     "*** INCOMING EAST  ***"},
+         {2, 'S', -1, true, "Incoming South",    "*** INCOMING SOUTH ***"},
+      {1, 'G', 2, true, "Global", ""},
+         {2, 'Z', 5, false, "Doh", "Doh!"},
+         {2, 'S', 4, false, "Shazbot", "Shazbot!"},
+         {2, 'D', 3, false, "Damnit", "Dammit!"},
+         {2, 'C', -1, false, "Crap", "Ah Crap!"},
+         {2, 'E', 2, false, "Duh", "Duh."},
+         {2, 'X', -1, false, "You idiot!", "You idiot!"},
+         {2, 'T', 1, false, "Thanks", "Thanks."},
+         {2, 'A', 0, false, "No Problem", "No Problemo."},
+      {1, 'R', 1, true, "Reponses", ""},
+         {2, 'D', 5, true, "Dont know", "I don't know."},
+         {2, 'T', 4, true, "Thanks", "Thanks."},
+         {2, 'S', 3, true, "Sorry", "Sorry."},
+         {2, 'Y', 2, true, "Yes", "Yes."},
+         {2, 'N', 1, true, "No", "No."},
+         {2, 'A', 0, true, "Acknowledge", "Acknowledged."},
+      {1, 'T', 0, true, "Taunts", ""},
+         {2, 'E', 5, false, "Yoohoo!", "Yoohoo!"},
+         {2, 'Q', 4, false, "How'd THAT feel?", "How'd THAT feel?"},
+         {2, 'W', 3, false, "I've had worse...", "I've had worse..."},
+         {2, 'X', 2, false, "Missed me!", "Missed me!"},
+         {2, 'D', 1, false, "Dance!", "Dance!"},
+         {2, 'C', 0, false, "Come get some!", "Come get some!"},
+         {2, 'R', -1, false, "Rawr", "RAWR!"},
 
    // Terminate
    {0, ' ', false, "", ""}
@@ -104,41 +103,43 @@ VChatHelper::VChatHelper()
 
 void VChatHelper::render()
 {
+   Vector<VChatNode *> renderNodes;
    if(mVisible)
    {
       VChatNode *walk = mCurNode;
       U32 matchLevel = walk->depth + 1;
       walk++;
 
-      S32 curPos = 300;
-
-      const int fontSize = 15;
-
       // First get to the end...
       while(walk->depth >= matchLevel)
          walk++;
 
       // Then draw bottom up...
-      glColor3f(0.3, 1.0, 0.3);
       while(walk != mCurNode)
       {
-         if(walk->depth == matchLevel)
-         {
-            UserInterface::drawStringf(20, curPos, fontSize, "%c - %s", walk->trigger, walk->caption);
-            curPos += fontSize + 4;
-         }
-
+         if(walk->depth == matchLevel && (!mFromController || (mFromController && walk->buttonIndex != -1)))
+            renderNodes.push_back(walk);
          walk--;
       }
+   }
 
-      // All done!
+   S32 curPos = 300;
+   const int fontSize = 15;
+   glColor3f(0.3, 1.0, 0.3);
+
+   for(S32 i = 0; i < renderNodes.size(); i++)
+   {
+      UserInterface::drawStringf(20, curPos, fontSize, "%c - %s", 
+         (mFromController ? '1' + renderNodes[i]->buttonIndex : renderNodes[i]->trigger), renderNodes[i]->caption);
+      curPos += fontSize + 4;
    }
 }
 
-void VChatHelper::show()
+void VChatHelper::show(bool fromController)
 {
    mCurNode = &mChatTree[0];
    mVisible = true;
+   mFromController = fromController;
 }
 
 bool VChatHelper::isActive()
@@ -148,18 +149,21 @@ bool VChatHelper::isActive()
 
 void VChatHelper::processKey(U32 key)
 {
-   // Escape...
-   if(key == 27)
+   if(!mFromController)
    {
-      UserInterface::playBoop();
-      mVisible = false;
-      return;
+      // Escape...
+      if(key == 27)
+      {
+         UserInterface::playBoop();
+         mVisible = false;
+         return;
+      }
+
+      // Try to find a match if we can...
+
+      // work in upper case...
+      key = toupper(key);
    }
-
-   // Try to find a match if we can...
-
-   // work in upper case...
-   key = toupper(key);
 
    // Set up walk...
    VChatNode *walk = mCurNode;
@@ -171,7 +175,9 @@ void VChatHelper::processKey(U32 key)
    {
 
       // If it has the same key and depth...
-      if(toupper(walk->trigger) == key && walk->depth == matchLevel)
+      bool match = (!mFromController && toupper(walk->trigger) == key) ||
+                   (mFromController && key == walk->buttonIndex);
+      if(match && walk->depth == matchLevel)
       {
          // select it...
          mCurNode = walk;

@@ -990,7 +990,8 @@ void NetInterface::handlePunch(const Address &theAddress, BitStream *stream)
       if(conn->getConnectionState() != NetConnection::SendingPunchPackets)
          continue;
 
-      if(firstNonce != theParams.mServerNonce)
+      if((theParams.mIsInitiator && firstNonce != theParams.mServerNonce) ||
+            (!theParams.mIsInitiator && firstNonce != theParams.mNonce))
          continue;
 
       // first see if the address is in the possible addresses list:
