@@ -620,7 +620,7 @@ void ClientGame::renderNormal()
 
    Point screenSize = visExt;
    Rect extentRect(position - screenSize, position + screenSize);
-   mDatabase.findObjects(AllObjectTypes, renderObjects, extentRect);
+   mDatabase.findObjects(AllObjectTypes, renderObjects, extentRect); //
 
    renderObjects.sort(renderSortCompare);
 

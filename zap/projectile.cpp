@@ -61,7 +61,8 @@ Projectile::Projectile(U32 type, Point p, Point v, U32 t, GameObject *shooter)
    mNetFlags.set(Ghostable);
    pos = p;
    velocity = v;
-   liveTime = t;
+   mTimeRemaining = t;
+   mAliveTime = 0;
    collided = false;
    alive = true;
    mShooter = shooter;
@@ -117,7 +118,7 @@ void Projectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
    if(!collided && initial)
    {
       mCurrentMove.time = U32(connection->getOneWayTime());
-      idle(GameObject::ClientIdleMainRemote);
+     // idle(GameObject::ClientIdleMainRemote);
    }
 }
 
@@ -137,7 +138,7 @@ void Projectile::handleCollision(GameObject *hitObject, Point collisionPoint)
       hitObject->damageObject(&theInfo);
    }
 
-   liveTime = 0;
+   mTimeRemaining = 0;
    explode(hitObject, collisionPoint);
 }
 
@@ -154,7 +155,7 @@ void Projectile::idle(GameObject::IdleCallPath path)
       float collisionTime;
       disableVector.clear();
 
-      if(mShooter.isValid())
+      if(mShooter.isValid() && mAliveTime < 100)
       {
          disableVector.push_back(mShooter);
          mShooter->disableCollision();
@@ -180,6 +181,8 @@ void Projectile::idle(GameObject::IdleCallPath path)
          {
             // test out reflection
             velocity -= surfNormal * surfNormal.dot(velocity) * 2;
+            Point collisionPoint = pos + (endPos - pos) * collisionTime;
+            pos = collisionPoint + surfNormal;
          }
          else
          {
@@ -194,19 +197,18 @@ void Projectile::idle(GameObject::IdleCallPath path)
       setExtent(newExtent);
    }
 
-   if(path == GameObject::ClientIdleMainRemote)
-      liveTime += deltaT;
-   else if(alive)
+   mAliveTime += deltaT;
+   if(alive && path == GameObject::ServerIdleMainLoop)
    {
-      if(liveTime <= deltaT)
+      if(mTimeRemaining <= deltaT)
       {
          deleteObject(500);
-         liveTime = 0;
+         mTimeRemaining = 0;
          alive = false;
          setMaskBits(ExplodedMask);
       }
       else
-         liveTime -= deltaT;
+         mTimeRemaining -= deltaT;
    }
 }
 
@@ -238,7 +240,7 @@ void Projectile::render()
    glScalef(pi->scaleFactor, pi->scaleFactor, 1);
 
    glPushMatrix();
-   glRotatef((liveTime % 720) * 0.5, 0, 0, 1);
+   glRotatef((mAliveTime % 720) * 0.5, 0, 0, 1);
 
    glBegin(GL_LINE_LOOP);
    glVertex2f(-2, 2);
@@ -253,7 +255,7 @@ void Projectile::render()
 
    glPopMatrix();
 
-   glRotatef(180 - (liveTime % 360), 0, 0, 1);
+   glRotatef(180 - (mAliveTime % 360), 0, 0, 1);
    glColor3f(pi->projColors[1].r,pi->projColors[1].g,pi->projColors[1].b);
    glBegin(GL_LINE_LOOP);
    glVertex2f(-2, 2);

@@ -190,7 +190,7 @@ void Ship::processWeaponFire()
          if(!isGhost())
          {
             Point dir = getAimVector();
-            createWeaponProjectiles(curWeapon, dir, mMoveState[ActualState].pos, mMoveState[ActualState].vel, CollisionRadius, this);
+            createWeaponProjectiles(curWeapon, dir, mMoveState[ActualState].pos, mMoveState[ActualState].vel, CollisionRadius - 2, this);
          }
       }
    }
