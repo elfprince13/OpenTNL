@@ -92,6 +92,7 @@ struct MethodArgList
    };
    U32 getValue(const char *buffer); ///< Converts a text string into an enumerated value using the RPCEnum global linked list
 
+   U32 argListSize;
    const char *argListString; ///< The original argument list for the RPC method, converted into a string in the macro
    const char *mClassName;    ///< Class name this RPC is a member of.
                               ///

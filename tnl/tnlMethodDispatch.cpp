@@ -117,6 +117,7 @@ typedef StringTableEntry &StringTableEntryType;
 
 MethodArgList::MethodArgList(const char *className, const char *anArgList)
 {
+   argListSize = 0;
    argListString = anArgList;
    mClassName = className;
 
@@ -189,6 +190,12 @@ MethodArgList::MethodArgList(const char *className, const char *anArgList)
          }
       }
       argList.push_back(info);
+
+      if(gTypes[type].size > sizeof(U32))
+         argListSize += gTypes[type].size;
+      else
+         argListSize += sizeof(U32);
+
       // lop off the name of the var...
       aptr = strchr(aptr, ',');
       if(!aptr)
@@ -587,7 +594,7 @@ void MarshalledCall::dispatch(void *thisPtr, MethodPointer *method)
    void *args = unmarshalledData.getBuffer();
 
 #ifdef TNL_CPU_X86
-   S32 sz = mMarshaller->argList.size() * sizeof(U32);
+   S32 sz = mMarshaller->argListSize;
    U32 saveESP;
 #endif
    //   CallMethod(ps, data);
