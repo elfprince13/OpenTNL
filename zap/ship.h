@@ -70,6 +70,7 @@ public:
       ShipWeaponCount = 3,
       SensorZoomTime = 300,
       CloakFadeTime = 300,
+      CloakCheckRadius = 200,
       RepairHundredthsPerSecond = 16,
       MaxEngineerDistance = 100,
    };

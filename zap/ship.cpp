@@ -44,6 +44,8 @@
 namespace Zap
 {
 
+static Vector<GameObject *> fillVector;
+
 //------------------------------------------------------------------------
 TNL_IMPLEMENT_NETOBJECT(Ship);
 
@@ -400,6 +402,7 @@ void Ship::processEnergy()
       if(mCurrentMove.module[i] && !mCooldown)
          mModuleActive[mModule[i]] = true;
 
+   // No boost if we're not moving.
     if(mModuleActive[ModuleBoost] && 
        mCurrentMove.up == 0 && 
        mCurrentMove.down == 0 && 
@@ -408,8 +411,37 @@ void Ship::processEnergy()
    { 
       mModuleActive[ModuleBoost] = false; 
    }
+
+   // No repair with no targets.
    if(mModuleActive[ModuleRepair] && !findRepairTargets())
       mModuleActive[ModuleRepair] = false;
+
+   // No cloak with nearby sensored people.
+   if(mModuleActive[ModuleCloak])
+   {
+      bool isOk = true;
+
+      Rect cloakCheck(getActualPos(), getActualPos());
+      cloakCheck.expand(Point(CloakCheckRadius, CloakCheckRadius));
+
+      fillVector.clear();
+      findObjects(ShipType, fillVector, cloakCheck);
+
+      if(fillVector.size() > 0)
+      {
+         for(S32 i=0; i<fillVector.size(); i++)
+         {
+            Ship *s = dynamic_cast<Ship*>(fillVector[i]);
+
+            if(!s) continue;
+
+            if(s->getTeam() != getTeam() && s->isSensorActive())
+               isOk = false;
+         }
+      }
+
+      mModuleActive[ModuleCloak] = isOk;
+   }
 
    F32 scaleFactor = mCurrentMove.time * 0.001;
 
@@ -711,8 +743,6 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
          emitShipExplosion(mMoveState[ActualState].pos);
    }
 }
-
-static Vector<GameObject *> fillVector;
 
 F32 getAngleDiff(F32 a, F32 b)
 {

@@ -46,16 +46,18 @@ static SFXProfile gSFXProfiles[] = {
  // Weapon noises
  {  "phaser.wav",          false, 0.45f, false, 150, 600 },
  {  "phaser_impact.wav",   false, 0.7f,  false, 150, 600 },
- {  "phaser.wav",          false, 0.45f, false, 150, 600 },
- {  "phaser_impact.wav",   false, 0.7f,  false, 150, 600 },
- {  "phaser.wav",          false, 0.45f, false, 150, 600 },
- {  "phaser_impact.wav",   false, 0.7f,  false, 150, 600 },
- {  "phaser.wav",          false, 0.45f, false, 150, 600 },
- {  "phaser_impact.wav",   false, 0.7f,  false, 150, 600 },
+ {  "bounce.wav",          false, 0.45f, false, 150, 600 },
+ {  "bounce_impact.wav",   false, 0.7f,  false, 150, 600 },
+ {  "triple.wav",          false, 0.45f, false, 150, 600 },
+ {  "triple_impact.wav",   false, 0.7f,  false, 150, 600 },
+ {  "turret.wav",          false, 0.45f, false, 150, 600 },
+ {  "turret_impact.wav",   false, 0.7f,  false, 150, 600 },
 
- {  "boop.wav",            false,  0.4f,  false, 150, 600 },
- {  "comm_up.wav",         false,  0.7f,  false, 150, 600 },
- {  "ship_explode.wav",    false,  0.8f,  false, 150, 600 },
+ {  "grenade.wav",         false, 0.9f,  false, 300, 600 },
+
+ {  "mine_deploy.wav",     false, 0.4f,  false, 150, 600 },
+ {  "mine_arm.wav",        false, 0.7f,  false, 400, 600 },
+ {  "mine_explode.wav",    false, 0.8f,  false, 300, 800 },
 
  // Ship noises
  {  "ship_explode.wav",    false, 1.0,   false, 300, 1000 },
@@ -66,10 +68,10 @@ static SFXProfile gSFXProfiles[] = {
  {  "bounce_obj.wav",      false, 0.7f,  false, 150, 600 },
  {  "bounce_shield.wav",   false, 0.7f,  false, 150, 600 },
 
- {  "ship_turbo.wav",      false, 0.15f, true,  150, 500 },
- {  "ship_turbo.wav",      false, 0.15f, true,  150, 500 },
- {  "ship_turbo.wav",      false, 0.15f, true,  150, 500 },
- {  "ship_turbo.wav",      false, 0.15f, true,  150, 500 },
+ {  "ship_shield.wav",     false, 0.15f, true,  150, 500 },
+ {  "ship_sensor.wav",     false, 0.15f, true,  150, 500 },
+ {  "ship_repair.wav",     false, 0.15f, true,  150, 500 },
+ {  "ship_cloak.wav",      false, 0.15f, true,  150, 500 },
 
  // Flag noises
  {  "flag_capture.wav",    true,  0.45f, false, 0,   0 },
@@ -82,8 +84,8 @@ static SFXProfile gSFXProfiles[] = {
  {  "teleport_out.wav",    false, 1.0,   false, 200, 500 },
 
  // Forcefield noises
- {  "comm_up.wav",         false,  0.7f,  false, 150, 600 },
- {  "comm_down.wav",       false,  0.7f,  false, 150, 600 },
+ {  "forcefield_up.wav",   false,  0.7f,  false, 150, 600 },
+ {  "forcefield_down.wav", false,  0.7f,  false, 150, 600 },
 
  // UI noises
  {  "boop.wav",            true,  0.4f,  false, 150, 600 },

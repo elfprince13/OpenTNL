@@ -53,6 +53,8 @@ enum SFXProfiles
    SFXTurretProjectile,
    SFXTurretImpact,
 
+   SFXGrenadeProjectile,
+
    SFXMineDeploy,
    SFXMineArm,
    SFXMineExplode,

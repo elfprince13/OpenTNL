@@ -111,7 +111,7 @@ void Projectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
       Rect newExtent(pos,pos);
       setExtent(newExtent);
       initial = true;
-      SFXObject::play(SFXPhaserProjectile, pos, velocity);
+      SFXObject::play(gProjInfo[mType].projectileSound, pos, velocity);
    }
    bool preCollided = collided;
    collided = stream->readFlag();
@@ -196,10 +196,12 @@ void Projectile::idle(GameObject::IdleCallPath path)
 
          if(bounce)
          {
-            // test out reflection
+            // We hit something that we should bounce from, so bounce!
             velocity -= surfNormal * surfNormal.dot(velocity) * 2;
             Point collisionPoint = pos + (endPos - pos) * collisionTime;
             pos = collisionPoint + surfNormal;
+
+            SFXObject::play(SFXBounceShield, collisionPoint, surfNormal * surfNormal.dot(velocity) * 2);
          }
          else
          {
@@ -240,7 +242,7 @@ void Projectile::explode(GameObject *hitObject, Point thePos)
       if(s && s->isShieldActive())
          SFXObject::play(SFXBounceShield, thePos, velocity);
       else
-         SFXObject::play(SFXPhaserImpact, thePos, velocity);
+         SFXObject::play(gProjInfo[mType].impactSound, thePos, velocity);
    }
 }
 
@@ -485,6 +487,7 @@ U32  GrenadeProjectile::packUpdate(GhostConnection *connection, U32 updateMask, 
 {
    U32 ret = Parent::packUpdate(connection, updateMask, stream);
    stream->writeFlag(exploded);
+   stream->writeFlag(updateMask & InitialMask);
    return ret;
 }
 
@@ -495,6 +498,11 @@ void GrenadeProjectile::unpackUpdate(GhostConnection *connection, BitStream *str
    if(stream->readFlag())
    {
       explode(getActualPos());
+   }
+
+   if(stream->readFlag())
+   {
+      SFXObject::play(SFXGrenadeProjectile, getActualPos(), getActualVel());
    }
 }
 
