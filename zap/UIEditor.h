@@ -103,6 +103,7 @@ public:
    void setCurrentTeam(S32 currentTeam);
    void flipSelectionVertical();
    void flipSelectionHorizontal();
+   void rotateSelection(F32 angle);
 
    void saveLevel();
    void testLevel();

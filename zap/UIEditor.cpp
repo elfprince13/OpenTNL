@@ -464,6 +464,29 @@ void EditorUserInterface::duplicateSelection()
    }
 }
 
+void EditorUserInterface::rotateSelection(F32 angle)
+{
+   mOriginalItems = mItems;
+   Point min, max;
+   computeSelectionMinMax(min,max);
+   Point ctr = (min + max)*0.5;
+   F32 sinTheta = sin(angle * Float2Pi / 360.0f);
+   F32 cosTheta = cos(angle * Float2Pi / 360.0f);
+   for(S32 i = 0; i < mItems.size(); i++)
+   {
+      if(!mItems[i].selected)
+         continue;
+      WorldItem &itm = mItems[i];
+      for(S32 j = 0; j < itm.verts.size(); j++)
+      {
+         Point v = itm.verts[j] - ctr;
+         Point n(v.x * cosTheta + v.y * sinTheta, v.y * cosTheta - v.x * sinTheta);
+         itm.verts[j] = n + ctr;
+      }
+   }
+}
+
+
 void EditorUserInterface::computeSelectionMinMax(Point &min, Point &max)
 {
    min.set(1000000, 1000000);
@@ -867,6 +890,12 @@ void EditorUserInterface::onKeyDown(U32 key)
          flipSelectionVertical();
          break;
       case 'r':
+         if (key == 'R')
+            rotateSelection(15.0f);
+         else
+            rotateSelection(-15.0f);
+         break;
+      case 'z':
          mCurrentOffset.set(0,0);
          break;
       case 'w':
