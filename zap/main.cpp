@@ -278,6 +278,15 @@ void idle()
                gZapJournal.keyup(*w);
                w++;
             }
+            
+            // Occasionally add gibberish text
+            if(Random::readI(0, 16) < 3)
+            {
+               U8 gibChar = Random::readI(0, 256);
+               gZapJournal.key(gibChar);
+               gZapJournal.keyup(gibChar);
+
+            }
 
             // Occasionally drop the enter
             if(Random::readI(0, 16) != 4)
@@ -308,10 +317,19 @@ void idle()
          else
             gZapJournal.keyup('d');
 
-         if(Random::readB())
+         static S32 voiceCount = 1;
+
+         voiceCount--;
+         if(voiceCount <= 0 && Random::readB() && Random::readB() && Random::readB())
+         {
             gZapJournal.key('r');
-         else
+            voiceCount = Random::readI(0, 15);
+         }
+
+         if(voiceCount == 0)
+         {
             gZapJournal.keyup('r');
+         }
 
          if(Random::readB() && false)
             gZapJournal.key('c');

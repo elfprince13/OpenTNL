@@ -134,8 +134,26 @@ void SFXObject::captureSamples(ByteBufferPtr buffer)
       // Write our own random noise in...
       if(gIsCrazyBot)
       {
-         U32 blah = Random::readI() + 0x00FF00FF;
-         memset(buffer->getBuffer() + start, blah, (sizeAdd)/2);
+         S16 *buff = (S16*)buffer->getBuffer() + start/2;
+         static U32 synthCount = 0;
+         static U16  synthGoal  = 100;
+         static U16  curSynth   = 0;
+         for(U32 i=0; i<sizeAdd/2; i++)
+         {
+            if(synthCount == 0)
+            {
+               if(Random::readI(0, 16) < 4)
+                  curSynth = Random::readI(0, 65535);
+
+               synthGoal = Random::readI(0, 32000);
+               synthCount = 25;
+            }
+            synthCount--;
+
+            curSynth = (U32)((U32)curSynth+(U32)curSynth+(U32)synthGoal)/3;
+
+            buff[i] =  curSynth;
+         }
       }
 
       lastReadOffset += sizeAdd;
