@@ -204,6 +204,14 @@ SOURCE=.\gsm_state.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\huntersGame.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\huntersGame.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\item.cpp
 # End Source File
 # Begin Source File
