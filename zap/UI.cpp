@@ -120,6 +120,16 @@ void UserInterface::onMouseUp(S32 x, S32 y)
 
 }
 
+void UserInterface::onRightMouseDown(S32 x, S32 y)
+{
+
+}
+
+void UserInterface::onRightMouseUp(S32 x, S32 y)
+{
+
+}
+
 void UserInterface::onMouseMoved(S32 x, S32 y)
 {
 

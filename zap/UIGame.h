@@ -91,6 +91,8 @@ public:
    void onMouseDragged(S32 x, S32 y);
    void onMouseDown(S32 x, S32 y);
    void onMouseUp(S32 x, S32 y);
+   void onRightMouseDown(S32 x, S32 y);
+   void onRightMouseUp(S32 x, S32 y);
    void onKeyDown(U32 key);
    void onKeyUp(U32 key);
    void onControllerButtonDown(U32 buttonIndex);

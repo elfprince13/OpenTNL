@@ -87,20 +87,34 @@ void keyup(unsigned char key, int x, int y)
 
 void mouse(int button, int state, int x, int y)
 {
-   // This is pretty gross. We need a trigger system. - BJG
-   static int mouseState = 0;
+   static int mouseState[2] = { 0, };
+   if(!UserInterface::current)
+      return;
 
-   if(UserInterface::current && button == 0)
+   if(button == GLUT_LEFT_BUTTON)
    {
-      if(state==1 && !mouseState)
+      if(state == 1 && !mouseState[0])
       {
          UserInterface::current->onMouseUp(x, y);
-         mouseState = 0;
+         mouseState[0] = 0;
       }
       else
       {
-         mouseState = state;
+         mouseState[0] = state;
          UserInterface::current->onMouseDown(x, y);
+      }
+   }
+   else if(button == GLUT_RIGHT_BUTTON)
+   {
+      if(state == 1 && !mouseState[1])
+      {
+         UserInterface::current->onRightMouseUp(x, y);
+         mouseState[1] = 0;
+      }
+      else
+      {
+         mouseState[1] = state;
+         UserInterface::current->onRightMouseDown(x, y);
       }
    }
 }

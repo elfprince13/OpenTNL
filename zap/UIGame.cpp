@@ -271,6 +271,16 @@ void GameUserInterface::onMouseUp(S32 x, S32 y)
    mCurrentMove.fire = false;
 }
 
+void GameUserInterface::onRightMouseDown(S32 x, S32 y)
+{
+   mCurrentMove.shield = true;
+}
+
+void GameUserInterface::onRightMouseUp(S32 x, S32 y)
+{
+   mCurrentMove.shield = false;
+}
+
 void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
 {
    switch(buttonIndex)

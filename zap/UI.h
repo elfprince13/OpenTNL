@@ -49,6 +49,9 @@ public:
 
    virtual void onMouseDown(S32 x, S32 y);
    virtual void onMouseUp(S32 x, S32 y);
+   virtual void onRightMouseDown(S32 x, S32 y);
+   virtual void onRightMouseUp(S32 x, S32 y);
+
    virtual void onMouseMoved(S32 x, S32 y);
    virtual void onMouseDragged(S32 x, S32 y);
    virtual void onKeyDown(U32 key);
