@@ -36,6 +36,13 @@
 #include "ftol.h"
 #include "lpc10.h"
 
+#if __GNUC__ == 2
+int lrintf(double d)
+{
+  return d;
+}
+#endif
+
 #define LPC10_BITS_IN_COMPRESSED_FRAME 54
 
 #ifndef TRUE

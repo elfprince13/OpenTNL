@@ -634,10 +634,10 @@ void MarshalledCall::dispatch(void *thisPtr, MethodPointer *method)
       funcPtr += func;
       funcPtr--;
       funcPtr = *((U8 **) funcPtr);
-#elif TNL_GCC_2
+#elif defined (TNL_GCC_2)
       U8 *funcPtr = ((U8 *) thisPtr) + (funcOffset & 0xFFFF);
-      funcPtr = funcPtr + (func >> 14);
-      funcPtr = *((U8 **) funcPtr);
+      funcPtr = *((U8 **) funcPtr) + (func >> 14);
+      funcPtr = *((U8 **) (funcPtr - 4));
 #endif
 
    asm(
