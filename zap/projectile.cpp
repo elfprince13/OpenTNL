@@ -196,8 +196,8 @@ void Projectile::idle(GameObject::IdleCallPath path)
 
 struct ProjectileDisplayInfo
 {
-   F32 sparkColors[NumSparkColors][3];
-   F32 projColors[2][3];
+   Color sparkColors[NumSparkColors];
+   Color projColors[2];
    F32 scaleFactor;
 };
 
