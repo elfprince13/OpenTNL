@@ -160,6 +160,7 @@ void Item::processClient(U32 deltaT)
 
 U32 Item::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
+   U32 retMask = 0;
    if(stream->writeFlag(updateMask & InitialMask))
    {
    }
@@ -177,8 +178,10 @@ U32 Item::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
       S32 index = connection->getGhostIndex(mMount);
       if(stream->writeFlag(index != -1))
          stream->writeInt(index, GhostConnection::GhostIdBitSize);
+      else
+         retMask = MountMask;
    }
-   return 0;
+   return MountMask;
 }
 
 #define InterpMS 50

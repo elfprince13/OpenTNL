@@ -76,8 +76,7 @@ void Projectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
    setExtent(newExtent);
    process(connection->getOneWayTime());
 
-   SFXHandle h = new SFXObject(0, pos, velocity);
-   h->play();
+   SFXObject::play(0, pos, velocity);
 }
 
 enum {
@@ -105,20 +104,21 @@ void Projectile::handleCollision(GameObject *hitObject, Point collisionPoint)
 
       hitObject->damageObject(&theInfo);
    }
-   velocity.set(0,0);
    liveTime = 0;
 
    // Do some particle spew...
    if(isGhost())
    {
       SparkManager::emitExplosion(collisionPoint, 0.4, SparkColors, NumSparkColors);
-      SFXHandle h = new SFXObject(SFXPhaserImpact, pos, velocity);
-      h->play();
+      SFXObject::play(SFXPhaserImpact, pos, velocity);
    }
 }
 
 void Projectile::process(U32 deltaT)
 {
+   if(collided)
+      return;
+
    Point endPos = pos + velocity * deltaT * 0.001;
    static Vector<GameObject *> disableVector;
 
@@ -161,11 +161,16 @@ void Projectile::process(U32 deltaT)
 void Projectile::processServer(U32 deltaT)
 {
    process(deltaT);
-
-   if(liveTime < deltaT)
-      getGame()->deleteObject(this);
-   else
-      liveTime -= deltaT;
+   if(liveTime)
+   {
+      if(liveTime <= deltaT)
+      {
+         getGame()->deleteObject(this, 500);
+         liveTime = 0;
+      }
+      else
+         liveTime -= deltaT;
+   }
 }
 
 void Projectile::processClient(U32 deltaT)

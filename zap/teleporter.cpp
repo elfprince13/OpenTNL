@@ -104,10 +104,8 @@ void Teleporter::unpackUpdate(GhostConnection *connection, BitStream *stream)
          SparkManager::emitSpark(dest + off * 100,  off * Random::readF() * -50.f, Color(0,1,0), 5);
 
       }
-      SFXHandle s = new SFXObject(SFXTeleportIn, dest, Point());
-      s->play();
-      s = new SFXObject(SFXTeleportOut, pos, Point());
-      s->play();
+      SFXObject::play(SFXTeleportIn, dest, Point());
+      SFXObject::play(SFXTeleportOut, pos, Point());
       timeout = TeleporterDelay;
    }
 }

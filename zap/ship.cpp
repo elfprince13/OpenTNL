@@ -174,7 +174,7 @@ void Ship::processClient(U32 deltaT)
       mMoveState[RenderState].angle = mMoveState[ActualState].angle;
       float time = deltaT * 0.001;
       Point deltap = mMoveState[ActualState].pos -
-                     mMoveState[RenderState].pos;
+                       mMoveState[RenderState].pos;
 
       Point requestVel = deltap;
       requestVel *= 1 / time;
@@ -210,16 +210,37 @@ void Ship::processClient(U32 deltaT)
    }
    else
       mMoveState[RenderState] = mMoveState[ActualState];
+   /*
 
-
-   updateExtent();
-   if(hasExploded && timeUntilRemove)
+   U32 timeUsed = deltaT;
+   if(interpTime)
    {
-      if(timeUntilRemove > deltaT)
-         timeUntilRemove -= deltaT;
+      if(interpTime < timeUsed)
+      {
+         timeUsed -= interpTime;
+         interpTime = 0;
+         mMoveState[RenderState] = mMoveState[ActualState];
+      }
       else
-         timeUntilRemove = 0;
+      {
+         Point totalDelta = mMoveState[ActualState].pos -
+                            mMoveState[RenderState].pos;
+
+         mMoveState[RenderState].pos +=
+               totalDelta * (timeUsed / F32(interpTime));
+
+         interpTime -= timeUsed;
+         timeUsed = 0;
+      }
    }
+
+   if(timeUsed)
+   {
+      lastMove.time = timeUsed;
+      processMove(&lastMove, ActualState);
+      mMoveState[RenderState] = mMoveState[ActualState];
+   }*/
+   updateExtent();
 
    // Emit some particles
    emitMovementSparks();
@@ -237,17 +258,6 @@ void Ship::processServer(U32 deltaT)
       setMaskBits(PositionMask);
    }
    updateExtent();
-   if(hasExploded && timeUntilRemove)
-   {
-      if(timeUntilRemove > deltaT)
-      {
-         timeUntilRemove -= deltaT;
-      }
-      else
-      {
-         getGame()->deleteObject(this);
-      }
-   }
 }
 
 void Ship::writeControlState(BitStream *stream)
@@ -270,8 +280,6 @@ void Ship::readControlState(BitStream *stream)
 
 U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
-   U32 retVal = 0;
-
    if(stream->writeFlag(updateMask & InitialMask))
    {
       stream->write(color.r);
@@ -290,15 +298,10 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
                stream->writeFlag(true);
                stream->writeInt(index, GhostConnection::GhostIdBitSize);
             }
-            else
-            {
-               retVal |= InitialMask;
-            }
          }
       }
       stream->writeFlag(false);
    }
-
    if(stream->writeFlag(updateMask & HealthMask))
       stream->writeFloat(mHealth, 6);
 
@@ -328,7 +331,7 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
          lastMove.pack(stream, NULL);
       }
    }
-   return retVal;
+   return 0;
 }
 
 void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
@@ -390,7 +393,6 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
    if(explode && !hasExploded)
    {
       hasExploded = true;
-      timeUntilRemove = ExplosionFadeTime;
       disableCollision();
 
       emitShipExplosion(mMoveState[ActualState].pos);
@@ -402,7 +404,7 @@ static Vector<GameObject *> fillVector;
 void Ship::performScopeQuery(GhostConnection *connection)
 {
    Rect queryRect(mMoveState[ActualState].pos, mMoveState[ActualState].pos);
-   queryRect.expand(Point(600, 500));
+   queryRect.expand(Point(500, 400));
 
    fillVector.clear();
    findObjects(AllObjectTypes, fillVector, queryRect);
@@ -438,7 +440,7 @@ void Ship::kill()
       return;
 
    GameConnection *controllingClient = getControllingClient();
-   timeUntilRemove = KillDeleteDelay;
+   getGame()->deleteObject(this, KillDeleteDelay);
    hasExploded = true;
    setMaskBits(ExplosionMask);
    disableCollision();
@@ -454,24 +456,23 @@ enum {
 };
 
 Color ShipExplosionColors[NumShipExplosionColors] = {
-   Color(1, 0, 0),
-   Color(0.9, 0.5, 0),
-   Color(1, 1, 1),
-   Color(1, 1, 0),
-   Color(1, 0, 0),
-   Color(0.8, 1.0, 0),
-   Color(1, 0.5, 0),
-   Color(1, 1, 1),
-   Color(1, 0, 0),
-   Color(0.9, 0.5, 0),
-   Color(1, 1, 1),
-   Color(1, 1, 0),
+Color(1, 0, 0),
+Color(0.9, 0.5, 0),
+Color(1, 1, 1),
+Color(1, 1, 0),
+Color(1, 0, 0),
+Color(0.8, 1.0, 0),
+Color(1, 0.5, 0),
+Color(1, 1, 1),
+Color(1, 0, 0),
+Color(0.9, 0.5, 0),
+Color(1, 1, 1),
+Color(1, 1, 0),
 };
 
 void Ship::emitShipExplosion(Point pos)
 {
-   SFXHandle h = new SFXObject(SFXShipExplode, pos, Point());
-   h->play();
+   SFXObject::play(SFXShipExplode, pos, Point());
 
    F32 a, b;
    a = Random::readF() * 0.4 + 0.5;
@@ -542,6 +543,9 @@ void Ship::emitMovementSparks()
 
 void Ship::render()
 {
+   if(hasExploded)
+      return;
+
    if(posSegments.size())
    {
       glBegin(GL_LINES);
@@ -559,12 +563,12 @@ void Ship::render()
 
    F32 alpha = 1.0;
 
-   if(hasExploded)
-   {
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      alpha = timeUntilRemove / F32(ExplosionFadeTime);
-   }
+//   if(hasExploded)
+//   {
+//      glEnable(GL_BLEND);
+//      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//      alpha = timeUntilRemove / F32(ExplosionFadeTime);
+//   }
 
    // draw thrusters
    Point velDir(lastMove.right - lastMove.left, lastMove.down - lastMove.up);

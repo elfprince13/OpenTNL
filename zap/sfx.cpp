@@ -28,7 +28,7 @@
 #include "tnl.h"
 #include "tnlLog.h"
 
-#if defined (TNL_OS_WIN32) || defined (TNL_OS_LINUX)
+#if defined (TNL_OS_WIN32)
 
 #include "alInclude.h"
 
@@ -37,21 +37,18 @@ using namespace TNL;
 namespace Zap
 {
 
-static ALbyte *wavFileNames[] = {
-   "phaser.wav",
-   "phaser_impact.wav",
-   "ship_explode.wav",
-   "flag_capture.wav",
-   "flag_drop.wav",
-   "flag_return.wav",
-   "flag_snatch.wav",
-   "teleport_in.wav",
-   "teleport_out.wav",
-   "bounce_wall.wav",
-   "bounce_obj.wav",
-   NULL,
+static SFXProfile gSFXProfiles[] = {
+ {  "phaser.wav", false, 0.45f, false, 150, 600 },
+ {  "phaser_impact.wav", false, 0.7f, false, 150, 600 },
+ {  "ship_explode.wav", false, 1.0, false, 300, 1000 },
+ {  "flag_capture.wav", true, 0.45f, false, 0, 0 },
+ {  "flag_drop.wav", true, 0.45f, false, 0, 0 },
+ {  "flag_return.wav", true, 0.45f, false, 0, 0 },
+ {  "flag_snatch.wav", true, 0.45f, false, 0, 0 }, 
+ {  "teleport_in.wav", false, 1.0, false, 200, 500 },
+ {  "teleport_out.wav", false, 1.0, false, 200, 500 },
+ {  NULL, false, 0, false, 0, 0 },
 };
-
 
 static ALCdevice *gDevice = NULL;
 static ALCcontext *gContext = NULL;
@@ -70,26 +67,29 @@ F32 SFXObject::mMaxDistance = 500;
 static ALuint gBuffers[NumSFXBuffers];
 static Vector<SFXHandle> gPlayList;
 
-SFXObject::SFXObject(U32 sfxIndex, F32 gain, bool looping)
+SFXObject::SFXObject(U32 profileIndex, F32 gain, Point position, Point velocity)
 {
-   mSFXIndex = sfxIndex;
+   mSFXIndex = profileIndex;
+   mProfile = gSFXProfiles + profileIndex;
    mGain = gain;
-   mIsLooping = looping;
-   mIsRelative = true;
+   mPosition = position;
+   mVelocity = velocity;
    mSourceIndex = -1;
    mPriority = 0;
 }
 
-SFXObject::SFXObject(U32 sfxIndex, Point position, Point velocity, F32 gain, bool looping)
+RefPtr<SFXObject> SFXObject::play(U32 profileIndex, F32 gain)
 {
-   mSFXIndex = sfxIndex;
-   mGain = gain;
-   mIsLooping = looping;
-   mPosition = position;
-   mVelocity = velocity;
-   mIsRelative = false;
-   mSourceIndex = -1;
-   mPriority = 0;
+   RefPtr<SFXObject> ret = new SFXObject(profileIndex, gain, Point(), Point());
+   ret->play();
+   return ret;
+}
+
+RefPtr<SFXObject> SFXObject::play(U32 profileIndex, Point position, Point velocity, F32 gain)
+{
+   RefPtr<SFXObject> ret = new SFXObject(profileIndex, gain, position, velocity);
+   ret->play();
+   return ret;
 }
 
 SFXObject::~SFXObject()
@@ -100,26 +100,32 @@ SFXObject::~SFXObject()
 void SFXObject::updateGain()
 {
    ALuint source = gSources[mSourceIndex];
-   if(!mIsRelative)
+   F32 gain = mGain;
+
+   if(!mProfile->isRelative)
    {
       F32 distance = (mListenerPosition - mPosition).len();
-
-      F32 gainFactor = (mMaxDistance - distance) / mMaxDistance;
-      if(gainFactor < 0)
-         gainFactor = 0;
-
-      //gainFactor = 1;
-
-      alSourcef(source, AL_GAIN, gainFactor * mGain);
+      if(distance > mProfile->fullGainDistance)
+      {
+         if(distance < mProfile->zeroGainDistance)
+            gain *= (mProfile->fullGainDistance - distance) / 
+                    (mProfile->zeroGainDistance - mProfile->fullGainDistance);
+         else
+            gain = 0.0f;
+      }
+      else
+         gain = 1.0f;
    }
    else
-      alSourcef(source, AL_GAIN, mGain);
+      gain = 1.0f;
+
+   alSourcef(source, AL_GAIN, gain * mProfile->gainScale);
 }
 
 void SFXObject::updateMovementParams()
 {
    ALuint source = gSources[mSourceIndex];
-   if(mIsRelative)
+   if(mProfile->isRelative)
    {
       alSourcei(source, AL_SOURCE_RELATIVE, true);
       alSource3f(source, AL_POSITION, 0, 0, 0);
@@ -138,7 +144,7 @@ void SFXObject::playOnSource()
    ALuint source = gSources[mSourceIndex];
    alSourceStop(source);
    alSourcei(source, AL_BUFFER, gBuffers[mSFXIndex]);
-   alSourcei(source, AL_LOOPING, mIsLooping);
+   alSourcei(source, AL_LOOPING, mProfile->isLooping);
    updateMovementParams();
 
    updateGain();
@@ -150,13 +156,6 @@ void SFXObject::setGain(F32 gain)
    mGain = gain;
    if(mSourceIndex != -1)
       updateGain();
-}
-
-void SFXObject::setLooping(bool looping)
-{
-   mIsLooping = looping;
-   if(mSourceIndex != -1)
-      alSourcei(gSources[mSourceIndex], AL_LOOPING, mIsLooping);
 }
 
 void SFXObject::setMovementParams(Point position, Point velocity)
@@ -232,15 +231,15 @@ void SFXObject::init()
 
    for(U32 i = 0; i < NumSFXBuffers; i++)
    {
-      if(!wavFileNames[i])
+      if(!gSFXProfiles[i].fileName)
          break;
 
       ALsizei size,freq;
-       ALenum   format;
-       ALvoid   *data;
-    ALboolean loop;
+      ALenum   format;
+      ALvoid   *data;
+      ALboolean loop;
 
-      alutLoadWAVFile(wavFileNames[i], &format, &data, &size, &freq, &loop);
+      alutLoadWAVFile((ALbyte *) gSFXProfiles[i].fileName, &format, &data, &size, &freq, &loop);
       if(alGetError() != AL_NO_ERROR)
          return;
       alBufferData(gBuffers[i], format, data, size, freq);
@@ -290,7 +289,7 @@ void SFXObject::process()
       else
       {
          // compute a priority for this sound.
-         if(s->mIsRelative)
+         if(!s->mProfile->isRelative)
             s->mPriority = (500 - (s->mPosition - mListenerPosition).len()) / 500.0f;
          else
             s->mPriority = 1.0;
@@ -324,7 +323,7 @@ void SFXObject::process()
          gSourceActive[s->mSourceIndex] = false;
          s->mSourceIndex = -1;
       }
-      if(!s->mIsLooping)
+      if(!s->mProfile->isLooping)
          gPlayList.erase_fast(i);
       else
          i++;

@@ -36,7 +36,7 @@ using namespace TNL;
 namespace Zap
 {
 
-enum SFXBuffers {
+enum SFXProfiles {
    SFXPhaser,
    SFXPhaserImpact,
    SFXShipExplode,
@@ -46,9 +46,17 @@ enum SFXBuffers {
    SFXFlagSnatch,
    SFXTeleportIn,
    SFXTeleportOut,
-   SFXBounceWall,
-   SFXBounceObject,
    NumSFXBuffers
+};
+
+struct SFXProfile
+{
+   const char *fileName;
+   bool isRelative;
+   F32 gainScale;
+   bool isLooping;
+   F32 fullGainDistance;
+   F32 zeroGainDistance;
 };
 
 class SFXObject : public Object
@@ -60,23 +68,20 @@ class SFXObject : public Object
    U32 mSFXIndex;
    Point mPosition;
    Point mVelocity;
-   bool mIsRelative;
+   SFXProfile *mProfile;
    F32 mGain;
-   bool mIsLooping;
    S32 mSourceIndex;
    F32 mPriority;
    void playOnSource();
    void updateGain();
    void updateMovementParams();
+   SFXObject(U32 profileIndex, F32 gain, Point position, Point velocity);
 public:
-   SFXObject(U32 sfxIndex, F32 gain = 1.0, bool looping = false); // constructor for a 2D sound
-   SFXObject(U32 sfxIndex, Point position, Point velocity, F32 gain = 1.0, bool looping = false);
    ~SFXObject();
 
    void setGain(F32 gain);
    void play();
    void stop();
-   void setLooping(bool looping);
    void setMovementParams(Point position, Point velocity);
 
    static void setMaxDistance(F32 maxDistance);
@@ -84,6 +89,8 @@ public:
    static void shutdown();
    static void process();
    static void setListenerParams(Point position, Point velocity);
+   static RefPtr<SFXObject> play(U32 profileIndex, F32 gain = 1.0);
+   static RefPtr<SFXObject> play(U32 profileIndex, Point position, Point velocity, F32 gain = 1.0);
 };
 
 typedef RefPtr<SFXObject> SFXHandle;

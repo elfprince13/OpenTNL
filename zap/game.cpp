@@ -105,12 +105,32 @@ void Game::checkConnectionToMaster(U32 timeDelta)
    }
 }
 
-void Game::processDeleteList()
+Game::DeleteRef::DeleteRef(GameObject *o, U32 d)
 {
-   while(mPendingDeleteObjects.size())
+   theObject = o;
+   delay = d;
+}
+
+void Game::deleteObject(GameObject *theObject, U32 delay)
+{
+   mPendingDeleteObjects.push_back(DeleteRef(theObject, delay));
+}
+
+void Game::processDeleteList(U32 timeDelta)
+{
+   for(S32 i = 0; i < mPendingDeleteObjects.size(); )
    {
-      delete mPendingDeleteObjects[0];
-      mPendingDeleteObjects.erase_fast(U32(0));
+      if(timeDelta > mPendingDeleteObjects[i].delay)
+      {
+         GameObject *g = mPendingDeleteObjects[i].theObject;
+         delete g;
+         mPendingDeleteObjects.erase_fast(i);
+      }
+      else
+      {
+         mPendingDeleteObjects[i].delay -= timeDelta;
+         i++;
+      }
    }
 }
 
@@ -205,7 +225,7 @@ void ServerGame::idle(U32 timeDelta)
    {
       mGameObjects[i]->processServer(timeDelta);
    }
-   processDeleteList();
+   processDeleteList(timeDelta);
    mNetInterface->processConnections();
 }
 
@@ -260,7 +280,7 @@ void ClientGame::idle(U32 timeDelta)
             mGameObjects[i]->processClient(timeDelta);
       }
    }
-   processDeleteList();
+   processDeleteList(timeDelta);
    SparkManager::tick((F32)timeDelta / 1000.f);
    SFXObject::process();
 

@@ -112,13 +112,6 @@ void GameConnection::writePacket(BitStream *bstream, PacketNotify *notify)
       highSendIndex[0] = highSendIndex[1];
       highSendIndex[1] = highSendIndex[2];
       highSendIndex[2] = ((GamePacketNotify *) notify)->firstUnsentMoveIndex;
-
-      // it might be fun to add an erase_range() to Vector, eh?
-      for(U32 i = firstMoveIndex; i < highSendIndex[0]; i++)
-      {
-         firstMoveIndex++;
-         pendingMoves.erase((U32) 0);
-      }
    }
    else
    {

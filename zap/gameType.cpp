@@ -226,7 +226,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sChangeTeams, (),
    // destroy the old ship
    GameObject *co = source->getControlObject();
    if(co)
-      getGame()->deleteObject(co);
+      getGame()->deleteObject(co, 0);
 
    U32 newTeamId = (mClientList[clientIndex].teamId + 1) % mTeams.size();
    mClientList[clientIndex].teamId = newTeamId;

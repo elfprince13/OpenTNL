@@ -139,8 +139,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cCTFMessage, (U32 messageIndex, U32 c
             CTFMessages[messageIndex], 
                mClientList[clientIndex].name.getString(),
                mTeams[teamIndex].name.getString());
-   SFXHandle h = new SFXObject(CTFFlagSounds[messageIndex]);
-   h->play();
+   SFXObject::play(CTFFlagSounds[messageIndex]);
 }
 
 TNL_IMPLEMENT_NETOBJECT(CTFFlagItem);

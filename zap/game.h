@@ -87,9 +87,17 @@ protected:
    U32 mNextMasterTryTime;
    F32 mGridSize;
 
+   struct DeleteRef
+   {
+      GameObject *theObject;
+      U32 delay;
+
+      DeleteRef(GameObject *o = NULL, U32 d = 0);
+   };
+
    GridDatabase mDatabase;
    Vector<GameObject *> mGameObjects;
-   Vector<GameObject *> mPendingDeleteObjects;
+   Vector<DeleteRef> mPendingDeleteObjects;
 
    RefPtr<GameNetInterface> mNetInterface;
 
@@ -107,7 +115,7 @@ protected:
 public:
    Game(const Address &theBindAddress);
 
-   void deleteObject(GameObject *theObject) { mPendingDeleteObjects.push_back(theObject); }
+   void deleteObject(GameObject *theObject, U32 delay);
 
    void addToGameObjectList(GameObject *theObject);
    void removeFromGameObjectList(GameObject *theObject);
@@ -128,7 +136,7 @@ public:
    GameType *getGameType();
    void setGameType(GameType *theGameType);
 
-   void processDeleteList();
+   void processDeleteList(U32 timeDelta);
 };
 
 class ServerGame : public Game
