@@ -405,7 +405,7 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
    rpcNumSTEs = 0;
    U32 rpcCurrentSTEIndex = 0;
 
-   U32 currentSize = sizeof(U32) * argList.size();
+   U32 currentSize = argListSize;
 #ifdef TNL_CPU_PPC
    currentSize = getMax(currentSize, U32(28));
 #endif
