@@ -33,6 +33,7 @@
 
 #include <stdarg.h>
 #include "glutInclude.h"
+#include <ctype.h>
 
 namespace Zap
 {
