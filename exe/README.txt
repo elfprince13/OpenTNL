@@ -12,6 +12,8 @@ Changes since version 1.1.2:
 - Added credits on exit
 - Added a new CTF level
 - Added voice recording and playback (recording on Win32 only for now)
+- Added voice compression using the variable LPC10 codec from the
+  excellent HawkVoice library.
 - Added more sounds
 
 Controls:
