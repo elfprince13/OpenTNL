@@ -212,7 +212,13 @@ public:
    /// RPC from server to client called after all the GhostAlwaysEvents are posted
    TNL_DECLARE_RPC(rpcGhostAlwaysDone, (U32 sequence));
 
-   /// RPC from client to server sent when the client receives the rpcGhostAlwaysDone
+   /// RPC from client to server sent when the client receives the rpcGhostAlwaysDone, to notify that it is ready for the activation of the ghost always objects.
+   TNL_DECLARE_RPC(rpcReadyForGhostAlwaysActivation, (U32 sequence));
+
+   /// RPC from server to client called after all GhostAlways objects are activated
+   TNL_DECLARE_RPC(rpcGhostAlwaysActivated, (U32 sequence));    
+
+   /// RPC from client to server sent when the client receives the rpcGhostAlwaysActivated
    TNL_DECLARE_RPC(rpcReadyForNormalGhosts, (U32 sequence));
 
    /// RPC from server to client sent to notify that ghosting should stop
@@ -256,7 +262,6 @@ struct GhostInfo
       Ghosting = BIT(4),            ///< This GhostInfo's NetObject has been sent to the client, but the packet it was sent in hasn't been acked yet.
       KillGhost = BIT(5),           ///< The ghost of this GhostInfo's NetObject should be destroyed ASAP.
       KillingGhost = BIT(6),        ///< The ghost of this GhostInfo's NetObject is in the process of being destroyed.
-      ScopedEvent = BIT(7),         ///< This GhostInfo's NetObject is being sent to the client in the form of an event (GhostAlways).
 
       /// Flag mask - if any of these are set, the object is not yet available for ghost ID lookup.
       NotAvailable = (NotYetGhosted | Ghosting | KillGhost | KillingGhost),

@@ -747,86 +747,6 @@ void GhostConnection::objectInScope(NetObject *obj)
 
 //-----------------------------------------------------------------------------
 
-TNL_DECLARE_ENUM(GhostConnection::GhostCountBitSize);
-TNL_IMPLEMENT_RPC(GhostConnection, rpcGhostAlwaysStarting, (U32 sequence, Int<GhostConnection::GhostCountBitSize> ghostCount), 
-      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
-{
-   TNLLogMessageV(LogGhostConnection, ("Got GhostAlwaysStarting %d", sequence));
-
-   if(!doesGhostTo())
-   {
-      setLastError("Invalid packet.");
-      return;
-   }
-   onStartGhosting(ghostCount);
-}
-
-TNL_IMPLEMENT_RPC(GhostConnection, rpcGhostAlwaysDone, (U32 sequence), 
-      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
-{
-   TNLLogMessageV(LogGhostConnection, ("Got GhostAlwaysDone %d", sequence));
-   if(!doesGhostTo())
-   {
-      setLastError("Invalid packet.");
-      return;
-   }
-   mGhostingSequence = sequence;
-   rpcReadyForNormalGhosts(mGhostingSequence);   
-}
-
-TNL_IMPLEMENT_RPC(GhostConnection, rpcReadyForNormalGhosts, (U32 sequence), 
-      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
-{
-   TNLLogMessageV(LogGhostConnection, ("Got ready for normal ghosts %d %d", sequence, mGhostingSequence));
-   if(!doesGhostFrom())
-   {
-      setLastError("Invalid packet.");
-      return;
-   }
-   if(sequence != mGhostingSequence)
-      return;
-   onAllGhostAlwaysObjectsReceived();
-   mGhosting = true;
-   for(S32 i = 0; i < mGhostFreeIndex; i++)
-   {
-      if(mGhostArray[i]->flags & GhostInfo::ScopedEvent)
-      {
-         mGhostArray[i]->flags &= ~(GhostInfo::Ghosting | GhostInfo::ScopedEvent);
-         if(mGhostArray[i]->obj)
-            mGhostArray[i]->obj->onGhostAvailable(this);
-      }
-   }
-}
-
-TNL_IMPLEMENT_RPC(GhostConnection, rpcEndGhosting, (), 
-      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
-{
-   if(!doesGhostTo())
-   {
-      setLastError("Invalid packet.");
-      return;
-   }
-   deleteLocalGhosts();
-   onEndGhosting();
-}
-
-void GhostConnection::deleteLocalGhosts()
-{
-   if(!mLocalGhosts)
-      return;
-   // just delete all the local ghosts,
-   // and delete all the ghosts in the current save list
-   for(S32 i = 0; i < MaxGhostCount; i++)
-   {
-      if(mLocalGhosts[i])
-      {
-         mLocalGhosts[i]->onGhostRemove();
-         delete mLocalGhosts[i];
-         mLocalGhosts[i] = NULL;
-      }
-   }
-}
-
 void GhostConnection::activateGhosting()
 {
    if(!doesGhostFrom())
@@ -871,12 +791,116 @@ void GhostConnection::activateGhosting()
       mGhostArray[j]->updateMask = 0;
       ghostPushToZero(mGhostArray[j]);
       mGhostArray[j]->flags &= ~GhostInfo::NotYetGhosted;
-      mGhostArray[j]->flags |= GhostInfo::Ghosting | GhostInfo::ScopedEvent;
+      mGhostArray[j]->flags |= GhostInfo::Ghosting;
 
       postNetEvent(new GhostAlwaysObjectEvent(mGhostArray[j]->obj, mGhostArray[j]->index));
    }
    rpcGhostAlwaysDone(mGhostingSequence);
    //TNLAssert(validateGhostArray(), "Invalid ghost array!");
+}
+
+TNL_DECLARE_ENUM(GhostConnection::GhostCountBitSize);
+TNL_IMPLEMENT_RPC(GhostConnection, rpcGhostAlwaysStarting, (U32 sequence, Int<GhostConnection::GhostCountBitSize> ghostCount), 
+      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
+{
+   TNLLogMessageV(LogGhostConnection, ("Got GhostAlwaysStarting %d", sequence));
+
+   if(!doesGhostTo())
+   {
+      setLastError("Invalid packet.");
+      return;
+   }
+   onStartGhosting(ghostCount);
+}
+
+TNL_IMPLEMENT_RPC(GhostConnection, rpcGhostAlwaysDone, (U32 sequence), 
+      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
+{
+   TNLLogMessageV(LogGhostConnection, ("Got GhostAlwaysDone %d", sequence));
+   if(!doesGhostTo())
+   {
+      setLastError("Invalid packet.");
+      return;
+   }
+   rpcReadyForGhostAlwaysActivation(sequence);
+}
+
+TNL_IMPLEMENT_RPC(GhostConnection, rpcReadyForGhostAlwaysActivation, (U32 sequence), 
+      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
+{
+   TNLLogMessageV(LogGhostConnection, ("Got ready for ghost always activation %d %d", sequence, mGhostingSequence));
+   if(!doesGhostFrom())
+   {
+      setLastError("Invalid packet.");
+      return;
+   }
+   if(sequence != mGhostingSequence)
+      return;
+
+   for(S32 i = 0; i < mGhostFreeIndex; i++)
+   {
+      mGhostArray[i]->flags &= ~GhostInfo::Ghosting;
+      if(mGhostArray[i]->obj)
+         mGhostArray[i]->obj->onGhostAvailable(this);
+   }
+   rpcGhostAlwaysActivated(mGhostingSequence);
+}
+
+TNL_IMPLEMENT_RPC(GhostConnection, rpcGhostAlwaysActivated, (U32 sequence), 
+      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
+{
+   TNLLogMessageV(LogGhostConnection, ("Got GhostAlwaysActivated %d", sequence));
+   if(!doesGhostTo())
+   {
+      setLastError("Invalid packet.");
+      return;
+   }
+   mGhostingSequence = sequence;
+   rpcReadyForNormalGhosts(mGhostingSequence);
+}
+
+TNL_IMPLEMENT_RPC(GhostConnection, rpcReadyForNormalGhosts, (U32 sequence), 
+      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
+{
+   TNLLogMessageV(LogGhostConnection, ("Got ready for normal ghosts %d %d", sequence, mGhostingSequence));
+   if(!doesGhostFrom())
+   {
+      setLastError("Invalid packet.");
+      return;
+   }
+   if(sequence != mGhostingSequence)
+      return;
+   onAllGhostAlwaysObjectsReceived();
+   mGhosting = true;
+}
+
+TNL_IMPLEMENT_RPC(GhostConnection, rpcEndGhosting, (), 
+      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
+{
+   if(!doesGhostTo())
+   {
+      setLastError("Invalid packet.");
+      return;
+   }
+   deleteLocalGhosts();
+   onEndGhosting();
+}
+
+void GhostConnection::deleteLocalGhosts()
+{
+   if(!mLocalGhosts)
+      return;
+   // just delete all the local ghosts,
+   // and delete all the ghosts in the current save list
+   for(S32 i = 0; i < MaxGhostCount; i++)
+   {
+      if(mLocalGhosts[i])
+      {
+         mLocalGhosts[i]->onGhostRemove();
+         delete mLocalGhosts[i];
+         mLocalGhosts[i] = NULL;
+      }
+   }
 }
 
 void GhostConnection::clearGhostInfo()
