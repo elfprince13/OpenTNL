@@ -1,4 +1,4 @@
-SoccerGameType 20 8
+SoccerGameType 10 8
 
 GridSize 280
 

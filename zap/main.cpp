@@ -53,7 +53,7 @@ U32 gMaxPlayers = 128;
 
 const char *gMasterAddressString = "IP:master.opentnl.org:29005";
 Address gMasterAddress;
-const char *gLevelList = "level1.txt level3.txt";
+const char *gLevelList = "level1.txt level2.txt level3.txt level2.txt";
 
 void reshape(int nw, int nh)
 {

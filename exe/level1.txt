@@ -2,7 +2,7 @@
 
 GridSize 300
 
-CTFGameType 20 8
+CTFGameType 10 8
 
 Team Blue 0 0 1
 Team Red 1 0 0
