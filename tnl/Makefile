@@ -7,7 +7,7 @@
 # 
 # Configuration
 #
-CC=gcc -g -DTNL_DEBUG -I../libtomcrypt # -O2
+CC=g++ -g -DTNL_DEBUG -DTNL_ENABLE_LOGGING -I../libtomcrypt # -O2
 
 OBJECTS=\
 	assert.o\
