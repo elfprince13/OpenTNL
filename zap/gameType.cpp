@@ -279,21 +279,24 @@ void GameType::onGameOver()
    }
    else
    {
-      ClientRef *winningClient = mClientList[0];
-      for(S32 i = 1; i < mClientList.size(); i++)
+      if(mClientList.size())
       {
-         if(mClientList[i]->score == winningClient->score)
-            tied = true;
-         else if(mClientList[i]->score > winningClient->score)
+         ClientRef *winningClient = mClientList[0];
+         for(S32 i = 1; i < mClientList.size(); i++)
          {
-            winningClient = mClientList[i];
-            tied = false;
+            if(mClientList[i]->score == winningClient->score)
+               tied = true;
+            else if(mClientList[i]->score > winningClient->score)
+            {
+               winningClient = mClientList[i];
+               tied = false;
+            }
          }
-      }
-      if(!tied)
-      {
-         e.push_back(emptyString);
-         e.push_back(winningClient->name);
+         if(!tied)
+         {
+            e.push_back(emptyString);
+            e.push_back(winningClient->name);
+         }
       }
    }
    if(tied)
