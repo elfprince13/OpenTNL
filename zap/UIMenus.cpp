@@ -28,6 +28,7 @@
 #include "UINameEntry.h"
 #include "UIGame.h"
 #include "UIQueryServers.h"
+#include "UICredits.h"
 #include "game.h"
 #include "gameType.h"
 
@@ -157,7 +158,7 @@ void MainMenuUserInterface::processSelection(U32 index)
          gOptionsMenuUserInterface.activate();
          break;
       case 4:
-         exit(0);
+         gCreditsUserInterface.activate();
          break;
    }
 }

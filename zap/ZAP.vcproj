@@ -258,10 +258,22 @@
 			RelativePath=".\UI.h">
 		</File>
 		<File
+			RelativePath=".\UICredits.cpp">
+		</File>
+		<File
+			RelativePath=".\UICredits.h">
+		</File>
+		<File
 			RelativePath=".\UIGame.cpp">
 		</File>
 		<File
 			RelativePath=".\UIGame.h">
+		</File>
+		<File
+			RelativePath=".\UILevelEditor.cpp">
+		</File>
+		<File
+			RelativePath=".\UILevelEditor.h">
 		</File>
 		<File
 			RelativePath=".\UIMenus.cpp">
