@@ -1,0 +1,8 @@
+
+GameType
+
+Team Yellow 1 1 0
+Spawn 0 0.5 0.5
+
+BarrierMaker 0 0 8 0 8 1 0 1 0 0
+Teleporter 7.5 0.5 0.5 0.5

@@ -1,0 +1,154 @@
+//-----------------------------------------------------------------------------------
+//
+//   Torque Network Library
+//   Copyright (C) 2004 GarageGames.com, Inc.
+//   For more information see http://www.opentnl.org
+//
+//   This program is free software; you can redistribute it and/or modify
+//   it under the terms of the GNU General Public License as published by
+//   the Free Software Foundation; either version 2 of the License, or
+//   (at your option) any later version.
+//
+//   For use in products that are not compatible with the terms of the GNU 
+//   General Public License, alternative licensing options are available 
+//   from GarageGames.com.
+//
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU General Public License for more details.
+//
+//   You should have received a copy of the GNU General Public License
+//   along with this program; if not, write to the Free Software
+//   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+//------------------------------------------------------------------------------------
+
+#include "tnl.h"
+#include "tnlNetBase.h"
+#include "tnlVector.h"
+
+namespace TNL
+{
+
+#define INITIAL_CRC_VALUE 0xFFFFFFFF
+
+NetClassRep *NetClassRep::mClassLinkList = NULL;
+U32 NetClassRep::mNetClassCount[NetClassGroupCount][NetClassTypeCount] = {{0, },};
+U32 NetClassRep::mNetClassBitSize[NetClassGroupCount][NetClassTypeCount] = {{0, },};
+NetClassRep **NetClassRep::mClassTable[NetClassGroupCount][NetClassTypeCount];
+U32 NetClassRep::mClassCRC[NetClassGroupCount] = {INITIAL_CRC_VALUE, };
+
+bool NetClassRep::mInitialized = false;
+
+NetClassRep::NetClassRep()
+{
+
+}
+
+Object* NetClassRep::create(const char* className)
+{
+   TNLAssert(mInitialized, "creating an object before NetClassRep::initialize.");
+
+   for (NetClassRep *walk = mClassLinkList; walk; walk = walk->mNextClass)
+      if (!strcmp(walk->getClassName(), className))
+         return walk->create();
+
+   TNLAssertV(0,("Couldn't find class rep for dynamic class: %s", className));
+   return NULL;
+}
+
+//--------------------------------------
+Object* NetClassRep::create(const U32 groupId, const U32 typeId, const U32 classId)
+{
+   TNLAssert(mInitialized, "creating an object before NetClassRep::initialize.");
+   TNLAssert(classId < mNetClassCount[groupId][typeId], "Class id out of range.");
+   TNLAssert(mClassTable[groupId][typeId][classId] != NULL, "No class with declared id type.");
+
+   if(mClassTable[groupId][typeId][classId])
+      return mClassTable[groupId][typeId][classId]->create();
+   return NULL;
+}
+
+//--------------------------------------
+
+static S32 QSORT_CALLBACK ACRCompare(const void *aptr, const void *bptr)
+{
+   const NetClassRep *a = *((const NetClassRep **) aptr);
+   const NetClassRep *b = *((const NetClassRep **) bptr);
+
+   if(a->getClassVersion() != b->getClassVersion())
+      return a->getClassVersion() - b->getClassVersion();
+   return strcmp(a->getClassName(), b->getClassName());
+}
+
+void NetClassRep::initialize()
+{
+   if(mInitialized)
+      return;
+   Vector<NetClassRep *> dynamicTable;
+      
+   NetClassRep *walk;
+   
+   for (U32 group = 0; group < NetClassGroupCount; group++)
+   {
+      U32 groupMask = 1 << group;
+      for(U32 type = 0; type < NetClassTypeCount; type++)
+      {
+         for (walk = mClassLinkList; walk; walk = walk->mNextClass)
+         {
+            if(walk->getClassType() == type && walk->mClassGroupMask & groupMask)
+               dynamicTable.push_back(walk);
+         }
+         mNetClassCount[group][type] = dynamicTable.size();
+         if(!mNetClassCount[group][type])
+            continue;
+
+         qsort((void *) &dynamicTable[0], dynamicTable.size(), sizeof(NetClassRep *), ACRCompare);
+         mClassTable[group][type] = new NetClassRep*[mNetClassCount[group][type]];
+   
+         for(U32 i = 0; i < mNetClassCount[group][type];i++)
+         {
+            mClassTable[group][type][i] = dynamicTable[i];
+            dynamicTable[i]->mClassId[group] = i;
+
+         }
+         mNetClassBitSize[group][type] = 
+               getBinLog2(getNextPow2(mNetClassCount[group][type] + 1));
+         dynamicTable.clear();
+      }
+   }
+   mInitialized = true;
+
+}
+
+Object::Object()
+{
+   mFirstObjectRef = NULL;
+   mRefCount = 0;
+}
+
+Object::~Object()
+{
+   TNLAssert(mRefCount == 0, "Error! Object deleted with non-zero reference count!");
+   // loop through the linked list of object references and NULL
+   // out all pointers to this object.
+
+   SafeObjectRef *walk = mFirstObjectRef;
+   while(walk)
+   {
+      SafeObjectRef *next = walk->mNextObjectRef;
+      walk->mObject = NULL;
+      walk->mPrevObjectRef = NULL;
+      walk->mNextObjectRef = NULL;
+      walk = next;
+   }
+}
+
+//--------------------------------------
+NetClassRep* Object::getClassRep() const
+{
+   return NULL;
+}
+
+};

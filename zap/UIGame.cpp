@@ -1,0 +1,416 @@
+//-----------------------------------------------------------------------------------
+//
+//   Torque Network Library - ZAP example multiplayer vector graphics space game
+//   Copyright (C) 2004 GarageGames.com, Inc.
+//   For more information see http://www.opentnl.org
+//
+//   This program is free software; you can redistribute it and/or modify
+//   it under the terms of the GNU General Public License as published by
+//   the Free Software Foundation; either version 2 of the License, or
+//   (at your option) any later version.
+//
+//   For use in products that are not compatible with the terms of the GNU 
+//   General Public License, alternative licensing options are available 
+//   from GarageGames.com.
+//
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU General Public License for more details.
+//
+//   You should have received a copy of the GNU General Public License
+//   along with this program; if not, write to the Free Software
+//   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+//------------------------------------------------------------------------------------
+
+#include "gameConnection.h"
+
+#include "game.h"
+#include "UIGame.h"
+#include "UIMenus.h"
+#include "gameType.h"
+
+#include <stdarg.h>
+#include "glutInclude.h"
+
+namespace Zap
+{
+
+GameUserInterface gGameUserInterface;
+Color gGlobalChatColor(0.9, 0.9, 0.9);
+Color gTeamChatColor(0, 1, 0);
+
+GameUserInterface::GameUserInterface()
+{
+   mCurrentMode = PlayMode;
+
+   mChatLastBlinkTime = 0;
+   memset(mChatBuffer, 0, sizeof(mChatBuffer));
+   mChatBlink = false;
+
+   for(U32 i = 0; i < 4; i++)
+      mDisplayMessage[i][0] = 0;
+}
+
+void GameUserInterface::displayMessage(Color theColor, const char *format, ...)
+{
+   for(S32 i = MessageDisplayCount - 1; i > 0; i--)
+   {
+      strcpy(mDisplayMessage[i], mDisplayMessage[i-1]);
+      mDisplayMessageColor[i] = mDisplayMessageColor[i-1];
+   }
+   va_list args;
+   va_start(args, format);
+   dVsprintf(mDisplayMessage[0], sizeof(mDisplayMessage[0]), format, args);
+   mDisplayMessageColor[0] = theColor;
+
+   mDisplayMessageTimer = DisplayMessageTimeout;
+}
+
+void GameUserInterface::idle(U32 timeDelta)
+{
+   if(timeDelta > mDisplayMessageTimer)
+   {
+      mDisplayMessageTimer = DisplayMessageTimeout;
+      for(S32 i = MessageDisplayCount - 1; i > 0; i--)
+      {
+         strcpy(mDisplayMessage[i], mDisplayMessage[i-1]);
+         mDisplayMessageColor[i] = mDisplayMessageColor[i-1];
+      }
+
+      mDisplayMessage[0][0] = 0;
+   }
+   else
+      mDisplayMessageTimer -= timeDelta;
+   if(mCurrentMode == ChatMode)
+   {
+      mChatLastBlinkTime += timeDelta;
+      if(mChatLastBlinkTime > ChatBlinkTime)
+      {
+         mChatBlink = !mChatBlink;
+         mChatLastBlinkTime = 0;
+      }
+   }
+}
+
+void GameUserInterface::render()
+{
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+   glColor3f(0.0, 0.0, 0.0);
+   glViewport(0, 0, windowWidth, windowHeight);
+
+   glClearColor(0, 0, 0, 1.0);
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+   if(!gClientGame->isConnectedToServer())
+   {
+      glColor3f(1,1,1);
+      drawCenteredString(290, 30, "Connecting to server...");
+      drawCenteredString(330, 20, "Press <ESC> to abort");
+   }
+
+   glTranslatef(400, 300, 0);
+
+   if(gClientGame)
+      gClientGame->render();
+
+   // draw the reticle
+   glPushMatrix();
+
+   glTranslatef(mMousePoint.x, mMousePoint.y, 0);
+
+   glColor3f(1, 0, 0);
+   glBegin(GL_LINE_LOOP);
+   glVertex2f(-8, -6);
+   glVertex2f(-6, -8);
+   glVertex2f(-3, -3);
+   glEnd();
+   glBegin(GL_LINE_LOOP);
+   glVertex2f( 8, 6);
+   glVertex2f( 6, 8);
+   glVertex2f( 3, 3);
+   glEnd();
+   glBegin(GL_LINE_LOOP);
+   //glColor3f(1, 0, 0);
+   glVertex2f(8, -6);
+   glVertex2f(6, -8);
+   glVertex2f(3, -3);
+   glEnd();
+   glBegin(GL_LINE_LOOP);
+   glVertex2f(-8, 6);
+   glVertex2f(-6, 8);
+   glVertex2f(-3, 3);
+
+   glEnd();
+   glPopMatrix();
+
+   //glMatrixMode(GL_PROJECTION);
+   //glOrtho(0, windowWidth, windowHeight, 0, 0, 1);
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+
+   glColor3f(1,1,1);
+
+   U32 y = 5;
+   for(S32 i = 3; i >= 0; i--)
+   {
+      if(mDisplayMessage[i][0])
+      {
+         glColor3f(mDisplayMessageColor[i].r, 
+                  mDisplayMessageColor[i].g,
+                  mDisplayMessageColor[i].b);
+
+         drawString(5, y, 20, mDisplayMessage[i]);
+         y += 24;
+      }
+   }
+   GameType *theGameType = gClientGame->getGameType();
+
+   if(theGameType)
+      theGameType->renderInterfaceOverlay();
+
+   if(mCurrentMode == ChatMode)
+   {
+      const char *promptStr;
+      if(mCurrentChatType == TeamChat)
+      {
+         glColor3f(gTeamChatColor.r,
+                   gTeamChatColor.g,
+                   gTeamChatColor.b);
+
+         promptStr = "(Team): ";
+      }
+      else
+      {
+         glColor3f(gGlobalChatColor.r,
+                   gGlobalChatColor.g,
+                   gGlobalChatColor.b);
+
+         promptStr = "(Global): ";
+      }
+
+      U32 width = getStringWidth(20, promptStr);
+
+      drawString(5, 100, 20, promptStr);
+      drawString(5 + width, 100, 20, mChatBuffer);
+
+      if(mChatBlink)
+         drawString(5 + width + getStringWidth(20, mChatBuffer, mChatCursorPos), 100, 20, "_");
+   }
+
+#if 0
+   // some code for outputting the RTT for the connection
+   // useful for testing lag code
+   GameConnection *con = gClientGame->getConnectionToServer();
+
+   if(con)
+   {
+      drawStringf(10, 550, 30, "%0.2g", con->getRoundTripTime());
+   }
+#endif
+}
+
+void GameUserInterface::onMouseDragged(S32 x, S32 y)
+{
+   onMouseMoved(x, y);
+}
+
+void GameUserInterface::onMouseMoved(S32 x, S32 y)
+{
+   mMousePoint = Point(x - windowWidth / 2, y - windowHeight / 2);
+   mMousePoint.x *= canvasWidth / windowWidth;
+   mMousePoint.y *= canvasHeight / windowHeight;
+   mCurrentMove.angle = atan2(mMousePoint.x, mMousePoint.y);
+}
+
+void GameUserInterface::onMouseDown(S32 x, S32 y)
+{
+   mCurrentMove.fire = true;
+}
+
+void GameUserInterface::onMouseUp(S32 x, S32 y)
+{
+   mCurrentMove.fire = false;
+}
+
+void GameUserInterface::onKeyDown(U32 key)
+{
+   if(mCurrentMode == PlayMode)
+   {
+      mCurrentChatType = GlobalChat;
+
+      switch(key)
+      {
+         case 'w':
+         case 'W':
+            mCurrentMove.up = 1.0;
+            break;
+         case 'a':
+         case 'A':
+            mCurrentMove.left = 1.0;
+            break;
+         case 's':
+         case 'S':
+            mCurrentMove.down = 1.0;
+            break;
+         case 'd':
+         case 'D':
+            mCurrentMove.right = 1.0;
+            break;
+         case 27:
+            if(!gClientGame->isConnectedToServer())
+            {
+               endGame();
+               gMainMenuUserInterface.activate();
+            }
+            else
+               gGameMenuUserInterface.activate();
+            break;
+
+         case 't':
+         case 'T':
+            mCurrentChatType = TeamChat;
+         case 'g':
+         case 'G':
+            mChatLastBlinkTime = 0;
+            mChatBlink = true;
+            mCurrentMode = ChatMode;
+            mCurrentMove.up = 
+               mCurrentMove.left = 
+               mCurrentMove.right = 
+               mCurrentMove.down = 0;
+            break;
+      }
+   }
+   else if(mCurrentMode == ChatMode)
+   {
+      if(key == '\r')
+         issueChat();
+      else if(key == 8)
+      {
+         // backspace key
+         if(mChatCursorPos > 0)
+         {
+            mChatCursorPos--;
+            for(U32 i = mChatCursorPos; mChatBuffer[i]; i++)
+               mChatBuffer[i] = mChatBuffer[i+1];
+         }
+      }
+      else if(key == 27)
+      {
+         cancelChat();
+      }
+      else
+      {
+         for(U32 i = sizeof(mChatBuffer) - 2; i > mChatCursorPos; i--)
+            mChatBuffer[i] = mChatBuffer[i-1];
+         if(mChatCursorPos < sizeof(mChatBuffer) - 2)
+         {
+            mChatBuffer[mChatCursorPos] = key;
+            mChatCursorPos++;
+         }
+      }
+   }
+}
+
+Move *GameUserInterface::getCurrentMove()
+{
+   if(!OptionsMenuUserInterface::controlsRelative)
+      return &mCurrentMove;
+   else
+   {
+      mTransformedMove = mCurrentMove;
+
+      Point moveDir(mCurrentMove.right - mCurrentMove.left,
+                    mCurrentMove.up - mCurrentMove.down);
+
+      Point angleDir(sin(mCurrentMove.angle), cos(mCurrentMove.angle));
+
+      Point rightAngleDir(-angleDir.y, angleDir.x);
+      Point newMoveDir = angleDir * moveDir.y + rightAngleDir * moveDir.x;
+
+      if(newMoveDir.x > 0)
+      {
+         mTransformedMove.right = newMoveDir.x;
+         mTransformedMove.left = 0;
+      }
+      else
+      {
+         mTransformedMove.right = 0;
+         mTransformedMove.left = -newMoveDir.x;
+      }
+      if(newMoveDir.y > 0)
+      {
+         mTransformedMove.down = newMoveDir.y;
+         mTransformedMove.up = 0;
+      }
+      else
+      {
+         mTransformedMove.down = 0;
+         mTransformedMove.up = -newMoveDir.y;
+      }
+      if(mTransformedMove.right > 1)
+         mTransformedMove.right = 1;
+      if(mTransformedMove.left > 1)
+         mTransformedMove.left = 1;
+      if(mTransformedMove.up > 1)
+         mTransformedMove.up = 1;
+      if(mTransformedMove.down > 1)
+         mTransformedMove.down = 1;
+
+      return &mTransformedMove;
+   }
+}
+
+void GameUserInterface::cancelChat()
+{
+   memset(mChatBuffer, 0, sizeof(mChatBuffer));
+   mChatCursorPos = 0;
+   mCurrentMode = PlayMode;
+}
+
+void GameUserInterface::issueChat()
+{
+   if(mChatBuffer[0])
+   {
+      GameType *gt = gClientGame->getGameType();
+      if(gt)
+         gt->c2sSendChat(mCurrentChatType == GlobalChat, mChatBuffer);
+   }
+   cancelChat();
+}
+
+void GameUserInterface::onKeyUp(U32 key)
+{
+   if(mCurrentMode == PlayMode)
+   {
+      switch(key)
+      {
+         case 'w':
+         case 'W':
+            mCurrentMove.up = 0;
+            break;
+         case 'a':
+         case 'A':
+            mCurrentMove.left = 0;
+            break;
+         case 's':
+         case 'S':
+            mCurrentMove.down = 0;
+            break;
+         case 'd':
+         case 'D':
+            mCurrentMove.right = 0;
+            break;
+      }
+   }
+   else if(mCurrentMode == ChatMode)
+   {
+
+
+   }
+}
+
+};
