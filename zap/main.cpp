@@ -266,7 +266,12 @@ void idle()
             else
                gZapJournal.keyup('c');
 
-            if(Random::readF() > 0.8)
+            if(Random::readB())
+               gZapJournal.key('\t');
+            else
+               gZapJournal.keyup('\t');
+
+            if(Random::readB())
                gZapJournal.key(' ');
             else
                gZapJournal.keyup(' ');

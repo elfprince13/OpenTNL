@@ -43,7 +43,7 @@ TNL_IMPLEMENT_NETOBJECT(SoccerGameType);
 
 void SoccerGameType::renderInterfaceOverlay(bool scoreboardVisible)
 {
-   if(scoreboardVisible || mGameOver )
+   if((mGameOver || scoreboardVisible) && mTeams.size() > 0)
    {
       U32 totalWidth = 780;
       U32 teamWidth = totalWidth / mTeams.size();
