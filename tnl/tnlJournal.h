@@ -171,8 +171,8 @@ public:
 #define TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(className, func, args) \
    void className::func args
 
-#define TNL_JOURNAL_WRITE_BLOCK(x)
-#define TNL_JOURNAL_READ_BLOCK(x)
+#define TNL_JOURNAL_WRITE_BLOCK(blockType, x)
+#define TNL_JOURNAL_READ_BLOCK(blockType, x)
 
 #endif
 };

@@ -32,6 +32,7 @@
 #include "gameConnection.h"
 #include "point.h"
 #include "UI.h"
+#include "tnlJournal.h"
 
 namespace Zap
 {
@@ -116,94 +117,137 @@ BOOL CALLBACK EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance,
    return DIENUM_STOP;
 }
 
-void JoystickUpdateMove( Move *theMove )
+
+static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
 {
-    DIJOYSTATE2 js;           // DInput joystick state 
+   DIJOYSTATE2 js;       // DInput joystick state 
 
-    if(!gJoystick) 
-        return;
+   if(!gJoystick)
+      return false;
 
-    if(FAILED(gJoystick->Poll() ) )
-    {
-       HRESULT hr;
-       hr = gJoystick->Acquire();
-        
-       while( hr == DIERR_INPUTLOST ) 
-          hr = gJoystick->Acquire();
-       return; 
-    }
+   if(FAILED(gJoystick->Poll() ) )
+   {
+      HRESULT hr;
+      hr = gJoystick->Acquire();
+      
+      while( hr == DIERR_INPUTLOST ) 
+         hr = gJoystick->Acquire();
+      return false; 
+   }
 
-    // Get the input's device state
-    if(FAILED(gJoystick->GetDeviceState( sizeof(DIJOYSTATE2), &js ) ) )
-        return; // The device should have been acquired during the Poll()
+   // Get the input's device state
+   if(FAILED(gJoystick->GetDeviceState( sizeof(DIJOYSTATE2), &js ) ) )
+      return false; // The device should have been acquired during the Poll()
 
-    S32 x = js.lX;
-    F32 deadZone = 8192.0f;
+   S32 x = js.lX;
+   F32 deadZone = 8192.0f;
 
-    F32 controls[4];
-    controls[0] = F32( js.lX ) - 32768.0f;
-    controls[1] = F32( js.lY ) - 32768.0f;
+   F32 controls[4];
+   controls[0] = F32( js.lX ) - 32768.0f;
+   controls[1] = F32( js.lY ) - 32768.0f;
 
-    if(gJoystickType == 0)
-    {
+   if(gJoystickType == 0)
+   {
       controls[2] = F32( js.lRz ) - 32768.0f;
       controls[3] = F32( js.rglSlider[0] ) - 32768.0f;
-    }
-    else if(gJoystickType == 1)
-    {
+   }
+   else if(gJoystickType == 1)
+   {
       controls[3] = F32( js.lZ ) - 32768.0f;      
       controls[2] = F32( js.lRz ) - 32768.0f;
-    }
+   }
 
-    for(U32 i = 0; i < 4; i++)
-    {
-        if(controls[i] < -deadZone)
-           controls[i] = -(-controls[i] - deadZone) / F32(32768.0f - deadZone);
-        else if(controls[i] > deadZone)
-           controls[i] = (controls[i] - deadZone) / F32(32768.0f - deadZone);
-        else
-           controls[i] = 0;
-    }
-    if(controls[0] < 0)
-    {
-       theMove->left = -controls[0];
-       theMove->right = 0;
-    }
-    else
-    {
-       theMove->left = 0;
-       theMove->right = controls[0];
-    }
-    if(controls[1] < 0)
-    {
-       theMove->up = -controls[1];
-       theMove->down = 0;
-    }
-    else
-    {
-       theMove->down = controls[1];
-       theMove->up = 0;
-    }
+   for(U32 i = 0; i < 4; i++)
+   {
+      if(controls[i] < -deadZone)
+         controls[i] = -(-controls[i] - deadZone) / F32(32768.0f - deadZone);
+      else if(controls[i] > deadZone)
+         controls[i] = (controls[i] - deadZone) / F32(32768.0f - deadZone);
+      else
+         controls[i] = 0;
+   }
+   if(controls[0] < 0)
+   {
+      theMove->left = -controls[0];
+      theMove->right = 0;
+   }
+   else
+   {
+      theMove->left = 0;
+      theMove->right = controls[0];
+   }
+   if(controls[1] < 0)
+   {
+      theMove->up = -controls[1];
+      theMove->down = 0;
+   }
+   else
+   {
+      theMove->down = controls[1];
+      theMove->up = 0;
+   }
 
-    Point p(controls[2], controls[3]);
-    if(p.len() > 0.1)
-    {
-       theMove->angle = atan2(p.x, p.y);
-       theMove->fire = true;
-    }
-    else
-       theMove->fire = false;
+   Point p(controls[2], controls[3]);
+   if(p.len() > 0.1)
+   {
+      theMove->angle = atan2(p.x, p.y);
+      theMove->fire = true;
+   }
+   else
+      theMove->fire = false;
 
-   static bool buttonDown[12] = { 0, };
    // check the state of the buttons:
    for( U32 i = 0; i < 12; i++ )
+      buttonPressed[i] = (js.rgbButtons[i] & 0x80) != 0;
+
+   return true;
+}
+
+static bool updateMoveInternalJournaled( Move *theMove, bool buttonPressed[12] )
+{
+   TNL_JOURNAL_READ_BLOCK(3000,
+      BitStream *readStream = Journal::getReadStream();
+      if(!readStream->readFlag())
+         return false;
+
+      Move aMove;
+      aMove.unpack(readStream);
+      *theMove = aMove;
+      for(U32 i = 0; i < 12; i++)
+         buttonPressed[i] = readStream->readFlag();
+      return true;
+   )
+
+   bool ret = updateMoveInternal(theMove, buttonPressed);
+
+   TNL_JOURNAL_WRITE_BLOCK(3000,
+      BitStream *writeStream = Journal::getWriteStream();
+      if(writeStream->writeFlag(ret))
+      {
+         Move dummy;
+         theMove->pack(writeStream, &dummy);
+         for(U32 i = 0;i < 12; i++)
+            writeStream->writeFlag(buttonPressed[i]);
+      }
+   )
+   return ret;
+}
+
+void JoystickUpdateMove( Move *theMove )
+{
+   static bool buttonDown[12] = { 0, };
+   bool buttonPressed[12];
+
+   if(!updateMoveInternalJournaled( theMove, buttonPressed ))
+      return;
+
+   for(U32 i = 0; i < 12; i++)
    {
-      bool buttonPressed = (js.rgbButtons[i] & 0x80) != 0;
-      if(buttonPressed && !buttonDown[i])
+      if(buttonPressed[i] && !buttonDown[i])
          UserInterface::current->onControllerButtonDown(i);
-      else if(!buttonPressed && buttonDown[i])
+      else if(!buttonPressed[i] && buttonDown[i])
          UserInterface::current->onControllerButtonUp(i);
-      buttonDown[i] = buttonPressed;
+      buttonDown[i] = buttonPressed[i];
    }
 }
 
