@@ -126,7 +126,7 @@ struct GhostInfo;
 /// the SimpleNetObject should always be scoped, and that it can be ghosted to remote hosts
 ///
 /// @code
-///    U32 packUpdate(NetConnection *, U32 mask, BitStream *stream)
+///    U32 packUpdate(GhostConnection *, U32 mask, BitStream *stream)
 ///    {
 ///       // check which states need to be updated, and write updates
 ///       if(stream->writeFlag(mask & Message1Mask))
@@ -147,7 +147,7 @@ struct GhostInfo;
 /// doesn't have to send the 32 bit updateMask with every packet.
 ///
 /// @code
-///    void unpackUpdate(NetConnection *, BitStream *stream)
+///    void unpackUpdate(GhostConnection *, BitStream *stream)
 ///    {
 ///       // the unpackUpdate function must be symmetrical to packUpdate
 ///       if(stream->readFlag())
