@@ -26,6 +26,7 @@
 
 #include "voiceCodec.h"
 #include "lpc10.h"
+#include "gsm.h"
 
 namespace Zap
 {
@@ -147,5 +148,57 @@ U32 LPC10VoiceDecoder::decompressFrame(S16 *framePtr, U8 *inputPtr)
    vbr_lpc10_decode(inputPtr, framePtr, (lpc10_decoder_state *) decoderState, &p);
    return (U32) p;
 }
+
+GSMVoiceEncoder::GSMVoiceEncoder()
+{
+   encoderState = gsm_create();
+}
+
+GSMVoiceEncoder::~GSMVoiceEncoder()
+{
+   gsm_destroy((struct gsm_state *) encoderState);
+}
+
+U32 GSMVoiceEncoder::getSamplesPerFrame()
+{
+   return GSM_SAMPLES_PER_FRAME;
+}
+
+U32 GSMVoiceEncoder::getMaxCompressedFrameSize()
+{
+   return GSM_ENCODED_FRAME_SIZE;
+}
+
+U32 GSMVoiceEncoder::compressFrame(S16 *samplePtr, U8 *outputPtr)
+{
+   return gsm_encode((struct gsm_state *) encoderState, samplePtr, outputPtr);
+}
+
+GSMVoiceDecoder::GSMVoiceDecoder()
+{
+   decoderState = gsm_create();
+}
+
+GSMVoiceDecoder::~GSMVoiceDecoder()
+{
+   gsm_destroy((struct gsm_state *) decoderState);
+}
+
+U32 GSMVoiceDecoder::getSamplesPerFrame()
+{
+   return GSM_SAMPLES_PER_FRAME;
+}
+
+U32 GSMVoiceDecoder::getAvgCompressedFrameSize()
+{
+   return GSM_ENCODED_FRAME_SIZE;
+}
+
+U32 GSMVoiceDecoder::decompressFrame(S16 *framePtr, U8 *inputPtr)
+{
+   gsm_decode((struct gsm_state *) decoderState, inputPtr, framePtr);
+   return GSM_ENCODED_FRAME_SIZE;
+}
+
 
 };

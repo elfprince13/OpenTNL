@@ -93,6 +93,33 @@ public:
    ~LPC10VoiceDecoder();
 };
 
+/// The GSMVoiceEncoder class implements the HawkVoice GSM codec
+/// compressor.
+class GSMVoiceEncoder : public VoiceEncoder
+{
+   void *encoderState;
+   U32 getSamplesPerFrame();
+   U32 getMaxCompressedFrameSize();
+   U32 compressFrame(S16 *samplePtr, U8 *outputPtr);
+public:
+   GSMVoiceEncoder();
+   ~GSMVoiceEncoder();
+};
+
+/// The GSMVoiceDecoder class implements the HawkVoice GSM codec
+/// decompressor.
+class GSMVoiceDecoder : public VoiceDecoder
+{
+   void *decoderState;
+   U32 getSamplesPerFrame();
+   U32 getAvgCompressedFrameSize();
+
+   U32 decompressFrame(S16 *framePtr, U8 *inputPtr);
+public:
+   GSMVoiceDecoder();
+   ~GSMVoiceDecoder();
+};
+
 };
 
 #endif

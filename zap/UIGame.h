@@ -68,8 +68,6 @@ class GameUserInterface : public UserInterface
    };
    enum {
       ChatBlinkTime = 100,
-      FirstVoiceAudioSampleTime = 250,
-      VoiceAudioSampleTime = 100,
    };
    Mode mCurrentMode;
    ChatType mCurrentChatType;
@@ -79,22 +77,39 @@ class GameUserInterface : public UserInterface
    bool mChatBlink;
    U32 mChatLastBlinkTime;
    bool mInScoreboardMode;
-   bool mRecordingAudio;
-   S16 mMaxAudioSample;
  
    VChatHelper *mVChat;
-   Timer mVoiceAudioTimer;
-   RefPtr<SFXObject> mVoiceSfx;
-   RefPtr<VoiceEncoder> mVoiceEncoder;
 
-   ByteBufferPtr mUnusedAudio;
+   struct VoiceRecorder
+   {
+      enum {
+         FirstVoiceAudioSampleTime = 250,
+         VoiceAudioSampleTime = 100,
+         MaxDetectionThreshold = 2048,
+      };
+
+      Timer mVoiceAudioTimer;
+      RefPtr<SFXObject> mVoiceSfx;
+      RefPtr<VoiceEncoder> mVoiceEncoder;
+      bool mRecordingAudio;
+      S32 mMaxAudioSample;
+      S32 mMaxForGain;
+      ByteBufferPtr mUnusedAudio;
+
+      VoiceRecorder();
+
+      void idle(U32 timeDelta);
+      void process();
+      void start();
+      void stop();
+      void render();
+
+   } mVoiceRecorder;
+
 public:
    GameUserInterface();
 
    void displayMessage(Color messageColor, const char *format, ...);
-   void processRecordingAudio();
-   void startRecordingAudio();
-   void stopRecordingAudio();
 
    void render();
    void idle(U32 timeDelta);
