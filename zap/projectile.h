@@ -70,6 +70,21 @@ public:
    TNL_DECLARE_CLASS(Projectile);
 };
 
+/*
+class Mine : public GameObject
+{
+public:
+   Mine(Point pos, Ship *planter);
+
+   GameType::ClientRef mOwner;
+
+   void handleCollision(GameObject *theObject, Point colPoint);
+   bool collide(GameObject *hitObject);
+
+   void idle(IdleCallPath path);
+   void render();
+};
+*/
 class GrenadeProjectile : public Item
 {
    typedef Item Parent;

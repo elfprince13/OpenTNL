@@ -327,7 +327,10 @@ void GrenadeProjectile::damageObject(DamageInfo *theInfo)
 {
    // If we're being damaged by another grenade, explode...
    if(theInfo->damageType == 1)
+   {
       explode(getActualPos());
+      return;
+   }
 
    // Bounce off of stuff.
    Point dv = theInfo->impulseVector - mMoveState[ActualState].vel;
@@ -349,7 +352,7 @@ void GrenadeProjectile::explode(Point pos)
       // Make us go boom!
       Color b(1,1,1);
 
-      SparkManager::emitExplosion(getRenderPos(), 1.0, &b, 1);
+      SparkManager::emitExplosion(getRenderPos(), 0.5, &b, 1);
    }
 
    disableCollision();
@@ -365,32 +368,10 @@ void GrenadeProjectile::explode(Point pos)
    DamageInfo info;
    info.collisionPoint = pos;
    info.damagingObject = this;
-
-   // If we're doing client side prediction, only shove - don't damage.
-   info.damageAmount   = isGhost() ? 0.0 : 0.5;
+   info.damageAmount   = 0.5;
    info.damageType     = 1;
 
-   // Check for players within range
-   // if so, blast them to death
-   Rect queryRect(pos, pos);
-   queryRect.expand(Point(150, 150));
-
-   fillVector.clear();
-   findObjects(0xFFFFFFFF, fillVector, queryRect);
-
-   for(S32 i=0; i<fillVector.size(); i++)
-   {
-      // figure the impulse
-      info.impulseVector  = fillVector[i]->getActualPos() - pos;
-      info.impulseVector.normalize();
-
-      info.collisionPoint  = fillVector[i]->getActualPos();
-      info.collisionPoint -= info.impulseVector;
-
-      info.impulseVector  *= 2000.f;
-
-      fillVector[i]->damageObject(&info);
-   }
+   radiusDamage(pos, 200.f, 0xffffffff, &info);
 }
 
 void GrenadeProjectile::renderItem(Point pos)
@@ -398,24 +379,19 @@ void GrenadeProjectile::renderItem(Point pos)
    if(exploded)
       return;
 
-/*   glPushMatrix();
-   glTranslatef(pos.x, pos.y, 0); */
-
    glColor3f(1,1,1);
    glBegin(GL_LINE_LOOP);
-   for(F32 theta = 0; theta <= 2 * 3.1415; theta += 0.3)
+   for(F32 theta = 0; theta <= 2 * 3.1415; theta += 0.4)
       glVertex2f(pos.x + cos(theta) * 10.f, 
                  pos.y + sin(theta) * 10.f);
    glEnd();
 
    glColor3f(1,0,0);
    glBegin(GL_LINE_LOOP);
-   for(F32 theta = 0; theta <= 2 * 3.1415; theta += 0.3)
+   for(F32 theta = 0; theta <= 2 * 3.1415; theta += 0.4)
       glVertex2f(pos.x + cos(theta) * 6.f, 
                  pos.y + sin(theta) * 6.f);
    glEnd();
-
-//   glPopMatrix();
 }
 
 };

@@ -25,6 +25,7 @@
 //------------------------------------------------------------------------------------
 
 #include "gameObject.h"
+#include "gameType.h"
 #include "glutInclude.h"
 
 using namespace TNL;
@@ -62,7 +63,7 @@ Point GameObject::getRenderPos()
 
 Point GameObject::getActualPos()
 {
-   return Point();
+   return extent.getCenter();
 }
 
 void GameObject::setActualPos(Point p)
@@ -114,6 +115,51 @@ F32 GameObject::getUpdatePriority(NetObject *scopeObject, U32 updateMask, S32 up
 void GameObject::damageObject(DamageInfo *theInfo)
 {
 
+}
+
+static Vector<GameObject*> fillVector;
+
+void GameObject::radiusDamage(Point pos, F32 rad, U32 typemask, DamageInfo *info, F32 force)
+{
+   // Check for players within range
+   // if so, blast them to death
+   Rect queryRect(pos, pos);
+   queryRect.expand(Point(rad, rad));
+
+   fillVector.clear();
+   findObjects(typemask, fillVector, queryRect);
+
+   // Ghosts can't do damage.
+   if(isGhost())
+      info->damageAmount = 0;
+
+   for(S32 i=0; i<fillVector.size(); i++)
+   {
+      // Check the actual distance..
+      Point objPos = fillVector[i]->getActualPos();
+      Point delta = objPos - pos;
+
+      if(delta.len() > rad)
+         continue;
+
+      // Can one damage another?
+      if(getGame()->getGameType())
+         if(!getGame()->getGameType()->objectCanDamageObject(info->damagingObject, fillVector[i]))
+            continue;
+
+      // figure the impulse
+      info->impulseVector  = delta;
+      info->impulseVector.normalize();
+
+      info->collisionPoint  = objPos;
+      info->collisionPoint -= info->impulseVector;
+
+      info->impulseVector  *= force;
+
+      // BJGTODO: Check if we can see them via LOS?
+
+      fillVector[i]->damageObject(info);
+   }
 }
 
 GameConnection *GameObject::getControllingClient()
