@@ -27,6 +27,7 @@
 #include "gameConnection.h"
 #include "game.h"
 #include "gameType.h"
+#include "gameNetInterface.h"
 
 #include "UIGame.h"
 #include "UIMenus.h"
@@ -131,15 +132,22 @@ TNL_IMPLEMENT_RPC(GameConnection, c2sAdminPlayerAction, (StringTableEntryRef pla
          }
          break;
       case PlayerMenuUserInterface::Kick:
-         msg = kickMessage;
-         if(theClient->isAdmin())
          {
-            static StringTableEntry nokick("Administrators cannot be kicked.");
-            s2cDisplayMessage(ColorAqua, SFXIncomingMessage, nokick);
-            return;
+            msg = kickMessage;
+            if(theClient->isAdmin())
+            {
+               static StringTableEntry nokick("Administrators cannot be kicked.");
+               s2cDisplayMessage(ColorAqua, SFXIncomingMessage, nokick);
+               return;
+            }
+            ConnectionParameters &p = theClient->getConnectionParameters();
+            if(p.mIsArranged)
+               gServerGame->getNetInterface()->banHost(p.mPossibleAddresses[0], 30000);
+            gServerGame->getNetInterface()->banHost(theClient->getNetAddress(), 30000);
+
+            theClient->disconnect("You were kicked from the game.");
+            break;
          }
-         theClient->disconnect("You were kicked from the game.");
-         break;
       default:
          return;
       }
@@ -338,22 +346,40 @@ bool GameConnection::readConnectRequest(BitStream *stream, const char **errorStr
    stream->readString(buf);
    size_t len = strlen(buf);
 
-   if(len > 252)
-      len = 252;
+   if(len > 30)
+      len = 30;
+
+   // strip leading and trailing spaces...
+   char *name = buf;
+   while(len && *name == ' ')
+   {
+      name++;
+      len--;
+   }
+   while(len && name[len-1] == ' ')
+      len--;
+
+   // remove invisible chars
+   for(size_t i = 0; i < len; i++)
+      if(name[i] < ' ' || name[i] > 127)
+         name[i] = 'X';
+
+   name[len] = 0;
+
    U32 index = 0;
 
 checkPlayerName:
    for(GameConnection *walk = getClientList(); walk; walk = walk->getNextClient())
    {
-      if(!strcmp(walk->mClientName.getString(), buf))
+      if(!strcmp(walk->mClientName.getString(), name))
       {
-         dSprintf(buf + len, 3, ".%d", index);
+         dSprintf(name + len, 3, ".%d", index);
          index++;
          goto checkPlayerName;
       }
    }
 
-   mClientName = buf;
+   mClientName = name;
    return true;
 }
 

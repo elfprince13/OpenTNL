@@ -52,7 +52,7 @@ void MenuUserInterface::render()
    if(gClientGame->getConnectionToServer())
    {
       gGameUserInterface.render();
-      glColor4f(0, 0, 0, 0.5);
+      glColor4f(0, 0, 0, 0.6);
       glEnable(GL_BLEND);
       glBegin(GL_POLYGON);
       glVertex2f(0, 0);
@@ -64,9 +64,9 @@ void MenuUserInterface::render()
    }
 
    glColor3f(1,1,1);
-   drawCenteredString( 10, 30, menuTitle);
-   drawCenteredString( 45, 18, menuSubTitle);
-   drawCenteredString( 570, 18, menuFooter);
+   drawCenteredString( vertMargin, 30, menuTitle);
+   drawCenteredString( vertMargin + 35, 18, menuSubTitle);
+   drawCenteredString( canvasHeight - vertMargin - 20, 18, menuFooter);
 
    if(selectionIndex >= menuItems.size())
       selectionIndex = 0;

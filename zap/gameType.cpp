@@ -112,16 +112,20 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
 
       glEnable(GL_BLEND);
       glColor4f(1,1,1, alpha);
-      UserInterface::drawCenteredStringf(60, 30, "Level: %s", mLevelName.getString());
-      UserInterface::drawCenteredStringf(100, 30, "Game Type: %s", getGameTypeString());
-      UserInterface::drawCenteredString(140, 20, getInstructionString());
-      UserInterface::drawCenteredString(530, 20, mLevelDescription.getString());
+      UserInterface::drawCenteredStringf(UserInterface::vertMargin + 90, 30, "Level: %s", mLevelName.getString());
+      UserInterface::drawCenteredStringf(UserInterface::vertMargin + 130, 30, "Game Type: %s", getGameTypeString());
+      UserInterface::drawCenteredString(UserInterface::canvasHeight - UserInterface::vertMargin - 90, 20, getInstructionString());
+      UserInterface::drawCenteredString(UserInterface::canvasHeight - UserInterface::vertMargin - 60, 20, mLevelDescription.getString());
       glDisable(GL_BLEND);
    }
    if((mGameOver || scoreboardVisible) && mTeams.size() > 0)
    {
       U32 totalWidth = UserInterface::canvasWidth - UserInterface::horizMargin * 2;
-      U32 teamWidth = totalWidth / mTeams.size();
+      U32 columnCount = mTeams.size();
+      if(columnCount > 2)
+         columnCount = 2;
+
+      U32 teamWidth = totalWidth / columnCount;
       U32 maxTeamPlayers = 0;
       countTeamPlayers();
 
@@ -136,18 +140,21 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
       if(mTeams.size() < 2)
          teamAreaHeight = 0;
 
-      U32 totalHeight = UserInterface::canvasHeight - UserInterface::vertMargin * 2;
+      U32 numTeamRows = (mTeams.size() + 1) >> 1;
+
+      U32 totalHeight = (UserInterface::canvasHeight - UserInterface::vertMargin * 2) / numTeamRows - (numTeamRows - 1) * 2;
       U32 maxHeight = (totalHeight - teamAreaHeight) / maxTeamPlayers;
       if(maxHeight > 30)
          maxHeight = 30;
 
-      totalHeight = teamAreaHeight + maxHeight * maxTeamPlayers;
-      U32 yt = (600 - totalHeight) / 2;
-      U32 yb = yt + totalHeight;
+      U32 sectionHeight = (teamAreaHeight + maxHeight * maxTeamPlayers);
+      totalHeight = sectionHeight * numTeamRows + (numTeamRows - 1) * 2;
 
       for(S32 i = 0; i < mTeams.size(); i++)
       {
-         U32 xl = 10 + i * teamWidth;
+         U32 yt = (UserInterface::canvasHeight - totalHeight) / 2 + (i >> 1) * (sectionHeight + 2);
+         U32 yb = yt + sectionHeight;
+         U32 xl = 10 + (i & 1) * teamWidth;
          U32 xr = xl + teamWidth - 2;
 
          Color c = mTeams[i].color;

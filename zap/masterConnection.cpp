@@ -28,6 +28,7 @@
 #include "masterConnection.h"
 #include "../tnl/tnlNetInterface.h"
 #include "gameConnection.h"
+#include "gameNetInterface.h"
 #include "UIQueryServers.h"
 #include "UIMenus.h"
 #include "UINameEntry.h"
@@ -105,33 +106,40 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cClientRequestedArrangedCon
    {
       logprintf("Rejecting arranged connection from %s", Address(possibleAddresses[0]).toString());
       c2mRejectArrangedConnection(requestId, connectionParameters);
+      return;
    }
-   else
+
+   Vector<Address> fullPossibleAddresses;
+   for(S32 i = 0; i < possibleAddresses.size(); i++)
+      fullPossibleAddresses.push_back(Address(possibleAddresses[i]));
+
+   // First check if the specified host is banned on this server
+   if(gServerGame->getNetInterface()->isHostBanned(fullPossibleAddresses[0]))
    {
-      // Ok, let's do the arranged connection!
-      U8 data[Nonce::NonceSize * 2 + SymmetricCipher::KeySize * 2];
-      ByteBuffer b(data, sizeof(data));
-      Random::read(data, sizeof(data));
-      IPAddress localAddress = getInterface()->getFirstBoundInterfaceAddress().toIPAddress();
-
-      c2mAcceptArrangedConnection(requestId, localAddress, b);
-      GameConnection *conn = new GameConnection();
-      Vector<Address> fullPossibleAddresses;
-      for(S32 i = 0; i < possibleAddresses.size(); i++)
-         fullPossibleAddresses.push_back(Address(possibleAddresses[i]));
-
-      conn->setNetAddress(fullPossibleAddresses[0]);
-
-      logprintf("Accepting arranged connection from %s", Address(fullPossibleAddresses[0]).toString());
-      logprintf("  Generated shared secret data: %s", b.encodeBase64()->getBuffer());
-
-      ByteBufferPtr theSharedData = new ByteBuffer(data + 2 * Nonce::NonceSize, sizeof(data) - 2 * Nonce::NonceSize);
-      Nonce nonce(data);
-      Nonce serverNonce(data + Nonce::NonceSize);
-
-      conn->connectArranged(getInterface(), fullPossibleAddresses,
-         nonce, serverNonce, theSharedData,false);
+      logprintf("Blocking connection from banned host %s", fullPossibleAddresses[0].toString());
+      c2mRejectArrangedConnection(requestId, connectionParameters);
+      return;
    }
+   // Ok, let's do the arranged connection!
+   U8 data[Nonce::NonceSize * 2 + SymmetricCipher::KeySize * 2];
+   ByteBuffer b(data, sizeof(data));
+   Random::read(data, sizeof(data));
+   IPAddress localAddress = getInterface()->getFirstBoundInterfaceAddress().toIPAddress();
+
+   c2mAcceptArrangedConnection(requestId, localAddress, b);
+   GameConnection *conn = new GameConnection();
+
+   conn->setNetAddress(fullPossibleAddresses[0]);
+
+   logprintf("Accepting arranged connection from %s", Address(fullPossibleAddresses[0]).toString());
+   logprintf("  Generated shared secret data: %s", b.encodeBase64()->getBuffer());
+
+   ByteBufferPtr theSharedData = new ByteBuffer(data + 2 * Nonce::NonceSize, sizeof(data) - 2 * Nonce::NonceSize);
+   Nonce nonce(data);
+   Nonce serverNonce(data + Nonce::NonceSize);
+
+   conn->connectArranged(getInterface(), fullPossibleAddresses,
+      nonce, serverNonce, theSharedData,false);
 }
 
 TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionAccepted, (U32 requestId, const Vector<IPAddress> &possibleAddresses, ByteBufferRef connectionData))

@@ -40,6 +40,44 @@ GameNetInterface::GameNetInterface(const Address &bindAddress, Game *theGame)
    mGame = theGame;
 };
 
+void GameNetInterface::banHost(const Address &bannedAddress, U32 bannedMilliseconds)
+{
+   BannedHost h;
+   h.theAddress = bannedAddress;
+   h.banDuration = bannedMilliseconds;
+   mBanList.push_back(h);
+}
+
+bool GameNetInterface::isHostBanned(const Address &theAddress)
+{
+   for(S32 i = 0; i < mBanList.size(); i++)
+      if(theAddress.isEqualAddress(mBanList[i].theAddress))
+         return true;
+   return false;
+}
+
+void GameNetInterface::processPacket(const Address &sourceAddress, BitStream *pStream)
+{
+   for(S32 i = 0; i < mBanList.size(); i++)
+      if(sourceAddress.isEqualAddress(mBanList[i].theAddress))
+         return;
+   Parent::processPacket(sourceAddress, pStream);
+}
+
+void GameNetInterface::checkBanlistTimeouts(U32 timeElapsed)
+{
+   for(S32 i = 0; i < mBanList.size(); )
+   {
+      if(mBanList[i].banDuration < timeElapsed)
+         mBanList.erase_fast(i);
+      else
+      {
+         mBanList[i].banDuration -= timeElapsed;
+         i++;
+      }
+   }
+}
+
 void GameNetInterface::handleInfoPacket(const Address &remoteAddress, U8 packetType, BitStream *stream)
 {
    switch(packetType)

@@ -21,9 +21,14 @@ flag to each of the capture zones in the map.  When a capture zone
 is entered by the flag carrier, the zone turns to that team's color
 and the team scores a point.  If the capture zone was already owned
 by a different team, the team that lost the zone loses a point.  If
-all the zones on the level are captured by a single team, that team
-earns an additional point for the "touchdown", and the zones and flag
-reset.
+all the zones on the level are captured by a single team, that scores
+a "touchdown", and the zones and flag reset.
+
+Retrieve - In Retrieve, one or more flags are scattered throughout the level.
+Teams compete to bring these flags back to team-colored goal zones.  Each
+retrieved flag is worth one point to the capturing team.  If a team retrieves
+all the flags on the level, the team keeps the points for the flags and the
+flags reset to their original locations.
 
 Hunters - Solo game where the objective is to collect flags from
 other players and return them to the Nexus for points.  Each player

@@ -306,13 +306,16 @@ void QueryServersUserInterface::render()
    }
    glColor3f(1,1,1);
 
-   drawCenteredString(0, 25, "CHOOSE A SERVER TO JOIN:");
-   drawCenteredString(560, 18, "UP, DOWN, PAGEUP, PAGEDOWN to select, ENTER to join.");
-   drawCenteredString(580, 18, "LEFT, RIGHT select sort column, SPACE to sort.  ESC exits.");
+   drawCenteredString(vertMargin, 25, "CHOOSE A SERVER TO JOIN:");
+   drawCenteredString(canvasHeight - vertMargin - 40, 18, "UP, DOWN, PAGEUP, PAGEDOWN to select, ENTER to join.");
+   drawCenteredString(canvasHeight - vertMargin - 20, 18, "LEFT, RIGHT select sort column, SPACE to sort.  ESC exits.");
+
+   U32 top = vertMargin + 45;
+   U32 bottom = canvasHeight - vertMargin - 60;
 
    for(S32 i = 0; i < columns.size(); i++)
    {
-      drawString(columns[i].xStart, 45, 24, columns[i].name);      
+      drawString(columns[i].xStart, top, 24, columns[i].name);      
    }
 
    S32 x1 = columns[sortColumn].xStart - 2;
@@ -323,11 +326,19 @@ void QueryServersUserInterface::render()
       x2 = columns[sortColumn+1].xStart - 6;
 
    glBegin(GL_LINE_LOOP);
-   glVertex2f(x1, 43);
-   glVertex2f(x2, 43);
-   glVertex2f(x2, 71);
-   glVertex2f(x1, 71);
+   glVertex2f(x1, top - 2);
+   glVertex2f(x2, top - 2);
+   glVertex2f(x2, top + 26);
+   glVertex2f(x1, top + 26);
    glEnd();
+   top += 30;
+
+   U32 totalRows = (bottom - top) / 24;
+   if(!(totalRows & 1))
+      totalRows--;
+   bottom = top + totalRows * 24;
+
+   U32 serversAboveBelow = totalRows >> 1;
 
    if(servers.size())
    {
@@ -335,8 +346,8 @@ void QueryServersUserInterface::render()
       if(selectedIndex == -1)
          selectedIndex = 0;
 
-      S32 firstServer = selectedIndex - ServersAbove;
-      S32 lastServer = selectedIndex + ServersBelow;
+      S32 firstServer = selectedIndex - serversAboveBelow;
+      S32 lastServer = selectedIndex + serversAboveBelow;
 
       if(firstServer < 0)
       {
@@ -350,7 +361,7 @@ void QueryServersUserInterface::render()
 
       for(S32 i = firstServer; i <= lastServer; i++)
       {
-         U32 y = 75 + (i - firstServer) * 24;
+         U32 y = top + (i - firstServer) * 24;
          U32 fontSize = 21;
          ServerRef &s = servers[i];
 
@@ -419,13 +430,13 @@ void QueryServersUserInterface::render()
    for(S32 i = 1; i < columns.size(); i++)
    {
       glBegin(GL_LINES);
-      glVertex2f(columns[i].xStart - 4, 45);
-      glVertex2f(columns[i].xStart - 4, 540);
+      glVertex2f(columns[i].xStart - 4, top - 30);
+      glVertex2f(columns[i].xStart - 4, bottom);
       glEnd();
    }
    glBegin(GL_LINES);
-   glVertex2f(0, 72);
-   glVertex2f(800, 72);
+   glVertex2f(0, top - 3);
+   glVertex2f(800, top - 3);
    glEnd();
 }
 

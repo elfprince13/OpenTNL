@@ -335,6 +335,7 @@ void ServerGame::removeClient(GameConnection *theConnection)
 void ServerGame::idle(U32 timeDelta)
 {
    mCurrentTime += timeDelta;
+   mNetInterface->checkBanlistTimeouts(timeDelta);
    mNetInterface->checkIncomingPackets();
    Game::checkConnectionToMaster(timeDelta);
    for(S32 i = 0; i < mGameObjects.size(); i++)

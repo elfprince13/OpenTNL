@@ -104,8 +104,10 @@ bool FlagItem::collide(GameObject *hitObject)
 {
    if(mIsMounted)
       return false;
-   if(!(hitObject->getObjectTypeMask() & ShipType))
+   if(hitObject->getObjectTypeMask() & (BarrierType | ForceFieldType))
       return true;
+   if(!(hitObject->getObjectTypeMask() & ShipType))
+      return false;
 
    if(isGhost() || ((Ship *) hitObject)->hasExploded)
       return false;
