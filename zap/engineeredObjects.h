@@ -69,6 +69,7 @@ public:
 
    void damageObject(DamageInfo *damageInfo);
    bool collide(GameObject *hitObject) { return true; }
+   F32 getHealth() { return mHealth; }
 };
 
 class ForceField : public GameObject

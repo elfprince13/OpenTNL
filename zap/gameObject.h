@@ -142,6 +142,7 @@ public:
 
    virtual void writeControlState(BitStream *stream);
    virtual void readControlState(BitStream *stream);
+   virtual F32 getHealth() { return 1; }
 
    virtual void controlMoveReplayComplete();
 

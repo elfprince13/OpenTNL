@@ -102,15 +102,18 @@ void LoadoutHelper::render()
 
    for(S32 i = 0; list[i].text; i++)
    {
-      renderControllerButton(20, curPos, list[i].button, list[i].key);
-
+      Color c;
       if((mCurrentIndex == 1 && mModule[0] == i) ||
          (mCurrentIndex == 3 && mWeapon[0] == i) ||
          (mCurrentIndex == 4 && (mWeapon[0] == i || mWeapon[1] == i)))
-         glColor3f(0.3, 0.7, 0.3);
+         c = Color(0.3, 0.7, 0.3);
       else
-         glColor3f(0.1, 1.0, 0.1);
+         c = Color(0.1, 1.0, 0.1);
 
+      glColor3f(c.r,c.g,c.b);
+      renderControllerButton(20, curPos, list[i].button, list[i].key);
+
+      glColor3f(c.r,c.g,c.b);
       UserInterface::drawStringf(40, curPos, fontSize, "- %s", 
          list[i].text);
       curPos += fontSize + 4;

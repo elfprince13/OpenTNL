@@ -346,13 +346,13 @@ bool Ship::findRepairTargets()
    Point pos = getActualPos();
    Point extend(RepairRadius, RepairRadius);
    Rect r(pos - extend, pos + extend);
-   findObjects(ShipType, hitObjects, r);
+   findObjects(ShipType | EngineeredType, hitObjects, r);
 
    mRepairTargets.clear();
    for(S32 i = 0; i < hitObjects.size(); i++)
    {
-      Ship *s = (Ship *) hitObjects[i];
-      if(!s->hasExploded && s->getHealth() < 1 && (s->getActualPos() - pos).len() < (RepairRadius + CollisionRadius))
+      GameObject *s = hitObjects[i];
+      if(s->getHealth() > 0 && s->getHealth() < 1 && (s->getActualPos() - pos).len() < (RepairRadius + CollisionRadius))
          mRepairTargets.push_back(s);
    }
    return mRepairTargets.size() != 0;

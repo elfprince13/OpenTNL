@@ -59,7 +59,7 @@ void GameObject::deleteObject(U32 deleteTimeInterval)
 
 Point GameObject::getRenderPos()
 {
-   return Point();
+   return extent.getCenter();
 }
 
 Point GameObject::getActualPos()

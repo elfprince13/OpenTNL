@@ -114,7 +114,7 @@ public:
 
    Vector<Point> posSegments;
    Vector<SafePtr<Item> > mMountedItems;
-   Vector<SafePtr<Ship> > mRepairTargets;
+   Vector<SafePtr<GameObject> > mRepairTargets;
 
    void render();
    Ship(StringTableEntry playerName="", S32 team = -1, Point p = Point(0,0), F32 m = 1.0);

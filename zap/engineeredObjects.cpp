@@ -118,6 +118,8 @@ void EngineeredObject::damageObject(DamageInfo *di)
 {
    if(di->damageAmount > 0)
       mHealth -= di->damageAmount * .25f;
+   else
+      mHealth -= di->damageAmount;
 
    setMaskBits(HealthMask);
 
