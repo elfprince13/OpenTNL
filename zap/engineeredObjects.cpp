@@ -93,6 +93,7 @@ void engClientCreateObject(GameConnection *connection, U32 object)
       return;
    }
    deployedObject->addToGame(gServerGame);
+   deployedObject->onEnabled();
    Item *theItem = ship->unmountResource();
 
    deployedObject->setResource(theItem);
@@ -100,11 +101,51 @@ void engClientCreateObject(GameConnection *connection, U32 object)
 
 EngineeredObject::EngineeredObject(S32 team, Point anchorPoint, Point anchorNormal)
 {
-   mHealth         = 1.f;
-   mTeam           = team;
-   mAnchorPoint    = anchorPoint;
-   mAnchorNormal   = anchorNormal;
+   mHealth = 1.f;
+   mTeam = team;
+   mAnchorPoint = anchorPoint;
+   mAnchorNormal= anchorNormal;
    mObjectTypeMask = EngineeredType | CommandMapVisType;
+   mIsDestroyed = false;
+}
+
+void EngineeredObject::processArguments(S32 argc, const char **argv)
+{
+   if(argc != 3)
+      return;
+   Point p;
+   mTeam = atoi(argv[0]);
+   p.read(argv + 1);
+   p *= getGame()->getGridSize();
+
+   // find the mount point:
+   F32 minDist = 1000;
+   Point normal;
+   Point anchor;
+
+   for(F32 theta = 0; theta < Float2Pi; theta += FloatPi * 0.125)
+   {
+      Point dir(cos(theta), sin(theta));
+      dir *= 100;
+
+      F32 t;
+      Point n;
+      if(findObjectLOS(BarrierType, 0, p, p + dir, t, n))
+      {
+         if(t < minDist)
+         {
+            anchor = p + dir * t;
+            normal = n;
+            minDist = t;
+         }
+      }
+   }
+   if(minDist > 1)
+      return;
+   mAnchorPoint = anchor + normal;
+   mAnchorNormal = normal;
+   computeExtent();
+   onEnabled();
 }
 
 void EngineeredObject::setResource(Item *resource)
@@ -114,30 +155,44 @@ void EngineeredObject::setResource(Item *resource)
    mResource->removeFromDatabase();
 }
 
+static const F32 disabledLevel = 0.25;
+
+bool EngineeredObject::isEnabled()
+{
+   return mHealth >= disabledLevel;
+}
+
 void EngineeredObject::damageObject(DamageInfo *di)
 {
+   F32 prevHealth = mHealth;
+
    if(di->damageAmount > 0)
       mHealth -= di->damageAmount * .25f;
    else
       mHealth -= di->damageAmount;
 
+   if(mHealth < 0)
+      mHealth = 0;
+   if(prevHealth == mHealth)
+      return;
+
    setMaskBits(HealthMask);
 
-   if(mHealth > 0.f)
-      return;
-   mHealth = 0;
+   if(prevHealth >= disabledLevel && mHealth < disabledLevel)
+      onDisabled();
+   else if(prevHealth < disabledLevel && mHealth >= disabledLevel)
+      onEnabled();
 
-   onDestroyed();
+   if(mHealth == 0 && mResource.isValid())
+   {
+      mIsDestroyed = true;
+      onDestroyed();
 
-   mResource->addToDatabase();
-   mResource->setActualPos(mAnchorPoint + mAnchorNormal * mResource->getRadius());
+      mResource->addToDatabase();
+      mResource->setActualPos(mAnchorPoint + mAnchorNormal * mResource->getRadius());
 
-   deleteObject(500);
-}
-
-void EngineeredObject::onDestroyed()
-{
-
+      deleteObject(500);
+   }
 }
 
 void EngineeredObject::computeExtent()
@@ -265,15 +320,17 @@ U32 EngineeredObject::packUpdate(GhostConnection *connection, U32 updateMask, Bi
    if(stream->writeFlag(updateMask & HealthMask))
    {
       stream->writeFloat(mHealth, 6);
-      stream->writeFlag(mHealth == 0);
+      stream->writeFlag(mIsDestroyed);
    }
    return 0;
 }
 
 void EngineeredObject::unpackUpdate(GhostConnection *connection, BitStream *stream)
 {
+   bool initial = false;
    if(stream->readFlag())
    {
+      initial = true;
       stream->read(&mTeam);
       stream->read(&mAnchorPoint.x);
       stream->read(&mAnchorPoint.y);
@@ -284,35 +341,34 @@ void EngineeredObject::unpackUpdate(GhostConnection *connection, BitStream *stre
    if(stream->readFlag())
    {
       mHealth = stream->readFloat(6);
-      if(stream->readFlag())
+      bool wasDestroyed = mIsDestroyed;
+      mIsDestroyed = stream->readFlag();
+      if(mIsDestroyed && !wasDestroyed && !initial)
          explode();
    }
 }
 
 TNL_IMPLEMENT_NETOBJECT(ForceFieldProjector);
 
-void ForceFieldProjector::onDestroyed()
+void ForceFieldProjector::onDisabled()
 {
    if(mField.isValid())
       mField->deleteObject(0);
 }
 
-void ForceFieldProjector::onAddedToGame(Game *theGame)
+void ForceFieldProjector::onEnabled()
 {
-   if(!isGhost())
-   {
-      Point start = mAnchorPoint + mAnchorNormal * 15;
-      Point end = mAnchorPoint + mAnchorNormal * 500;
+   Point start = mAnchorPoint + mAnchorNormal * 15;
+   Point end = mAnchorPoint + mAnchorNormal * 500;
 
-      F32 t;
-      Point n;
+   F32 t;
+   Point n;
 
-      if(findObjectLOS(BarrierType, 0, start, end, t, n))
-         end = start + (end - start) * t;
+   if(findObjectLOS(BarrierType, 0, start, end, t, n))
+      end = start + (end - start) * t;
 
-      mField = new ForceField(mTeam, start, end);
-      mField->addToGame(theGame);
-   }
+   mField = new ForceField(mTeam, start, end);
+   mField->addToGame(getGame());
 }
 
 bool ForceFieldProjector::getCollisionPoly(Vector<Point> &polyPoints)
@@ -328,7 +384,11 @@ void ForceFieldProjector::render()
 {
    Vector<Point> p;
    getCollisionPoly(p);
-   glColor3f(1,1,1);
+   if(isEnabled())
+      glColor3f(1,1,1);
+   else
+      glColor3f(0.6, 0.6, 0.6);
+
    glBegin(GL_LINE_LOOP);
    for(S32 i = 0; i < p.size(); i++)
       glVertex2f(p[i].x, p[i].y);
@@ -479,6 +539,7 @@ bool Turret::getCollisionPoly(Vector<Point> &polyPoints)
 
 void Turret::onAddedToGame(Game *theGame)
 {
+   Parent::onAddedToGame(theGame);
    mCurrentAngle = atan2(mAnchorNormal.y, mAnchorNormal.x);
 }
 
@@ -521,7 +582,10 @@ void Turret::render()
    glEnd();
    glLineWidth(1);
 
-   glColor3f(1,1,1);
+   if(isEnabled())
+      glColor3f(1,1,1);
+   else
+      glColor3f(0.6, 0.6, 0.6);
    glBegin(GL_LINE_LOOP);
    glVertex(mAnchorPoint + cross * 18);
    glVertex(mAnchorPoint + cross * 18 + mAnchorNormal * TurretAimOffset);
@@ -569,7 +633,7 @@ extern bool FindLowestRootInInterval(Point::member_type inA, Point::member_type 
 
 void Turret::idle(IdleCallPath path)
 {
-   if(path != ServerIdleMainLoop)
+   if(path != ServerIdleMainLoop || !isEnabled())
       return;
 
    mFireTimer.update(mCurrentMove.time);

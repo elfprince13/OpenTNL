@@ -59,7 +59,11 @@ Teleporter 11.5 11.5 1.5 1.5
 Teleporter 4.5 4.5 14.5 14.5
 LoadoutZone 1 11.2 14 11.8 14 11.7 13.7 11.3 13.7
 LoadoutZone 0 4.2 2 4.8 2 4.7 2.3 4.3 2.3
-ResourceItem 4.5 8
-ResourceItem 8 3.5
-ResourceItem 11.5 8
-ResourceItem 8 12.5
+ForceFieldProjector 0 8.9 4.2
+ForceFieldProjector 0 7.1 4.2
+Turret 0 6.9 1.6
+Turret 0 9.1 1.6
+ForceFieldProjector 1 8.9 11.8
+ForceFieldProjector 1 7.1 11.8
+Turret 1 6.9 14.4
+Turret 1 9.1 14.4

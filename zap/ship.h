@@ -140,6 +140,7 @@ public:
    bool hasEngineeringModule() { return mModule[0] == ModuleEngineer ||
                                         mModule[1] == ModuleEngineer; }
 
+   bool isDestroyed() { return hasExploded; }
    bool areItemsMounted() { return mMountedItems.size() != 0; }
    bool carryingResource();
    Item *unmountResource();

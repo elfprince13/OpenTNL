@@ -353,7 +353,7 @@ bool Ship::findRepairTargets()
    for(S32 i = 0; i < hitObjects.size(); i++)
    {
       GameObject *s = hitObjects[i];
-      if(s->getHealth() > 0 && s->getHealth() < 1 && (s->getActualPos() - pos).len() < (RepairRadius + CollisionRadius))
+      if(!s->isDestroyed() && s->getHealth() < 1 && (s->getActualPos() - pos).len() < (RepairRadius + CollisionRadius))
          mRepairTargets.push_back(s);
    }
    return mRepairTargets.size() != 0;

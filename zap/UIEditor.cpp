@@ -80,7 +80,10 @@ enum GameItems
    ItemRepair,
    ItemSoccerGoal,
    ItemTest,
-   ItemResource, 
+   ItemResource,
+   ItemLoadoutZone,
+   ItemTurret,
+   ItemForceField,
 };
 
 GameItemRec gGameItemRecs[] = {
@@ -94,6 +97,8 @@ GameItemRec gGameItemRecs[] = {
    { "TestItem", false, false },
    { "ResourceItem", false, false },
    { "LoadoutZone", true, true },
+   { "Turret", true, false },
+   { "ForceFieldProjector", true, false },
    { NULL, false, false },
 };
 
@@ -865,6 +870,12 @@ void EditorUserInterface::onKeyDown(U32 key)
          break;
       case 'b':
          constructItem(ItemRepair);
+         break;
+      case 'y':
+         constructItem(ItemTurret);
+         break;
+      case 'h':
+         constructItem(ItemForceField);
          break;
       case 8:
       case 127:

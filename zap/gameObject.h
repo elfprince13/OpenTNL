@@ -147,6 +147,7 @@ public:
    virtual void writeControlState(BitStream *stream);
    virtual void readControlState(BitStream *stream);
    virtual F32 getHealth() { return 1; }
+   virtual bool isDestroyed() { return false; }
 
    virtual void controlMoveReplayComplete();
 

@@ -46,6 +46,7 @@ protected:
    SafePtr<Ship> mOwner;
    Point mAnchorPoint;
    Point mAnchorNormal;
+   bool mIsDestroyed;
 
    enum MaskBits
    {
@@ -59,9 +60,15 @@ public:
    void setResource(Item *resource);
    bool checkDeploymentPosition();
    void computeExtent();
-   virtual void onDestroyed();
+   virtual void onDestroyed() {}
+   virtual void onDisabled() {}
+   virtual void onEnabled() {}
+   bool isEnabled();
+
+   void processArguments(S32 argc, const char **argv);
 
    void explode();
+   bool isDestroyed() { return mIsDestroyed; }
    void setOwner(Ship *owner) { mOwner = owner; }
 
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
@@ -109,11 +116,10 @@ public:
    ForceFieldProjector(S32 team = -1, Point anchorPoint = Point(), Point anchorNormal = Point()) :
       EngineeredObject(team, anchorPoint, anchorNormal) { mNetFlags.set(Ghostable); }
 
-   void onDestroyed();
-   void onAddedToGame(Game *theGame);
-
    bool getCollisionPoly(Vector<Point> &polyPoints);
    void render();
+   void onEnabled();
+   void onDisabled();
    TNL_DECLARE_CLASS(ForceFieldProjector);
 };
 

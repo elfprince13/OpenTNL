@@ -138,12 +138,6 @@
 				RelativePath="..\exe\levels\level5.txt">
 			</File>
 			<File
-				RelativePath="..\exe\levels\level6.txt">
-			</File>
-			<File
-				RelativePath="..\exe\levels\level7.txt">
-			</File>
-			<File
 				RelativePath="..\exe\levels\level8.txt">
 			</File>
 			<File
@@ -291,24 +285,6 @@
 				RelativePath=".\moveObject.h">
 			</File>
 			<File
-				RelativePath=".\pony.cpp">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\pony.h">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\projectile.cpp">
 			</File>
 			<File
@@ -356,6 +332,12 @@
 			</File>
 			<File
 				RelativePath=".\huntersGame.h">
+			</File>
+			<File
+				RelativePath=".\rabbitGame.cpp">
+			</File>
+			<File
+				RelativePath=".\rabbitGame.h">
 			</File>
 			<File
 				RelativePath=".\soccerGame.cpp">

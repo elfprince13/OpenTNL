@@ -2,8 +2,6 @@ CTFGameType 10 8
 Team Blue 0 0 1
 Team Red 1 0 0
 GridSize 300
-ResourceItem 7 5
-ResourceItem 10.5 2.5
 TestItem 13.5 5
 CTFFlagItem 0 4 -1
 Spawn 0 7.1 3.1
@@ -59,8 +57,6 @@ BarrierMaker 13.5 3.3 13.6 3.3 13.6 2.7 13.5 2.7 13.2 3 13.5 3.3
 BarrierMaker 14.2 1 14.6 0.5
 BarrierMaker 14 -1.5 13.2 -1.5 13.2 0.3 14 0.3 14 0 13.5 -0.3 13.5 -0.9 14 -1.2 14 -1.5
 BarrierMaker 10.5 4 10.5 5 10.4 5 10 3.3
-ResourceItem 9.5 6
-ResourceItem 6 8.5
 TestItem 3 6
 CTFFlagItem 1 12.5 12
 Spawn 1 9.4 7.9
@@ -116,10 +112,36 @@ BarrierMaker 2.3 10 1.9 10.5
 BarrierMaker 2.5 12.5 3.3 12.5 3.3 10.7 2.5 10.7 2.5 11 3 11.3 3 11.9 2.5 12.2 2.5 12.5
 BarrierMaker 6 7 6 6 6.1 6 6.5 7.7
 BarrierMaker -0.1 10.5 -0.1 2.1 0.5 1.5 0.5 -2.5 2.5 -4.5 5.5 -4.5 7.5 -2.5 14.6 -2.5 14.6 0.5 16.6 0.5 16.6 8.9 16 9.5 16 13.5 14 15.5 11 15.5 9 13.5 1.9 13.5 1.9 10.5 -0.1 10.5
-ResourceItem 8.3 -0.2
-ResourceItem 8.2 11.2
 LoadoutZone 0 11.7 -1.3 12.3 -1.3 12.3 -1 11.7 -1
 LoadoutZone 0 1.3 4.1 0.700001 4.1 0.7 4.4 1.3 4.4
 LoadoutZone 1 12.9 15.1 12.1 15.1 12.3 14.7 12.7 14.7
 LoadoutZone 1 4.8 12.3 4.2 12.3 4.2 12 4.8 12
 LoadoutZone 1 15.2 6.9 15.8 6.9 15.8 6.6 15.2 6.6
+Turret 0 2.7 -2.7
+Turret 0 5.3 -2.8
+ForceFieldProjector 0 2.3 -1.1
+ForceFieldProjector 0 5.7 -1.1
+Turret 0 3.6 0.7
+Turret 0 4.4 0.7
+ForceFieldProjector 0 2.4 1.2
+ForceFieldProjector 0 8.5 4.7
+ForceFieldProjector 0 14.1 1.1
+Turret 0 7.5 0.7
+Turret 0 7.5 -1.1
+Turret 0 14.3 2.9
+Turret 0 9.1 0.7
+Turret 0 9.1 -1.1
+Turret 1 13.8 13.7
+Turret 1 11.2 13.8
+ForceFieldProjector 1 14.2 12.1
+ForceFieldProjector 1 10.8 12.1
+Turret 1 12.9 10.3
+Turret 1 12.1 10.3
+ForceFieldProjector 1 14.1 9.8
+ForceFieldProjector 1 8 6.3
+ForceFieldProjector 1 2.4 9.9
+Turret 1 9 10.3
+Turret 1 9 12.1
+Turret 1 2.2 8.1
+Turret 1 7.4 10.3
+Turret 1 7.4 12.1

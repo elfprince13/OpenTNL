@@ -191,7 +191,7 @@ void ControlObjectConnection::readPacket(BitStream *bstream)
    }
    Parent::readPacket(bstream);
 
-   if(replayControlObjectMoves)
+   if(replayControlObjectMoves && controlObject.isValid())
    {
       for(S32 i = 0; i < pendingMoves.size(); i++)
       {
