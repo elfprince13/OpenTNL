@@ -100,7 +100,7 @@ void RabbitGameType::spawnShip(GameConnection *theClient)
 {
    Parent::spawnShip(theClient);
    ClientRef *cl = theClient->getClientRef();
-   setClientShipLoadout(cl, mHunterLoadout);
+   setClientShipLoadout(cl, theClient->getLoadout());
 }
 
 bool RabbitGameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
@@ -186,8 +186,6 @@ void RabbitGameType::onFlagGrabbed(Ship *ship, RabbitFlagItem *flag)
    s2cRabbitMessage(RabbitMsgGrab, ship->mPlayerName.getString());
 
    flag->mountToShip(ship);
-   ClientRef *cl = ship->getControllingClient()->getClientRef();
-   setClientShipLoadout(cl, mRabbitLoadout);
 }
 
 void RabbitGameType::onFlagHeld(Ship *ship)

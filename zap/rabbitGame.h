@@ -43,8 +43,6 @@ class RabbitGameType : public GameType
 
    S32 mScoreLimit;
 
-   Vector<U32> mRabbitLoadout;
-   Vector<U32> mHunterLoadout;
 public:
 
    enum
@@ -67,18 +65,6 @@ public:
    RabbitGameType()
    {
       mScoreLimit = 100;
-
-      mRabbitLoadout.push_back(ModuleBoost);
-      mRabbitLoadout.push_back(ModuleShield);
-      mRabbitLoadout.push_back(WeaponBounce);
-      mRabbitLoadout.push_back(WeaponTriple);
-      mRabbitLoadout.push_back(WeaponBurst);
-
-      mHunterLoadout.push_back(ModuleSensor);
-      mHunterLoadout.push_back(ModuleCloak);
-      mHunterLoadout.push_back(WeaponPhaser);
-      mHunterLoadout.push_back(WeaponBounce);
-      mHunterLoadout.push_back(WeaponTriple);
    }
    
    void processArguments(S32 argc, const char **argv);
