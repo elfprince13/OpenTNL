@@ -215,7 +215,7 @@ void idle()
    S64 currentTimer = Platform::getHighPrecisionTimerValue();
 
    F64 timeElapsed = Platform::getHighPrecisionMilliseconds(currentTimer - lastTimer) + unusedFraction;
-   U32 integerTime = timeElapsed;
+   U32 integerTime = U32(timeElapsed);
 
    if(integerTime >= 10)
    {

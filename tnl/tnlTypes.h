@@ -197,7 +197,7 @@ typedef unsigned _int64 U64;
 #if _MSC_VER < 1200
    // No support for old compilers
 #  error "VC: Minimum Visual C++ 6.0 or newer required"
-#else _MSC_VER >= 1200
+#else  //_MSC_VER >= 1200
 #  define TNL_COMPILER_STRING "VisualC++"
 #endif
 

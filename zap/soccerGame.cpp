@@ -100,7 +100,7 @@ void SoccerGameType::renderInterfaceOverlay(bool scoreboardVisible)
          UserInterface::drawStringf(xr - 140, yt + 2, 30, "%d", mTeams[i].score);
 
          U32 curRowY = yt + 41;
-         U32 fontSize = maxHeight * 0.8f;
+         U32 fontSize = U32(maxHeight * 0.8f);
          for(S32 j = 0; j < mClientList.size(); j++)
          {
             if(mClientList[j].teamId == i)
@@ -124,7 +124,7 @@ void SoccerGameType::renderInterfaceOverlay(bool scoreboardVisible)
          Point pos(750, 535 - i * 38);
          renderFlag(pos + Point(-20, 18), mTeams[i].color);
          glColor3f(1,1,1);
-         UserInterface::drawStringf(pos.x, pos.y, 32, "%d", mTeams[i].score);
+         UserInterface::drawStringf(U32(pos.x), U32(pos.y), 32, "%d", mTeams[i].score);
       }
    }
    renderTimeLeft();

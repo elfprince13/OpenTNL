@@ -181,3 +181,4 @@ void GameLoader::initGameFromFile(ServerGame *g, const char *file)
 }
 
 };
+

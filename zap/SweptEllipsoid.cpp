@@ -344,3 +344,4 @@ bool PolygonSweptEllipsoidIntersect(const Plane &inPlane, const Vector2 *inVerti
 
 
 };
+

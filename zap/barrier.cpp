@@ -279,3 +279,4 @@ void Barrier::render(U32 layerIndex)
 }
 
 };
+

@@ -159,7 +159,7 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
          }
 
          U32 curRowY = yt + teamAreaHeight + 1;
-         U32 fontSize = maxHeight * 0.8f;
+         U32 fontSize = U32(maxHeight * 0.8f);
          for(S32 j = 0; j < mClientList.size(); j++)
          {
             if(mClientList[j].teamId == i)
@@ -669,3 +669,4 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cVoiceChat, (StringTableEntryRef clientN
 }
 
 };
+

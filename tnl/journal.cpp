@@ -339,3 +339,4 @@ void Journal::processNextJournalEntry()
 }
 
 };
+

@@ -253,3 +253,4 @@ GameObject *GridDatabase::findObjectLOS(U32 typeMask, U32 stateIndex, Point rayS
 }
 
 };
+

@@ -289,10 +289,10 @@ void Ship::processEnergy()
    }
 
    if(mShield)
-      mEnergy -= EnergyShieldDrain * scaleFactor;
+      mEnergy -= S32(EnergyShieldDrain * scaleFactor);
 
    if(mTurbo)
-      mEnergy -= EnergyTurboDrain * scaleFactor;
+      mEnergy -= S32(EnergyTurboDrain * scaleFactor);
 
    if(!mShield && !mTurbo && mEnergy <= EnergyCooldownThreshold)
       mCooldown = true;
@@ -301,7 +301,7 @@ void Ship::processEnergy()
    {
       // If we're not doing anything, recharge.
       if(!(mShield || mTurbo))
-         mEnergy += EnergyRechargeRate * scaleFactor;
+         mEnergy += S32(EnergyRechargeRate * scaleFactor);
 
       if(mEnergy <= 0)
       {
@@ -498,7 +498,7 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
 
    if(positionChanged)
    {
-      mCurrentMove.time = connection->getOneWayTime();
+      mCurrentMove.time = (U32) connection->getOneWayTime();
       processMove(ActualState);
 
       if(interpolate)
@@ -544,7 +544,7 @@ F32 getAngleDiff(F32 a, F32 b)
    while(b<0)   b+=360;
    while(b>360) b-=360;
 
-   if(abs(b-a) > 180)
+   if(fabs(b-a) > 180)
    {
       // Go the other way
       return  360-(b-a);
@@ -784,7 +784,7 @@ void Ship::render()
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glColor4f(1,1,1,0.5);
       //glColor3f(color.r*1.2,color.g*1.2,color.b*1.2);
-      UserInterface::drawString( UserInterface::getStringWidth(14, buff) * -0.5, 30, 14, buff );
+      UserInterface::drawString( U32( UserInterface::getStringWidth(14, buff) * -0.5), 30, 14, buff );
       glDisable(GL_BLEND);
       glBlendFunc(GL_ONE, GL_ZERO);
    }
@@ -942,7 +942,7 @@ void Ship::render()
    glVertex2f(12, -13);
    glEnd();
 
-   U32 health = 14 * mHealth;
+   U32 health = U32(14 * mHealth);
    glBegin(GL_LINES);
    for(U32 i = 0; i < health; i++)
    {

@@ -301,3 +301,4 @@ void fxTrail::renderTrails()
 }
 
 };
+

@@ -128,7 +128,7 @@ void GameUserInterface::render()
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
    glColor3f(0.0, 0.0, 0.0);
-   glViewport(0, 0, windowWidth, windowHeight);
+   glViewport(0, 0, U32(windowWidth), U32(windowHeight));
 
    glClearColor(0, 0, 0, 1.0);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -289,10 +289,10 @@ void GameUserInterface::onMouseDragged(S32 x, S32 y)
 
 void GameUserInterface::onMouseMoved(S32 x, S32 y)
 {
-   S32 xp = x - windowWidth / 2;
-   S32 yp = y - windowHeight / 2;
-   S32 horzMax = 100 * windowWidth / canvasWidth;
-   S32 vertMax = 100 * windowHeight / canvasHeight;
+   S32 xp = S32(x - windowWidth / 2);
+   S32 yp = S32(y - windowHeight / 2);
+   S32 horzMax = S32(100 * windowWidth / canvasWidth);
+   S32 vertMax = S32(100 * windowHeight / canvasHeight);
 
    
    mMousePoint = Point(x - windowWidth / 2, y - windowHeight / 2);
@@ -717,7 +717,7 @@ void GameUserInterface::VoiceRecorder::process()
       else if(-samplePtr[i] > mMaxAudioSample)
          mMaxAudioSample = -samplePtr[i];
    }
-   mMaxForGain *= 0.95;
+   mMaxForGain = U32(mMaxForGain * 0.95f);
    S32 boostedMax = mMaxAudioSample + 2048;
    if(boostedMax > mMaxForGain)
       mMaxForGain = boostedMax;
@@ -735,7 +735,7 @@ void GameUserInterface::VoiceRecorder::process()
          else
             samplePtr[i] = S16(sample);
       }
-      mMaxAudioSample *= gain;
+      mMaxAudioSample = U32(mMaxAudioSample * gain);
    }
 
    ByteBufferPtr sendBuffer = mVoiceEncoder->compressBuffer(mUnusedAudio);

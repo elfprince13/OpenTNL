@@ -138,7 +138,7 @@ CreditsScroller::CreditsScroller()
 void CreditsScroller::updateFX(U32 delta)
 {
    // draw the project information
-   S32 pos = mProjectInfo.currPos.x - (delta / 10);
+   S32 pos = S32( mProjectInfo.currPos.x - (delta / 10) );
    if(pos < -CreditSpace)
       pos += mTotalSize;
    mProjectInfo.currPos.x = pos;
@@ -147,7 +147,7 @@ void CreditsScroller::updateFX(U32 delta)
    //  based on time
    for(S32 i = 0; i < credits.size(); i++)
    {
-      pos = credits[i].currPos.x - (delta / 10);
+      pos = S32( credits[i].currPos.x - (delta / 10) );
 
       // reached the top, reset
       if(pos < -CreditSpace)
@@ -163,16 +163,17 @@ void CreditsScroller::render()
    
    // draw the project information
    //glLineWidth(10);
-   UserInterface::drawCenteredString(mProjectInfo.currPos.x, 100, mProjectInfo.titleBuf);
+   UserInterface::drawCenteredString(S32 (mProjectInfo.currPos.x), 100, mProjectInfo.titleBuf);
    //glLineWidth(1);
-   UserInterface::drawCenteredString(mProjectInfo.currPos.x + 120, 20, mProjectInfo.copyBuf);
+   UserInterface::drawCenteredString(S32(mProjectInfo.currPos.x) + 120, 20, mProjectInfo.copyBuf);
 
    // draw the credits text
    for(S32 i = 0; i < credits.size(); i++)
    {
-      UserInterface::drawCenteredString(credits[i].currPos.x, 25, credits[i].jobBuf);
-      UserInterface::drawCenteredString(credits[i].currPos.x + 50, 25, credits[i].nameBuf);
+      UserInterface::drawCenteredString(S32(credits[i].currPos.x), 25, credits[i].jobBuf);
+      UserInterface::drawCenteredString(S32(credits[i].currPos.x) + 50, 25, credits[i].nameBuf);
    }
 }
 
 };
+

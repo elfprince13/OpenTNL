@@ -79,7 +79,7 @@ void Projectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
 
    Rect newExtent(pos,pos);
    setExtent(newExtent);
-   mCurrentMove.time = connection->getOneWayTime() + 20;
+   mCurrentMove.time = U32(connection->getOneWayTime());
    idle(GameObject::ClientIdleMainRemote);
 
    SFXObject::play(0, pos, velocity);

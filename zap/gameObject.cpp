@@ -208,7 +208,7 @@ void GameObject::controlMoveReplayComplete()
 
 void GameObject::writeCompressedVelocity(Point &vel, U32 max, BitStream *stream)
 {
-   F32 len = vel.len();
+   U32 len = U32(vel.len());
    if(stream->writeFlag(len == 0))
       return;
 

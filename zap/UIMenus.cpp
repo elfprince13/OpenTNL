@@ -346,3 +346,4 @@ void GameMenuUserInterface::render()
 }
 
 };
+

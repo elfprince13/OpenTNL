@@ -247,3 +247,4 @@ void ControlObjectConnection::readCompressedPoint(Point &p, BitStream *stream)
 }
 
 };
+
