@@ -41,11 +41,8 @@ class HuntersGameType : public GameType
 {
    typedef GameType Parent;
 
-   enum 
-   {
-      NexusCapDelay    = 15 * 1000,
-      NexusReturnDelay = 60 * 1000,
-   };
+   S32 mNexusReturnDelay;
+   S32 mNexusCapDelay;
    Timer mNexusReturnTimer;
    Timer mNexusCapTimer;
 
@@ -53,13 +50,16 @@ public:
    bool mCanNexusCap;
 
    HuntersGameType();
+   void processArguments(S32 argc, const char **argv);
+   
    void shipTouchNexus(Ship *theShip, HuntersNexusObject *theNexus);
-
    void onGhostAvailable(GhostConnection *theConnection);
    void idle(GameObject::IdleCallPath path);
    void renderInterfaceOverlay(bool scoreboardVisible);
+   
    void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
    void spawnShip(GameConnection *theClient);
+   
    void gameOverManGameOver();
 
    enum {
@@ -107,6 +107,7 @@ class HuntersNexusObject : public GameObject
 {
    typedef GameObject Parent;
    Rect nexusBounds;
+
 public:
    HuntersNexusObject();
 

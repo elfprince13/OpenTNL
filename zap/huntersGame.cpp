@@ -105,8 +105,29 @@ TNL_IMPLEMENT_NETOBJECT_RPC(HuntersGameType, s2cHuntersMessage, (U32 msgIndex, S
 HuntersGameType::HuntersGameType() : GameType()
 {
    mCanNexusCap = false;
-   mNexusReturnTimer.reset(NexusReturnDelay);
+   mNexusReturnDelay = 60 * 1000;
+   mNexusCapDelay = 15 * 1000;
+   mNexusReturnTimer.reset(mNexusReturnDelay);
    mNexusCapTimer.reset(0);
+}
+
+void HuntersGameType::processArguments(S32 argc, const char **argv)
+{
+   if(argc > 0)
+   {
+      mGameTimer.reset(U32(atof(argv[0]) * 60 * 1000));
+      if(argc > 1)
+      {
+         mNexusReturnDelay = atoi(argv[1]) * 60 * 1000;
+         if(argc > 2)
+         {
+            mNexusCapDelay = atoi(argv[2]) * 1000;
+            if(argc > 3)
+               mTeamScoreLimit = atoi(argv[3]);
+         }
+      }
+   }
+   mNexusReturnTimer.reset(mNexusReturnDelay);
 }
 
 void HuntersGameType::shipTouchNexus(Ship *theShip, HuntersNexusObject *theNexus)
@@ -157,13 +178,13 @@ void HuntersGameType::idle(GameObject::IdleCallPath path)
 
    if(mNexusReturnTimer.update(deltaT))
    {
-      mNexusCapTimer.reset(NexusCapDelay);
+      mNexusCapTimer.reset(mNexusCapDelay);
       mCanNexusCap = true;
       s2cSetNexusTimer(mNexusCapTimer.getCurrent(), mCanNexusCap);
    }
    else if(mNexusCapTimer.update(deltaT))
    {
-      mNexusReturnTimer.reset(NexusReturnDelay);
+      mNexusReturnTimer.reset(mNexusReturnDelay);
       mCanNexusCap = false;
       s2cSetNexusTimer(mNexusReturnTimer.getCurrent(), mCanNexusCap);
    }
@@ -361,12 +382,17 @@ void HuntersNexusObject::processArguments(S32 argc, const char **argv)
 {
    if(argc < 2)
       return;
+
    Point pos;
    pos.read(argv);
    pos *= getGame()->getGridSize();
 
-   Point min(pos.x - 50, pos.y - 50);
-   Point max(pos.x + 50, pos.y + 50);
+   Point ext(50, 50);
+   if(argc > 3)
+      ext.set(atoi(argv[2]), atoi(argv[3]));
+
+   Point min(pos.x - ext.x, pos.y - ext.y);
+   Point max(pos.x + ext.x, pos.y + ext.y);
    nexusBounds.set(min, max);
    setExtent(nexusBounds);
 }
