@@ -122,9 +122,9 @@ void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
          {
             if(mClientList[j].teamId == i)
             {
-               UserInterface::drawString(xl + 40, curRowY, fontSize, mClientList[i].name.getString());
-               UserInterface::drawStringf(xr - 140, curRowY, fontSize, "%d", mClientList[i].score);
-               UserInterface::drawStringf(xr - 70, curRowY, fontSize, "%d", mClientList[i].ping);
+               UserInterface::drawString(xl + 40, curRowY, fontSize, mClientList[j].name.getString());
+               UserInterface::drawStringf(xr - 140, curRowY, fontSize, "%d", mClientList[j].score);
+               UserInterface::drawStringf(xr - 70, curRowY, fontSize, "%d", mClientList[j].ping);
                curRowY += maxHeight;
             }           
          }
