@@ -56,7 +56,7 @@ public:
       FireDelay = 100,
       MaxControlObjectInterpDistance = 200,
       TrailCount = 2,
-      RechargeRate = 3, // How many percent/second
+      RechargeRate = 6, // How many percent/second
    };
 
    enum MaskBits {
@@ -92,6 +92,7 @@ public:
 
    void render();
    Ship(StringTableEntry playerName="", Point p = Point(0,0), F32 m = 1.0);
+   ~Ship();
 
    F32 getHealth() { return mHealth; }
 

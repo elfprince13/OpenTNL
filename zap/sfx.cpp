@@ -42,7 +42,7 @@ static SFXProfile gSFXProfiles[] = {
  {  "phaser_impact.wav",   false, 0.7f,  false, 150, 600 },
  {  "ship_explode.wav",    false, 1.0,   false, 300, 1000 },
  {  "ship_heal.wav",       false, 1.0,   false, 300, 1000 },
- {  "ship_turbo.wav",      false, 1.0,   true,  300, 1000 },
+ {  "ship_turbo.wav",      false, 1.0,   true,  150, 500 },
  {  "flag_capture.wav",    true,  0.45f, false, 0,   0 },
  {  "flag_drop.wav",       true,  0.45f, false, 0,   0 },
  {  "flag_return.wav",     true,  0.45f, false, 0,   0 },

@@ -48,14 +48,25 @@ enum {
 };
 
 U32 firstFreeIndex = 0;
+U32 grabIndex      = MaxSparks/2;
 Spark gSparks[MaxSparks];
 
 void emitSpark(Point pos, Point vel, Color color, F32 ttl)
 {
+   Spark *s;
+
    if(firstFreeIndex >= MaxSparks)
-      return;
-   Spark *s = gSparks + firstFreeIndex;
-   firstFreeIndex++;
+   {
+      s = gSparks + grabIndex;
+
+      // Bump an arbitrary amount ahead to avoid noticable artifacts.
+      grabIndex = (grabIndex + 100) % MaxSparks;
+   }
+   else
+   {
+      s = gSparks + firstFreeIndex;
+      firstFreeIndex++;  
+   }
 
    s->pos = pos;
    s->vel = vel;
@@ -82,10 +93,10 @@ void tick( F32 dT )
       {
       theSpark->ttl -= dT;
       theSpark->pos += theSpark->vel * dT;
-      if(theSpark->ttl > 2)
+      if(theSpark->ttl > 1)
          theSpark->alpha = 1;
       else
-         theSpark->alpha = theSpark->ttl * 0.5;
+         theSpark->alpha = theSpark->ttl;
          i++;
       }
    }

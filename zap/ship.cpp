@@ -76,6 +76,15 @@ Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, Collisio
    mTurboNoise = NULL;
 }
 
+Ship::~Ship()
+{
+   if(mTurboNoise.isValid())
+   {
+      mTurboNoise->setGain(0.f);
+      mTurboNoise->stop();
+   }
+}
+
 void Ship::processArguments(S32 argc, const char **argv)
 {
    if(argc != 5)
@@ -174,7 +183,7 @@ void Ship::processServerMove(Move *theMove)
 
 void Ship::burnEnergy( U32 dT )
 {
-   if(isGhost()) return;
+//   if(isGhost()) return;
 
    F32 scaleFactor = ((F32)dT) / 1000.f;
 
@@ -193,18 +202,20 @@ void Ship::burnEnergy( U32 dT )
 
    if(mShield)
    {
-      mEnergy -= 7.0f * scaleFactor;
+      mEnergy -= 15.0f * scaleFactor;
    }
 
    if(mTurbo)
    {
-      mEnergy -= 20.0f * scaleFactor;
+      mEnergy -= 15.0f * scaleFactor;
    }
 
 
    if(mEnergy < 100.f)
    {
-      mEnergy += (F32)(dT * RechargeRate) / 1000.f;
+      // If we're not doing anything, recharge.
+      if(!(mShield || mTurbo))
+         mEnergy += (F32)(dT * RechargeRate) / 1000.f;
 
       if(mEnergy < 0.f)
          mEnergy = 0.f;
@@ -220,9 +231,9 @@ void Ship::damageObject(DamageInfo *theInfo)
       return;
 
    // Factor in shields
-   if(mShield && mEnergy >= 10.f)
+   if(mShield && mEnergy >= 20.f)
    {
-      mEnergy -= 10.f;
+      mEnergy -= 20.f;
       return;
    }
 
