@@ -65,7 +65,7 @@ TNL_IMPLEMENT_NETOBJECT(CTFGameType);
 
 void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
 {
-   if(scoreboardVisible)
+   if(scoreboardVisible && mTeams.size() > 0)
    {
       U32 totalWidth = 780;
       U32 teamWidth = totalWidth / mTeams.size();
