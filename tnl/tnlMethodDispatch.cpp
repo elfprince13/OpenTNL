@@ -78,7 +78,7 @@ TypeInfo gTypes[] = {
 { "SignedFloat<", sizeof(SignedFloat<32>), true, true },
 { "Float<", sizeof(Float<32>), true, true },
 { "const char *", sizeof(const char *), true, true },
-{ "RangedU32<", sizeof(RangedU32<0, U32_MAX>), true, true },
+{ "RangedU32<", sizeof(RangedU32<0,U32_MAX>), true, true },
 { "bool", sizeof(bool), true, true },
 { "StringTableEntryRef", sizeof(StringTableEntry *), true, false },
 { "StringTableEntry", sizeof(StringTableEntry), false, true },
@@ -416,9 +416,10 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
    currentSize = getMax(currentSize, U32(28));
 #endif
    U32 whichSTE = 0;
+   U8 *argPtr= rpcReadData;
    for(S32 i = 0; i < argList.size(); i++)
    {
-      U8 *arg = (rpcReadData + sizeof(U32) * i);
+      U8 *arg = argPtr;
       U32 count = 1;
       if(argList[i].isVector)
       {
@@ -501,16 +502,16 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
                bstream->read((F32 *) arg);
                break;
             case TypeSignedInt:
-               *((S32 *) arg) = bstream->readSignedInt(argList[i].bitCount);
+               ((SignedInt<32> *) arg)->value = bstream->readSignedInt(argList[i].bitCount);
                break;
             case TypeInt:
-               *((U32 *) arg) = bstream->readInt(argList[i].bitCount);
+               ((Int<32> *) arg)->value = bstream->readInt(argList[i].bitCount);
                break;
             case TypeSignedFloat:
-               *((F32 *) arg) = bstream->readSignedFloat(argList[i].bitCount);
+               ((SignedFloat<32> *) arg)->value = bstream->readSignedFloat(argList[i].bitCount);
                break;
             case TypeFloat:
-               *((F32 *) arg) = bstream->readFloat(argList[i].bitCount);
+               ((Float<32> *) arg)->value = bstream->readFloat(argList[i].bitCount);
                break;
             case TypeString:
                {
@@ -532,7 +533,7 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
                rpcCurrentSTEIndex++;
                break;
             case TypeRangedU32:
-               *((U32 *) arg) = bstream->readRangedU32(argList[i].rangeStart, argList[i].rangeEnd);
+               ((RangedU32<0,U32_MAX> *) arg)->value = bstream->readRangedU32(argList[i].rangeStart, argList[i].rangeEnd);
                break;
             case TypeBool:
                *((bool *) arg) = bstream->readFlag();
@@ -568,6 +569,10 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
          }
          *((U8 **) &arg) += gTypes[argList[i].argType].size;
       }
+      if(argList[i].isVector || gTypes[argList[i].argType].size <= sizeof(U32))
+	argPtr += sizeof(U32);
+      else
+	argPtr += gTypes[argList[i].argType].size;
    }
    theEvent->mSTEs.setSize(rpcCurrentSTEIndex);
    for(U32 i = 0; i < rpcNumSTEs; i++)

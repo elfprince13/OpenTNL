@@ -31,8 +31,8 @@
 #include "../tnl/tnlCertificate.h"
 #include "../tnl/tnlBitStream.h"
 
-#define TNLTest_SERVER
-//#define TNL_TEST_RPC
+//#define TNLTest_SERVER
+#define TNL_TEST_RPC
 //#define TNL_TEST_PROTOCOL
 //#define TNL_TEST_RPC
 //#define TNL_TEST_NETINTERFACE
@@ -91,31 +91,26 @@ class RPCTestConnection : public EventConnection
 public:
 
    /// Test RPC function for long argument lists, especially useful in debugging architectures that pass some arguments in registers, and some on the stack.
-   TNL_DECLARE_RPC(rpcLongArgChainTest, (Float<7> i1, Float<6> i2, F32 i3, F32 i4, F32 i5, F32 i6, F32 i7, F32 i8, F32 i9, F32 i10, F32 i11, F32 i12, F32 i13, F32 i14, F32 i15, U32 i16, U32 i17, F32 i18, F32 i19, F32 i20, F32 i21, F32 i22));
+   TNL_DECLARE_RPC(rpcLongArgChainTest, (Float<7> i1, Float<6> i2, F32 i3, F32 i4, RangedU32<0,40> i5, F32 i6, F32 i7, F32 i8, F32 i9, F32 i10, F32 i11, F32 i12, F32 i13, F32 i14, F32 i15, U32 i16, U32 i17, F32 i18, F32 i19, F32 i20, F32 i21, F32 i22));
 
    TNL_DECLARE_RPC(rpcVectorTest, (IPAddressRef theIP, ByteBufferRef buf, const Vector<IPAddress> &v0, const Vector<const char *> &v1, const Vector<F32> &v2));
-   TNL_DECLARE_RPC(rpcSTETest, (StringTableEntry e1, const Vector<StringTableEntry> &v2));
+   TNL_DECLARE_RPC(rpcSTETest, (StringTableEntryRef e1, const Vector<StringTableEntry> &v2));
+
 };
 
-TNL_IMPLEMENT_RPC(RPCTestConnection, rpcLongArgChainTest, (Float<7> i1, Float<6> i2, F32 i3, F32 i4, F32 i5, F32 i6, F32 i7, F32 i8, F32 i9, F32 i10, F32 i11, F32 i12, F32 i13, F32 i14, F32 i15, U32 i16, U32 i17, F32 i18, F32 i19, F32 i20, F32 i21, F32 i22), 
+TNL_IMPLEMENT_RPC(RPCTestConnection, rpcLongArgChainTest, (Float<7> i1, Float<6> i2, F32 i3, F32 i4, RangedU32<0,40> i5, F32 i6, F32 i7, F32 i8, F32 i9, F32 i10, F32 i11, F32 i12, F32 i13, F32 i14, F32 i15, U32 i16, U32 i17, F32 i18, F32 i19, F32 i20, F32 i21, F32 i22), 
       NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {
    F32 fi1 = i1;
    F32 fi2 = i2;
-   logprintf( "%g %g %g %g %g %g %g %g %g %g %g %g %g %g %g %d %d %g %g %g %g %g", 
-             fi1, fi2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14, i15, i16, i17, i18, i19, i20, i21, i22);
+   logprintf( "%g %g %g %g %d %g %g %g %g %g %g %g %g %g %g %d %d %g %g %g %g %g", 
+             fi1, fi2, i3, i4, U32(i5), i6, i7, i8, i9, i10, i11, i12, i13, i14, i15, i16, i17, i18, i19, i20, i21, i22);
 }
 
 TNL_IMPLEMENT_RPC(RPCTestConnection, rpcVectorTest,
     (IPAddressRef theIP, ByteBufferRef buf, const Vector<IPAddress> &v0, const Vector<const char *> &v1, const Vector<F32> &v2),
       NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {
-   // The assembly output of the following lines is used to determine
-   // how the RPC executor should dispatch RPC calls.
-   VFTester *newTester = new VFTester;
-   fptr thePtr = &VFTester::doSomething;
-   (newTester->*thePtr)(50);
-
    logprintf("Vector 0 size: %d, Vector 1 size: %d, Vector 2 size: %d", v0.size(), v1.size(), v2.size());
    Address anAddress(theIP);
    logprintf("BB: %d - %s", buf.getBufferSize(), buf.getBuffer());
@@ -129,7 +124,7 @@ TNL_IMPLEMENT_RPC(RPCTestConnection, rpcVectorTest,
 }
 
 TNL_IMPLEMENT_RPC(RPCTestConnection, rpcSTETest,
-    (StringTableEntry e1, const Vector<StringTableEntry> &v2),
+    (StringTableEntryRef e1, const Vector<StringTableEntry> &v2),
       NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
 {
    logprintf("e1 = %s", e1.getString());
@@ -154,6 +149,11 @@ void VFTester::doSomething(U32 newValue)
 
 typedef void (VFTester::*fptr)(U32 newValue);
 
+struct U32Struct
+{
+  U32 value;
+};
+
 int main(int argc, const char **argv)
 {
    // The assembly output of the following lines is used to determine
@@ -163,7 +163,12 @@ int main(int argc, const char **argv)
    (newTester->*thePtr)(50);
 
    RPCTestConnection *tc = new RPCTestConnection;
-   
+
+   printf("sizeof RangedU32 = %d\n", sizeof(RangedU32<0,U32_MAX>));
+   printf("sizeof Float<> = %d\nSizeof Int<>=%d\n",sizeof(Float<12>),sizeof(Int<12>));
+   printf("sizeof U32Struct = %d\n", sizeof(U32Struct));
+   fflush(stdout);
+
    tc->rpcLongArgChainTest_test(0.25, 0.5, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
    Vector<const char *> v1;
    Vector<IPAddress> v0;
