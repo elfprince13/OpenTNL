@@ -215,7 +215,7 @@ static bool updateMoveInternalJournaled( Move *theMove, bool buttonPressed[12] )
          return false;
 
       Move aMove;
-      aMove.unpack(readStream);
+      aMove.unpack(readStream, false);
       *theMove = aMove;
       for(U32 i = 0; i < 12; i++)
          buttonPressed[i] = readStream->readFlag();
@@ -229,7 +229,7 @@ static bool updateMoveInternalJournaled( Move *theMove, bool buttonPressed[12] )
       if(writeStream->writeFlag(ret))
       {
          Move dummy;
-         theMove->pack(writeStream, &dummy);
+         theMove->pack(writeStream, &dummy, false);
          for(U32 i = 0;i < 12; i++)
             writeStream->writeFlag(buttonPressed[i]);
       }

@@ -95,7 +95,10 @@ void Item::idle(GameObject::IdleCallPath path)
    if(mIsMounted)
    {
       if(mMount.isNull() || mMount->hasExploded)
-         dismount();
+      {
+         if(!isGhost())
+            dismount();
+      }
       else
       {
          mMoveState[RenderState].pos = mMount->getRenderPos();

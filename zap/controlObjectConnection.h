@@ -85,7 +85,7 @@ struct Move
                prev->shield == shield;
    }
 
-   void pack(BitStream *stream, Move *prev)
+   void pack(BitStream *stream, Move *prev, bool packTime)
    {
       if(!stream->writeFlag(prev && isEqualMove(prev)))
       {
@@ -100,9 +100,10 @@ struct Move
          stream->writeFlag(boost);
          stream->writeFlag(shield);
       }
-      stream->writeRangedU32(time, 0, MaxMoveTime);
+      if(packTime)
+         stream->writeRangedU32(time, 0, MaxMoveTime);
    }
-   void unpack(BitStream *stream)
+   void unpack(BitStream *stream, bool unpackTime)
    {
       if(!stream->readFlag())
       {
@@ -115,14 +116,15 @@ struct Move
          boost = stream->readFlag();
          shield = stream->readFlag();
       }
-      time = stream->readRangedU32(0, MaxMoveTime);
+      if(unpackTime)
+         time = stream->readRangedU32(0, MaxMoveTime);
    }
    void prepare()
    {
       PacketStream stream;
-      pack(&stream, NULL);
+      pack(&stream, NULL, false);
       stream.setBytePosition(0);
-      unpack(&stream);
+      unpack(&stream, false);
    }
 };
 

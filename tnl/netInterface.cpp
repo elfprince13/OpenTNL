@@ -987,16 +987,49 @@ void NetInterface::handlePunch(const Address &theAddress, BitStream *stream)
       conn = mPendingConnections[i];
       ConnectionParameters &theParams = conn->getConnectionParameters();
 
-      if(conn->getConnectionState() != NetConnection::SendingPunchPackets || !theParams.mIsInitiator)
+      if(conn->getConnectionState() != NetConnection::SendingPunchPackets)
          continue;
 
       if(firstNonce != theParams.mServerNonce)
          continue;
 
+      // first see if the address is in the possible addresses list:
+      
+      for(j = 0; j < theParams.mPossibleAddresses.size(); j++)
+         if(theAddress == theParams.mPossibleAddresses[j])
+            break;
+
+      // if there was an exact match, just exit the loop, or
+      // continue on to the next pending if this is not an initiator:
+      if(j != theParams.mPossibleAddresses.size())
+      {
+         if(theParams.mIsInitiator)
+            break;
+         else
+            continue;
+      }
+
+      // if there was no exact match, we may have a funny NAT in the
+      // middle.  But since a packet got through from the remote host
+      // we'll want to send a punch to the address it came from, as long
+      // as only the port is not an exact match:
       for(j = 0; j < theParams.mPossibleAddresses.size(); j++)
          if(theAddress.isEqualAddress(theParams.mPossibleAddresses[j]))
             break;
-      if(j != theParams.mPossibleAddresses.size())
+
+      // if the address wasn't even partially in the list, just exit out
+      if(j == theParams.mPossibleAddresses.size())
+         continue;
+
+      // otherwise, as long as we don't have too many ping addresses,
+      // add this one to the list:
+      if(theParams.mPossibleAddresses.size() < 5)
+         theParams.mPossibleAddresses.push_back(theAddress);      
+
+      // if this is the initiator of the arranged connection, then
+      // process the punch packet from the remote host by issueing a
+      // connection request.
+      if(theParams.mIsInitiator)
          break;
    }
    if(i == mPendingConnections.size())

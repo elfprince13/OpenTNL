@@ -427,9 +427,9 @@ void SFXObject::playOnSource()
       alSourcei(source, AL_BUFFER, gBuffers[mSFXIndex]);
 
    alSourcei(source, AL_LOOPING, mProfile->isLooping);
-   alSourcef(source, AL_REFERENCE_DISTANCE,9000);
-   alSourcef(source, AL_ROLLOFF_FACTOR,1);
-   alSourcef(source, AL_MAX_DISTANCE, 10000);
+   //alSourcef(source, AL_REFERENCE_DISTANCE,9000);
+   //alSourcef(source, AL_ROLLOFF_FACTOR,1);
+   //alSourcef(source, AL_MAX_DISTANCE, 10000);
    updateMovementParams();
 
    updateGain();

@@ -93,7 +93,7 @@ void ControlObjectConnection::writePacket(BitStream *bstream, PacketNotify *noti
       Move *lastMove = &dummy;
       for(S32 i = skipCount; i < pendingMoves.size(); i++)
       {
-         pendingMoves[i].pack(bstream, lastMove);
+         pendingMoves[i].pack(bstream, lastMove, true);
          lastMove = &pendingMoves[i];
       }
       ((GamePacketNotify *) notify)->firstUnsentMoveIndex = firstMoveIndex + pendingMoves.size();
@@ -143,11 +143,11 @@ void ControlObjectConnection::readPacket(BitStream *bstream)
       for(; firstMove < firstMoveIndex && count > 0; firstMove++)
       {
          count--;
-         theMove.unpack(bstream);
+         theMove.unpack(bstream, true);
       }
       for(; count > 0; count--)
       {
-         theMove.unpack(bstream);
+         theMove.unpack(bstream, true);
          // process the move, including crediting time to the client
          // and all that joy.
          if(controlObject.isValid())

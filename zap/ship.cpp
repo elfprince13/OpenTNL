@@ -434,7 +434,7 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
       }
       if(stream->writeFlag(updateMask & MoveMask))
       {
-         mCurrentMove.pack(stream, NULL);
+         mCurrentMove.pack(stream, NULL, false);
       }
       if(stream->writeFlag(updateMask & PowersMask))
       {
@@ -486,7 +486,7 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
    if(stream->readFlag())
    {
       mCurrentMove = Move();
-      mCurrentMove.unpack(stream);
+      mCurrentMove.unpack(stream, false);
    }
    if(stream->readFlag())
    {

@@ -598,40 +598,37 @@ void ClientGame::renderNormal()
          //static F32 curEnergy = 0.f;
 
          //curEnergy = (curEnergy + s->mEnergy) * 0.5f;
+         F32 energy = s->mEnergy / F32(Ship::EnergyMax);
+         U32 totalLineCount = 100;
 
-         F32 energy = s->mEnergy * 100.0f / F32(Ship::EnergyMax);
+         glColor3f(1, 1 ,1);
+         glBegin(GL_LINES);
+         glVertex2f(15, 565);
+         glVertex2f(15, 585);
+         glVertex2f(15 + totalLineCount * 2, 565);
+         glVertex2f(15 + totalLineCount * 2, 585);
 
-         const F32 offset = 50;
-
-         glColor3f(0.0, 0.0, 1);
-         glBegin(GL_POLYGON);
-         glVertex2f(15,              515 + offset);
-         glVertex2f(15 + energy,  515 + offset);
-         glVertex2f(15 + energy,  535 + offset);
-         glVertex2f(15,              535 + offset);
+         F32 halfway = totalLineCount * 0.5;
+         F32 full = energy * totalLineCount;
+         for(U32 i = 1; i < full; i++)
+         {
+            /*if(i < halfway)
+               glColor3f(1 - i / halfway, 0, i / halfway);
+            else
+               glColor3f(0, (i - halfway) / halfway, 1);
+            */
+            glColor3f(0, i / full, 1);
+            glVertex2f(15 + i * 2, 565);
+            glVertex2f(15 + i * 2, 585);
+         }
          glEnd();
-
-         // Show danger line.
-         //glColor3f(1, 0, 0);
-         //glBegin(GL_LINES);
-         //glVertex2f(15 + 5, 512 + offset);
-         //glVertex2f(15 + 5, 539 + offset);
-         //glEnd();
 
          // Show safety line.
          glColor3f(1, 1, 0);
          glBegin(GL_LINES);
-         glVertex2f(15 + 15, 512 + offset);
-         glVertex2f(15 + 15, 539 + offset);
-         glEnd();
-
-         // Show full marker
-         glColor3f(0, 1, 0);
-         glBegin(GL_LINE_STRIP);
-         glVertex2f(15 +  90, 512 + offset);
-         glVertex2f(15 + 101, 512 + offset);
-         glVertex2f(15 + 101, 539 + offset);
-         glVertex2f(15 +  90, 539 + offset);
+         F32 cutoffx = (Ship::EnergyCooldownThreshold * totalLineCount * 2) / Ship::EnergyMax;
+         glVertex2f(15 + cutoffx, 562);
+         glVertex2f(15 + cutoffx, 589);
          glEnd();
 
       }
