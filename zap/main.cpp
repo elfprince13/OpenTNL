@@ -64,11 +64,11 @@ public:
    TNL_DECLARE_JOURNAL_ENTRYPOINT(reshape, (S32 newWidth, S32 newHeight));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(motion, (S32 x, S32 y));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(passivemotion, (S32 x, S32 y));
-   TNL_DECLARE_JOURNAL_ENTRYPOINT(key, (U8 key, S32 x, S32 y));
-   TNL_DECLARE_JOURNAL_ENTRYPOINT(keyup, (U8 key, S32 x, S32 y));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(key, (U8 key));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(keyup, (U8 key));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(mouse, (S32 button, S32 state, S32 x, S32 y));
-   TNL_DECLARE_JOURNAL_ENTRYPOINT(specialkey, (S32 key, S32 x, S32 y));
-   TNL_DECLARE_JOURNAL_ENTRYPOINT(specialkeyup, (S32 key, S32 x, S32 y));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(specialkey, (S32 key));
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(specialkeyup, (S32 key));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(idle, (U32 timeDelta));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(display, ());
 };
@@ -110,10 +110,10 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, passivemotion, (S32 x, S32 y))
 
 void key(unsigned char key, int x, int y)
 {
-   gZapJournal.key(key, x, y);
+   gZapJournal.key(key);
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, key, (U8 key, S32 x, S32 y))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, key, (U8 key))
 {
    if(UserInterface::current)
       UserInterface::current->onKeyDown(key);
@@ -121,10 +121,10 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, key, (U8 key, S32 x, S32 y))
 
 void keyup(unsigned char key, int x, int y)
 {
-   gZapJournal.keyup(key, x, y);
+   gZapJournal.keyup(key);
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, keyup, (U8 key, S32 x, S32 y))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, keyup, (U8 key))
 {
    if(UserInterface::current)
       UserInterface::current->onKeyUp(key);
@@ -171,10 +171,10 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, mouse, (S32 button, S32 state, S32 
 
 void specialkey(int key, int x, int y)
 {
-   gZapJournal.specialkey(key, x, y);
+   gZapJournal.specialkey(key);
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkey, (S32 key, S32 x, S32 y))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkey, (S32 key))
 {
    if(UserInterface::current)
       UserInterface::current->onSpecialKeyDown(key);
@@ -182,10 +182,10 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkey, (S32 key, S32 x, S32 y)
 
 void specialkeyup(int key, int x, int y)
 {
-   gZapJournal.specialkeyup(key, x, y);
+   gZapJournal.specialkeyup(key);
 }
 
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkeyup, (S32 key, S32 x, S32 y))
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkeyup, (S32 key))
 {
    if(UserInterface::current)
       UserInterface::current->onSpecialKeyUp(key);

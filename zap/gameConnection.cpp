@@ -41,7 +41,6 @@ TNL_IMPLEMENT_NETCONNECTION(GameConnection, NetClassGroupGame, true);
 GameConnection::GameConnection(Game *game)
 {
    mNext = mPrev = this;
-   mCreateTime = Platform::getRealMilliseconds();
    highSendIndex[0] = 0;
    highSendIndex[1] = 0;
    highSendIndex[2] = 0;

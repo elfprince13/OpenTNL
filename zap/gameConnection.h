@@ -177,9 +177,6 @@ public:
    GameConnection *mPrev;
    static GameConnection gClientList;
 
-   // Time in milliseconds at which we were created.
-   U32 mCreateTime;
-
    GameConnection(Game *game = NULL);
    ~GameConnection();
 

@@ -59,8 +59,6 @@ Game::Game(const Address &theBindAddress)
 {
    mNextMasterTryTime = 0;
 
-   mLastIdleTime = Platform::getRealMilliseconds();
-
    mNetInterface = new GameNetInterface(theBindAddress, this);
 }
 

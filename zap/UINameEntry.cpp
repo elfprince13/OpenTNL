@@ -63,10 +63,9 @@ void NameEntryUserInterface::render()
 
 void NameEntryUserInterface::idle(U32 t)
 {
-   U32 time = Platform::getRealMilliseconds();
-   if(time - lastBlinkTime > BlinkTime)
+   if(mBlinkTimer.update(t))
    {
-      lastBlinkTime = time;
+      mBlinkTimer.reset(BlinkTime);
       blink = !blink;
    }
 }

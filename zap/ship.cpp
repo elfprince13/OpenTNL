@@ -60,9 +60,7 @@ Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, Collisio
    interpTime = 0;
    mass = m;
    hasExploded = false;
-   timeUntilRemove = 0;
    updateExtent();
-   lastFireTime = 0;
 
    mPlayerName = playerName;
 
@@ -157,13 +155,13 @@ void Ship::processServerMove(Move *theMove)
       setMaskBits(MoveMask);
    }
 
+   mFireTimer.update(theMove->time);
    if(theMove->fire)
    {
-      U32 currentTime = Platform::getRealMilliseconds();
-      if(currentTime - lastFireTime > FireDelay)
+      if(mFireTimer.getCurrent() == 0)
       {
          mEnergy -= 0.5f;
-         lastFireTime = currentTime;
+         mFireTimer.reset(FireDelay);
          Point dir(sin(mMoveState[ActualState].angle), cos(mMoveState[ActualState].angle) );
          Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir);
          Projectile *proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this);

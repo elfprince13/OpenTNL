@@ -30,7 +30,7 @@
 namespace TNL
 {
 
-JournalEntryRecord *JournalEntryRecord::mList = NULL;
+Vector<JournalEntryRecord *> *JournalEntryRecord::mEntryVector;
 
 bool Journal::mInsideEntrypoint = false;
 Journal::Mode Journal::mCurrentMode = Journal::Inactive;
@@ -40,6 +40,33 @@ BitStream Journal::mWriteStream;
 BitStream Journal::mReadStream;
 Journal *Journal::mJournal = NULL;
 U32 Journal::mWritePosition = 0;
+
+JournalEntryRecord::JournalEntryRecord(const char *functionName, MethodArgList *methodArgList)
+{
+   S32 i;
+   if(!mEntryVector)
+      mEntryVector = new Vector<JournalEntryRecord *>;
+
+   for(i = 0; i < mEntryVector->size(); i++)
+   {
+      if(strcmp((*mEntryVector)[i]->mFunctionName, functionName) < 0)
+         break;
+   }
+   mEntryVector->insert(i);
+   (*mEntryVector)[i] = this;
+   mFunctionName = functionName;
+   mMethodArgList = methodArgList;
+   mEntryIndex = 0;
+}
+
+JournalEntryRecord::~JournalEntryRecord()
+{
+   if(mEntryVector)
+   {
+      delete mEntryVector;
+      mEntryVector = NULL;
+   }
+}
 
 Journal::Journal()
 {
@@ -71,6 +98,7 @@ void Journal::syncWriteStream()
    U32 bytesToWrite = mWriteStream.getBytePosition();
    // write the bytes to the file
    fwrite(mWriteStream.getBuffer(), 1, bytesToWrite, mJournalFile);
+   fflush(mJournalFile);
 
    // adjust the write stream
    if(totalBits & 7)
@@ -123,33 +151,36 @@ void Journal::callEntry(const char *funcName, MarshalledCall *theCall)
 
    TNLAssert(mInsideEntrypoint == false, "Journal entries cannot be reentrant!");
    mInsideEntrypoint = true;
+
+   S32 entryIndex;
+   for(entryIndex = 0; entryIndex < JournalEntryRecord::mEntryVector->size(); entryIndex++)
+   {
+      if(!strcmp((*JournalEntryRecord::mEntryVector)[entryIndex]->mFunctionName, funcName))
+         break;
+   }
+   TNLAssert(entryIndex != JournalEntryRecord::mEntryVector->size(), "No entry point found!");
+
    if(mCurrentMode == Record)
    {
-      mWriteStream.writeString(funcName);
+      mWriteStream.writeRangedU32(entryIndex, 0, JournalEntryRecord::mEntryVector->size() - 1);
       mWriteStream.writeBits(theCall->marshalledData.getBitPosition(), theCall->marshalledData.getBuffer());
       syncWriteStream();
    }
 
    BitStream unmarshallData(theCall->marshalledData.getBuffer(), theCall->marshalledData.getBytePosition());
    theCall->unmarshall(&unmarshallData);
-   for(JournalEntryRecord *walk = JournalEntryRecord::mList; walk; walk = walk->mNext)
-   {
-      if(!strcmp(walk->mFunctionName, funcName))
-      {
-         MethodPointer p;
-         walk->getFuncPtr(p);
-         theCall->dispatch((void *) this, &p);
-         mInsideEntrypoint = false;
-         return;
-      }
-   }
-   TNLAssert(0, "No entry point found!");
+
+   JournalEntryRecord *theEntry = (*JournalEntryRecord::mEntryVector)[entryIndex];
+   MethodPointer p;
+   theEntry->getFuncPtr(p);
+   theCall->dispatch((void *) this, &p);
+   mInsideEntrypoint = false;
 }
 
 void Journal::checkReadPosition()
 {
    if(!mReadStream.isValid() || mReadStream.getBitPosition() == mReadStream.getMaxReadBitPosition())
-      Platform::debugBreak();
+      TNL_DEBUGBREAK();
 }
 
 void Journal::processNextJournalEntry()
@@ -157,24 +188,22 @@ void Journal::processNextJournalEntry()
    if(mCurrentMode != Playback)
       return;
 
-   char funcName[256];
-   mReadStream.readString(funcName);
-   JournalEntryRecord *theEntry;
-   for(theEntry = JournalEntryRecord::mList; theEntry; theEntry = theEntry->mNext)
-      if(!strcmp(theEntry->mFunctionName, funcName))
-         break;
+   U32 index = mReadStream.readRangedU32(0, JournalEntryRecord::mEntryVector->size());
+
+   JournalEntryRecord *theEntry = (*JournalEntryRecord::mEntryVector)[index];
 
    // check for errors...
    if(!theEntry)
    {
       TNLAssert(0, "blech!");
    }
-   checkReadPosition();
 
    MethodPointer p;
    theEntry->getFuncPtr(p);
    MarshalledCall theCall(theEntry->mMethodArgList);
    theCall.unmarshall(&mReadStream);
+   checkReadPosition();
+
    mInsideEntrypoint = true;
    theCall.dispatch((void *) this, &p);
    mInsideEntrypoint = false;

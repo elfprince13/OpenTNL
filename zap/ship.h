@@ -30,7 +30,7 @@
 #include "moveObject.h"
 #include "sparkManager.h"
 #include "sfx.h"
-
+#include "timer.h"
 namespace Zap
 {
 
@@ -70,7 +70,7 @@ public:
    };
 
    U32 interpTime;
-   U32 lastFireTime;
+   Timer mFireTimer;
    F32 mHealth;
    F32 mEnergy;
    StringTableEntry mPlayerName;
@@ -82,7 +82,6 @@ public:
 
    Color color; // color of the ship
    F32 mass; // mass of ship
-   U32 timeUntilRemove; // when the ship is killed, it sticks around for a while to make sure that the kill message is propagated
    bool hasExploded;
 
    Move lastMove; // last client input move for this ship

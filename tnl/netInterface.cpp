@@ -319,16 +319,6 @@ void NetInterface::processConnections()
    for(S32 i = 0; i < mConnectionList.size(); i++)
       mConnectionList[i]->checkPacketSend(false, time);
 
-   // check if we're trying to solve any client connection puzzles
-   for(S32 i = 0; i < mPendingConnections.size(); i++)
-   {
-      if(mPendingConnections[i]->getConnectionState() == NetConnection::ComputingPuzzleSolution)
-      {
-         continuePuzzleSolution(mPendingConnections[i]);
-         break;
-      }
-   }
-
    if(time > mLastTimeoutCheckTime + TimeoutCheckInterval)
    {
       for(S32 i = 0; i < mPendingConnections.size();)
@@ -400,6 +390,16 @@ void NetInterface::processConnections()
          }
          else
             i++;
+      }
+   }
+
+   // check if we're trying to solve any client connection puzzles
+   for(S32 i = 0; i < mPendingConnections.size(); i++)
+   {
+      if(mPendingConnections[i]->getConnectionState() == NetConnection::ComputingPuzzleSolution)
+      {
+         continuePuzzleSolution(mPendingConnections[i]);
+         break;
       }
    }
 }

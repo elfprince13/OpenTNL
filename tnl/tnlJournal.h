@@ -76,18 +76,15 @@ public:
 
 struct JournalEntryRecord
 {
+   U32 mEntryIndex;
    const char *mFunctionName;
    MethodArgList *mMethodArgList;
    JournalEntryRecord *mNext;
-   static JournalEntryRecord *mList;
+   static Vector<JournalEntryRecord *> *mEntryVector;
 
-   JournalEntryRecord(const char *functionName, MethodArgList *methodArgList)
-   {
-      mFunctionName = functionName;
-      mMethodArgList = methodArgList;
-      mNext = mList;
-      mList = this;
-   }
+   JournalEntryRecord(const char *functionName, MethodArgList *methodArgList);
+   ~JournalEntryRecord();
+
    virtual void getFuncPtr(MethodPointer &m) = 0;
 };
 

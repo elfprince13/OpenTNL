@@ -84,7 +84,6 @@ class GameType;
 class Game
 {
 protected:
-   U32 mLastIdleTime;
    U32 mNextMasterTryTime;
    F32 mGridSize;
 

@@ -28,6 +28,7 @@
 #define _UINAMEENTRY_H_
 
 #include "UI.h"
+#include "timer.h"
 
 namespace Zap
 {
@@ -41,15 +42,14 @@ class NameEntryUserInterface : public UserInterface
    char buffer[MaxNameLen+1];
    U32 cursorPos;
    bool blink;
-   U32 lastBlinkTime;
+   Timer mBlinkTimer;
 
 protected:
    const char *title;
 public:
-   NameEntryUserInterface()
+   NameEntryUserInterface() : mBlinkTimer(BlinkTime)
    { 
       title = "ENTER YOUR NAME:"; 
-      lastBlinkTime = 0; 
       buffer[0] = 0; 
       memset(buffer, 0, sizeof(buffer));
       blink = false;
