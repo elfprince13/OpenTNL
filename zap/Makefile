@@ -4,12 +4,13 @@
 # 
 # Configuration
 #
-CC=g++ -g -I../tnl -I../glut -I../openal -DTNL_DEBUG #-O2
+CC=g++ -g -I../tnl -I../glut -I../openal -DTNL_DEBUG -DTNL_ENABLE_LOGGING #-O2
 
 OBJECTS_ZAP=\
 	CTFGame.o\
 	game.o\
 	gameConnection.o\
+	gameItems.o\
 	gameLoader.o\
 	gameNetInterface.o\
 	gameObject.o\
@@ -25,6 +26,7 @@ OBJECTS_ZAP=\
 	UINameEntry.o\
 	UIQueryServers.o\
 	projectile.o\
+	quickChat.o\
 	ship.o\
 	sfx.o\
 	SweptEllipsoid.o\
