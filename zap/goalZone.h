@@ -24,35 +24,48 @@
 //
 //------------------------------------------------------------------------------------
 
-#ifndef _GAMEOBJECTRENDER_H_
-#define _GAMEOBJECTRENDER_H_  
+#ifndef _GOALZONE_H_
+#define _GOALZONE_H_
 
-#include "point.h"
-#include "tnl.h"
-using namespace TNL;
+#include "gameObject.h"
 
 namespace Zap
 {
 
-extern void glVertex(Point p);
-extern void glColor(Color c, float alpha = 1);
-extern void drawCircle(Point pos, F32 radius);
-extern void fillCircle(Point pos, F32 radius);
+class GoalZone : public GameObject
+{
+   typedef GameObject Parent;
+   Vector<Point> mPolyBounds;
+   enum {
+      MaxPoints = 10,
 
-extern void renderCenteredString(Point pos, U32 size, const char *string);
-extern void renderShip(Color c, F32 alpha, F32 thrusts[], F32 health, F32 radius, bool cloakActive, bool shieldActive);
-extern void renderTeleporter(Point pos, U32 type, bool in, S32 time, F32 radiusFraction, F32 radius, F32 alpha);
-extern void renderTurret(Color c, Point anchor, Point normal, bool enabled, F32 health, F32 barrelAngle, F32 aimOffset);
-extern void renderFlag(Point pos, Color c);
-extern void renderLoadoutZone(Color c, Vector<Point> &bounds, Rect extent);
-extern void renderProjectile(Point pos, U32 type, U32 time);
-extern void renderMine(Point pos, bool armed, bool visible);
-extern void renderGrenade(Point pos);
-extern void renderRepairItem(Point pos);
-extern void renderForceFieldProjector(Point pos, Point normal, Color teamColor, bool enabled);
-extern void renderForceField(Point start, Point end, Color c, bool fieldUp);
-extern void renderGoalZone(Vector<Point> &bounds, Color c, bool isFlashing);
+      FlashDelay = 500,
+      FlashCount = 5,
+
+      InitialMask = BIT(0),
+      TeamMask = BIT(1),
+   };
+   S32 mFlashCount;
+   Timer mFlashTimer;
+public:
+   GoalZone();
+   void render();
+   S32 getRenderSortValue();
+   void processArguments(S32 argc, const char **argv);
+
+   void setTeam(S32 team);
+   void onAddedToGame(Game *theGame);
+   void computeExtent();
+   bool getCollisionPoly(Vector<Point> &polyPoints);
+   bool collide(GameObject *hitObject);
+   U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
+   void unpackUpdate(GhostConnection *connection, BitStream *stream);
+   void idle(GameObject::IdleCallPath path);
+   TNL_DECLARE_CLASS(GoalZone);
+};
 
 };
 
 #endif
+
+

@@ -41,6 +41,13 @@ FlagItem::FlagItem(Point pos) : Item(pos, false, 20)
    mObjectTypeMask |= FlagType | CommandMapVisType;
 }
 
+void FlagItem::onAddedToGame(Game *theGame)
+{
+   if(!isGhost())
+      theGame->getGameType()->addFlag(this);
+}
+
+
 void FlagItem::processArguments(S32 argc, const char **argv)
 {
    if(argc < 3)

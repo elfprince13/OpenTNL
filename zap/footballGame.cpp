@@ -24,28 +24,26 @@
 //
 //------------------------------------------------------------------------------------
 
+#include "goalZone.h"
 #include "gameType.h"
 #include "ship.h"
 #include "flagItem.h"
-#include "glutInclude.h"
 #include "gameObjectRender.h"
 
 namespace Zap
 {
 class Ship;
-class FootballFlag;
-class FootballZone;
 
 class FootballGameType : public GameType
 {
    typedef GameType Parent;
 
-   Vector<FootballZone*> mZones;
+   Vector<GoalZone*> mZones;
 public:
    void shipTouchFlag(Ship *theShip, FlagItem *theFlag);
    void flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex);
-   void addZone(FootballZone *z);
-   void shipTouchZone(Ship *s, FootballZone *z);
+   void addZone(GoalZone *z);
+   void shipTouchZone(Ship *s, GoalZone *z);
    const char *getGameTypeString() { return "Football"; }
    const char *getInstructionString() { return "Carry the flag into each of the capture zones!"; }
 
@@ -53,168 +51,6 @@ public:
 };
 
 TNL_IMPLEMENT_NETOBJECT(FootballGameType);
-
-
-class FootballZone : public GameObject
-{
-   typedef GameObject Parent;
-   Vector<Point> mPolyBounds;
-   enum {
-      MaxPoints = 10,
-
-      FlashDelay = 500,
-      FlashCount = 5,
-
-      InitialMask = BIT(0),
-      TeamMask = BIT(1),
-   };
-   S32 mFlashCount;
-   Timer mFlashTimer;
-public:
-   FootballZone()
-   {
-      mTeam = -1;
-      mNetFlags.set(Ghostable);
-      mObjectTypeMask = CommandMapVisType;
-      mFlashCount = 0;
-   }
-
-   void render()
-   {
-      F32 alpha = 0.5;
-      Color theColor = getGame()->getGameType()->getTeamColor(getTeam());
-      glColor(theColor * 0.5f);
-      glBegin(GL_POLYGON);
-      for(S32 i = 0; i < mPolyBounds.size(); i++)
-         glVertex2f(mPolyBounds[i].x, mPolyBounds[i].y);
-      glEnd();
-      if(mFlashCount & 1)
-         glColor(theColor);
-      else
-         glColor(theColor * 0.7);
-
-      glBegin(GL_LINE_LOOP);
-      for(S32 i = 0; i < mPolyBounds.size(); i++)
-         glVertex2f(mPolyBounds[i].x, mPolyBounds[i].y);
-      glEnd();
-   }
-
-   S32 getRenderSortValue()
-   {
-      return -1;
-   }
-
-   void processArguments(S32 argc, const char **argv)
-   {
-      if(argc < 6)
-         return;
-
-      for(S32 i = 1; i < argc; i += 2)
-      {
-         Point p;
-         p.x = atof(argv[i-1]) * getGame()->getGridSize();
-         p.y = atof(argv[i]) * getGame()->getGridSize();
-         mPolyBounds.push_back(p);
-      }
-      computeExtent();
-   }
-
-   void setTeam(S32 team)
-   {
-      mTeam = team;
-      setMaskBits(TeamMask);
-   }
-
-   void onAddedToGame(Game *theGame)
-   {
-      if(!isGhost())
-      {
-         setScopeAlways();
-         ((FootballGameType *) theGame->getGameType())->addZone(this);
-      }
-   }
-
-   void computeExtent()
-   {
-      Rect extent(mPolyBounds[0], mPolyBounds[0]);
-      for(S32 i = 1; i < mPolyBounds.size(); i++)
-         extent.unionPoint(mPolyBounds[i]);
-      setExtent(extent);
-   }
-
-   bool getCollisionPoly(Vector<Point> &polyPoints)
-   {
-      for(S32 i = 0; i < mPolyBounds.size(); i++)
-         polyPoints.push_back(mPolyBounds[i]);
-      return true;
-   }
-
-   bool collide(GameObject *hitObject)
-   {
-      if(!isGhost() && (hitObject->getObjectTypeMask() & ShipType))
-         ((FootballGameType *) getGame()->getGameType())->shipTouchZone((Ship *) hitObject, this);
-
-      return false;
-   }
-
-   U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
-   {
-      if(stream->writeFlag(updateMask & InitialMask))
-      {
-         stream->writeEnum(mPolyBounds.size(), MaxPoints);
-         for(S32 i = 0; i < mPolyBounds.size(); i++)
-         {
-            stream->write(mPolyBounds[i].x);
-            stream->write(mPolyBounds[i].y);
-         }
-      }
-      if(stream->writeFlag(updateMask & TeamMask))
-         stream->write(mTeam);
-      return 0;
-   }
-
-   void unpackUpdate(GhostConnection *connection, BitStream *stream)
-   {
-      if(stream->readFlag())
-      {
-         S32 size = stream->readEnum(MaxPoints);
-         for(S32 i = 0; i < size; i++)
-         {
-            Point p;
-            stream->read(&p.x);
-            stream->read(&p.y);
-            mPolyBounds.push_back(p);
-         }
-         if(size)
-            computeExtent();
-      }
-      if(stream->readFlag())
-      {
-         stream->read(&mTeam);
-         if(!isInitialUpdate())
-         {
-            mFlashTimer.reset(FlashDelay);
-            mFlashCount = FlashCount;
-         }
-      }
-   }
-
-   void idle(GameObject::IdleCallPath path)
-   {
-      if(path != GameObject::ClientIdleMainRemote || mFlashCount == 0)
-         return;
-
-      if(mFlashTimer.update(mCurrentMove.time))
-      {
-         mFlashTimer.reset(FlashDelay);
-         mFlashCount--;
-      }
-   }
-
-   TNL_DECLARE_CLASS(FootballZone);
-};
-
-TNL_IMPLEMENT_NETOBJECT(FootballZone);
 
 
 void FootballGameType::shipTouchFlag(Ship *theShip, FlagItem *theFlag)
@@ -242,12 +78,12 @@ void FootballGameType::flagDropped(const StringTableEntry &playerName, S32 flagT
       mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagDrop, dropString, e);
 }
 
-void FootballGameType::addZone(FootballZone *z)
+void FootballGameType::addZone(GoalZone *z)
 {
    mZones.push_back(z);
 }
 
-void FootballGameType::shipTouchZone(Ship *s, FootballZone *z)
+void FootballGameType::shipTouchZone(Ship *s, GoalZone *z)
 {
    if(z->getTeam() == s->getTeam())
       return;

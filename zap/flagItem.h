@@ -38,6 +38,7 @@ class FlagItem : public Item
    Point initialPos;
 public:
    FlagItem(Point pos = Point());
+   void onAddedToGame(Game *theGame);
    void processArguments(S32 argc, const char **argv);
    void renderItem(Point pos);
    void sendHome();

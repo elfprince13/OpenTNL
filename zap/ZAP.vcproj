@@ -135,6 +135,9 @@
 				RelativePath="..\exe\levels\football1.txt">
 			</File>
 			<File
+				RelativePath="..\exe\levels\football2.txt">
+			</File>
+			<File
 				RelativePath="..\exe\levels\hunters1.txt">
 			</File>
 			<File
@@ -300,6 +303,12 @@
 				RelativePath=".\gameWeapons.h">
 			</File>
 			<File
+				RelativePath=".\goalZone.cpp">
+			</File>
+			<File
+				RelativePath=".\goalZone.h">
+			</File>
+			<File
 				RelativePath=".\item.cpp">
 			</File>
 			<File
@@ -374,6 +383,9 @@
 			</File>
 			<File
 				RelativePath=".\rabbitGame.h">
+			</File>
+			<File
+				RelativePath=".\retrieveGame.cpp">
 			</File>
 			<File
 				RelativePath=".\soccerGame.cpp">

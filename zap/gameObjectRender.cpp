@@ -603,4 +603,23 @@ void renderForceField(Point start, Point end, Color c, bool fieldUp)
    glEnd();
 }
 
+void renderGoalZone(Vector<Point> &bounds, Color c, bool isFlashing)
+{
+   F32 alpha = 0.5;
+   glColor(c * 0.5f);
+   glBegin(GL_POLYGON);
+   for(S32 i = 0; i < bounds.size(); i++)
+      glVertex(bounds[i]);
+   glEnd();
+   if(isFlashing)
+      glColor(c);
+   else
+      glColor(c * 0.7);
+
+   glBegin(GL_LINE_LOOP);
+   for(S32 i = 0; i < bounds.size(); i++)
+      glVertex(bounds[i]);
+   glEnd();
+}
+
 };

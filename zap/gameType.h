@@ -36,6 +36,7 @@ namespace Zap
 {
 
 class FlagItem;
+class GoalZone;
 
 class ClientRef : public Object
 {
@@ -150,8 +151,12 @@ public:
 
    Color getTeamColor(S32 team);
    // game type flag methods for CTF, Rabbit, Football
+   virtual void addFlag(FlagItem *theFlag) {}
    virtual void flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex) {}
    virtual void shipTouchFlag(Ship *theShip, FlagItem *theFlag) {}
+
+   virtual void addZone(GoalZone *theZone) {}
+   virtual void shipTouchZone(Ship *theShip, GoalZone *theZone) {}
 
    void performScopeQuery(GhostConnection *connection);
    virtual void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);

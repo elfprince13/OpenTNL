@@ -79,13 +79,12 @@ enum GameItems
    ItemBarrierMaker,
    ItemTeleporter,
    ItemRepair,
-   ItemSoccerGoal,
    ItemTest,
    ItemResource,
    ItemLoadoutZone,
    ItemTurret,
    ItemForceField,
-   ItemFootballZone,
+   ItemGoalZone,
 };
 
 GameItemRec gGameItemRecs[] = {
@@ -95,13 +94,12 @@ GameItemRec gGameItemRecs[] = {
    { "BarrierMaker", false, false, true, 0 },
    { "Teleporter", false, false, true, 'T' },
    { "RepairItem", false, false, false, 'R' },
-   { "SoccerGoalObject", true, false, true, 0 },
    { "TestItem", false, false, false, 't' },
    { "ResourceItem", false, false, false, 'r' },
    { "LoadoutZone", true, true, true, 0 },
    { "Turret", true, true, false, 'N' },
    { "ForceFieldProjector", true, true, false, 'P' },
-   { "FootballZone", false, false, true, 0 },
+   { "GoalZone", true, false, true, 0 },
    { NULL, false, false, false, 0 },
 };
 

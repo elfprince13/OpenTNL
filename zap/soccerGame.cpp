@@ -31,6 +31,7 @@
 #include "gameNetInterface.h"
 #include "ship.h"
 #include "gameObjectRender.h"
+#include "goalZone.h"
 
 namespace Zap
 {
@@ -158,7 +159,7 @@ bool SoccerBallItem::collide(GameObject *hitObject)
    }
    else
    {
-      SoccerGoalObject *goal = dynamic_cast<SoccerGoalObject *>(hitObject);
+      GoalZone *goal = dynamic_cast<GoalZone *>(hitObject);
 
       if(goal && !mSendHomeTimer.getCurrent())
       {
@@ -168,95 +169,6 @@ bool SoccerBallItem::collide(GameObject *hitObject)
       }
    }
    return true;
-}
-
-TNL_IMPLEMENT_NETOBJECT(SoccerGoalObject);
-
-SoccerGoalObject::SoccerGoalObject()
-{
-   mTeam = 0;
-   mObjectTypeMask |= CommandMapVisType;
-   mNetFlags.set(Ghostable);
-}
-
-void SoccerGoalObject::onAddedToGame(Game *theGame)
-{
-   if(!isGhost())
-      setScopeAlways();
-}
-
-void SoccerGoalObject::render()
-{
-   F32 alpha = 0.5;
-   Color theColor = getGame()->getGameType()->mTeams[getTeam()].color;
-   glColor(theColor * alpha);
-   glBegin(GL_POLYGON);
-   for(S32 i = 0; i < mPolyBounds.size(); i++)
-      glVertex2f(mPolyBounds[i].x, mPolyBounds[i].y);
-   glEnd();
-}
-
-bool SoccerGoalObject::getCollisionPoly(Vector<Point> &polyPoints)
-{
-   for(S32 i = 0; i < mPolyBounds.size(); i++)
-      polyPoints.push_back(mPolyBounds[i]);
-   return true;
-}
-
-void SoccerGoalObject::processArguments(S32 argc, const char **argv)
-{
-   if(argc < 7)
-      return;
-
-   mTeam = atoi(argv[0]);
-   for(S32 i = 1; i < argc; i += 2)
-   {
-      Point p;
-      p.x = atof(argv[i]) * getGame()->getGridSize();
-      p.y = atof(argv[i+1]) * getGame()->getGridSize();
-      mPolyBounds.push_back(p);
-   }
-   computeExtent();
-}
-
-void SoccerGoalObject::computeExtent()
-{
-   Rect extent(mPolyBounds[0], mPolyBounds[0]);
-   for(S32 i = 1; i < mPolyBounds.size(); i++)
-      extent.unionPoint(mPolyBounds[i]);
-   setExtent(extent);
-}
-
-bool SoccerGoalObject::collide(GameObject *hitObject)
-{
-   return false;
-}
-
-U32 SoccerGoalObject::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
-{
-   stream->write(mTeam);
-   stream->writeRangedU32(mPolyBounds.size(), 0, MaxPoints);
-   for(S32 i = 0; i < mPolyBounds.size(); i++)
-   {
-      stream->write(mPolyBounds[i].x);
-      stream->write(mPolyBounds[i].y);
-   }
-   return 0;
-}
-
-void SoccerGoalObject::unpackUpdate(GhostConnection *connection, BitStream *stream)
-{
-   stream->read(&mTeam);
-   S32 size = stream->readRangedU32(0, MaxPoints);
-   for(S32 i = 0; i < size; i++)
-   {
-      Point p;
-      stream->read(&p.x);
-      stream->read(&p.y);
-      mPolyBounds.push_back(p);
-   }
-   if(size)
-      computeExtent();
 }
 
 };
