@@ -313,7 +313,7 @@ public:
    ~RPCEvent();
 
    /// Copies the argument list into the event data.
-   void RPCEvent::marshallArguments();
+   void /*RPCEvent:: */marshallArguments();
 
    /// Returns the base address of the class member function pointer for the _remote version of the RPC function
    virtual void getFuncPtr(U32 &v1, U32 &v2) = 0;

@@ -116,7 +116,7 @@ public:
       return constructInPlace(ret);
    }
 
-   /// Properly destructs and freesan element allocated with the alloc method.
+   /// Properly destructs and frees an element allocated with the alloc method.
    void free(T* elem)
    {
       destructInPlace(elem);

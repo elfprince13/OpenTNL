@@ -386,7 +386,7 @@ public:
       logprintf("Client: %s requested connection to %s",
          buf, conn->getNetAddress().toString());
 
-      // Add the request to the relevan lists (the global list, this connection's list,
+      // Add the request to the relevant lists (the global list, this connection's list,
       // and the other connection's list).
       mConnectList.push_back(req);
       conn->mConnectList.push_back(req);

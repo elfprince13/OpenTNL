@@ -405,6 +405,9 @@ bool CTFFlagItem::collide(GameObject *hitObject)
    if(!(hitObject->getObjectTypeMask() & ShipType))
       return false;
 
+   if(((Ship *) hitObject)->hasExploded)
+      return false;
+
    CTFGameType *theGameType = dynamic_cast<CTFGameType *>(getGame()->getGameType());
    if(theGameType)
       theGameType->shipTouchFlag((Ship *) hitObject, this);

@@ -947,6 +947,9 @@ void GhostConnection::setGhostAlwaysObject(NetObject *object, U32 index)
 
 NetObject *GhostConnection::resolveGhost(S32 id)
 {
+   if(id == -1)
+      return NULL;
+
    return mLocalGhosts[id];
 }
 

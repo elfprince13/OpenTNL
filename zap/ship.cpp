@@ -124,7 +124,11 @@ void Ship::processMove(Move *theMove, U32 stateIndex)
 
 void Ship::processServerMove(Move *theMove)
 {
-   processMove(theMove, ActualState);
+   if(!hasExploded)
+      processMove(theMove, ActualState);
+   else
+      return;
+
    mMoveState[RenderState] = mMoveState[ActualState];
    setMaskBits(PositionMask);
    if(!theMove->isEqualMove(&lastMove))
@@ -165,7 +169,11 @@ void Ship::damageObject(DamageInfo *theInfo)
 
 void Ship::processClientMove(Move *theMove, bool replay)
 {
-   processMove(theMove, ActualState);
+   if(!hasExploded)
+      processMove(theMove, ActualState);
+   else
+      return;
+
    //mMoveState[RenderState] = mMoveState[ActualState];
    updateInterpolation(theMove->time);
    lastMove = *theMove;
