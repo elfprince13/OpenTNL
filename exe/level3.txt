@@ -12,7 +12,6 @@ BarrierMaker 6 6 7 7 5 7 6 6
 BarrierMaker 5 3 5 3.5 4 3.5 5 3
 BarrierMaker 4 4 5 4 5 5 5.5 5
 BarrierMaker 8 3 7 3 7 5
-BarrierMaker 4 3.5 5 3.5 5 3 4 3.5
 BarrierMaker 4 2.5 4.5 2.5 4.5 2 5 2
 BarrierMaker 6 5 5.5 3 6.5 3 6 5
 BarrierMaker 3.5 4.5 3.5 6 4 6
@@ -30,7 +29,6 @@ BarrierMaker 6 10 7 9 5 9 6 10
 BarrierMaker 5 13 5 12.5 4 12.5 5 13
 BarrierMaker 4 12 5 12 5 11 5.5 11
 BarrierMaker 8 13 7 13 7 11
-BarrierMaker 4 12.5 5 12.5 5 13 4 12.5
 BarrierMaker 4 13.5 4.5 13.5 4.5 14 5 14
 BarrierMaker 6 11 5.5 13 6.5 13 6 11
 BarrierMaker 3.5 11.5 3.5 10 4 10

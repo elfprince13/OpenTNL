@@ -42,23 +42,6 @@ namespace TNL {
 
 //-----------------------------------------------------------------------------
 
-#ifdef DEBUG_GUARD
-extern bool VectorResize(U32 *aSize, U32 *aCount, void **arrayPtr, U32 newCount, U32 elemSize,
-                         const char* fileName,
-                         const U32   lineNum);
-#else
-extern bool VectorResize(U32 *aSize, U32 *aCount, void **arrayPtr, U32 newCount, U32 elemSize);
-#endif
-
-
-// Use the following macro to bind a vector to a particular line
-//  of the owning class for memory tracking purposes
-#ifdef DEBUG_GUARD
-#define VECTOR_SET_ASSOCIATION(x) x.setFileAssociation(__FILE__, __LINE__)
-#else
-#define VECTOR_SET_ASSOCIATION(x)
-#endif
-
 /// VectorRep is an image of a Vector template object that is used
 /// for marshalling and unmarshalling Vectors across RPCs.
 struct VectorRep
@@ -66,10 +49,6 @@ struct VectorRep
    U32 elementCount;
    U32 arraySize;
    U8 *array;
-#ifdef DEBUG_GUARD
-   const char *fileAssociation;
-   U32 lineAssociation;
-#endif
 };
 
 // =============================================================================
@@ -87,25 +66,14 @@ template<class T> class Vector
    U32 mArraySize;    ///< Number of elements allocated for the Vector.
    T*  mArray;        ///< Pointer to the Vector elements.
 
-#ifdef DEBUG_GUARD
-   const char* mFileAssociation;
-   U32         mLineAssociation;
-#endif
-
-   bool  resize(U32);                   ///< Resizes, but does no construction/destruction.
+   void  checkSize(U32 newElementCount);///< checks the element count against the array size and resizes the array if necessary
    void  destroy(U32 start, U32 end);   ///< Destructs elements from <i>start</i> to <i>end-1</i>
    void  construct(U32 start, U32 end); ///< Constructs elements from <i>start</i> to <i>end-1</i>
    void  construct(U32 start, U32 end, const T* array);
   public:
    Vector(const U32 initialSize = 0);
-   Vector(const U32 initialSize, const char* fileName, const U32 lineNum);
-   Vector(const char* fileName, const U32 lineNum);
    Vector(const Vector&);
    ~Vector();
-
-#ifdef DEBUG_GUARD
-   void setFileAssociation(const char* file, const U32 line);
-#endif
 
    /// @name VectorSTL STL interface
    ///
@@ -116,8 +84,6 @@ template<class T> class Vector
    typedef T&       reference;
    typedef const T& const_reference;
 
-   typedef T*       iterator;
-   typedef const T* const_iterator;
    typedef S32      difference_type;
    typedef U32      size_type;
 
@@ -125,16 +91,8 @@ template<class T> class Vector
 
    Vector<T>& operator=(const Vector<T>& p);
 
-   iterator       begin();
-   const_iterator begin() const;
-   iterator       end();
-   const_iterator end() const;
-
    S32 size() const;
    bool empty() const;
-
-   void insert(iterator, const T&);
-   void erase(iterator);
 
    T&       front();
    const T& front() const;
@@ -153,7 +111,6 @@ template<class T> class Vector
    const T& operator[](S32 i ) const { return operator[](U32(i)); }
 
    void reserve(U32);
-   U32 capacity() const;
 
    /// @}
 
@@ -165,14 +122,9 @@ template<class T> class Vector
    U32  memSize() const;
    T*   address() const;
    U32  setSize(U32);
-   void increment();
-   void decrement();
-   void increment(U32);
-   void decrement(U32);
    void insert(U32);
    void erase(U32);
    void erase_fast(U32);
-   void erase_fast(iterator);
    void clear();
    void compact();
 
@@ -195,76 +147,24 @@ template<class T> inline Vector<T>::~Vector()
 
 template<class T> inline Vector<T>::Vector(const U32 initialSize)
 {
-#ifdef DEBUG_GUARD
-   mFileAssociation = NULL;
-   mLineAssociation = 0;
-#endif
-
    mArray        = 0;
    mElementCount = 0;
    mArraySize    = 0;
    if(initialSize)
       reserve(initialSize);
-}
-
-template<class T> inline Vector<T>::Vector(const U32 initialSize,
-                                           const char* fileName,
-                                           const U32   lineNum)
-{
-#ifdef DEBUG_GUARD
-   mFileAssociation = fileName;
-   mLineAssociation = lineNum;
-#else
-   fileName;
-   lineNum;
-#endif
-
-   mArray        = 0;
-   mElementCount = 0;
-   mArraySize    = 0;
-   if(initialSize)
-      reserve(initialSize);
-}
-
-template<class T> inline Vector<T>::Vector(const char* fileName,
-                                           const U32   lineNum)
-{
-#ifdef DEBUG_GUARD
-   mFileAssociation = fileName;
-   mLineAssociation = lineNum;
-#else
-   fileName;
-   lineNum;
-#endif
-
-   mArray        = 0;
-   mElementCount = 0;
-   mArraySize    = 0;
 }
 
 template<class T> inline Vector<T>::Vector(const Vector& p)
 {
-#ifdef DEBUG_GUARD
-   mFileAssociation = p.mFileAssociation;
-   mLineAssociation = p.mLineAssociation;
-#endif
-
    mArray = 0;
-   resize(p.mElementCount);
+   mArraySize = 0;
+   mElementCount = 0;
+
+   checkSize(p.mElementCount);
+   mElementCount = p.mElementCount;
    construct(0, p.mElementCount, p.mArray);
-   //if (p.mElementCount)
-   //   memcpy(mArray,p.mArray,mElementCount * sizeof(value_type));
 }
 
-
-#ifdef DEBUG_GUARD
-template<class T> inline void Vector<T>::setFileAssociation(const char* file,
-                                                            const U32   line)
-{
-   mFileAssociation = file;
-   mLineAssociation = line;
-}
-#endif
 
 template<class T> inline void  Vector<T>::destroy(U32 start, U32 end) // destroys from start to end-1
 {
@@ -287,11 +187,6 @@ template<class T> inline void  Vector<T>::construct(U32 start, U32 end, const T*
    }
 }
 
-template<class T> inline U32 Vector<T>::memSize() const
-{
-   return capacity() * sizeof(T);
-}
-
 template<class T> inline T* Vector<T>::address() const
 {
    return mArray;
@@ -299,72 +194,35 @@ template<class T> inline T* Vector<T>::address() const
 
 template<class T> inline U32 Vector<T>::setSize(U32 size)
 {
-   U32 oldSize = mElementCount;
+   checkSize(size);
+
    if(size > mElementCount)
    {
-      if (size > mArraySize)
-         resize(size);
-      construct(oldSize, size);
+      construct(mElementCount, size);
+      mElementCount = size;
    }
    else if(size < mElementCount)
-      destroy(size, oldSize);
-   mElementCount = size;
-
-   if(!mElementCount)
    {
-      free(mArray);
-      mArray = NULL;
-      mArraySize = 0;
+      destroy(size, mElementCount);
+      mElementCount = size;
+      if(!mElementCount)
+      {
+         free(mArray);
+         mArray = NULL;
+         mArraySize = 0;
+      }
    }
    return mElementCount;
 }
 
-template<class T> inline void Vector<T>::increment()
-{
-   if(mElementCount == mArraySize)
-      resize(mElementCount + 1);
-   else
-      mElementCount++;
-   constructInPlace(&mArray[mElementCount - 1]);
-}
-
-template<class T> inline void Vector<T>::decrement()
-{
-   mElementCount--;
-   destructInPlace(&mArray[mElementCount]);
-}
-
-template<class T> inline void Vector<T>::increment(U32 delta)
-{
-   U32 count = mElementCount;
-   if ((mElementCount += delta) > mArraySize)
-      resize(mElementCount);
-   construct(count, mElementCount);
-}
-
-template<class T> inline void Vector<T>::decrement(U32 delta)
-{
-   U32 count = mElementCount;
-   if (mElementCount > delta)
-      mElementCount -= delta;
-   else
-      mElementCount = 0;
-   destroy(mElementCount, count);
-}
-
 template<class T> inline void Vector<T>::insert(U32 index)
 {
-   // Assert: index >= 0 && index < mElementCount
-   if(mElementCount == mArraySize)
-      resize(mElementCount + 1);
-   else
-      mElementCount++;
+   checkSize(mElementCount + 1);
+   mElementCount++;
+
    for(U32 i = mElementCount - 1; i > index; i--)
       mArray[i] = mArray[i - 1];
    destructInPlace(&mArray[index]);
-   //memmove(&mArray[index + 1],
-   //                 &mArray[index],
-   //                 (mElementCount - index - 1) * sizeof(value_type));
    constructInPlace(&mArray[index]);
 }
 
@@ -374,9 +232,6 @@ template<class T> inline void Vector<T>::erase(U32 index)
    for(U32 i = index; i < mElementCount - 1; i++)
       mArray[i] = mArray[i+1];
    destructInPlace(&mArray[mElementCount - 1]);
-   //memmove(&mArray[index],
-   //                 &mArray[index + 1],
-   //                 (mElementCount - index - 1) * sizeof(value_type));
    mElementCount--;
 }
 
@@ -386,14 +241,11 @@ template<class T> inline void Vector<T>::erase_fast(U32 index)
    // Copy the last element into the deleted 'hole' and decrement the
    //   size of the vector.
    // Assert: index >= 0 && index < mElementCount
+
    if(index != mElementCount - 1)
       mArray[index] = mArray[mElementCount - 1];
    destructInPlace(&mArray[mElementCount - 1]);
    mElementCount--;
-   
-   //if (index < (mElementCount - 1))
-   //   memmove(&mArray[index], &mArray[mElementCount - 1], sizeof(value_type));
-   //mElementCount--;
 }
 
 template<class T> inline T& Vector<T>::first()
@@ -422,45 +274,16 @@ template<class T> inline void Vector<T>::clear()
    setSize(0);
 }
 
-template<class T> inline void Vector<T>::compact()
-{
-   resize(mElementCount);
-}
-
-
 //-----------------------------------------------------------------------------
 
 template<class T> inline Vector<T>& Vector<T>::operator=(const Vector<T>& p)
 {
-   if(mElementCount > p.mElementCount)
-      destroy(p.mElementCount, mElementCount);
-   U32 i;
-   for(i = 0; i < mElementCount; i++)
-      mArray[i] = p.mArray[i];
-   resize(p.mElementCount);
-   if(i < p.mElementCount)
-      construct(i, p.mElementCount, p.mArray);
+   destroy(0, mElementCount);
+   mElementCount = 0;
+   checkSize(p.mElementCount);
+   construct(0, p.mElementCount, p.mArray);
+   mElementCount = p.mElementCount;
    return *this;
-}
-
-template<class T> inline typename Vector<T>::iterator Vector<T>::begin()
-{
-   return mArray;
-}
-
-template<class T> inline typename Vector<T>::const_iterator Vector<T>::begin() const
-{
-   return mArray;
-}
-
-template<class T> inline typename Vector<T>::iterator Vector<T>::end()
-{
-   return mArray + mElementCount;
-}
-
-template<class T> inline typename Vector<T>::const_iterator Vector<T>::end() const
-{
-   return mArray +mElementCount;
 }
 
 template<class T> inline S32 Vector<T>::size() const
@@ -471,23 +294,6 @@ template<class T> inline S32 Vector<T>::size() const
 template<class T> inline bool Vector<T>::empty() const
 {
    return (mElementCount == 0);
-}
-
-template<class T> inline void Vector<T>::insert(iterator p,const T& x)
-{
-   U32 index = (U32) (p - mArray);
-   insert(index);
-   mArray[index] = x;
-}
-
-template<class T> inline void Vector<T>::erase(iterator q)
-{
-   erase(U32(q - mArray));
-}
-
-template<class T> inline void Vector<T>::erase_fast(iterator q)
-{
-   erase_fast(U32(q - mArray));
 }
 
 template<class T> inline T& Vector<T>::front()
@@ -510,16 +316,17 @@ template<class T> inline const T& Vector<T>::back() const
    return *end();
 }
 
-template<class T> inline void Vector<T>::push_front(const T& x)
+template<class T> inline void Vector<T>::push_front(const T &x)
 {
    insert(0);
    mArray[0] = x;
 }
 
-template<class T> inline void Vector<T>::push_back(const T& x)
+template<class T> inline void Vector<T>::push_back(const T &x)
 {
-   increment();
-   mArray[mElementCount - 1] = x;
+   checkSize(mElementCount + 1);
+   mElementCount++;
+   constructInPlace(mArray + mElementCount - 1, &x);
 }
 
 template<class T> inline void Vector<T>::pop_front()
@@ -529,7 +336,8 @@ template<class T> inline void Vector<T>::pop_front()
 
 template<class T> inline void Vector<T>::pop_back()
 {
-   decrement();
+   mElementCount--;
+   destructInPlace(mArray + mElementCount);
 }
 
 template<class T> inline T& Vector<T>::operator[](U32 index)
@@ -544,44 +352,36 @@ template<class T> inline const T& Vector<T>::operator[](U32 index) const
 
 template<class T> inline void Vector<T>::reserve(U32 size)
 {
-   if (size > mArraySize) {
-      U32 ec = mElementCount;
-      if (resize(size))
-         mElementCount = ec;
-   }
+   checkSize(size);
 }
 
-template<class T> inline U32 Vector<T>::capacity() const
-{
-    return mArraySize;
-}
-
-template<class T> inline void Vector<T>::set(void * addr, U32 sz)
-{
-   setSize(sz);
-   if (addr)
-      memcpy(address(),addr,sz*sizeof(T));
-}
+//template<class T> inline void Vector<T>::set(void * addr, U32 sz)
+//{
+//   setSize(sz);
+//   if (addr)
+//      memcpy(address(),addr,sz*sizeof(T));
+//}
 
 //-----------------------------------------------------------------------------
 
-template<class T> inline bool Vector<T>::resize(U32 ecount)
+template<class T> inline void Vector<T>::checkSize(U32 newCount)
 {
-   U32 blk = VectorBlockSize - (ecount % VectorBlockSize);
-   U32 newCount = ecount + ((blk != VectorBlockSize) ? blk : 0);
+   if(newCount <= mArraySize)
+      return;
 
-   T *array = (T *) malloc(sizeof(T) * newCount);
-   
-   for(U32 i = 0; i < mElementCount; i++)
-   {
-      constructInPlace(&array[i], &mArray[i]);
-      destructInPlace(&mArray[i]);
-   }
-   free(mArray);
-   mArray = array;
+   U32 blk = VectorBlockSize - (newCount % VectorBlockSize);
+   newCount += blk;
+
+   T *newArray = (T *) malloc(sizeof(T) * newCount);
+   T *oldArray = mArray;
+
+   mArray = newArray;
+   construct(0, mElementCount, oldArray);
+   mArray = oldArray;
+   destroy(0, mElementCount);
+   free(oldArray);
+   mArray = newArray;
    mArraySize = newCount;
-   mElementCount = ecount;
-   return true;
 }
 
 typedef int (QSORT_CALLBACK *qsort_compare_func)(const void *, const void *);

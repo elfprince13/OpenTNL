@@ -84,13 +84,16 @@ void BarrierMaker::processArguments(S32 argc, const char **argv)
       if(cosTheta >= 0)
       {
          F32 extendAmt = Barrier::BarrierWidth * 0.5 * tan( acos(cosTheta) / 2 );
+         if(extendAmt > 0.01)
+            extendAmt -= 0.01;
          extend.push_back(extendAmt);
       }
       else
          extend.push_back(0);
       lastEdge = curEdge;
    }
-   extend.push_back(extend[0]);
+   F32 first = extend[0];
+   extend.push_back(first);
 
    for(S32 i = 0; i < edgeVector.size(); i++)
    {
@@ -166,24 +169,14 @@ bool Barrier::getCollisionPoly(Vector<Point> &polyPoints)
 
 void Barrier::clipRenderLinesToPoly(Vector<Point> &polyPoints)
 {
+   //return;
    Vector<Point> clippedSegments;
+   
 
    for(S32 i = 0; i < mRenderLineSegments.size(); i+= 2)
    {
       Point rp1 = mRenderLineSegments[i];
       Point rp2 = mRenderLineSegments[i + 1];
-
-/*      Point cp1 = polyPoints[polyPoints.size() - 1];
-      for(S32 j = 0; j < polyPoints.size(); j++)
-      {
-         Point cp2 = polyPoints[j];
-         Point ce = cp2 - cp1;
-
-         // If we're collinear, just don't clip
-
-         cp1 = cp2;
-      } */
-
 
       Point cp1 = polyPoints[polyPoints.size() - 1];
       for(S32 j = 0; j < polyPoints.size(); j++)
@@ -198,20 +191,10 @@ void Barrier::clipRenderLinesToPoly(Vector<Point> &polyPoints)
          F32 d1 = n.dot(rp1);
          F32 d2 = n.dot(rp2);
 
-         bool d1in = d1 > distToZero;
-         bool d2in = d2 > distToZero;
+         bool d1in = d1 >= distToZero;
+         bool d2in = d2 >= distToZero;
 
-         // collinearity check
-         Point a = ce;
-         Point b = rp2-rp1;
-         a.normalize();
-         b.normalize();
-         F32 v = a.dot(b);
-
-         // And locality check
-         F32 lc = getMin( getMin( (cp1 - rp1).len(), (cp1 - rp2).len() ), getMin( (cp2 - rp1).len(), (cp2 - rp2).len() ));
-
-         if(!d1in && !d2in || (v >= 1.f && lc < 0.1)) // both points are outside this edge of the poly, so...
+         if(!d1in && !d2in) // both points are outside this edge of the poly, so...
          {
             // add them to the render poly
             clippedSegments.push_back(rp1);
