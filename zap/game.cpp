@@ -389,7 +389,7 @@ void ClientGame::renderCommander()
    GameType *gt = gClientGame->getGameType();
    GameObject *co = gClientGame->getConnectionToServer()->getControlObject();
 
-   if(gt && co)
+   if(gt && dynamic_cast<Ship*>(co))
    {
       S32 playerId = gt->findClientIndexByName(((Ship *) co)->mPlayerName);
       S32 playerTeam = gt->mClientList[playerId].teamId;
