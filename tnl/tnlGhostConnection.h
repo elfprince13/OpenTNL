@@ -170,6 +170,9 @@ public:
    bool doesGhostFrom() { return mGhostArray != NULL; } ///< Does this GhostConnection ghost NetObjects to the remote host?
    bool doesGhostTo() { return mLocalGhosts != NULL; }  ///< Does this GhostConnection receive ghosts from the remote host?
 
+   /// Returns the sequence number of this ghosting session.
+   U32 getGhostingSequence() { return mGhostingSequence; }
+
    enum GhostConstants {
       GhostIdBitSize = 10,            ///< Size, in bits, of the integer used to transmit ghost IDs
       GhostLookupTableSizeShift = 10, ///< The size of the hash table used to lookup source NetObjects by remote ghost ID is 1 << GhostLookupTableSizeShift.

@@ -331,18 +331,20 @@ void GameType::performScopeQuery(GhostConnection *connection)
 
    gc->objectInScope(this);
 
-   // we make sure that all scope always objects are available before
-   // we scope anything else to the client
-   bool allAvailable = true;
    for(S32 i = 0; i < scopeAlwaysList.size(); i++)
    {
       if(scopeAlwaysList[i].isNull())
          continue;
       gc->objectInScope(scopeAlwaysList[i]);
-      allAvailable = gc->isGhostAvailable(scopeAlwaysList[i]) && allAvailable;
    }
-   if(allAvailable && co)
-      performProxyScopeQuery(co, (GameConnection *) connection);
+   // readyForRegularGhosts is set once all the RPCs from the GameType
+   // have been received and acknowledged by the client.
+   S32 clientIndex = findClientIndexByConnection(gc);
+   if(clientIndex != -1)
+   {
+      if(mClientList[clientIndex].readyForRegularGhosts && co)
+         performProxyScopeQuery(co, (GameConnection *) connection);
+   }
 }
 
 void GameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection)
@@ -590,7 +592,25 @@ void GameType::onGhostAvailable(GhostConnection *theConnection)
    }
    s2cSetTimeRemaining(mGameTimer.getCurrent());
    s2cSetGameOver(mGameOver);
+   s2cSyncMessagesComplete(theConnection->getGhostingSequence());
+
    NetObject::setRPCDestConnection(NULL);
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cSyncMessagesComplete, (U32 sequence),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+{
+   c2sSyncMessagesComplete(sequence);
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSyncMessagesComplete, (U32 sequence),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+{
+   GameConnection *source = (GameConnection *) getRPCSourceConnection();
+   S32 clientIndex = findClientIndexByConnection(source);
+   if(sequence != source->getGhostingSequence())
+      return;
+   mClientList[clientIndex].readyForRegularGhosts = true;
 }
 
 TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sSendChat, (bool global, const char *message),

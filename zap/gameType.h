@@ -51,7 +51,7 @@ public:
       Timer respawnTimer;
 
       bool wantsScoreboardUpdates;
-      bool scopeAlwaysComplete;
+      bool readyForRegularGhosts;
 
       SafePtr<GameConnection> clientConnection;
       RefPtr<SFXObject> voiceSFX;
@@ -62,7 +62,7 @@ public:
       {
          ping = 0;
          score = 0;
-         scopeAlwaysComplete = false;
+         readyForRegularGhosts = false;
       }
    };
 
@@ -142,6 +142,9 @@ public:
 
    void performScopeQuery(GhostConnection *connection);
    virtual void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);
+
+   TNL_DECLARE_RPC(s2cSyncMessagesComplete, (U32 sequence));
+   TNL_DECLARE_RPC(c2sSyncMessagesComplete, (U32 sequence));
 
    TNL_DECLARE_RPC(s2cAddTeam, (StringTableEntryRef teamName, F32 r, F32 g, F32 b));
    TNL_DECLARE_RPC(s2cSetTeamScore, (U32 teamIndex, U32 score));
