@@ -264,6 +264,10 @@ public:
       { return count == mNetClassCount[classGroup][classType] ||
                (count > 0 && mClassTable[classGroup][classType][count]->getClassVersion() !=
                         mClassTable[classGroup][classType][count - 1]->getClassVersion()); }
+
+   static NetClassRep *getClass(U32 classGroup, U32 classType, U32 index)
+      { return mClassTable[classGroup][classType][index]; }
+      
    /// Returns a CRC of class data, for checking on connection.
    static U32 getClassGroupCRC(NetClassGroup classGroup);
 

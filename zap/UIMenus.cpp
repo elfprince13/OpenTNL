@@ -120,6 +120,7 @@ MainMenuUserInterface::MainMenuUserInterface()
 {
    dSprintf(titleBuffer, sizeof(titleBuffer), "%s:", ZAP_GAME_STRING);
    menuTitle = titleBuffer;
+   motd[0] = 0;
    menuSubTitle = "A TORQUE NETWORK LIBRARY GAME - WWW.OPENTNL.ORG";
    menuFooter = "(C) 2004 GARAGEGAMES.COM, INC.";
 
@@ -128,6 +129,28 @@ MainMenuUserInterface::MainMenuUserInterface()
    menuItems.push_back("INSTRUCTIONS");
    menuItems.push_back("OPTIONS");
    menuItems.push_back("QUIT");
+}
+
+void MainMenuUserInterface::setMOTD(const char *motdString)
+{
+   strcpy(motd, motdString);
+   motdArriveTime = gClientGame->getCurrentTime();
+}
+
+void MainMenuUserInterface::render()
+{
+   Parent::render();
+   if(motd[0])
+   {
+      U32 width = getStringWidth(20, motd);
+      glColor3f(1,1,1);
+      U32 totalWidth = width + canvasWidth;
+      U32 pixelsPerSec = 100;
+      U32 delta = gClientGame->getCurrentTime() - motdArriveTime;
+      delta = U32(delta * pixelsPerSec * 0.001) % totalWidth;
+      
+      drawString(canvasWidth - delta, 540, 20, motd);
+   }
 }
 
 void MainMenuUserInterface::processSelection(U32 index)

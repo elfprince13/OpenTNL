@@ -106,6 +106,7 @@ bool EventConnection::readConnectRequest(BitStream *stream, const char **errorSt
       if(!NetClassRep::isVersionBorderCount(getNetClassGroup(), NetClassTypeEvent, mEventClassCount))
          return false;
    }
+   mEventClassVersion = NetClassRep::getClass(getNetClassGroup(), NetClassTypeEvent, mEventClassCount-1)->getClassVersion();
    mEventClassBitSize = getNextBinLog2(mEventClassCount);
    return true;
 }
@@ -457,6 +458,10 @@ void EventConnection::readPacket(BitStream *bstream)
 
 bool EventConnection::postNetEvent(NetEvent *theEvent)
 {   
+   S32 classId = theEvent->getClassId(getNetClassGroup());
+   if(classId >= mEventClassCount)
+      return false;
+
    theEvent->notifyPosted(this);
 
    EventNote *event = mEventNoteChunker.alloc();

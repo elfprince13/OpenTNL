@@ -39,6 +39,10 @@ public:
    StringTableEntry mName;
 };
 
+Vector<const char *> MOTDTypeVec;
+Vector<const char *> MOTDStringVec;
+
+
 class MasterServerConnection;
 
 class GameConnectRequest
@@ -519,6 +523,24 @@ public:
          linkToServerList();
       }
       logprintf("%s online at %s", mIsGameServer ? "Server" : "client", getNetAddress().toString());
+      if(getEventClassVersion() > 0)
+      {
+         U32 matchLen = 0;
+         const char *motdString = "Welcome to TNL.  Have a nice day.";
+         for(S32 i = 0; i < MOTDTypeVec.size(); i++)
+         {
+            U32 len;
+            const char *type = MOTDTypeVec[i];
+            for(len = 0; type[len] == gameString[len] && type[len] != 0; len++)
+               ;
+            if(len > matchLen)
+            {
+               matchLen = len;
+               motdString = MOTDStringVec[i];
+            }
+         }
+         m2cSetMOTD(motdString);
+      }
       return true;
    }
 
@@ -583,15 +605,29 @@ public:
    }
 } gStdoutLogConsumer;
 
+enum {
+   DefaultMasterPort = 29005,
+};
+
 int main(int argc, const char **argv)
 {
    // Parse command line parameters...
-   if(argc < 2)
+   U32 port = DefaultMasterPort;
+
+   for(S32 i = 1; i < argc; i++)
    {
-      logprintf("Error - you must specify a port on the command line.");
-      return 0;
+      if(!stricmp(argv[i], "-port") && i < argc - 1)
+      {
+         port = atoi(argv[i+1]);
+         i++;
+      }
+      else if(!stricmp(argv[i], "-motd") && i < argc - 2)
+      {
+         MOTDTypeVec.push_back(argv[i+1]);
+         MOTDStringVec.push_back(argv[i+2]);
+         i+= 2;
+      }
    }
-   U32 port = atoi(argv[1]);
 
    // Initialize our net interface so we can accept connections...
    gNetInterface = new NetInterface(Address(IPProtocol, Address::Any, port));

@@ -134,12 +134,10 @@ private:
 public:
    bool postNetEvent(NetEvent *event);  ///< Posts a NetEvent for processing on the remote host
 
-   /// @name EvCon_StringTable String Table
-   ///
-   /// @{
 protected:
    U32 mEventClassCount;      ///< Number of NetEvent classes supported by this connection
    U32 mEventClassBitSize;    ///< Bit field width of NetEvent class count.
+   U32 mEventClassVersion;    ///< The highest version number of events on this connection.
 
    /// Writes the NetEvent class count into the stream, so that the remote
    /// host can negotiate a class count for the connection
@@ -167,7 +165,9 @@ public:
 
    /// reads a global NetStringTable entry from the network stream.
    StringTableEntry unpackStringTableEntry(BitStream *stream);
-   /// @}
+
+   /// returns the highest event version number supported on this connection.
+   U32 getEventClassVersion() { return mEventClassVersion; }
 };
 
 };

@@ -69,3 +69,8 @@ TNL_IMPLEMENT_RPC(MasterServerInterface, c2mUpdateServerStatus, (
    StringTableEntryRef gameType, StringTableEntryRef missionType,
    U32 botCount, U32 playerCount, U32 maxPlayers, U32 infoFlags),
    NetClassGroupMasterMask, RPCGuaranteedOrdered, RPCDirClientToServer, 0) {}
+
+// version 1 protocol messages
+
+TNL_IMPLEMENT_RPC(MasterServerInterface, m2cSetMOTD, (const char *motdString),
+   NetClassGroupMasterMask, RPCGuaranteedOrdered, RPCDirServerToClient, 1) {}

@@ -178,6 +178,11 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionRejected
    }
 }
 
+TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cSetMOTD, (const char *motdString))
+{
+   gMainMenuUserInterface.setMOTD(motdString);
+}
+
 void MasterServerConnection::writeConnectRequest(BitStream *bstream)
 {
    Parent::writeConnectRequest(bstream);

@@ -60,6 +60,7 @@ public:
       ByteBufferRef connectionParameters));
    TNL_DECLARE_RPC_OVERRIDE(m2cArrangedConnectionAccepted, (U32 requestId, const Vector<IPAddress> &possibleAddresses, ByteBufferRef connectionData));
    TNL_DECLARE_RPC_OVERRIDE(m2cArrangedConnectionRejected, (U32 requestId, ByteBufferRef rejectData));
+   TNL_DECLARE_RPC_OVERRIDE(m2cSetMOTD, (const char *motdString));
 
    void writeConnectRequest(BitStream *bstream);
    void onConnectionEstablished();

@@ -131,6 +131,13 @@ public:
    TNL_DECLARE_RPC(c2mUpdateServerStatus, (
       StringTableEntryRef gameType, StringTableEntryRef missionType,
       U32 botCount, U32 playerCount, U32 maxPlayers, U32 infoFlags));
+
+   // Version 1 protocol messages:
+
+   /// m2cSetMOTD is sent to a client when the connection is established.  The
+   /// client's game string is used to pick which MOTD will be sent.
+   TNL_DECLARE_RPC(m2cSetMOTD, (const char *motdString));
+
 };
 
 

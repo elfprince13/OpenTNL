@@ -65,11 +65,16 @@ public:
 
 class MainMenuUserInterface : public MenuUserInterface
 {
+   typedef MenuUserInterface Parent;
    char titleBuffer[256];
+   char motd[256];
+   U32 motdArriveTime;
 public:
    MainMenuUserInterface();
    void processSelection(U32 index);
    void onEscape();
+   void render();
+   void setMOTD(const char *motdString);
 };
 
 extern MainMenuUserInterface gMainMenuUserInterface;
