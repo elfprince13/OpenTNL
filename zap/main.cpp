@@ -32,6 +32,7 @@
 
 #include "glutInclude.h"
 #include <stdarg.h>
+#include <direct.h>
 
 using namespace TNL;
 #include "UI.h"
@@ -479,17 +480,23 @@ int main(int argc, char **argv)
       {
          gIsCrazyBot = true;
 
+         // Generate a name...
+         char journalPath[512];
+         getcwd(journalPath, 512);
+
+         char *name = tmpnam(NULL);
+         nameSet = true;
+         gNameEntryUserInterface.setText(name);
+
+         strcat(journalPath, name);
+         strcat(journalPath, "journal");
+         gZapJournal.record(journalPath);
+
          // Connect to specified server
          connectRemote = true;
          if(hasAdditionalArg)
             gConnectAddress.set(argv[i+1]);
 
-         // Generate a name...
-         char *name = tmpnam(NULL);
-
-         nameSet = true;
-         gNameEntryUserInterface.setText(name);
-         gZapJournal.record(name);
       }
       else if(!stricmp(argv[i], "-server"))
       {
