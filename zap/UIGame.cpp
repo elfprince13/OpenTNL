@@ -418,7 +418,7 @@ void GameUserInterface::onKeyDown(U32 key)
    {
       if(key == '\r')
          issueChat();
-      else if(key == 8)
+      else if(key == 8 || key == 127)
       {
          // backspace key
          if(mChatCursorPos > 0)

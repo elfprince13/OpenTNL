@@ -27,7 +27,7 @@
  * details.  THERE IS ABSOLUTELY NO WARRANTY FOR THIS SOFTWARE.
  */
 
-#ifndef MACOSX
+#if !defined( MACOSX ) && !defined (__APPLE__)
 #include <malloc.h>
 #endif
 #include <stdlib.h>

@@ -97,6 +97,126 @@
 //1D2
 //1D3
 //1D4
+		1DC6ED430652D22A00BDEE0B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = journal.cpp;
+			path = ../tnl/journal.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DC6ED440652D22A00BDEE0B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = tnlJournal.h;
+			path = ../tnl/tnlJournal.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DC6ED450652D22A00BDEE0B = {
+			fileRef = 1DC6ED430652D22A00BDEE0B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DC6ED460652D22A00BDEE0B = {
+			fileRef = 1DC6ED440652D22A00BDEE0B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DC6ED470652D24B00BDEE0B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = gsm_decode.c;
+			path = ../zap/gsm_decode.c;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DC6ED480652D24B00BDEE0B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = gsm_encode.c;
+			path = ../zap/gsm_encode.c;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DC6ED490652D24B00BDEE0B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = gsm_state.c;
+			path = ../zap/gsm_state.c;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DC6ED4A0652D24B00BDEE0B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = gsm.h;
+			path = ../zap/gsm.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DC6ED4B0652D24B00BDEE0B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = voiceCodec.cpp;
+			path = ../zap/voiceCodec.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DC6ED4C0652D24B00BDEE0B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = voiceCodec.h;
+			path = ../zap/voiceCodec.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		1DC6ED4D0652D24B00BDEE0B = {
+			fileRef = 1DC6ED470652D24B00BDEE0B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DC6ED4E0652D24B00BDEE0B = {
+			fileRef = 1DC6ED480652D24B00BDEE0B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DC6ED4F0652D24B00BDEE0B = {
+			fileRef = 1DC6ED490652D24B00BDEE0B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DC6ED500652D24B00BDEE0B = {
+			fileRef = 1DC6ED4A0652D24B00BDEE0B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DC6ED510652D24B00BDEE0B = {
+			fileRef = 1DC6ED4B0652D24B00BDEE0B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1DC6ED520652D24B00BDEE0B = {
+			fileRef = 1DC6ED4C0652D24B00BDEE0B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		1DC82046064C5C9000F61B0E = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -543,6 +663,8 @@
 		};
 		6649E0EE05FD022100B3DD8B = {
 			children = (
+				1DC6ED430652D22A00BDEE0B,
+				1DC6ED440652D22A00BDEE0B,
 				1DC82046064C5C9000F61B0E,
 				1DC82047064C5C9000F61B0E,
 				DB9525E3063610C200B8795E,
@@ -1841,6 +1963,8 @@
 				DBAFF49C06471A4200683BA4,
 				DBAFF4AA06471AAE00683BA4,
 				1DC8204D064C5CBC00F61B0E,
+				1DC6ED500652D24B00BDEE0B,
+				1DC6ED520652D24B00BDEE0B,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1879,6 +2003,10 @@
 				DBAFF4A906471AAE00683BA4,
 				1DC8204E064C5CBC00F61B0E,
 				1DC8204F064C5CBC00F61B0E,
+				1DC6ED4D0652D24B00BDEE0B,
+				1DC6ED4E0652D24B00BDEE0B,
+				1DC6ED4F0652D24B00BDEE0B,
+				1DC6ED510652D24B00BDEE0B,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2313,6 +2441,12 @@
 		};
 		6692C0E606247C3B00D5ADFE = {
 			children = (
+				1DC6ED470652D24B00BDEE0B,
+				1DC6ED480652D24B00BDEE0B,
+				1DC6ED490652D24B00BDEE0B,
+				1DC6ED4A0652D24B00BDEE0B,
+				1DC6ED4B0652D24B00BDEE0B,
+				1DC6ED4C0652D24B00BDEE0B,
 				1DC8204A064C5CBC00F61B0E,
 				1DC8204B064C5CBC00F61B0E,
 				1DC8204C064C5CBC00F61B0E,
@@ -3518,6 +3652,7 @@
 				66BA0C8005FD107700D882FA,
 				66BA0C8105FD107700D882FA,
 				1DC82049064C5C9000F61B0E,
+				1DC6ED460652D22A00BDEE0B,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3549,6 +3684,7 @@
 				66BA0CE705FD17F600D882FA,
 				DB9525E4063610C200B8795E,
 				1DC82048064C5C9000F61B0E,
+				1DC6ED450652D22A00BDEE0B,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;

@@ -442,7 +442,7 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
 #ifdef TNL_BIG_ENDIAN
             if(!argList[i].isVector)
             {
-               bstream->read(((S8 *) intArg) + 3);
+               bstream->read(((S8 *) arg) + 3);
             }
             else            
 #endif
@@ -452,7 +452,7 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
 #ifdef TNL_BIG_ENDIAN
             if(!argList[i].isVector)
             {
-               bstream->read(((U8 *) intArg) + 3);
+               bstream->read(((U8 *) arg) + 3);
             }
             else            
 #endif
@@ -462,7 +462,7 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
 #ifdef TNL_BIG_ENDIAN
             if(!argList[i].isVector)
             {
-               bstream->read(((S16 *) intArg) + 1);
+               bstream->read(((S16 *) arg) + 1);
             }
             else            
 #endif
@@ -472,7 +472,7 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
 #ifdef TNL_BIG_ENDIAN
             if(!argList[i].isVector)
             {
-               bstream->read(((U16 *) intArg) + 1);
+               bstream->read(((U16 *) arg) + 1);
             }
             else            
 #endif

@@ -74,7 +74,7 @@ void NameEntryUserInterface::onKeyDown(U32 key)
 {
    if(key == '\r')
       onAccept();
-   else if(key == 8)
+   else if(key == 8 || key == 127)
    {
       // backspace key
       if(cursorPos > 0)
@@ -92,9 +92,11 @@ void NameEntryUserInterface::onKeyDown(U32 key)
    {
       for(U32 i = MaxNameLen - 1; i > cursorPos; i--)
          buffer[i] = buffer[i-1];
-      buffer[cursorPos] = key;
       if(cursorPos < MaxNameLen-1)
+      {
+         buffer[cursorPos] = key;
          cursorPos++;
+      }
    }
 }
 
