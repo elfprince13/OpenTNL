@@ -50,7 +50,8 @@ public:
    enum {
       MaxServerNameLen = 20,
       ServersPerScreen = 21,
-      ServersAboveBelow = 10,
+      ServersAbove = 9,
+      ServersBelow = 9,
       MaxPendingPings = 15,
       MaxPendingQueries = 10,
       PingQueryTimeout = 1500,
@@ -73,6 +74,8 @@ public:
       U32 lastSendTime;
       U32 sendCount;
       bool isFromMaster;
+      bool dedicated;
+      bool passwordRequired;
       Nonce sendNonce;
       char serverName[MaxServerNameLen+1];
       Address serverAddress;
@@ -104,7 +107,7 @@ public:
    void sort();
 
    void gotPingResponse(const Address &theAddress, const Nonce &clientNonce, U32 clientIdentityToken);
-   void gotQueryResponse(const Address &theAddress, const Nonce &clientNonce, const char *serverName, U32 playerCount, U32 maxPlayers);
+   void gotQueryResponse(const Address &theAddress, const Nonce &clientNonce, const char *serverName, U32 playerCount, U32 maxPlayers, bool dedicated, bool passwordRequired);
 };
 
 extern QueryServersUserInterface gQueryServersUserInterface;

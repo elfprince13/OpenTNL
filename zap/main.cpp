@@ -57,6 +57,7 @@ const char *gWindowTitle = "ZAP II - The Return";
 U32 gMaxPlayers = 128;
 U32 gSimulatedPing = 0;
 F32 gSimulatedPacketLoss = 0;
+bool gDedicatedServer = false;
 
 const char *gMasterAddressString = "IP:master.opentnl.org:29005";
 const char *gServerPassword = NULL;
@@ -552,6 +553,7 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *
       {
          hasClient = false;
          hasServer = true;
+         gDedicatedServer = true;
          if(hasAdditionalArg)
             gBindAddress.set(argv[i+1]);
       }

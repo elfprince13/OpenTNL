@@ -40,6 +40,18 @@ QueryServersUserInterface gQueryServersUserInterface;
 void QueryServersUserInterface::onActivate()
 {
    servers.clear();
+   for(U32 i = 0;i < 512; i++)
+   {
+      ServerRef s;
+      dSprintf(s.serverName, MaxServerNameLen, "Svr%8x", Random::readI());
+      s.id = i;
+      s.pingTime = Random::readF() * 512;
+      s.serverAddress.port = 28000;
+      s.serverAddress.netNum[0] = Random::readI();
+      s.maxPlayers = Random::readF() * 16 + 8;
+      s.playerCount = Random::readF() * s.maxPlayers;
+      servers.push_back(s);
+   }
    sortColumn = 0;
    pendingPings = 0;
    pendingQueries = 0;
@@ -116,7 +128,7 @@ void QueryServersUserInterface::gotPingResponse(const Address &theAddress, const
    shouldSort = true;
 }
 
-void QueryServersUserInterface::gotQueryResponse(const Address &theAddress, const Nonce &clientNonce, const char *serverName, U32 playerCount, U32 maxPlayers)
+void QueryServersUserInterface::gotQueryResponse(const Address &theAddress, const Nonce &clientNonce, const char *serverName, U32 playerCount, U32 maxPlayers, bool dedicated, bool passwordRequired)
 {
    for(S32 i = 0; i < servers.size(); i++)
    {
@@ -126,6 +138,9 @@ void QueryServersUserInterface::gotQueryResponse(const Address &theAddress, cons
       {
          s.playerCount = playerCount;
          s.maxPlayers = maxPlayers;
+         s.dedicated = dedicated;
+         s.passwordRequired = passwordRequired;
+
          dSprintf(s.serverName, sizeof(s.serverName), "%s", serverName);
          s.state = ServerRef::ReceivedQuery;
          pendingQueries--;
@@ -215,26 +230,15 @@ void QueryServersUserInterface::idle(U32 t)
 
 QueryServersUserInterface::QueryServersUserInterface()
 {
-   /*
-   for(U32 i = 0;i < 512; i++)
-   {
-      ServerRef s;
-      dSprintf(s.serverName, MaxServerNameLen, "Svr%8x", Random::readI());
-      s.id = i;
-      s.pingTime = Random::readF() * 512;
-      s.serverAddress.port = 28000;
-      s.serverAddress.netNum[0] = Random::readI();
-      s.maxPlayers = Random::readF() * 16 + 8;
-      s.playerCount = Random::readF() * s.maxPlayers;
-      servers.push_back(s);
-   }*/
+   
    lastUsedServerId = 0;
    sortColumn = 0;
    lastSortColumn = 0;
    sortAscending = true;
 
    columns.push_back(ColumnInfo("SERVER NAME", 3));
-   columns.push_back(ColumnInfo("PING", 300));
+   columns.push_back(ColumnInfo("STAT", 250));
+   columns.push_back(ColumnInfo("PING", 330));
    columns.push_back(ColumnInfo("PLAYERS", 420));
    columns.push_back(ColumnInfo("ADDRESS", 550));
 
@@ -252,6 +256,47 @@ S32 QueryServersUserInterface::findSelectedIndex()
    return -1;
 }
 
+static void renderDedicatedIcon()
+{
+   glBegin(GL_LINE_LOOP);
+   glVertex2f(0,0);
+   glVertex2f(0,4);
+   glVertex2f(3,4);
+   glVertex2f(3,0);
+   glEnd();
+
+   glBegin(GL_LINES);
+   glVertex2f(0.6, 1);
+   glVertex2f(2.4, 1);
+   glVertex2f(0.6, 2);
+   glVertex2f(2.4, 2);
+   glVertex2f(0.6, 3);
+   glVertex2f(2.4, 3);
+   glEnd();
+}
+
+static void renderLockIcon()
+{
+   glBegin(GL_LINE_LOOP);
+   glVertex2f(0,2);
+   glVertex2f(0,4);
+   glVertex2f(3,4);
+   glVertex2f(3,2);
+   glEnd();
+
+   glBegin(GL_LINE_STRIP);
+   glVertex2f(2.6, 2);
+   glVertex2f(2.6, 1.3);
+   glVertex2f(2.4, 0.9);
+   glVertex2f(1.9, 0.6);
+   glVertex2f(1.1, 0.6);
+   glVertex2f(0.6, 0.9);
+   glVertex2f(0.4, 1.3);
+   glVertex2f(0.4, 2);
+   glEnd();
+  
+}
+
 void QueryServersUserInterface::render()
 {
    if(shouldSort)
@@ -267,7 +312,7 @@ void QueryServersUserInterface::render()
 
    for(S32 i = 0; i < columns.size(); i++)
    {
-      drawString(columns[i].xStart, 35, 24, columns[i].name);      
+      drawString(columns[i].xStart, 45, 24, columns[i].name);      
    }
 
    S32 x1 = columns[sortColumn].xStart - 2;
@@ -278,10 +323,10 @@ void QueryServersUserInterface::render()
       x2 = columns[sortColumn+1].xStart - 6;
 
    glBegin(GL_LINE_LOOP);
-   glVertex2f(x1, 33);
-   glVertex2f(x2, 33);
-   glVertex2f(x2, 61);
-   glVertex2f(x1, 61);
+   glVertex2f(x1, 43);
+   glVertex2f(x2, 43);
+   glVertex2f(x2, 71);
+   glVertex2f(x1, 71);
    glEnd();
 
    if(servers.size())
@@ -290,8 +335,8 @@ void QueryServersUserInterface::render()
       if(selectedIndex == -1)
          selectedIndex = 0;
 
-      S32 firstServer = selectedIndex - ServersAboveBelow;
-      S32 lastServer = selectedIndex + ServersAboveBelow;
+      S32 firstServer = selectedIndex - ServersAbove;
+      S32 lastServer = selectedIndex + ServersBelow;
 
       if(firstServer < 0)
       {
@@ -305,8 +350,9 @@ void QueryServersUserInterface::render()
 
       for(S32 i = firstServer; i <= lastServer; i++)
       {
-         U32 y = 65 + (i - firstServer) * 23;
-         U32 fontSize = 20;
+         U32 y = 75 + (i - firstServer) * 24;
+         U32 fontSize = 21;
+         ServerRef &s = servers[i];
 
          if(i == selectedIndex)
          {
@@ -314,54 +360,72 @@ void QueryServersUserInterface::render()
             glBegin(GL_POLYGON);
             glVertex2f(0, y);
             glVertex2f(799, y);
-            glVertex2f(799, y + 22);
-            glVertex2f(0, y + 22);
+            glVertex2f(799, y + 23);
+            glVertex2f(0, y + 23);
             glEnd();
             glColor3f(0,0,1.0);
             glBegin(GL_LINE_LOOP);
             glVertex2f(0, y);
             glVertex2f(799, y);
-            glVertex2f(799, y + 22);
-            glVertex2f(0, y + 22);
+            glVertex2f(799, y + 23);
+            glVertex2f(0, y + 23);
             glEnd();
          }
 
          glColor3f(1,1,1);
-         drawString(columns[0].xStart, y, fontSize, servers[i].serverName);
+         drawString(columns[0].xStart, y, fontSize, s.serverName);
 
-         if(servers[i].pingTime < 100)
+         glColor3f(0,1,0);
+         if(s.dedicated)
+         {
+            glPushMatrix();
+            glTranslatef(columns[1].xStart+5, y+2, 0);
+            glScalef(5, 5, 1);
+            renderDedicatedIcon();
+            glPopMatrix();
+         }
+         if(s.passwordRequired)
+         {
+            glPushMatrix();
+            glTranslatef(columns[1].xStart + 25, y+2, 0);
+            glScalef(5, 5, 1);
+            renderLockIcon();
+            glPopMatrix();
+         }
+
+         if(s.pingTime < 100)
             glColor3f(0,1,0);
-         else if(servers[i].pingTime < 250)
+         else if(s.pingTime < 250)
             glColor3f(1,1,0);
          else
             glColor3f(1,0,0);
-         drawStringf(columns[1].xStart, y, fontSize, "%d", servers[i].pingTime);
+         drawStringf(columns[2].xStart, y, fontSize, "%d", s.pingTime);
 
-         if(servers[i].playerCount == servers[i].maxPlayers)
+         if(s.playerCount == s.maxPlayers)
             glColor3f(1,0,0);
-         else if(servers[i].playerCount == 0)
+         else if(s.playerCount == 0)
             glColor3f(1,1,0);
          else
             glColor3f(0,1,0);
-         if(servers[i].playerCount < 0)
-            drawString(columns[2].xStart, y, fontSize, "?? / ??");
+         if(s.playerCount < 0)
+            drawString(columns[3].xStart, y, fontSize, "?? / ??");
          else
-            drawStringf(columns[2].xStart, y, fontSize, "%d / %d", servers[i].playerCount, servers[i].maxPlayers);
+            drawStringf(columns[3].xStart, y, fontSize, "%d / %d", s.playerCount, s.maxPlayers);
          glColor3f(1,1,1);
-         drawString(columns[3].xStart, y, fontSize, servers[i].serverAddress.toString());
+         drawString(columns[4].xStart, y, fontSize, s.serverAddress.toString());
       }
    }
    glColor3f(0.7, 0.7, 0.7);
    for(S32 i = 1; i < columns.size(); i++)
    {
       glBegin(GL_LINES);
-      glVertex2f(columns[i].xStart - 4, 35);
-      glVertex2f(columns[i].xStart - 4, 550);
+      glVertex2f(columns[i].xStart - 4, 45);
+      glVertex2f(columns[i].xStart - 4, 540);
       glEnd();
    }
    glBegin(GL_LINES);
-   glVertex2f(0, 62);
-   glVertex2f(800, 62);
+   glVertex2f(0, 72);
+   glVertex2f(800, 72);
    glEnd();
 }
 
@@ -487,13 +551,13 @@ void QueryServersUserInterface::sort()
       case 0:
          qsort(servers.address(), servers.size(), sizeof(ServerRef), compareFuncName);
          break;
-      case 1:
+      case 2:
          qsort(servers.address(), servers.size(), sizeof(ServerRef), compareFuncPing);
          break;
-      case 2:
+      case 3:
          qsort(servers.address(), servers.size(), sizeof(ServerRef), compareFuncPlayers);
          break;
-      case 3:
+      case 4:
          qsort(servers.address(), servers.size(), sizeof(ServerRef), compareFuncAddress);
          break;
    }

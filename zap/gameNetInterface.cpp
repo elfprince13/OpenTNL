@@ -31,6 +31,9 @@
 namespace Zap
 {
 
+extern const char *gServerPassword;
+extern bool gDedicatedServer;
+
 GameNetInterface::GameNetInterface(const Address &bindAddress, Game *theGame)
    : NetInterface(bindAddress)
 {
@@ -85,6 +88,9 @@ void GameNetInterface::handleInfoPacket(const Address &remoteAddress, U8 packetT
                queryResponse.writeString(gServerGame->getHostName(), QueryServersUserInterface::MaxServerNameLen);
                queryResponse.write(gServerGame->getPlayerCount());
                queryResponse.write(gServerGame->getMaxPlayers());
+               queryResponse.writeFlag(gDedicatedServer);
+               queryResponse.writeFlag(gServerPassword != NULL);
+
                queryResponse.sendto(mSocket, remoteAddress);
             }
          }
@@ -95,11 +101,14 @@ void GameNetInterface::handleInfoPacket(const Address &remoteAddress, U8 packetT
             Nonce theNonce;
             char nameString[256];
             U32 playerCount, maxPlayers;
+            bool dedicated, passwordRequired;
             theNonce.read(stream);
             stream->readString(nameString);
             stream->read(&playerCount);
             stream->read(&maxPlayers);
-            gQueryServersUserInterface.gotQueryResponse(remoteAddress, theNonce, nameString, playerCount, maxPlayers);
+            dedicated = stream->readFlag();
+            passwordRequired = stream->readFlag();
+            gQueryServersUserInterface.gotQueryResponse(remoteAddress, theNonce, nameString, playerCount, maxPlayers, dedicated, passwordRequired);
          }
          break;
    }
