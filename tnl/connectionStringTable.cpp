@@ -99,7 +99,7 @@ void ConnectionStringTable::writeStringTableEntry(BitStream *stream, StringTable
       PacketEntry *entry = packetEntryFreeList.alloc();
 
       entry->stringTableEntry = sendEntry;
-      entry->string = entry->string;
+      entry->string = sendEntry->string;
       entry->nextInPacket = NULL;
 
       if(!note->stringHead)

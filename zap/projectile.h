@@ -37,6 +37,10 @@ class Ship;
 class Projectile : public GameObject
 {
 public:
+   enum {
+      CompressedVelocityMax = 2047,
+   };
+
    Point pos;
    Point velocity;
    U32 liveTime;

@@ -50,10 +50,9 @@ Projectile::Projectile(Point p, Point v, U32 t, Ship *shooter)
 
 U32 Projectile::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
-   stream->write(pos.x);
-   stream->write(pos.y);
-   stream->write(velocity.x);
-   stream->write(velocity.y);
+   ((GameConnection *) connection)->writeCompressedPoint(pos, stream);
+   writeCompressedVelocity(velocity, CompressedVelocityMax, stream);
+
    S32 index = -1;
    if(mShooter.isValid())
       index = connection->getGhostIndex(mShooter);
@@ -65,10 +64,8 @@ U32 Projectile::packUpdate(GhostConnection *connection, U32 updateMask, BitStrea
 
 void Projectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
 {
-   stream->read(&pos.x);
-   stream->read(&pos.y);
-   stream->read(&velocity.x);
-   stream->read(&velocity.y);
+   ((GameConnection *) connection)->readCompressedPoint(pos, stream);
+   readCompressedVelocity(velocity, CompressedVelocityMax, stream);
 
    if(stream->readFlag())
       mShooter = (Ship *) connection->resolveGhost(stream->readInt(GhostConnection::GhostIdBitSize));

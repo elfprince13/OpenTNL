@@ -111,6 +111,9 @@ public:
    virtual void writeControlState(BitStream *stream);
    virtual void readControlState(BitStream *stream);
 
+   void writeCompressedVelocity(Point &vel, U32 max, BitStream *stream);
+   void readCompressedVelocity(Point &vel, U32 max, BitStream *stream);
+
    virtual Point getRenderPos();
    virtual Point getActualPos();
    virtual Point getRenderVel() { return Point(); }

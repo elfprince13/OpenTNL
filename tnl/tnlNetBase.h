@@ -196,6 +196,11 @@ protected:
    U32 mClassId[NetClassGroupCount];   ///< The id for this class in each class group.
    char *mClassName;                   ///< The unmangled name of the class.
 
+   U32 mInitialUpdateBitsUsed; ///< Number of bits used on initial updates of objects of this class.
+   U32 mPartialUpdateBitsUsed; ///< Number of bits used on partial updates of objects of this class.
+   U32 mInitialUpdateCount; ///< Number of objects of this class constructed over a connection.
+   U32 mPartialUpdateCount; ///< Number of objects of this class updated over a connection.
+
    /// Next declared NetClassRep.
    ///
    /// These are stored in a linked list built by the macro constructs.
@@ -230,6 +235,20 @@ public:
    S32 getClassVersion() const;                    ///< Returns the version of this class.
    const char *getClassName() const;               ///< Returns the string class name.
 
+   /// Records bits used in the initial update of objects of this class.
+   void addInitialUpdate(U32 bitCount)
+   {
+      mInitialUpdateCount++;
+      mInitialUpdateBitsUsed += bitCount;
+   }
+
+   /// Records bits used in a partial update of an object of this class.
+   void addPartialUpdate(U32 bitCount)
+   {
+      mPartialUpdateCount++;
+      mPartialUpdateBitsUsed += bitCount;
+   }
+
    virtual Object *create() const = 0;             ///< Creates an instance of the class this represents.
 
    /// Returns the number of classes registered under classGroup and classType.
@@ -251,6 +270,8 @@ public:
    /// Initializes the class table and associated data - called from TNL::init().
    static void initialize();
 
+   /// Logs the bit usage information of all the NetClassReps
+   static void logBitUsage();
 };
 
 inline U32 NetClassRep::getClassId(NetClassGroup classGroup) const

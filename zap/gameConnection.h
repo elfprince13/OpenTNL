@@ -30,6 +30,8 @@
 #include "../tnl/tnl.h"
 #include "../tnl/tnlGhostConnection.h"
 
+#include "point.h"
+
 using namespace TNL;
 // some angle conversion functions:
 namespace Zap
@@ -168,6 +170,8 @@ public:
    bool mInCommanderMap;
    StringTableEntry playerName;
    U32 mLastClientControlCRC;
+   Point mServerPosition;
+   bool mCompressPointsRelative;
 
    U32 firstMoveIndex;
    U32 highSendIndex[3];
@@ -197,6 +201,7 @@ public:
    struct GamePacketNotify : public GhostConnection::GhostPacketNotify
    {
       U32 firstUnsentMoveIndex;
+      Point lastControlObjectPosition;
       GamePacketNotify() { firstUnsentMoveIndex =  0; }
    };
    PacketNotify *allocNotify() { return new GamePacketNotify; }
@@ -217,6 +222,9 @@ public:
    void onDisconnect(const char *reason);
    void onTimedOut();
    void onConnectionTerminated(const char *reason);
+
+   void writeCompressedPoint(Point &p, BitStream *stream);
+   void readCompressedPoint(Point &p, BitStream *stream);
 
    void onConnectTimedOut();
 

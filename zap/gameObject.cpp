@@ -208,6 +208,45 @@ void GameObject::readControlState(BitStream *)
 {
 }
 
+void GameObject::writeCompressedVelocity(Point &vel, U32 max, BitStream *stream)
+{
+   F32 len = vel.len();
+   if(stream->writeFlag(len == 0))
+      return;
+
+   if(stream->writeFlag(len > max))
+   {
+      stream->write(vel.x);
+      stream->write(vel.y);
+   }
+   else
+   {
+      F32 theta = atan2(vel.x, vel.y);
+      stream->writeFloat(theta * FloatInverse2Pi, 10);
+      stream->writeRangedU32(len, 0, max);
+   }
+}
+
+void GameObject::readCompressedVelocity(Point &vel, U32 max, BitStream *stream)
+{
+   if(stream->readFlag())
+   {
+      vel.x = vel.y = 0;
+      return;
+   }
+   else if(stream->readFlag())
+   {
+      stream->read(&vel.x);
+      stream->read(&vel.y);
+   }
+   else
+   {
+      F32 theta = stream->readFloat(10) * Float2Pi;
+      F32 magnitude = stream->readRangedU32(0, max);
+      vel.set(sin(theta) * magnitude, cos(theta) * magnitude);
+   }
+}
+
 void GameObject::processArguments(S32 argc, const char**argv)
 {
 }

@@ -167,10 +167,8 @@ U32 Item::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
    }
    if(stream->writeFlag(updateMask & PositionMask))
    {
-      stream->write(mMoveState[RenderState].pos.x);
-      stream->write(mMoveState[RenderState].pos.y);
-      stream->write(mMoveState[RenderState].vel.x);
-      stream->write(mMoveState[RenderState].vel.y);
+      ((GameConnection *) connection)->writeCompressedPoint(mMoveState[RenderState].pos, stream);
+      writeCompressedVelocity(mMoveState[RenderState].vel, 511, stream);
       stream->writeFlag(updateMask & WarpPositionMask);
    }
    if(stream->writeFlag(MountMask) && stream->writeFlag(mIsMounted))
@@ -195,10 +193,8 @@ void Item::unpackUpdate(GhostConnection *connection, BitStream *stream)
    }
    if(stream->readFlag())
    {
-      stream->read(&mMoveState[ActualState].pos.x);
-      stream->read(&mMoveState[ActualState].pos.y);
-      stream->read(&mMoveState[ActualState].vel.x);
-      stream->read(&mMoveState[ActualState].vel.y);
+      ((GameConnection *) connection)->readCompressedPoint(mMoveState[ActualState].pos, stream);
+      readCompressedVelocity(mMoveState[ActualState].vel, 511, stream);
       //posSegments.push_back(mMoveState[ActualState].pos);
       positionChanged = true;
       interpolate = !stream->readFlag();

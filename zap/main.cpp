@@ -350,6 +350,7 @@ void onExit()
 {
    endGame();
    SFXObject::shutdown();
+   NetClassRep::logBitUsage();
 }
 
 extern void InitController();
@@ -499,7 +500,7 @@ int main(int argc, char **argv)
       glLoadIdentity();
       glTranslatef(400, 300, 0);
 
-      atexit(endGame);
+      atexit(onExit);
 
       glutMainLoop();
    }

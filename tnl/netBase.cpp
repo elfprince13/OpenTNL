@@ -27,6 +27,7 @@
 #include "tnl.h"
 #include "tnlNetBase.h"
 #include "tnlVector.h"
+#include "tnlLog.h"
 
 namespace TNL
 {
@@ -43,7 +44,10 @@ bool NetClassRep::mInitialized = false;
 
 NetClassRep::NetClassRep()
 {
-
+   mInitialUpdateCount = 0;
+   mInitialUpdateBitsUsed = 0;
+   mPartialUpdateCount = 0;
+   mPartialUpdateBitsUsed = 0;
 }
 
 Object* NetClassRep::create(const char* className)
@@ -119,8 +123,20 @@ void NetClassRep::initialize()
       }
    }
    mInitialized = true;
-
 }
+
+void NetClassRep::logBitUsage()
+{
+   logprintf("Net Class Bit Usage:");
+   for(NetClassRep *walk = mClassLinkList; walk; walk = walk->mNextClass)
+   {
+      if(walk->mInitialUpdateCount)
+         logprintf("%s (Initial) - Count: %d   Avg Size: %g", walk->mClassName, walk->mInitialUpdateCount, walk->mInitialUpdateBitsUsed / F32(walk->mInitialUpdateCount));
+      if(walk->mPartialUpdateCount)
+         logprintf("%s (Partial) - Count: %d   Avg Size: %g", walk->mClassName, walk->mPartialUpdateCount, walk->mPartialUpdateBitsUsed / F32(walk->mPartialUpdateCount));
+   }
+}
+
 
 Object::Object()
 {

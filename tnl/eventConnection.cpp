@@ -303,17 +303,20 @@ void EventConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
          bstream->writeInt(ev->mSeqCount, 7);
       prevSeq = ev->mSeqCount;
 
-      S32 start = bstream->getBitPosition();
       if(mConnectionParameters.mDebugObjectSizes)
          bstream->advanceBitPosition(BitStreamPosBitSize);
+
+      S32 start = bstream->getBitPosition();
 
       S32 classId = ev->mEvent->getClassId(getNetClassGroup());
       bstream->writeInt(classId, mEventClassBitSize);
       ev->mEvent->pack(this, bstream);
+
+      ev->mEvent->getClassRep()->addInitialUpdate(bstream->getBitPosition() - start);
       TNLLogMessageV(LogEventConnection, ("EventConnection %s: WroteEvent %s - %d bits", getNetAddressString(), ev->mEvent->getDebugName(), bstream->getBitPosition() - start));
 
       if(mConnectionParameters.mDebugObjectSizes)
-         bstream->writeIntAt(bstream->getBitPosition(), BitStreamPosBitSize, start);
+         bstream->writeIntAt(bstream->getBitPosition(), BitStreamPosBitSize, start - BitStreamPosBitSize);
    }
    for(EventNote *ev = packQueueHead; ev; ev = ev->mNextEvent)
       ev->mEvent->notifySent(this);

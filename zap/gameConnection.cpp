@@ -77,6 +77,7 @@ void GameConnection::packetReceived(PacketNotify *notify)
 {
    for(; firstMoveIndex < ((GamePacketNotify *) notify)->firstUnsentMoveIndex; firstMoveIndex++)
       pendingMoves.erase(U32(0));
+   mServerPosition = ((GamePacketNotify *) notify)->lastControlObjectPosition;
    Parent::packetReceived(notify);
 }
 
@@ -126,18 +127,29 @@ void GameConnection::writePacket(BitStream *bstream, PacketNotify *notify)
          lastMove = &pendingMoves[i];
       }
       ((GamePacketNotify *) notify)->firstUnsentMoveIndex = firstMoveIndex + pendingMoves.size();
+      if(controlObject.isValid())
+         ((GamePacketNotify *) notify)->lastControlObjectPosition = controlObject->getActualPos();
+
       highSendIndex[0] = highSendIndex[1];
       highSendIndex[1] = highSendIndex[2];
       highSendIndex[2] = ((GamePacketNotify *) notify)->firstUnsentMoveIndex;
    }
    else
    {
+      S32 ghostIndex = -1;
+      if(controlObject.isValid())
+      {
+         ghostIndex = getGhostIndex(controlObject);
+         mServerPosition = controlObject->getActualPos();
+      }
+
+      // we only compress points relative if we know that the
+      // remote side has a copy of the control object already
+      mCompressPointsRelative = bstream->writeFlag(ghostIndex != -1);
+
       if(bstream->writeFlag(getControlCRC() != mLastClientControlCRC))
       {
-         S32 ghostIndex = -1;
-         if(controlObject.isValid())
-            ghostIndex = getGhostIndex(controlObject);
-         if(bstream->writeFlag(ghostIndex != -1))
+         if(ghostIndex != -1)
          {
             bstream->writeInt(ghostIndex, GhostConnection::GhostIdBitSize);
             controlObject->writeControlState(bstream);
@@ -175,23 +187,82 @@ void GameConnection::readPacket(BitStream *bstream)
    }
    else
    {
+      bool controlObjectValid = bstream->readFlag();
+
+      mCompressPointsRelative = controlObjectValid;
+
+      // CRC mismatch...
       if(bstream->readFlag())
       {
-         if(bstream->readFlag())
+         if(controlObjectValid)
          {
             U32 ghostIndex = bstream->readInt(GhostConnection::GhostIdBitSize);
             controlObject = (GameObject *) resolveGhost(ghostIndex);
             controlObject->readControlState(bstream);
+            mServerPosition = controlObject->getActualPos();
+
             for(S32 i = 0; i < pendingMoves.size(); i++)
-            {
                controlObject->processClientMove(&pendingMoves[i], true);
-            }
          }
          else
             controlObject = NULL;
       }
    }
    Parent::readPacket(bstream);
+}
+
+void GameConnection::writeCompressedPoint(Point &p, BitStream *stream)
+{
+   if(!mCompressPointsRelative)
+   {
+      stream->write(p.x);
+      stream->write(p.y);
+      return;
+   }
+
+   Point delta = p - mServerPosition;
+   S32 dx = S32(delta.x + Game::PlayerHorizScopeDistance);
+   S32 dy = S32(delta.y + Game::PlayerVertScopeDistance);
+
+   U32 maxx = Game::PlayerHorizScopeDistance * 2;
+   U32 maxy = Game::PlayerVertScopeDistance * 2;
+
+   if(stream->writeFlag(dx >= 0 && dx <= maxx && dy >= 0 && dy <= maxy))
+   {
+      stream->writeRangedU32(dx, 0, maxx);
+      stream->writeRangedU32(dy, 0, maxy);
+   }
+   else
+   {
+      stream->write(p.x);
+      stream->write(p.y);
+   }
+}
+
+void GameConnection::readCompressedPoint(Point &p, BitStream *stream)
+{
+   if(!mCompressPointsRelative)
+   {
+      stream->read(&p.x);
+      stream->read(&p.y);
+      return;
+   }
+   if(stream->readFlag())
+   {
+      U32 maxx = Game::PlayerHorizScopeDistance * 2;
+      U32 maxy = Game::PlayerVertScopeDistance * 2;
+
+      S32 dx = S32(stream->readRangedU32(0, maxx)) - Game::PlayerHorizScopeDistance;
+      S32 dy = S32(stream->readRangedU32(0, maxy)) - Game::PlayerVertScopeDistance;
+
+      Point delta(dx, dy);
+      p = mServerPosition + delta;
+   }
+   else
+   {
+      stream->read(&p.x);
+      stream->read(&p.y);
+   }
 }
 
 void GameConnection::writeConnectRequest(BitStream *stream)

@@ -408,6 +408,8 @@ void Ship::readControlState(BitStream *stream)
 
 U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
+   GameConnection *gameConnection = (GameConnection *) connection;
+
    if(stream->writeFlag(updateMask & InitialMask))
    {
       connection->packStringTableEntry(stream, mPlayerName);
@@ -440,7 +442,7 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
    stream->writeFlag(hasExploded);
 
    bool shouldWritePosition = (updateMask & InitialMask) || 
-      ((GameConnection *)connection)->controlObject != (GameObject *) this;
+      gameConnection->controlObject != (GameObject *) this;
 
    if(!shouldWritePosition)
    {
@@ -451,11 +453,8 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
    {
       if(stream->writeFlag(updateMask & PositionMask))
       {
-         stream->write(mMoveState[RenderState].pos.x);
-         stream->write(mMoveState[RenderState].pos.y);
-         stream->write(mMoveState[RenderState].vel.x);
-         stream->write(mMoveState[RenderState].vel.y);
-
+         gameConnection->writeCompressedPoint(mMoveState[RenderState].pos, stream);
+         writeCompressedVelocity(mMoveState[RenderState].vel, TurboMaxVelocity + 1, stream);
          stream->writeFlag(updateMask & WarpPositionMask);
       }
       if(stream->writeFlag(updateMask & MoveMask))
@@ -505,11 +504,8 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
 
    if(stream->readFlag())
    {
-      stream->read(&mMoveState[ActualState].pos.x);
-      stream->read(&mMoveState[ActualState].pos.y);
-      stream->read(&mMoveState[ActualState].vel.x);
-      stream->read(&mMoveState[ActualState].vel.y);
-      //posSegments.push_back(mMoveState[ActualState].pos);
+      ((GameConnection *) connection)->readCompressedPoint(mMoveState[ActualState].pos, stream);
+      readCompressedVelocity(mMoveState[ActualState].vel, TurboMaxVelocity + 1, stream);
       positionChanged = true;
       interpolate = !stream->readFlag();
    }

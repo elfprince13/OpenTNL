@@ -406,7 +406,6 @@ void GhostConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
 		if(walk->flags & (GhostInfo::KillingGhost | GhostInfo::Ghosting))
 		   continue;
 		   
-      //S32 startPos = bstream->getCurPos();
       bstream->writeFlag(true);
 
       bstream->writeInt(walk->index, sendSize);
@@ -438,10 +437,12 @@ void GhostConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
       else 
       {
          bstream->writeFlag(false);
-         S32 startPos = bstream->getBitPosition();
+         bool isInitialUpdate = false;
 
          if(mConnectionParameters.mDebugObjectSizes)
             bstream->advanceBitPosition(BitStreamPosBitSize);
+
+         S32 startPos = bstream->getBitPosition();
 
          if(walk->flags & GhostInfo::NotYetGhosted)
          {
@@ -451,13 +452,19 @@ void GhostConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
             walk->flags &= ~GhostInfo::NotYetGhosted;
             walk->flags |= GhostInfo::Ghosting;
             upd->ghostInfoFlags = GhostInfo::Ghosting;
+            isInitialUpdate = true;
          }
 
          // update the object
          U32 retMask = walk->obj->packUpdate(this, updateMask, bstream);
 
+         if(isInitialUpdate)
+            walk->obj->getClassRep()->addInitialUpdate(bstream->getBitPosition() - startPos);
+         else
+            walk->obj->getClassRep()->addPartialUpdate(bstream->getBitPosition() - startPos);
+
          if(mConnectionParameters.mDebugObjectSizes)
-            bstream->writeIntAt(bstream->getBitPosition(), BitStreamPosBitSize, startPos);
+            bstream->writeIntAt(bstream->getBitPosition(), BitStreamPosBitSize, startPos - BitStreamPosBitSize);
 
          TNLLogMessageV(LogGhostConnection, ("GhostConnection %s GHOST %d", walk->obj->getClassName(), bstream->getBitPosition() - 16 - startPos));
 
@@ -468,8 +475,6 @@ void GhostConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
             ghostPushToZero(walk);
 
          upd->mask = updateMask & ~retMask;
-
-         //PacketStream::getStats()->addBits(PacketStats::Send, bstream->getCurPos() - startPos, walk->obj->getPersistTag());
       }
       walk->updateSkipCount = 0;
       count++;
