@@ -53,7 +53,9 @@ fi
 
 if [ "$PLATFORM" = "linux" ]; then
    cp zap "$DIR"
+   cp zapded "$DIR"
    strip "$DIR"/zap
+   strip "$DIR"/zapded
    rm "$DIR"-x86linux.tar.gz
    tar -czf "$DIR"-x86linux.tar.gz "$DIR"
 fi

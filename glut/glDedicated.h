@@ -976,8 +976,6 @@ typedef double		GLclampd;	/* double precision float in [0,1] */
 #define GLUT_XLIB_IMPLEMENTATION	15
 #endif
 
-#define inline
-
 /* Display mode bit masks. */
 #define GLUT_RGB			0
 #define GLUT_RGBA			GLUT_RGB
@@ -1071,8 +1069,8 @@ typedef double		GLclampd;	/* double precision float in [0,1] */
 #endif
 #else
 /* Stroke font opaque addresses (use constants instead in source code). */
-inline void *glutStrokeRoman;
-inline void *glutStrokeMonoRoman;
+extern void *glutStrokeRoman;
+extern void *glutStrokeMonoRoman;
 
 /* Stroke font constants (use these in GLUT program). */
 #define GLUT_STROKE_ROMAN		(&glutStrokeRoman)

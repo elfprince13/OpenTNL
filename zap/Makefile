@@ -64,7 +64,7 @@ zapded: ../exe/zapded
 
 ../exe/zapded: CFLAGS=-DZAP_DEDICATED
 ../exe/zapded: $(OBJECTS_ZAP)
-	$(CC) -o ../exe/zap $(OBJECTS_ZAP) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a ../openal/linux/libopenal.a -lpthread -lstdc++ -lm
+	$(CC) -o ../exe/zapded $(OBJECTS_ZAP) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lpthread -lstdc++ -lm
 
 ../master/masterInterface.o:
 	make -C ../master

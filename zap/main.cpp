@@ -501,6 +501,12 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, startup, (const Vector<const char *
       }
    }
    gMasterAddress.set(gMasterAddressString);
+#ifdef ZAP_DEDICATED
+   hasClient = false;
+   hasServer = true;
+   connectRemote = false;
+   connectLocal = false;
+#endif
 
    if(hasClient)
       gClientGame = new ClientGame(Address());

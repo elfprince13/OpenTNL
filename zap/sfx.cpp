@@ -199,7 +199,7 @@ void SFXObject::stopRecording()
 
 #endif
 
-#if defined (TNL_OS_WIN32) || defined (TNL_OS_LINUX) || defined (TNL_OS_MAC_OSX)
+#if !defined (ZAP_DEDICATED)
 
 #include "alInclude.h"
 
@@ -702,11 +702,26 @@ Point SFXObject::mListenerPosition;
 Point SFXObject::mListenerVelocity;
 F32 SFXObject::mMaxDistance = 500;
 
-SFXObject::SFXObject(U32 sfxIndex, F32 gain, bool looping)
+SFXObject::SFXObject(U32 profileIndex, ByteBufferPtr ib, F32 gain, Point position, Point velocity)
 {
 }
 
-SFXObject::SFXObject(U32 sfxIndex, Point position, Point velocity, F32 gain, bool looping)
+RefPtr<SFXObject> SFXObject::play(U32 profileIndex, F32 gain)
+{
+   return new SFXObject(0,NULL,0,Point(0,0), Point(0,0));
+}
+
+RefPtr<SFXObject> SFXObject::play(U32 profileIndex, Point position, Point velocity, F32 gain)
+{
+   return new SFXObject(0,NULL,0,Point(0,0), Point(0,0));
+}
+
+RefPtr<SFXObject> SFXObject::playRecordedBuffer(ByteBufferPtr p, F32 gain)
+{
+   return new SFXObject(0,NULL,0,Point(0,0), Point(0,0));
+}
+
+void SFXObject::queueBuffer(ByteBufferPtr p)
 {
 }
 
@@ -728,10 +743,6 @@ void SFXObject::playOnSource()
 }
 
 void SFXObject::setGain(F32 gain)
-{
-}
-
-void SFXObject::setLooping(bool looping)
 {
 }
 

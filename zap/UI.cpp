@@ -33,6 +33,10 @@ using namespace TNL;
 
 #include "glutInclude.h"
 
+#ifdef ZAP_DEDICATED
+void *glutStrokeRoman;
+#endif
+
 namespace Zap
 {
 

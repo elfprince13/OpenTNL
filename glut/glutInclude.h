@@ -24,6 +24,9 @@
 //
 //------------------------------------------------------------------------------------
 
+#ifndef GLUT_INCLUDE
+#define GLUT_INCLUDE
+
 #ifdef ZAP_DEDICATED
 
 #include "glDedicated.h"
@@ -37,6 +40,8 @@
 #else
 
 #include "glut.h"
+
+#endif
 
 #endif
 
