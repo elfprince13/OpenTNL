@@ -43,7 +43,7 @@ void createGameClient(bool pingLocalHost = false)
    delete serverGame;
 
    // create a client, by default pinging the LAN broadcast on port 28999
-   clientGame = new TestGame(false,Address(IPProtocol, Address::Any, 0),Address(pingLocalHost ? localHostAddress : localBroadcastAddress));
+   clientGame = new TestGame(false,TNL::Address(TNL::IPProtocol, TNL::Address::Any, 0),TNL::Address(pingLocalHost ? localHostAddress : localBroadcastAddress));
    serverGame = NULL;
 }
 
@@ -54,7 +54,7 @@ void createGameServer()
 
    clientGame = NULL;
    // create a server, listening on port 28999.
-   serverGame = new TestGame(true,Address(IPProtocol,Address::Any, 28999),Address(localBroadcastAddress));
+   serverGame = new TestGame(true,TNL::Address(TNL::IPProtocol,TNL::Address::Any, 28999),TNL::Address(localBroadcastAddress));
 }
 
 void createGameClientServer()
@@ -64,8 +64,8 @@ void createGameClientServer()
 
    // construct two local games, one client and one server, and have the client game ping the localhost
    // loopback address.
-   clientGame = new TestGame(false,Address(IPProtocol, Address::Any, 0),Address(localHostAddress));
-   serverGame = new TestGame(true,Address(IPProtocol,Address::Any, 28999),Address(localBroadcastAddress));
+   clientGame = new TestGame(false,TNL::Address(TNL::IPProtocol, TNL::Address::Any, 0),TNL::Address(localHostAddress));
+   serverGame = new TestGame(true,TNL::Address(TNL::IPProtocol,TNL::Address::Any, 28999),TNL::Address(localBroadcastAddress));
 
    // If the following line is commented out, the local games will create a normal (network) connection.
    // the createLocalConnection call constructs a short-circuit connection that works without
@@ -96,8 +96,8 @@ void mouse(int button, int state, int x, int y)
    if(!state) // mouse up
    {
       Position p;
-      p.x = x / F32(gWindowWidth);
-      p.y = y / F32(gWindowHeight);
+      p.x = x / TNL::F32(gWindowWidth);
+      p.y = y / TNL::F32(gWindowHeight);
 
       if(clientGame)
          clientGame->moveMyPlayerTo(p);
@@ -146,7 +146,7 @@ void menu(int value)
 }
 
 #include <stdio.h>
-class StdoutLogConsumer : public LogConsumer
+class StdoutLogConsumer : public TNL::LogConsumer
 {
 public:
    void logString(const char *string)

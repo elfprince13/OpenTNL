@@ -147,12 +147,12 @@ struct MarshalledCall
 #if defined(TNL_SUPPORTS_VC_INLINE_X86_ASM)
 
 extern void *gBasePtr;
-#define SAVE_PARAMS __asm { lea eax, this }; __asm { mov gBasePtr, eax };
+#define SAVE_PARAMS __asm { lea eax, this }; __asm { mov TNL::gBasePtr, eax };
 
 #elif defined(TNL_SUPPORTS_GCC_INLINE_X86_ASM )
 
 extern void *gBasePtr;
-#define SAVE_PARAMS gBasePtr = (void *) ((U8 *) __builtin_frame_address(0) + 8);
+#define SAVE_PARAMS TNL::gBasePtr = (void *) ((U8 *) __builtin_frame_address(0) + 8);
 
 #elif defined(TNL_SUPPORTS_GCC_INLINE_PPC_ASM )
 extern U32 gRegisterSaves[8 + 13 + 1];
@@ -180,7 +180,7 @@ extern U32 gRegisterSaves[8 + 13 + 1];
   "stfs f12, 76(r2) \n" \
   "stfs f13, 80(r2) \n" \
   "stw r1, 84(r2) \n" \
-  : : "r" (gRegisterSaves) : "r2" );
+  : : "r" (TNL::gRegisterSaves) : "r2" );
 
 #else
 #error "Compiling RPC code without inline assembler support! You will need to implement RPCEvent::process() and co for your platform."

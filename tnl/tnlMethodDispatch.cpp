@@ -148,6 +148,16 @@ MethodArgList::MethodArgList(const char *className, const char *anArgList)
          info.isVector = true;
          aptr += 13;
       }
+      else if(!strncmp(aptr, "const TNL::Vector<", 18))
+      {
+         info.isVector = true;
+         aptr += 18;
+      }
+
+      // strip off any TNL namespace stuff
+      if(!strncmp(aptr, "TNL::", 5))
+         aptr += 5;
+
       U32 len = 0;
       // grab the type off the arg list pointer:
       for(;type < NumTypes; type++)

@@ -60,7 +60,7 @@ void TestGame::renderFrame(int width, int height)
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glBegin(GL_POLYGON);
       glColor4f(0.5f, 0.5f, 0.5f, 0.65f);
-      for(F32 r = 0; r < 3.1415 * 2; r += 0.1f)
+      for(TNL::F32 r = 0; r < 3.1415 * 2; r += 0.1f)
       {
          glVertex2f(p.x + 0.25f * cos(r), p.y + 0.25f * sin(r));
       }
@@ -70,7 +70,7 @@ void TestGame::renderFrame(int width, int height)
    }
 
    // then draw all the buildings.
-   for(S32 i = 0; i < buildings.size(); i++)
+   for(TNL::S32 i = 0; i < buildings.size(); i++)
    {
       Building *b = buildings[i];
       glBegin(GL_POLYGON);
@@ -83,7 +83,7 @@ void TestGame::renderFrame(int width, int height)
    }
 
    // last, draw all the players in the game.
-   for(S32 i = 0; i < players.size(); i++)
+   for(TNL::S32 i = 0; i < players.size(); i++)
    {
       Player *p = players[i];
       glBegin(GL_POLYGON);

@@ -45,8 +45,8 @@ TNL_IMPLEMENT_NETOBJECT(Player);
 Player::Player(Player::PlayerType pt)
 {
    // assign a random starting position for the player.
-   startPos.x = Random::readF();
-   startPos.y = Random::readF();
+   startPos.x = TNL::Random::readF();
+   startPos.y = TNL::Random::readF();
    endPos.x = startPos.x;
    endPos.y = startPos.y;
    renderPos = startPos;
@@ -68,7 +68,7 @@ Player::~Player()
       return;
 
    // remove the player from the list of players in the game.
-   for( S32 i = 0; i < game->players.size(); i++)
+   for( TNL::S32 i = 0; i < game->players.size(); i++)
    {
       if(game->players[i] == this)
       {
@@ -92,34 +92,34 @@ void Player::addToGame(TestGame *theGame)
    }
 }
 
-bool Player::onGhostAdd(GhostConnection *theConnection)
+bool Player::onGhostAdd(TNL::GhostConnection *theConnection)
 {
    addToGame(((TestNetInterface *) theConnection->getInterface())->game);
    return true;
 }
 
-void Player::performScopeQuery(GhostConnection *connection)
+void Player::performScopeQuery(TNL::GhostConnection *connection)
 {
    // find all the objects that are "in scope" - for the purposes
    // of this test program, all buildings are considered to be in
    // scope always, as well as all "players" in a circle of radius
    // 0.25 around the scope object, or a radius squared of 0.0625
 
-   for(S32 i = 0; i < game->buildings.size(); i++)
+   for(TNL::S32 i = 0; i < game->buildings.size(); i++)
       connection->objectInScope(game->buildings[i]);
 
-   for(S32 i = 0; i < game->players.size(); i++)
+   for(TNL::S32 i = 0; i < game->players.size(); i++)
    {
       Position playerP = game->players[i]->renderPos;
-      F32 dx = playerP.x - renderPos.x;
-      F32 dy = playerP.y - renderPos.y;
-      F32 distSquared = dx * dx + dy * dy;
+      TNL::F32 dx = playerP.x - renderPos.x;
+      TNL::F32 dy = playerP.y - renderPos.y;
+      TNL::F32 distSquared = dx * dx + dy * dy;
       if(distSquared < 0.0625)
          connection->objectInScope(game->players[i]);
    }
 }
 
-U32 Player::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
+TNL::U32 Player::packUpdate(TNL::GhostConnection *connection, TNL::U32 updateMask, TNL::BitStream *stream)
 {
    // if this is the initial update, write out some static
    // information about this player.  Since we never call
@@ -166,7 +166,7 @@ U32 Player::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *s
    return 0;
 }
 
-void Player::unpackUpdate(GhostConnection *connection, BitStream *stream)
+void Player::unpackUpdate(TNL::GhostConnection *connection, TNL::BitStream *stream)
 {
    // see if the initial packet data was written:
    if(stream->readFlag())
@@ -196,7 +196,7 @@ void Player::unpackUpdate(GhostConnection *connection, BitStream *stream)
    }
 }
 
-void Player::serverSetPosition(Position inStartPos, Position inEndPos, F32 inT, F32 inTDelta)
+void Player::serverSetPosition(Position inStartPos, Position inEndPos, TNL::F32 inT, TNL::F32 inTDelta)
 {
    // update the instance variables of the object
    startPos = inStartPos;
@@ -211,7 +211,7 @@ void Player::serverSetPosition(Position inStartPos, Position inEndPos, F32 inT, 
    rpcPlayerDidMove(inEndPos.x, inEndPos.y);
 }
 
-void Player::update(F32 timeDelta)
+void Player::update(TNL::F32 timeDelta)
 {
    t += tDelta * timeDelta;
    if(t >= 1.0)
@@ -224,9 +224,9 @@ void Player::update(F32 timeDelta)
       {
          startPos = renderPos;
          t = 0;
-         endPos.x = Random::readF();  
-         endPos.y = Random::readF();
-         tDelta = 0.2f + Random::readF() * 0.1f;
+         endPos.x = TNL::Random::readF();  
+         endPos.y = TNL::Random::readF();
+         tDelta = 0.2f + TNL::Random::readF() * 0.1f;
          setMaskBits(PositionMask); // notify the network system that the network state has been updated
       }
    }
@@ -234,7 +234,7 @@ void Player::update(F32 timeDelta)
    renderPos.y = startPos.y + (endPos.y - startPos.y) * t;
 }
 
-void Player::onGhostAvailable(GhostConnection *theConnection)
+void Player::onGhostAvailable(TNL::GhostConnection *theConnection)
 {
    // this function is called every time a ghost of this object is known
    // to be available on a given client.
@@ -246,7 +246,7 @@ void Player::onGhostAvailable(GhostConnection *theConnection)
    // first we construct an event that will represent the RPC call...
    // the RPC macros create a RPCNAME_construct function that returns
    // a NetEvent that encapsulates the RPC.
-   NetEvent *theRPCEvent = TNL_RPC_CONSTRUCT_NETEVENT(this, rpcPlayerIsInScope, (renderPos.x, renderPos.y));
+   TNL::NetEvent *theRPCEvent = TNL_RPC_CONSTRUCT_NETEVENT(this, rpcPlayerIsInScope, (renderPos.x, renderPos.y));
 
    // then we can just post the event to whatever connections we want to have
    // receive the message.
@@ -255,24 +255,24 @@ void Player::onGhostAvailable(GhostConnection *theConnection)
    theConnection->postNetEvent(theRPCEvent);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerIsInScope, (Float<6> x, Float<6> y),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerIsInScope, (TNL::Float<6> x, TNL::Float<6> y),
+   TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCToGhost, 0)
 {
-   F32 fx = x, fy = y;
-   logprintf("A player is now in scope at %g, %g", fx, fy);
+   TNL::F32 fx = x, fy = y;
+   TNL::logprintf("A player is now in scope at %g, %g", fx, fy);
 }
 
 TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerWillMove, (const char *testString), 
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+   TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCToGhostParent, 0)
 {
-   logprintf("Expecting a player move from the connection: %s", testString);
+   TNL::logprintf("Expecting a player move from the connection: %s", testString);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerDidMove, (Float<6> x, Float<6> y), 
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerDidMove, (TNL::Float<6> x, TNL::Float<6> y), 
+   TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCToGhost, 0)
 {
-   F32 fx = x, fy = y;
-   logprintf("A player moved to %g, %g", fx, fy);
+   TNL::F32 fx = x, fy = y;
+   TNL::logprintf("A player moved to %g, %g", fx, fy);
 }
 
 //---------------------------------------------------------------------------------
@@ -281,11 +281,11 @@ TNL_IMPLEMENT_NETOBJECT(Building);
 Building::Building()
 {
    // place the "building" in a random position on the screen
-   upperLeft.x = Random::readF();
-   upperLeft.y = Random::readF();
+   upperLeft.x = TNL::Random::readF();
+   upperLeft.y = TNL::Random::readF();
 
-   lowerRight.x = upperLeft.x + Random::readF() * 0.1f + 0.025f;
-   lowerRight.y = upperLeft.y + Random::readF() * 0.1f + 0.025f;
+   lowerRight.x = upperLeft.x + TNL::Random::readF() * 0.1f + 0.025f;
+   lowerRight.y = upperLeft.y + TNL::Random::readF() * 0.1f + 0.025f;
 
    game = NULL;
    
@@ -299,7 +299,7 @@ Building::~Building()
       return;
 
    // remove the building from the list of buildings in the game.
-   for( S32 i = 0; i < game->buildings.size(); i++)
+   for( TNL::S32 i = 0; i < game->buildings.size(); i++)
    {
       if(game->buildings[i] == this)
       {
@@ -316,13 +316,13 @@ void Building::addToGame(TestGame *theGame)
    game = theGame;
 }
 
-bool Building::onGhostAdd(GhostConnection *theConnection)
+bool Building::onGhostAdd(TNL::GhostConnection *theConnection)
 {
    addToGame(((TestNetInterface *) theConnection->getInterface())->game);
    return true;
 }
 
-U32 Building::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
+TNL::U32 Building::packUpdate(TNL::GhostConnection *connection, TNL::U32 updateMask, TNL::BitStream *stream)
 {
    if(stream->writeFlag(updateMask & InitialMask))
    {
@@ -342,7 +342,7 @@ U32 Building::packUpdate(GhostConnection *connection, U32 updateMask, BitStream 
    return 0;
 }
 
-void Building::unpackUpdate(GhostConnection *connection, BitStream *stream)
+void Building::unpackUpdate(TNL::GhostConnection *connection, TNL::BitStream *stream)
 {
    if(stream->readFlag())
    {
@@ -355,32 +355,32 @@ void Building::unpackUpdate(GhostConnection *connection, BitStream *stream)
 
 //---------------------------------------------------------------------------------
 
-TNL_IMPLEMENT_NETCONNECTION(TestConnection, NetClassGroupGame, true);
+TNL_IMPLEMENT_NETCONNECTION(TestConnection, TNL::NetClassGroupGame, true);
 
 TNL_DECLARE_MEMBER_ENUM(TestConnection, PlayerPosReplyBitSize);
 
-TNL_IMPLEMENT_RPC(TestConnection, rpcGotPlayerPos, (bool b1, bool b2, StringTableEntryRef string, Float<TestConnection::PlayerPosReplyBitSize> x, Float<TestConnection::PlayerPosReplyBitSize> y), 
-      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
+TNL_IMPLEMENT_RPC(TestConnection, rpcGotPlayerPos, (bool b1, bool b2, TNL::StringTableEntryRef string, TNL::Float<TestConnection::PlayerPosReplyBitSize> x, TNL::Float<TestConnection::PlayerPosReplyBitSize> y), 
+      TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCDirAny, 0)
 {
-   F32 xv = x, yv = y;
-   logprintf("Server acknowledged position update - %d %d %s %g %g", b1, b2, string.getString(), xv, yv);
+   TNL::F32 xv = x, yv = y;
+   TNL::logprintf("Server acknowledged position update - %d %d %s %g %g", b1, b2, string.getString(), xv, yv);
 }
 
-TNL_IMPLEMENT_RPC(TestConnection, rpcSetPlayerPos, (F32 x, F32 y), 
-      NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 0)
+TNL_IMPLEMENT_RPC(TestConnection, rpcSetPlayerPos, (TNL::F32 x, TNL::F32 y), 
+      TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCDirClientToServer, 0)
 {
    Position newPosition;
    newPosition.x = x;
    newPosition.y = y;
      
-   logprintf("%s - received new position (%g, %g) from client", 
+   TNL::logprintf("%s - received new position (%g, %g) from client", 
                getNetAddressString(), 
                newPosition.x, newPosition.y);
 
    myPlayer->serverSetPosition(myPlayer->renderPos, newPosition, 0, 0.2f);
    
    // send an RPC back the other way!
-   StringTableEntry helloString("Hello World!!");
+   TNL::StringTableEntry helloString("Hello World!!");
    rpcGotPlayerPos(true, false, helloString, x, y);
 };
 
@@ -428,7 +428,7 @@ void TestConnection::onConnectionEstablished()
    {
       setGhostFrom(false);
       setGhostTo(true);
-      logprintf("%s - connected to server.", getNetAddressString());
+      TNL::logprintf("%s - connected to server.", getNetAddressString());
       ((TestNetInterface *) getInterface())->connectionToServer = this;
    }
    else
@@ -442,13 +442,13 @@ void TestConnection::onConnectionEstablished()
       setGhostFrom(true);
       setGhostTo(false);
       activateGhosting();
-      logprintf("%s - client connected.", getNetAddressString());
+      TNL::logprintf("%s - client connected.", getNetAddressString());
    }
 }
 
 //---------------------------------------------------------------------------------
 
-TestNetInterface::TestNetInterface(TestGame *theGame, bool server, const Address &bindAddress, const Address &pingAddr) : NetInterface(bindAddress)
+TestNetInterface::TestNetInterface(TestGame *theGame, bool server, const TNL::Address &bindAddress, const TNL::Address &pingAddr) : NetInterface(bindAddress)
 {
    game           = theGame;
    isServer       = server;
@@ -459,19 +459,19 @@ TestNetInterface::TestNetInterface(TestGame *theGame, bool server, const Address
 
 void TestNetInterface::sendPing()
 {
-   PacketStream writeStream;
+   TNL::PacketStream writeStream;
 
    // the ping packet right now just has one byte for packet type
-   writeStream.write(U8(GamePingRequest));
+   writeStream.write(TNL::U8(GamePingRequest));
 
    writeStream.sendto(mSocket, pingAddress);
 
-   logprintf("%s - sending ping.", pingAddress.toString());
+   TNL::logprintf("%s - sending ping.", pingAddress.toString());
 }
 
 void TestNetInterface::tick()
 {
-   U32 currentTime = Platform::getRealMilliseconds();
+   TNL::U32 currentTime = TNL::Platform::getRealMilliseconds();
 
    if(pingingServers && (lastPingTime + PingDelayTime < currentTime))
    {
@@ -488,31 +488,31 @@ void TestNetInterface::tick()
 // More complicated games could maintain server lists, request game information
 // and more.
 
-void TestNetInterface::handleInfoPacket(const Address &address, U8 packetType, BitStream *stream)
+void TestNetInterface::handleInfoPacket(const TNL::Address &address, TNL::U8 packetType, TNL::BitStream *stream)
 {
-   PacketStream writeStream;
+   TNL::PacketStream writeStream;
    if(packetType == GamePingRequest && isServer)
    {
-      logprintf("%s - received ping.", address.toString());
+      TNL::logprintf("%s - received ping.", address.toString());
       // we're a server, and we got a ping packet from a client,
       // so send back a GamePingResponse to let the client know it
       // has found a server.
-      writeStream.write(U8(GamePingResponse));
+      writeStream.write(TNL::U8(GamePingResponse));
       writeStream.sendto(mSocket, address);
 
-      logprintf("%s - sending ping response.", address.toString());
+      TNL::logprintf("%s - sending ping response.", address.toString());
    }
    else if(packetType == GamePingResponse && pingingServers)
    {
       // we were pinging servers and we got a response.  Stop the server
       // pinging, and try to connect to the server.
 
-      logprintf("%s - received ping response.", address.toString());
+      TNL::logprintf("%s - received ping response.", address.toString());
 
       TestConnection *connection = new TestConnection;
       connection->connect(this, address); // connect to the server through the game's network interface
 
-      logprintf("Connecting to server: %s", address.toString());
+      TNL::logprintf("Connecting to server: %s", address.toString());
 
       pingingServers = false;
    }
@@ -521,25 +521,25 @@ void TestNetInterface::handleInfoPacket(const Address &address, U8 packetType, B
 //---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
 
-TestGame::TestGame(bool server, const Address &interfaceBindAddr, const Address &pingAddress)
+TestGame::TestGame(bool server, const TNL::Address &interfaceBindAddr, const TNL::Address &pingAddress)
 {
    isServer = server;
    myNetInterface = new TestNetInterface(this, isServer, interfaceBindAddr, pingAddress);
-   AsymmetricKey *theKey = new AsymmetricKey(32);
+   TNL::AsymmetricKey *theKey = new TNL::AsymmetricKey(32);
    myNetInterface->setPrivateKey(theKey);
    myNetInterface->setRequiresKeyExchange(true);
 
-   lastTime = Platform::getRealMilliseconds();
+   lastTime = TNL::Platform::getRealMilliseconds();
 
    if(isServer)
    {
       // generate some buildings and AIs:
-      for(S32 i = 0; i < 50; i ++)
+      for(TNL::S32 i = 0; i < 50; i ++)
       {
          Building *building = new Building;
          building->addToGame(this);
       }
-      for(S32 i = 0; i < 15; i ++)
+      for(TNL::S32 i = 0; i < 15; i ++)
       {
          Player *aiPlayer = new Player(Player::PlayerTypeAI);
          aiPlayer->addToGame(this);
@@ -548,18 +548,18 @@ TestGame::TestGame(bool server, const Address &interfaceBindAddr, const Address 
       serverPlayer->addToGame(this);
    }
 
-   logprintf("Created a %s...", (server ? "server" : "client"));
+   TNL::logprintf("Created a %s...", (server ? "server" : "client"));
 }
 
 TestGame::~TestGame()
 {
    delete myNetInterface;
-   for(S32 i = 0; i < buildings.size(); i++)
+   for(TNL::S32 i = 0; i < buildings.size(); i++)
       delete buildings[i];
-   for(S32 i = 0; i < players.size(); i++)
+   for(TNL::S32 i = 0; i < players.size(); i++)
       delete players[i];
 
-   logprintf("Destroyed a %s...", (this->isServer ? "server" : "client"));
+   TNL::logprintf("Destroyed a %s...", (this->isServer ? "server" : "client"));
 }
 
 void TestGame::createLocalConnection(TestGame *serverGame)
@@ -571,12 +571,12 @@ void TestGame::createLocalConnection(TestGame *serverGame)
 
 void TestGame::tick()
 {
-   U32 currentTime = Platform::getRealMilliseconds();
+   TNL::U32 currentTime = TNL::Platform::getRealMilliseconds();
    if(currentTime == lastTime)
       return;
 
-   F32 timeDelta = (currentTime - lastTime) / 1000.0f;
-   for(S32 i = 0; i < players.size(); i++)  
+   TNL::F32 timeDelta = (currentTime - lastTime) / 1000.0f;
+   for(TNL::S32 i = 0; i < players.size(); i++)  
       players[i]->update(timeDelta);
    myNetInterface->tick();
    lastTime = currentTime;
@@ -590,7 +590,7 @@ void TestGame::moveMyPlayerTo(Position newPosition)
    }
    else if(!myNetInterface->connectionToServer.isNull())
    {
-      logprintf("posting new position (%g, %g) to server", newPosition.x, newPosition.y);
+      TNL::logprintf("posting new position (%g, %g) to server", newPosition.x, newPosition.y);
       if(!clientPlayer.isNull())
          clientPlayer->rpcPlayerWillMove("Whee! Foo!");
       myNetInterface->connectionToServer->rpcSetPlayerPos(newPosition.x, newPosition.y);

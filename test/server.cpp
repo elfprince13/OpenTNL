@@ -31,6 +31,8 @@
 #include "../tnl/tnlCertificate.h"
 #include "../tnl/tnlBitStream.h"
 
+using namespace TNL;
+
 //#define TNLTest_SERVER
 #define TNL_TEST_RPC
 //#define TNL_TEST_PROTOCOL

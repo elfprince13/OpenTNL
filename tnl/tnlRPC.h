@@ -189,7 +189,7 @@ public:
 /// following the TNL_IMPLEMENT_RPC macro call.
 #define TNL_IMPLEMENT_RPC(className, name, args, groupMask, guaranteeType, eventDirection, rpcVersion) \
    extern TNL::MethodArgList RPC##className##name; \
-   class RPC_##className##_##name : public RPCEvent { \
+   class RPC_##className##_##name : public TNL::RPCEvent { \
       public: \
       void (FN_CDECL className::*mFuncPtr) args; \
       TNL::U32 pad; \
@@ -202,7 +202,7 @@ public:
       TNL::MethodArgList RPC##className##name (#className, #args); \
       void FN_CDECL className::name args { SAVE_PARAMS RPC_##className##_##name *theEvent = new RPC_##className##_##name; theEvent->marshallArguments(); postNetEvent(theEvent); } \
       TNL::NetEvent * FN_CDECL className::name##_construct args { SAVE_PARAMS RPC_##className##_##name *theEvent = new RPC_##className##_##name; theEvent->marshallArguments(); return theEvent; } \
-      void FN_CDECL className::name##_test args { SAVE_PARAMS RPC_##className##_##name *ev = new RPC_##className##_##name; PacketStream ps; ev->marshallArguments(); ev->pack(this, &ps); ps.setBytePosition(0); ev->unpack(this, &ps); ev->process(this); } \
+      void FN_CDECL className::name##_test args { SAVE_PARAMS RPC_##className##_##name *ev = new RPC_##className##_##name; TNL::PacketStream ps; ev->marshallArguments(); ev->pack(this, &ps); ps.setBytePosition(0); ev->unpack(this, &ps); ev->process(this); } \
       void FN_CDECL className::name##_remote args
 };
 
