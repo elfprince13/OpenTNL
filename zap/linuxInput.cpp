@@ -40,7 +40,7 @@ void InitJoystick()
 {
 }
 
-bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask)
+bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask, U32 &hatMask)
 {
    return false;
 }

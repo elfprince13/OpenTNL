@@ -20,8 +20,8 @@ CFLAGS=
 	$(CC) -c $(CFLAGS) $<
 
 default: $(OBJECTS_MASTER)
-	$(CC) -o master $(OBJECTS_MASTER) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lstdc++ -lm
+	$(CC) -o ../exe/master $(OBJECTS_MASTER) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lstdc++ -lm
 
 clean:
-	rm -f $(OBJECTS_MASTER) master
+	rm -f $(OBJECTS_MASTER) ../exe/master
 
