@@ -79,31 +79,6 @@ public:
    TNL_DECLARE_CLASS(SoccerBallItem);
 };
 
-class SoccerGoalObject : public GameObject
-{
-   typedef GameObject Parent;
-   Vector<Point> mPolyBounds;
-   enum {
-      MaxPoints = 10,
-   };
-public:
-   SoccerGoalObject();
-
-   void render();
-   S32 getRenderSortValue() { return -1; }
-   void processArguments(S32 argc, const char **argv);
-   void onAddedToGame(Game *theGame);
-   void computeExtent();
-   bool getCollisionPoly(Vector<Point> &polyPoints);
-
-   bool collide(GameObject *hitObject);
-
-   U32 packUpdate(GhostConnection *connection, U32 mask, BitStream *stream);
-   void unpackUpdate(GhostConnection *connection, BitStream *stream);
-
-   TNL_DECLARE_CLASS(SoccerGoalObject);
-};
-
 };
 
 
