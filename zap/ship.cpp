@@ -1042,17 +1042,12 @@ void Ship::emitMovementSparks()
                 F32 t = TNL::Random::readF();
                 thrust.interp(t, dim, light);
   
-                FXManager::emitSpark(
-                                        mMoveState[RenderState].pos - shipDirs[i] * 13,
-                                        -shipDirs[i] * 100 + chaos,
-                                        thrust,
-                                        1.5 * Random::readF()
-                                       );
+                FXManager::emitSpark(mMoveState[RenderState].pos - shipDirs[i] * 13,
+                     -shipDirs[i] * 100 + chaos, thrust, 1.5 * Random::readF());
              }
           }
       }
    }
-
 }
 
 void Ship::render()
