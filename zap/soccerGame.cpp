@@ -43,7 +43,7 @@ TNL_IMPLEMENT_NETOBJECT(SoccerGameType);
 
 void SoccerGameType::renderInterfaceOverlay(bool scoreboardVisible)
 {
-   if(scoreboardVisible)
+   if(scoreboardVisible || mGameOver )
    {
       U32 totalWidth = 780;
       U32 teamWidth = totalWidth / mTeams.size();
@@ -118,12 +118,17 @@ void SoccerGameType::renderInterfaceOverlay(bool scoreboardVisible)
    {
       for(S32 i = 0; i < mTeams.size(); i++)
       {
-         Point pos(750, 550 - i * 38);
+         Point pos(750, 535 - i * 38);
          renderFlag(pos + Point(-20, 18), mTeams[i].color);
          glColor3f(1,1,1);
          UserInterface::drawStringf(pos.x, pos.y, 32, "%d", mTeams[i].score);
       }
    }
+   U32 timeLeft = mGameTimer.getCurrent();
+
+   U32 minsRemaining = timeLeft / (60000);
+   U32 secsRemaining = (timeLeft - (minsRemaining * 60000)) / 1000;
+   UserInterface::drawStringf(720, 577, 20, "%02d:%02d", minsRemaining, secsRemaining);
 }
 
 void SoccerGameType::controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject)
@@ -142,7 +147,7 @@ void SoccerGameType::controlObjectForClientKilled(GameConnection *theClient, Gam
 
       s2cKillMessage(mClientList[clientIndex].name, mClientList[killerIndex].name);
    }
-   mClientList[clientIndex].respawnDelay = RespawnDelay;
+   mClientList[clientIndex].respawnTimer.reset(RespawnDelay);
 }
 
 bool SoccerGameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
@@ -157,19 +162,91 @@ bool SoccerGameType::objectCanDamageObject(GameObject *damager, GameObject *vict
           mClientList[findClientIndexByConnection(c2)].teamId;
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(SoccerGameType, s2cSoccerScoreMessage, (StringTableEntry clientName, U32 teamIndex),
+TNL_IMPLEMENT_NETOBJECT_RPC(SoccerGameType, s2cSoccerScoreMessage, (U32 msgIndex, StringTableEntry clientName, U32 teamIndex),
    NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
 {
-   gGameUserInterface.displayMessage(Color(0.6f, 1.0f, 0.8f), 
-               "%s scored a goal for team %s!", 
-               clientName.getString(),
-               mTeams[teamIndex].name.getString());
-   SFXObject::play(SFXFlagCapture);
+   if(msgIndex == SoccerMsgScoreGoal)
+   {
+      SFXObject::play(SFXFlagCapture);
+      gGameUserInterface.displayMessage(Color(0.6f, 1.0f, 0.8f), 
+                  "%s scored a goal on team %s!", 
+                  clientName.getString(),
+                  mTeams[teamIndex].name.getString());
+   }
+   else if(msgIndex == SoccerMsgScoreOwnGoal)
+   {
+      SFXObject::play(SFXFlagCapture);
+      if(clientName.isNull())
+         gGameUserInterface.displayMessage(Color(0.6f, 1.0f, 0.8f), 
+                     "A goal was scored on team %s!", 
+                     mTeams[teamIndex].name.getString());
+      else
+         gGameUserInterface.displayMessage(Color(0.6f, 1.0f, 0.8f), 
+                     "%s scored a goal for the other team%s!", 
+                     clientName.getString(),
+                     mTeams.size() > 2 ? "s" : "");
+   }
+   else if(msgIndex == SoccerMsgGameOverTeamWin)
+   {
+      gGameUserInterface.displayMessage(Color(0.6f, 1.0f, 0.8f), 
+                     "Team %s wins the game!", 
+                     mTeams[teamIndex].name.getString());
+      SFXObject::play(SFXFlagCapture);
+   }
+   else if(msgIndex == SoccerMsgGameOverTie)
+   {
+      gGameUserInterface.displayMessage(Color(0.6f, 1.0f, 0.8f), 
+                     "The game ended in a tie.");
+      SFXObject::play(SFXFlagDrop);
+   }
 }
 
 void SoccerGameType::scoreGoal(StringTableEntry playerName, U32 goalTeamIndex)
 {
-   s2cSoccerScoreMessage(playerName, goalTeamIndex);
+   S32 index = findClientIndexByName(playerName);
+   S32 scoringTeam = -1;
+   if(index != -1)
+      scoringTeam = mClientList[index].teamId;
+
+   if(scoringTeam == -1 || scoringTeam == goalTeamIndex)
+   {
+      // give all the other teams a point.
+      for(S32 i = 0; i < mTeams.size(); i++)
+      {
+         if(i != goalTeamIndex)
+            setTeamScore(i, mTeams[i].score + 1);
+      }
+      s2cSoccerScoreMessage(SoccerMsgScoreOwnGoal, playerName, goalTeamIndex);
+   }
+   else
+   {
+      mClientList[index].score += GoalScore;
+      setTeamScore(scoringTeam, mTeams[scoringTeam].score + 1);
+      s2cSoccerScoreMessage(SoccerMsgScoreGoal, playerName, goalTeamIndex);
+   }
+}
+
+void SoccerGameType::gameOverManGameOver()
+{
+   Parent::gameOverManGameOver();
+   bool tied = false;
+   S32 teamWinner = 0;
+   U32 winningScore = mTeams[0].score;
+   for(S32 i = 1; i < mTeams.size(); i++)
+   {
+      if(mTeams[i].score == winningScore)
+         tied = true;
+      else if(mTeams[i].score > winningScore)
+      {
+         teamWinner = i;
+         winningScore = mTeams[i].score;
+         tied = false;
+      }
+   }
+   if(tied)
+      s2cSoccerScoreMessage(SoccerMsgGameOverTie, StringTableEntry(), 0);
+   else
+      s2cSoccerScoreMessage(SoccerMsgGameOverTeamWin, StringTableEntry(), teamWinner);
 }
 
 TNL_IMPLEMENT_NETOBJECT(SoccerBallItem);

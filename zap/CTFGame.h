@@ -38,6 +38,7 @@ class CTFFlagItem;
 
 class CTFGameType : public GameType
 {
+   typedef GameType Parent;
    enum Scores
    {
       KillScore    = 100,
@@ -54,12 +55,15 @@ public:
    bool objectCanDamageObject(GameObject *damager, GameObject *victim);
 
    U32 checkFlagDrop(GameObject *theObject);
+   void gameOverManGameOver();
 
    enum {
       CTFMsgReturnFlag,
       CTFMsgCaptureFlag,
       CTFMsgTakeFlag,
       CTFMsgDropFlag,
+      CTFMsgGameOverTeamWin,
+      CTFMsgGameOverTie,
    };
 
    TNL_DECLARE_RPC(s2cCTFMessage, (U32 messageIndex, StringTableEntry clientName, U32 teamIndex));

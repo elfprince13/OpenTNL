@@ -51,7 +51,7 @@ const char *gHostName = "ZAP Game";
 U32 gMaxPlayers = 128;
 const char *gMasterAddressString = "IP:master.opentnl.org:29005";
 Address gMasterAddress;
-const char *gLoadLevel = "level1.txt";
+const char *gLevelList = "level1.txt level3.txt";
 
 void reshape(int nw, int nh)
 {
@@ -205,7 +205,7 @@ public:
 void hostGame(bool dedicated, Address bindAddress)
 {
    gServerGame = new ServerGame(bindAddress, gMaxPlayers, gHostName);
-   gServerGame->loadLevel(gLoadLevel);
+   gServerGame->setLevelList(gLevelList);
 
    if(!dedicated)
       joinGame(Address(), false, true);
@@ -313,10 +313,10 @@ int main(int argc, char **argv)
             gNameEntryUserInterface.setText(argv[i+1]);
          }
       }
-      else if(!stricmp(argv[i], "-level"))
+      else if(!stricmp(argv[i], "-levels"))
       {
          if(hasAdditionalArg)
-            gLoadLevel = argv[i+1];
+            gLevelList = argv[i+1];
       }
       else if(!stricmp(argv[i], "-hostname"))
       {

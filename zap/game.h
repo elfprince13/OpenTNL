@@ -31,6 +31,7 @@
 #include "gameConnection.h"
 #include "../tnl/tnlNetObject.h"
 #include "gridDB.h"
+#include "timer.h"
 
 ///
 /// Zap - a 2D space game demonstrating the full capabilities of the
@@ -143,9 +144,16 @@ public:
 
 class ServerGame : public Game
 {
+   enum {
+      LevelSwitchTime = 5000,
+   };
+
    U32 mPlayerCount;
    U32 mMaxPlayers;
    const char *mHostName;
+   Vector<StringTableEntry> mLevelList;
+   U32 mCurrentLevelIndex;
+   Timer mLevelSwitchTimer;
 public:
    U32 getPlayerCount() { return mPlayerCount; }
    U32 getMaxPlayers() { return mMaxPlayers; }
@@ -155,10 +163,14 @@ public:
    void removeClient(GameConnection *theConnection);
    ServerGame(const Address &theBindAddress, U32 maxPlayers, const char *hostName);
 
+   void setLevelList(const char *levelList);
    void loadLevel(const char *fileName);
+   void cycleLevel();
+
    void processLevelLoadLine(int argc, const char **argv);
    bool isServer() { return true; }
    void idle(U32 timeDelta);
+   void gameEnded();
 };
 
 class ClientGame : public Game

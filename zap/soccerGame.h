@@ -38,6 +38,7 @@ class SoccerBallItem;
 
 class SoccerGameType : public GameType
 {
+   typedef GameType Parent;
    enum Scores
    {
       KillScore    = 100,
@@ -48,12 +49,16 @@ public:
    void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
    bool objectCanDamageObject(GameObject *damager, GameObject *victim);
    void scoreGoal(StringTableEntry playerName, U32 goalTeamIndex);
+   void gameOverManGameOver();
 
    enum {
       SoccerMsgScoreGoal,
+      SoccerMsgScoreOwnGoal,
+      SoccerMsgGameOverTeamWin,
+      SoccerMsgGameOverTie,
    };
 
-   TNL_DECLARE_RPC(s2cSoccerScoreMessage, (StringTableEntry clientName, U32 teamIndex));
+   TNL_DECLARE_RPC(s2cSoccerScoreMessage, (U32 msgIndex, StringTableEntry clientName, U32 teamIndex));
    TNL_DECLARE_CLASS(SoccerGameType);
 };
 

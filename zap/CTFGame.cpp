@@ -65,7 +65,7 @@ TNL_IMPLEMENT_NETOBJECT(CTFGameType);
 
 void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
 {
-   if(scoreboardVisible && mTeams.size() > 0)
+   if((mGameOver || scoreboardVisible) && mTeams.size() > 0)
    {
       U32 totalWidth = 780;
       U32 teamWidth = totalWidth / mTeams.size();
@@ -140,58 +140,17 @@ void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
    {
       for(S32 i = 0; i < mTeams.size(); i++)
       {
-         Point pos(750, 550 - i * 38);
+         Point pos(750, 535 - i * 38);
          renderFlag(pos + Point(-20, 18), mTeams[i].color);
          glColor3f(1,1,1);
          UserInterface::drawStringf(pos.x, pos.y, 32, "%d", mTeams[i].score);
       }
-
-      // Render current ship's energy, too.
-      if(gClientGame && gClientGame->getConnectionToServer())
-      {
-         Ship *s = dynamic_cast<Ship*>(gClientGame->getConnectionToServer()->getControlObject());
-         if(s)
-         {
-            static F32 curEnergy = 0.f;
-
-            curEnergy = (curEnergy + s->mEnergy) * 0.5f;
-
-            const F32 offset = 50;
-
-            glColor3f(0.0, 0.0, 1);
-            glBegin(GL_POLYGON);
-            glVertex2f(15,              515 + offset);
-            glVertex2f(15 + curEnergy,  515 + offset);
-            glVertex2f(15 + curEnergy,  535 + offset);
-            glVertex2f(15,              535 + offset);
-            glEnd();
-
-            // Show danger line.
-            glColor3f(1, 0, 0);
-            glBegin(GL_LINES);
-            glVertex2f(15 + 5, 512 + offset);
-            glVertex2f(15 + 5, 539 + offset);
-            glEnd();
-
-            // Show safety line.
-            glColor3f(1, 1, 0);
-            glBegin(GL_LINES);
-            glVertex2f(15 + 15, 512 + offset);
-            glVertex2f(15 + 15, 539 + offset);
-            glEnd();
-
-            // Show full marker
-            glColor3f(0, 1, 0);
-            glBegin(GL_LINE_STRIP);
-            glVertex2f(15 +  90, 512 + offset);
-            glVertex2f(15 + 101, 512 + offset);
-            glVertex2f(15 + 101, 539 + offset);
-            glVertex2f(15 +  90, 539 + offset);
-            glEnd();
-
-         }
-      }
    }
+   U32 timeLeft = mGameTimer.getCurrent();
+
+   U32 minsRemaining = timeLeft / (60000);
+   U32 secsRemaining = (timeLeft - (minsRemaining * 60000)) / 1000;
+   UserInterface::drawStringf(720, 577, 20, "%02d:%02d", minsRemaining, secsRemaining);
 }
 
 void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
@@ -221,8 +180,7 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
             CTFFlagItem *mountedFlag = dynamic_cast<CTFFlagItem *>(theItem);
             if(mountedFlag)
             {
-               mTeams[cl.teamId].score++;
-               s2cSetTeamScore(cl.teamId, mTeams[cl.teamId].score);
+               setTeamScore(cl.teamId, mTeams[cl.teamId].score + 1);
                s2cCTFMessage(CTFMsgCaptureFlag, cl.name, mountedFlag->getTeamIndex());
 
                // score the flag for the client's team...
@@ -305,12 +263,35 @@ void CTFGameType::controlObjectForClientKilled(GameConnection *theClient, GameOb
       s2cKillMessage(mClientList[clientIndex].name, mClientList[killerIndex].name);
    }
    checkFlagDrop(clientObject);
-   mClientList[clientIndex].respawnDelay = RespawnDelay;
+   mClientList[clientIndex].respawnTimer.reset(RespawnDelay);
 }
 
 void CTFGameType::controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject)
 {
    checkFlagDrop(clientObject);
+}
+
+void CTFGameType::gameOverManGameOver()
+{
+   Parent::gameOverManGameOver();
+   bool tied = false;
+   S32 teamWinner = 0;
+   U32 winningScore = mTeams[0].score;
+   for(S32 i = 1; i < mTeams.size(); i++)
+   {
+      if(mTeams[i].score == winningScore)
+         tied = true;
+      else if(mTeams[i].score > winningScore)
+      {
+         teamWinner = i;
+         winningScore = mTeams[i].score;
+         tied = false;
+      }
+   }
+   if(tied)
+      s2cCTFMessage(CTFMsgGameOverTie, StringTableEntry(), 0);
+   else
+      s2cCTFMessage(CTFMsgGameOverTeamWin, StringTableEntry(), teamWinner);
 }
 
 TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cCTFMessage, (U32 messageIndex, StringTableEntry clientName, U32 teamIndex),
@@ -322,6 +303,8 @@ TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cCTFMessage, (U32 messageIndex, Strin
       "%s captured the %s flag!",
       "%s took the %s flag!",
       "%s dropped the %s flag!",
+      "%sTeam %s wins the game!",
+      "The game ended in a tie.",
    };
 
    static U32 CTFFlagSounds[] = 
@@ -329,6 +312,8 @@ TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cCTFMessage, (U32 messageIndex, Strin
       SFXFlagReturn,
       SFXFlagCapture,
       SFXFlagSnatch,
+      SFXFlagDrop,
+      SFXFlagCapture,
       SFXFlagDrop,
    };
 

@@ -894,6 +894,7 @@ void GhostConnection::clearGhostInfo()
       if(mGhostRefs[i].arrayIndex < mGhostFreeIndex)
       {
          detachObject(&mGhostRefs[i]);
+         mGhostRefs[i].lastUpdateChain = NULL;
          freeGhostInfo(&mGhostRefs[i]);
       }
    }

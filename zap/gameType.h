@@ -28,6 +28,7 @@
 #define _GAMETYPE_H_
 
 #include "gameObject.h"
+#include "timer.h"
 
 namespace Zap
 {
@@ -45,12 +46,12 @@ public:
       StringTableEntry name;  /// Name of client - guaranteed to be unique of current clients
       S32 teamId;
       U32 score;
-      U32 respawnDelay;
+      Timer respawnTimer;
 
       bool wantsScoreboardUpdates;
       SafePtr<GameConnection> clientConnection;
       U32 ping;
-      ClientRef() { ping = 0; score = 0; respawnDelay = 0; }
+      ClientRef() { ping = 0; score = 0; }
    };
 
    Vector<ClientRef> mClientList;
@@ -66,10 +67,16 @@ public:
    };
    Vector<Team> mTeams;
    U32 mThisClientName; ///< Set to the client name of this client (only on the ghost of the GameType)
-   U32 mTimeUntilScoreboardUpdate;
+   Timer mScoreboardUpdateTimer;
+   Timer mGameTimer;
+   Timer mGameTimeUpdateTimer;
+   U32 mTeamScoreLimit;
+   bool mGameOver; // set to true when an end condition is met
 
    enum {
       MaxPing = 999,
+      DefaultGameTime = 20 * 60 * 1000,
+      DefaultTeamScoreLimit = 8,
    };
 
    static Vector<RangedU32<0, MaxPing> > mPingTimes; ///< Static vector used for constructing update RPCs
@@ -93,7 +100,11 @@ public:
    virtual bool processLevelItem(S32 argc, const char **argv);
    void onAddedToGame(Game *theGame);
    void onGhostAvailable(GhostConnection *theConnection);
+   void processClient(U32 deltaT);
    void processServer(U32 deltaT);
+
+   void setTeamScore(S32 teamIndex, S32 newScore);
+   virtual void gameOverManGameOver();
 
    virtual void serverAddClient(GameConnection *theClient);
    virtual void serverRemoveClient(GameConnection *theClient);
@@ -124,6 +135,8 @@ public:
    TNL_DECLARE_RPC(s2cKillMessage, (StringTableEntry victim, StringTableEntry killer));
    TNL_DECLARE_RPC(s2cScoreboardUpdate, (const Vector<RangedU32<0, MaxPing> > &pingTimes, const Vector<Int<24> > &scores));
 
+   TNL_DECLARE_RPC(s2cSetGameOver, (bool gameOver));
+   TNL_DECLARE_RPC(s2cSetTimeRemaining, (U32 timeLeft));
    TNL_DECLARE_RPC(c2sRequestScoreboardUpdates, (bool updates));
 
    TNL_DECLARE_CLASS(GameType);

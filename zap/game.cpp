@@ -173,6 +173,52 @@ ServerGame::ServerGame(const Address &theBindAddress, U32 maxPlayers, const char
    mNetInterface->setAllowsConnections(true);
 }
 
+void ServerGame::setLevelList(const char *levelList)
+{
+   for(;;)
+   {
+      const char *firstSpace = strchr(levelList, ' ');
+      StringTableEntry st;
+      if(firstSpace)
+         st.setn(levelList, firstSpace - levelList);
+      else
+         st.set(levelList);
+
+      if(st.getString()[0])
+         mLevelList.push_back(st);
+      if(!firstSpace)
+         break;
+      levelList = firstSpace + 1;
+   }
+   mCurrentLevelIndex = mLevelList.size() - 1;
+   cycleLevel();
+}
+
+void ServerGame::cycleLevel()
+{
+   // delete any objects that may exist
+   while(mGameObjects.size())
+      delete mGameObjects[0];
+
+   for(GameConnection *walk = GameConnection::gClientList.mNext; walk != &GameConnection::gClientList; walk = walk->mNext)
+      walk->resetGhosting();
+
+   mCurrentLevelIndex++;
+   if(mCurrentLevelIndex >= mLevelList.size())
+      mCurrentLevelIndex = 0;
+   loadLevel(mLevelList[mCurrentLevelIndex].getString());
+   if(!getGameType())
+   {
+      GameType *g = new GameType;
+      g->addToGame(this);
+   }
+   for(GameConnection *walk = GameConnection::gClientList.mNext; walk != &GameConnection::gClientList; walk = walk->mNext)
+   {
+      addClient(walk);
+      walk->activateGhosting();
+   }
+}
+
 void ServerGame::loadLevel(const char *fileName)
 {
    mGridSize = DefaultGridSize;
@@ -226,6 +272,14 @@ void ServerGame::idle(U32 timeDelta)
    }
    processDeleteList(timeDelta);
    mNetInterface->processConnections();
+
+   if(mLevelSwitchTimer.update(timeDelta))
+      cycleLevel();
+}
+
+void ServerGame::gameEnded()
+{
+   mLevelSwitchTimer.reset(LevelSwitchTime);
 }
 
 //-----------------------------------------------------------------------------------
@@ -405,6 +459,8 @@ void ClientGame::renderCommander()
                   UserInterface::canvasHeight / modVisSize.y );
 
    glPushMatrix();
+   glTranslatef(400, 300, 0);
+
    glScalef(visScale.x, visScale.y, 1);
    glTranslatef(-offset.x, -offset.y, 0);
 
@@ -474,6 +530,8 @@ void ClientGame::renderNormal()
    Point position = u->getRenderPos();
 
    glPushMatrix();
+   glTranslatef(400, 300, 0);
+
    glScalef(400 / F32(PlayerHorizVisDistance), 300 / F32(PlayerVertVisDistance), 1);
 
    glTranslatef(-position.x, -position.y, 0);
@@ -494,6 +552,52 @@ void ClientGame::renderNormal()
    fxTrail::renderTrails();
 
    glPopMatrix();
+
+   // Render current ship's energy, too.
+   if(mConnectionToServer.isValid())
+   {
+      Ship *s = dynamic_cast<Ship*>(mConnectionToServer->getControlObject());
+      if(s)
+      {
+         static F32 curEnergy = 0.f;
+
+         curEnergy = (curEnergy + s->mEnergy) * 0.5f;
+
+         const F32 offset = 50;
+
+         glColor3f(0.0, 0.0, 1);
+         glBegin(GL_POLYGON);
+         glVertex2f(15,              515 + offset);
+         glVertex2f(15 + curEnergy,  515 + offset);
+         glVertex2f(15 + curEnergy,  535 + offset);
+         glVertex2f(15,              535 + offset);
+         glEnd();
+
+         // Show danger line.
+         glColor3f(1, 0, 0);
+         glBegin(GL_LINES);
+         glVertex2f(15 + 5, 512 + offset);
+         glVertex2f(15 + 5, 539 + offset);
+         glEnd();
+
+         // Show safety line.
+         glColor3f(1, 1, 0);
+         glBegin(GL_LINES);
+         glVertex2f(15 + 15, 512 + offset);
+         glVertex2f(15 + 15, 539 + offset);
+         glEnd();
+
+         // Show full marker
+         glColor3f(0, 1, 0);
+         glBegin(GL_LINE_STRIP);
+         glVertex2f(15 +  90, 512 + offset);
+         glVertex2f(15 + 101, 512 + offset);
+         glVertex2f(15 + 101, 539 + offset);
+         glVertex2f(15 +  90, 539 + offset);
+         glEnd();
+
+      }
+   }
 }
 
 void ClientGame::render()

@@ -118,8 +118,6 @@ void GameUserInterface::render()
       drawCenteredString(370, 20, "Press <ESC> to abort");
    }
 
-   glTranslatef(400, 300, 0);
-
    if(gClientGame)
       gClientGame->render();
 
@@ -127,6 +125,7 @@ void GameUserInterface::render()
    if(!OptionsMenuUserInterface::joystickEnabled)
    {
       glPushMatrix();
+      glTranslatef(400, 300, 0);
 
       glTranslatef(mMousePoint.x, mMousePoint.y, 0);
 

@@ -35,43 +35,72 @@ namespace Zap
 TNL_IMPLEMENT_NETOBJECT(GameType);
 
 GameType::GameType()
+   : mScoreboardUpdateTimer(1000)
+   , mGameTimer(DefaultGameTime)
+   , mGameTimeUpdateTimer(30000) 
 {
    mNetFlags.set(Ghostable);
-   mTimeUntilScoreboardUpdate = 0;
+   mGameOver = false;
+   mTeamScoreLimit = DefaultTeamScoreLimit;
 }
 
 void GameType::processArguments(S32 argc, const char **argv)
 {
+   if(argc > 0)
+      mGameTimer.reset(U32(atof(argv[0]) * 60 * 1000));
+   if(argc > 1)
+      mTeamScoreLimit = atoi(argv[1]);
+}
 
+void GameType::processClient(U32 deltaT)
+{
+   mGameTimer.update(deltaT);
 }
 
 void GameType::processServer(U32 deltaT)
 {
-   if(deltaT > mTimeUntilScoreboardUpdate)
+   if(mScoreboardUpdateTimer.update(deltaT))
    {
+      mScoreboardUpdateTimer.reset();
       for(S32 i = 0; i < mClientList.size(); i++)
          if(mClientList[i].clientConnection)
             mClientList[i].ping = (U32) mClientList[i].clientConnection->getRoundTripTime();
 
       for(S32 i = 0; i < mClientList.size(); i++)
-         if(mClientList[i].wantsScoreboardUpdates)
+         if(mGameOver || mClientList[i].wantsScoreboardUpdates)
             updateClientScoreboard(i);
-
-      mTimeUntilScoreboardUpdate = 1000;
    }
-   else
-      mTimeUntilScoreboardUpdate -= deltaT;
+
+   if(mGameTimeUpdateTimer.update(deltaT))
+   {
+      mGameTimeUpdateTimer.reset();
+      s2cSetTimeRemaining(mGameTimer.getCurrent());
+   }
 
    for(S32 i = 0; i < mClientList.size(); i++)
    {
-      if(mClientList[i].respawnDelay)
-      {
-         if(mClientList[i].respawnDelay <= deltaT)
-            spawnShip(mClientList[i].clientConnection);
-         else
-            mClientList[i].respawnDelay -= deltaT;
-      }
+      if(mClientList[i].respawnTimer.update(deltaT))
+         spawnShip(mClientList[i].clientConnection);
    }
+
+   if(mGameTimer.update(deltaT))
+   {
+      gameOverManGameOver();
+   }
+}
+
+void GameType::gameOverManGameOver()
+{
+   // 17 days??? We won't last 17 hours!
+   mGameOver = true;
+   s2cSetGameOver(true);
+   gServerGame->gameEnded();
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cSetGameOver, (bool gameOver),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+{
+   mGameOver = gameOver;
 }
 
 void GameType::onAddedToGame(Game *theGame)
@@ -132,7 +161,6 @@ void GameType::spawnShip(GameConnection *theClient)
    S32 clientIndex = findClientIndexByConnection(theClient);
    S32 teamIndex = mClientList[clientIndex].teamId;
 
-   mClientList[clientIndex].respawnDelay = 0;
    Point spawnPoint;
    S32 spawnIndex = Random::readI() % mTeams[teamIndex].spawnPoints.size();
    spawnPoint = mTeams[teamIndex].spawnPoints[spawnIndex];
@@ -184,7 +212,7 @@ void GameType::controlObjectForClientKilled(GameConnection *theClient, GameObjec
 {
    S32 clientIndex = findClientIndexByConnection(theClient);
    if(clientIndex != -1)
-      mClientList[clientIndex].respawnDelay = RespawnDelay;
+      mClientList[clientIndex].respawnTimer.reset(RespawnDelay);
 }
 
 void GameType::controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject)
@@ -202,6 +230,20 @@ void GameType::processClientGameMenuOption(U32 index)
 {
    if(index == 0)
       c2sChangeTeams();
+}
+
+void GameType::setTeamScore(S32 teamIndex, S32 newScore)
+{
+   mTeams[teamIndex].score = newScore;
+   s2cSetTeamScore(teamIndex, newScore);
+   if(newScore >= mTeamScoreLimit)
+      gameOverManGameOver();
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cSetTimeRemaining, (U32 timeLeft),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+{
+   mGameTimer.reset(timeLeft);
 }
 
 TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sChangeTeams, (),
@@ -302,6 +344,8 @@ void GameType::onGhostAvailable(GhostConnection *theConnection)
       s2cAddClient(mClientList[i].name, mClientList[i].clientConnection == theConnection);
       s2cClientJoinedTeam(mClientList[i].name, mClientList[i].teamId);
    }
+   s2cSetTimeRemaining(mGameTimer.getCurrent());
+   s2cSetGameOver(mGameOver);
    NetObject::setRPCDestConnection(NULL);
 }
 

@@ -261,6 +261,9 @@
 			RelativePath=".\teleporter.h">
 		</File>
 		<File
+			RelativePath=".\timer.h">
+		</File>
+		<File
 			RelativePath=".\UI.cpp">
 		</File>
 		<File
