@@ -211,7 +211,7 @@ void Ship::processWeaponFire()
                case WeaponBounce:
                   {
                      Point projVel = dir * 500 + dir * mMoveState[ActualState].vel.dot(dir);
-                     proj = new GrenadeProjectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this);
+                     proj = new GrenadeProjectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 1000, this);
                   }
                break;
             }

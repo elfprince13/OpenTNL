@@ -364,7 +364,7 @@ void GrenadeProjectile::explode(Point pos)
       info.impulseVector  = fillVector[i]->getActualPos() - pos;
       info.impulseVector.normalize();
 
-      info.collisionPoint = fillVector[i]->getActualPos();
+      info.collisionPoint  = fillVector[i]->getActualPos();
       info.collisionPoint -= info.impulseVector;
 
       info.impulseVector  *= 500.f;
@@ -378,38 +378,24 @@ void GrenadeProjectile::renderItem(Point pos)
    if(exploded)
       return;
 
-   glPushMatrix();
-   glTranslatef(pos.x, pos.y, 0);
+/*   glPushMatrix();
+   glTranslatef(pos.x, pos.y, 0); */
 
    glColor3f(1,1,1);
    glBegin(GL_LINE_LOOP);
-   glVertex2f(-18, -18);
-   glVertex2f(18, -18);
-   glVertex2f(18, 18);
-   glVertex2f(-18, 18);
+   for(F32 theta = 0; theta <= 2 * 3.1415; theta += 0.3)
+      glVertex2f(pos.x + cos(theta) * 10.f, 
+                 pos.y + sin(theta) * 10.f);
    glEnd();
 
    glColor3f(1,0,0);
    glBegin(GL_LINE_LOOP);
-
-   float crossWidth = 4;
-   float crossLen = 14;
-
-   glVertex2f(crossWidth, crossWidth);
-   glVertex2f(crossLen, crossWidth);
-   glVertex2f(crossLen, -crossWidth);
-   glVertex2f(crossWidth, -crossWidth);
-   glVertex2f(crossWidth, -crossLen);
-   glVertex2f(-crossWidth, -crossLen);
-   glVertex2f(-crossWidth, -crossWidth);
-   glVertex2f(-crossLen, -crossWidth);
-   glVertex2f(-crossLen, crossWidth);
-   glVertex2f(-crossWidth, crossWidth);
-   glVertex2f(-crossWidth, crossLen);
-   glVertex2f(crossWidth, crossLen);
+   for(F32 theta = 0; theta <= 2 * 3.1415; theta += 0.3)
+      glVertex2f(pos.x + cos(theta) * 6.f, 
+                 pos.y + sin(theta) * 6.f);
    glEnd();
 
-   glPopMatrix();
+//   glPopMatrix();
 }
 
 };

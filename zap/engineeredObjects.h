@@ -41,21 +41,26 @@ class EngineeredObject : public GameObject
 protected:
    F32 mHealth;
    S32 mTeam;
+   Color mTeamColor;
    SafePtr<Item> mResource;
    Point mAnchorPoint;
    Point mAnchorNormal;
 
    enum MaskBits
    {
-      InitialMask = 1 << 0,
-      NextFreeMask = 1 << 1,
+      InitialMask  = BIT(0),
+      NextFreeMask = BIT(1),
    };
    
 public:
+   SafePtr<Ship> mOwner;
+
    EngineeredObject(S32 team = -1, Point anchorPoint = Point(), Point anchorNormal = Point());
    void setResource(Item *resource);
    bool checkDeploymentPosition();
    void computeExtent();
+
+   S32 getTeam() { return mTeam; }
 
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);
@@ -80,12 +85,16 @@ public:
 class Turret : public EngineeredObject
 {
    typedef EngineeredObject Parent;
+
+   Timer mFireTimer;
+
 public:
    Turret(S32 team = -1, Point anchorPoint = Point(), Point anchorNormal = Point()) :
       EngineeredObject(team, anchorPoint, anchorNormal) { mNetFlags.set(Ghostable); }
 
    bool getCollisionPoly(Vector<Point> &polyPoints);
    void render();
+   void idle(IdleCallPath path);
 
    TNL_DECLARE_CLASS(Turret);
 };

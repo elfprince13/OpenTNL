@@ -27,7 +27,8 @@
 #include "engineeredObjects.h"
 #include "ship.h"
 #include "glutInclude.h"
-
+#include "projectile.h"
+#include "gameType.h"
 namespace Zap
 {
 
@@ -68,6 +69,8 @@ void engClientCreateObject(GameConnection *connection, U32 object)
          deployedObject = new ForceFieldProjector(ship->getTeam(), deployPosition, collisionNormal);
          break;
    }
+   deployedObject->mOwner = ship;
+
    deployedObject->computeExtent();
    if(!deployedObject || !deployedObject->checkDeploymentPosition())
    {
@@ -82,9 +85,10 @@ void engClientCreateObject(GameConnection *connection, U32 object)
 
 EngineeredObject::EngineeredObject(S32 team, Point anchorPoint, Point anchorNormal)
 {
-   mTeam = team;
-   mAnchorPoint = anchorPoint;
-   mAnchorNormal = anchorNormal;
+   mHealth         = 1.f;
+   mTeam           = team;
+   mAnchorPoint    = anchorPoint;
+   mAnchorNormal   = anchorNormal;
    mObjectTypeMask = EngineeredType | CommandMapVisType;
 }
 
@@ -97,6 +101,11 @@ void EngineeredObject::setResource(Item *resource)
 
 void EngineeredObject::damageObject(DamageInfo *di)
 {
+   mHealth -= di->damageAmount * .5f;
+
+   if(mHealth > 0.f)
+      return;
+
    mResource->addToDatabase();
    mResource->setActualPos(mAnchorPoint + mAnchorNormal * mResource->getRadius());
 
@@ -180,6 +189,7 @@ U32 EngineeredObject::packUpdate(GhostConnection *connection, U32 updateMask, Bi
 {
    if(stream->writeFlag(updateMask & InitialMask))
    {
+      stream->write(mTeam);
       stream->write(mAnchorPoint.x);
       stream->write(mAnchorPoint.y);
       stream->write(mAnchorNormal.x);
@@ -192,6 +202,7 @@ void EngineeredObject::unpackUpdate(GhostConnection *connection, BitStream *stre
 {
    if(stream->readFlag())
    {
+      stream->read(&mTeam);
       stream->read(&mAnchorPoint.x);
       stream->read(&mAnchorPoint.y);
       stream->read(&mAnchorNormal.x);
@@ -239,11 +250,116 @@ void Turret::render()
 {
    Vector<Point> p;
    getCollisionPoly(p);
-   glColor3f(1,0,1);
+   
+   Color teamColor;
+
+   if(gClientGame->getGameType())
+      teamColor = gClientGame->getGameType()->mTeams[mTeam].color;
+   else
+      teamColor = Color(1,0,1);
+
+   glColor3f(teamColor.r, teamColor.g, teamColor.b);
    glBegin(GL_LINE_LOOP);
    for(S32 i = 0; i < p.size(); i++)
       glVertex2f(p[i].x, p[i].y);
    glEnd();
+}
+
+static Vector<GameObject *> fillVector;
+
+void Turret::idle(IdleCallPath path)
+{
+   if(path == ServerIdleMainLoop)
+   {
+      mFireTimer.update(mCurrentMove.time);
+
+      if(mFireTimer.getCurrent() == 0)
+      {
+         // Choose a target...
+         Point pos = mAnchorPoint;
+
+         Rect queryRect(pos, pos);
+         queryRect.expand(Point(800, 800));
+
+         fillVector.clear();
+         findObjects(ShipType, fillVector, queryRect);
+
+         Ship * bestTarget = NULL;
+         F32 bestRange = 10000.f;
+         Point bestDelta;
+
+         Point delta;
+
+         F32 timeScale = F32(mCurrentMove.time) / 1000.f;
+
+         for(S32 i=0; i<fillVector.size(); i++)
+         {
+            Ship *potential = (Ship*)fillVector[i];
+
+            // Is it dead or cloaked?
+            if(potential->isCloakActive() || potential->hasExploded)
+               continue;
+
+            // Is it on our team?
+            if(potential->getTeam() == mTeam)
+               continue;
+
+            // Calculate where we have to shoot to hit this...
+            const F32 projVel = 600.f;
+            F32 shipVel = potential->getActualVel().len() * 0.8;
+
+            // If we can't hit 'em (or the math will break, move on), pretend we're trying
+            if(shipVel > projVel)
+               shipVel = projVel;
+
+            Point distVec  = potential->getActualPos() - pos;
+            F32 travelTime = distVec.len() / sqrt( projVel * projVel - shipVel*shipVel );
+            Point leadPos  = potential->getActualPos() + potential->getActualVel() * travelTime;
+
+            // Calculate distance
+            delta = (leadPos - pos);
+
+            // Check that we're facing it...
+            if(delta.dot(mAnchorNormal) <= 0.f)
+               continue;
+
+            // See if we can see it...
+            F32 t;
+            Point n;
+            if(findObjectLOS(BarrierType, 0, mAnchorPoint, potential->getActualPos(), t, n))
+               continue;
+
+            // See if we're gonna clobber our own stuff...
+            disableCollision();
+            Point delta2 = delta;
+            delta2.normalize(600.f * 1.f);
+            EngineeredObject *g = dynamic_cast<EngineeredObject*>(findObjectLOS(EngineeredType, 0, mAnchorPoint, mAnchorPoint + delta2, t, n));
+            enableCollision();
+
+            if(g && g->getTeam() == mTeam)
+               continue;
+
+            F32 dist = delta.len();
+
+            if(dist < bestRange)
+            {
+               bestDelta  = delta;
+               bestRange  = dist;
+               bestTarget = potential;
+            }
+         }
+
+         if(bestTarget)
+         {
+            bestDelta.normalize();
+            Projectile *proj = new Projectile(pos + bestDelta * 30.f, bestDelta * 600.f, 500, mOwner);
+            proj->addToGame(gServerGame);
+         }
+
+         mFireTimer.reset(90);
+      }
+   }
+
 }
 
 };
