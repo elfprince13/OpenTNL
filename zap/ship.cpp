@@ -941,11 +941,13 @@ void Ship::render()
    // Render shield if appropriate
    if(mShield)
    {
+      F32 shieldRadius = mRadius + 3;
+
       glColor4f(1,1,0, alpha);
       glBegin(GL_LINE_LOOP);
-      glVertex2f(-23, -18);
-      glVertex2f(0, 27);
-      glVertex2f(23, -18);
+      for(F32 theta = 0; theta <= 2 * 3.1415; theta += 0.3)
+         glVertex2f(cos(theta) * shieldRadius, sin(theta) * shieldRadius);
+      
       glEnd();
    }
 

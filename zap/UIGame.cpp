@@ -98,6 +98,10 @@ void GameUserInterface::idle(U32 timeDelta)
    }
 }
 
+#ifdef TNL_OS_WIN32
+extern void checkMousePos(S32 maxdx, S32 maxdy);
+#endif
+
 void GameUserInterface::render()
 {
    glMatrixMode(GL_MODELVIEW);
@@ -124,10 +128,22 @@ void GameUserInterface::render()
    // draw the reticle
    if(!OptionsMenuUserInterface::joystickEnabled)
    {
+      Point realMousePoint = mMousePoint;
+
+#ifdef TNL_OS_WIN32
+
+      F32 len = mMousePoint.len();
+      checkMousePos(windowWidth * 100 / canvasWidth,
+                    windowHeight * 100 / canvasHeight);
+
+      if(len > 100)
+         realMousePoint *= 100 / len;
+#endif
+
       glPushMatrix();
       glTranslatef(400, 300, 0);
 
-      glTranslatef(mMousePoint.x, mMousePoint.y, 0);
+      glTranslatef(realMousePoint.x, realMousePoint.y, 0);
 
       static U32 cursorSpin = 90;
       cursorSpin++;
@@ -233,6 +249,12 @@ void GameUserInterface::onMouseDragged(S32 x, S32 y)
 
 void GameUserInterface::onMouseMoved(S32 x, S32 y)
 {
+   S32 xp = x - windowWidth / 2;
+   S32 yp = y - windowHeight / 2;
+   S32 horzMax = 100 * windowWidth / canvasWidth;
+   S32 vertMax = 100 * windowHeight / canvasHeight;
+
+   
    mMousePoint = Point(x - windowWidth / 2, y - windowHeight / 2);
    mMousePoint.x *= canvasWidth / windowWidth;
    mMousePoint.y *= canvasHeight / windowHeight;

@@ -36,6 +36,42 @@
 namespace Zap
 {
 
+extern const char *gWindowTitle;
+
+void checkMousePos(S32 maxdx, S32 maxdy)
+{
+   char windowName[256];
+
+   HWND theWindow = GetForegroundWindow();
+   GetWindowText(theWindow, windowName, sizeof(windowName));
+
+   if(strcmp(windowName, gWindowTitle))
+      return;
+
+   RECT r;
+
+   GetWindowRect(theWindow, &r);
+   POINT cp;
+   GetCursorPos(&cp);
+
+   S32 centerX = (r.right + r.left) >> 1;
+   S32 centerY = (r.bottom + r.top) >> 1;
+
+   cp.x -= centerX;
+   cp.y -= centerY;
+
+   if(cp.x > maxdx)
+      cp.x = maxdx;
+   if(cp.y > maxdy)
+      cp.y = maxdy;
+   if(cp.x < -maxdx)
+      cp.x = -maxdx;
+   if(cp.y < -maxdy)
+      cp.y = -maxdy;
+
+   SetCursorPos(int(centerX + cp.x), int(centerY + cp.y));
+}
+
 BOOL CALLBACK EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance, VOID* pContext );
 
 LPDIRECTINPUT8 gDirectInput = NULL;

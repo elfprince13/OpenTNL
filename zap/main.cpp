@@ -48,6 +48,7 @@ namespace Zap
 bool gQuit = false;
 bool gIsServer = false;
 const char *gHostName = "ZAP Game";
+const char *gWindowTitle = "ZAP II - The Return";
 U32 gMaxPlayers = 128;
 const char *gMasterAddressString = "IP:master.opentnl.org:29005";
 Address gMasterAddress;
@@ -352,7 +353,7 @@ int main(int argc, char **argv)
       glutInitWindowSize(800, 600);
       glutInit(&argc, argv);
       glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);
-      glutCreateWindow("ZAP II - The Return");
+      glutCreateWindow(gWindowTitle);
       glutDisplayFunc(display);
       glutReshapeFunc(reshape);
       glutPassiveMotionFunc(passivemotion);

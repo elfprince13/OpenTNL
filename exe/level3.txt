@@ -2,8 +2,8 @@ SoccerGameType 20 8
 
 GridSize 280
 
-Team Yellow 1 1 0
-Team Green 0 1 0
+Team Blue 0 0 1
+Team Red 1 0 0
 
 BarrierMaker 0 1 5 1 5.5 0 6.5 0 7 1 12 1 12 4 9 6 9 10 12 12 12 15 7 15 6.5 16 5.5 16 5 15 0 15 0 12 3 10 3 6 0 4 0 1
 
