@@ -1,4 +1,4 @@
-ZAP 1.1.4
+ZAP 1.2.0
 
 Welcome to ZAP, the retro multiplayer team action game!
 
@@ -11,6 +11,8 @@ Changes since version 1.1.2:
 - Added README
 - Added credits on exit
 - Added a new CTF level
+- Added voice recording and playback (recording on Win32 only for now)
+- Added more sounds
 
 Controls:
 
@@ -22,6 +24,7 @@ D - move right
 T - chat to team
 G - chat global
 V - open quick chat menu
+R - record voice chat
 
 C - toggle commander map
 F - toggle shields
@@ -40,6 +43,8 @@ Right stick - aim and fire
 
 left trigger - shield
 right trigger - boost
+
+button 1 - record voice chat
 button 3 - toggle commander map
 button 4 - show scores
 

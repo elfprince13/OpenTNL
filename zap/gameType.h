@@ -123,6 +123,8 @@ public:
    virtual void processClientGameMenuOption(U32 index);
 
    virtual void renderInterfaceOverlay(bool scoreboardVisible);
+   void renderTimeLeft();
+   void renderTalkingClients();
    virtual void updateClientScoreboard(S32 clientIndex);
 
    virtual void performProxyScopeQuery(GameObject *scopeObject, GameConnection *connection);
@@ -145,7 +147,7 @@ public:
    TNL_DECLARE_RPC(s2cSetTimeRemaining, (U32 timeLeft));
    TNL_DECLARE_RPC(c2sRequestScoreboardUpdates, (bool updates));
 
-   TNL_DECLARE_RPC(c2sVoiceChat, (ByteBufferRef compressedVoice));
+   TNL_DECLARE_RPC(c2sVoiceChat, (bool echo, ByteBufferRef compressedVoice));
    TNL_DECLARE_RPC(s2cVoiceChat, (StringTableEntryRef client, ByteBufferRef compressedVoice));
 
    TNL_DECLARE_CLASS(GameType);

@@ -167,12 +167,33 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
          }
       }
    }
+   renderTimeLeft();
+   renderTalkingClients();
+}
+
+void GameType::renderTimeLeft()
+{
    glColor3f(1,1,1);
    U32 timeLeft = mGameTimer.getCurrent();
 
    U32 minsRemaining = timeLeft / (60000);
    U32 secsRemaining = (timeLeft - (minsRemaining * 60000)) / 1000;
    UserInterface::drawStringf(720, 577, 20, "%02d:%02d", minsRemaining, secsRemaining);
+}
+
+void GameType::renderTalkingClients()
+{
+   S32 y = 150;
+   for(S32 i = 0; i < mClientList.size(); i++)
+   {
+      if(mClientList[i].voiceSFX->isPlaying())
+      {
+         Color teamColor = mTeams[mClientList[i].teamId].color;
+         glColor3f(teamColor.r, teamColor.g, teamColor.b);
+         UserInterface::drawString(10, y, 20, mClientList[i].name.getString());
+         y += 25;
+      }
+   }
 }
 
 void GameType::gameOverManGameOver()
@@ -579,7 +600,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cKillMessage, (StringTableEntryRef victi
             "%s zapped %s", killer.getString(), victim.getString());
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sVoiceChat, (ByteBufferRef voiceBuffer),
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sVoiceChat, (bool echo, ByteBufferRef voiceBuffer),
    NetClassGroupGameMask, RPCUnguaranteed, RPCToGhostParent, 0)
 {
    // in the naive implementation, we just broadcast this to everyone,
@@ -588,7 +609,14 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sVoiceChat, (ByteBufferRef voiceBuffer),
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
    S32 clientIndex = findClientIndexByConnection(source);
    if(clientIndex != -1)
-      s2cVoiceChat(mClientList[clientIndex].name, voiceBuffer);
+   {
+      RefPtr<NetEvent> event = TNL_RPC_CONSTRUCT_NETEVENT(this, s2cVoiceChat, (mClientList[clientIndex].name, voiceBuffer));
+      for(S32 i = 0; i < mClientList.size(); i++)
+      {
+         if((i != clientIndex || echo) && mClientList[i].clientConnection)
+            mClientList[i].clientConnection->postNetEvent(event);
+      }
+   }
 }
 
 TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cVoiceChat, (StringTableEntryRef clientName, ByteBufferRef voiceBuffer),
@@ -610,7 +638,7 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cVoiceChat, (StringTableEntryRef clientN
          decodeLen += frameLen;
       }
 
-      logprintf("Decoded buffer size %d", playBuffer->getBufferSize());
+      //logprintf("Decoded buffer size %d", playBuffer->getBufferSize());
       mClientList[clientIndex].voiceSFX->queueBuffer(playBuffer);
    }
 }

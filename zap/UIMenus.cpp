@@ -174,6 +174,7 @@ OptionsMenuUserInterface gOptionsMenuUserInterface;
 bool OptionsMenuUserInterface::controlsRelative = false;
 bool OptionsMenuUserInterface::fullscreen = false;
 bool OptionsMenuUserInterface::joystickEnabled = false;
+bool OptionsMenuUserInterface::echoVoice = false;
 
 OptionsMenuUserInterface::OptionsMenuUserInterface()
 {
@@ -204,6 +205,11 @@ void OptionsMenuUserInterface::setupMenus()
       menuItems.push_back("DISABLE JOYSTICK/CONTROLLER");
    else
       menuItems.push_back("ENABLE JOYSTICK/CONTROLLER");
+
+   if(echoVoice)
+      menuItems.push_back("DISABLE VOICE ECHO");
+   else
+      menuItems.push_back("ENABLE VOICE ECHO");
 
    if(gClientGame->getConnectionToServer())
       menuItems.push_back("RETURN TO GAME");
@@ -252,6 +258,9 @@ void OptionsMenuUserInterface::processSelection(U32 index)
       joystickEnabled = !joystickEnabled;
       break;
    case 3:
+      echoVoice = !echoVoice;
+      break;
+   case 4:
       if(gClientGame->getConnectionToServer())
          gGameUserInterface.activate();   
       else

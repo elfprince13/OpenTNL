@@ -96,6 +96,7 @@ public:
    void stop();
    void setMovementParams(Point position, Point velocity);
    void queueBuffer(ByteBufferPtr b);
+   bool isPlaying() { return mSourceIndex != -1; }
 
    static bool startRecording();
    static void captureSamples(ByteBufferPtr sampleBuffer);

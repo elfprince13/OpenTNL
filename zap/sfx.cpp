@@ -110,7 +110,7 @@ void SFXObject::captureSamples(ByteBufferPtr buffer)
       DWORD count1;
       DWORD count2;
 
-      printf("Capturing samples... %d ... %d\n", lastReadOffset, readPosition);
+      //printf("Capturing samples... %d ... %d\n", lastReadOffset, readPosition);
 
       if(!byteCount)
          return;
@@ -318,7 +318,7 @@ static void unqueueBuffers(S32 sourceIndex)
       {
          ALuint buffer;
          alSourceUnqueueBuffers(gSources[sourceIndex], 1, &buffer);
-         logprintf("unqueued buffer %d\n", buffer);
+         //logprintf("unqueued buffer %d\n", buffer);
          processed--;
          
          // ok, this is a lame solution - but the way OpenAL should work is...
@@ -354,7 +354,7 @@ void SFXObject::queueBuffer(ByteBufferPtr p)
          ptr++;
       }
 
-      logprintf("queued buffer %d - %d max %d len\n", buffer, max, mInitialBuffer->getBufferSize());
+      //logprintf("queued buffer %d - %d max %d len\n", buffer, max, mInitialBuffer->getBufferSize());
       alBufferData(buffer, AL_FORMAT_MONO16, mInitialBuffer->getBuffer(),
             mInitialBuffer->getBufferSize(), 8000);
       alSourceQueueBuffers(source, 1, &buffer);

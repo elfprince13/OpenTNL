@@ -146,12 +146,8 @@ void CTFGameType::renderInterfaceOverlay(bool scoreboardVisible)
          UserInterface::drawStringf(pos.x, pos.y, 32, "%d", mTeams[i].score);
       }
    }
-   glColor3f(1,1,1);
-   U32 timeLeft = mGameTimer.getCurrent();
-
-   U32 minsRemaining = timeLeft / (60000);
-   U32 secsRemaining = (timeLeft - (minsRemaining * 60000)) / 1000;
-   UserInterface::drawStringf(720, 577, 20, "%02d:%02d", minsRemaining, secsRemaining);
+   renderTimeLeft();
+   renderTalkingClients();
 }
 
 void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)

@@ -80,6 +80,7 @@ public:
    static bool controlsRelative;
    static bool fullscreen;
    static bool joystickEnabled;
+   static bool echoVoice;
 
    OptionsMenuUserInterface();
    void processSelection(U32 index);

@@ -242,13 +242,22 @@ void GameUserInterface::render()
 
    if(mRecordingAudio)
    {
+      F32 amt = mMaxAudioSample / F32(0x7FFF);
+      U32 totalLineCount = 50;
+
       glColor3f(1, 1 ,1);
-      glBegin(GL_POLYGON);
-      glVertex2f(10, 600);
-      glVertex2f(30, 600);
-      F32 y = 600 - F32(mMaxAudioSample) * 600 / F32(0x7FFF);
-      glVertex2f(30, y);
-      glVertex2f(10, y);
+      glBegin(GL_LINES);
+      glVertex2f(10, 130);
+      glVertex2f(10, 145);
+      glVertex2f(10 + totalLineCount * 2, 130);
+      glVertex2f(10 + totalLineCount * 2, 145);
+      glColor3f(0.8, 0.8, 0.8);
+
+      for(U32 i = 1; i < amt * totalLineCount; i++)
+      {
+         glVertex2f(10 + i * 2, 130);
+         glVertex2f(10 + i * 2, 145);
+      }
       glEnd();
    }
 
@@ -574,11 +583,11 @@ void GameUserInterface::processRecordingAudio()
       mUnusedAudio->resize(unusedCount * 2);
 
       ByteBuffer sendBuffer(codingBuffer, len);
-      logprintf("Encoded %d samples in %d bytes", useCount, len);
+      //logprintf("Encoded %d samples in %d bytes", useCount, len);
 
       GameType *gt = gClientGame->getGameType();
       if(gt)
-         gt->c2sVoiceChat(sendBuffer);
+         gt->c2sVoiceChat(OptionsMenuUserInterface::echoVoice, sendBuffer);
    }
 }
 
