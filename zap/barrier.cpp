@@ -59,7 +59,7 @@ void constructBarrierPoints(const Vector<Point> &vec, F32 width, Vector<Point> &
       Point curEdge = edgeVector[i];
       double cosTheta = curEdge.dot(lastEdge);
 
-      if(cosTheta >= 0)
+      if(cosTheta >= -0.01)
       {
          F32 extendAmt = width * 0.5 * tan( acos(cosTheta) / 2 );
          if(extendAmt > 0.01)
