@@ -1,7 +1,7 @@
 FootballGameType 10 48
 Team Blue 0 0 1
 Team Red 1 0 0
-LevelName Diamond
+LevelName "Thank You, Drive Thru"
 GridSize 300
 FootballZone 11.7 -7.3 12.3 -7.3 12.3 -6.7 11.7 -6.7
 LoadoutZone 0 16.4 -6.4 17.6 -6.4 17.4 -6 16.6 -6

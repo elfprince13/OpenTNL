@@ -965,6 +965,45 @@ void EditorUserInterface::idle(U32 timeDelta)
    mCurrentOffset += mMousePos - newMousePoint;   
 }
 
+static void escapeString(const char *src, char dest[1024])
+{
+   S32 i;
+   for(i = 0; src[i]; i++)
+      if(src[i] == '\"' || src[i] == ' ' || src[i] == '\n' || src[i] == '\t')
+         break;
+
+   if(!src[i])
+   {
+      strcpy(dest, src);
+      return;
+   }
+   char *dptr = dest;
+   *dptr++ = '\"';
+   char c;
+   while((c = *src++) != 0)
+   {
+      switch(c)
+      {
+         case '\"':
+            *dptr++ = '\\';
+            *dptr++ = '\"';
+            break;
+         case '\n':
+            *dptr++ = '\\';
+            *dptr++ = 'n';
+            break;
+         case '\t':
+            *dptr++ = '\\';
+            *dptr++ = 't';
+            break;
+         default:
+            *dptr++ = c;
+      }
+   }
+   *dptr++ = '\"';
+   *dptr++ = 0;
+}
+
 void EditorUserInterface::saveLevel()
 {
    char fileNameBuffer[256];
@@ -984,7 +1023,9 @@ void EditorUserInterface::saveLevel()
       Vector<const char *> &v = mUnknownItems[i];
       for(S32 j = 0; j < v.size(); j++)
       {
-         fputs(v[j], f);
+         char outBuffer[1024];
+         escapeString(v[j], outBuffer);
+         fputs(outBuffer, f);
          if(j == v.size() - 1)
             fputs("\n", f);
          else
