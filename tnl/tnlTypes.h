@@ -232,7 +232,7 @@ typedef unsigned long long  U64;  ///< Compiler independent unsigned 64-bit inte
 // Identify the target Operating System
 //----------------------------------------------------------------------------------
 
-#if defined(__XBOX__)
+#if defined (_XBOX) || defined(__XBOX__)
 #  define TNL_OS_STRING "XBox"
 #  define TNL_OS_XBOX
 #  define FN_CDECL __cdecl

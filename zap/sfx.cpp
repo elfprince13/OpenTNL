@@ -29,7 +29,7 @@
 #include "tnlLog.h"
 #include "tnlRandom.h"
 
-#if !defined (ZAP_DEDICATED)
+#if !defined (ZAP_DEDICATED) && !defined (TNL_OS_XBOX)
 
 #include "alInclude.h"
 

@@ -68,26 +68,28 @@ void Platform::debugBreak()
 
 void Platform::forceQuit()
 {
-   // do nothing...
+   logprintf("-Force Quit-");
+   // Reboot!
+   LD_LAUNCH_DASHBOARD LaunchData = { XLD_LAUNCH_DASHBOARD_MAIN_MENU };
+   XLaunchNewImage( NULL, (LAUNCH_DATA*)&LaunchData );
 }
 
 U32 Platform::getRealMilliseconds()
 {
    U32 tickCount;
-   TNL_JOURNAL_READ_BLOCK
-   (
+   TNL_JOURNAL_READ_BLOCK ( getRealMilliseconds,
       TNL_JOURNAL_READ( (&tickCount) );
       return tickCount;
    )
 
    tickCount = GetTickCount();
 
-   TNL_JOURNAL_WRITE_BLOCK
-   (
-      TNL_JOURNAL_WRITE(tickCount);
+   TNL_JOURNAL_WRITE_BLOCK ( getRealMilliseconds,
+      TNL_JOURNAL_WRITE( (tickCount) );
    )
    return tickCount;
 }
+
 
 //--------------------------------------
 void Platform::AlertOK(const char *windowTitle, const char *message)
@@ -114,6 +116,58 @@ bool Platform::AlertRetry(const char *windowTitle, const char *message)
 //   return (MessageBox(NULL, message, windowTitle, MB_ICONINFORMATION | MB_SETFOREGROUND | MB_TASKMODAL | MB_RETRYCANCEL) == IDRETRY);
    TNLLogMessageV(LogPlatform, ("AlertRetry: %s - %s", message, windowTitle));
    return false;
+}
+
+
+class WinTimer
+{
+   private:
+      F64 mPeriod;
+      bool mUsingPerfCounter;
+   public:
+      WinTimer()
+      {
+         S64 frequency;
+         mUsingPerfCounter = QueryPerformanceFrequency((LARGE_INTEGER *) &frequency);
+         mPeriod = 1000.0f / F64(frequency);
+      }
+      S64 getCurrentTime()
+      {
+         if(mUsingPerfCounter)
+         {
+            S64 value;
+            QueryPerformanceCounter( (LARGE_INTEGER *) &value);
+            return value;
+         }
+         else
+         {
+            return GetTickCount();
+         }
+      }
+      F64 convertToMS(S64 delta)
+      {
+         if(mUsingPerfCounter)
+            return mPeriod * F64(delta);
+         else
+            return F64(delta);
+      }
+};
+
+static WinTimer gTimer;
+
+S64 Platform::getHighPrecisionTimerValue()
+{
+   return gTimer.getCurrentTime();
+}
+
+F64 Platform::getHighPrecisionMilliseconds(S64 timerDelta)
+{
+   return gTimer.convertToMS(timerDelta);
+}
+
+void Platform::sleep(U32 msCount)
+{
+	// no need to sleep on the xbox...
 }
 
 #elif defined (TNL_OS_WIN32)

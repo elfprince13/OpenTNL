@@ -27,21 +27,21 @@
 #ifndef GLUT_INCLUDE
 #define GLUT_INCLUDE
 
-#ifdef ZAP_DEDICATED
+#if defined(TNL_OS_XBOX)
+
+#include "glXBox.h"
+
+#elif defined( ZAP_DEDICATED )
 
 #include "glDedicated.h"
 
-#else
-
-#ifdef TNL_OS_MAC_OSX
+#elif defined (TNL_OS_MAC_OSX )
 
 #include <GLUT/glut.h>
 
 #else
 
 #include "glut.h"
-
-#endif
 
 #endif
 
