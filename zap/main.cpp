@@ -62,8 +62,10 @@ Address gMasterAddress;
 Address gConnectAddress;
 Address gBindAddress(IPProtocol, Address::Any, 28000);
 
-const char *gLevelList = "football1.txt "
+const char *gLevelList = "football2.txt "
+                         "level2.txt "
                          "football1.txt "
+                         "level8.txt "
                          "rabbit1.txt "
                          "ctf4.txt "
                          "level2.txt "
