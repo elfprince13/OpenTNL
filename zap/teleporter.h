@@ -53,8 +53,7 @@ public:
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);
 
-   void processServer(U32 deltaT);
-   void processClient(U32 deltaT);
+   void idle(GameObject::IdleCallPath path);
    void render();
 
    void processArguments(S32 argc, const char **argv);

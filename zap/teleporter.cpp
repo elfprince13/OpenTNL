@@ -113,22 +113,20 @@ void Teleporter::unpackUpdate(GhostConnection *connection, BitStream *stream)
 
 static Vector<GameObject *> fillVector2;
 
-void Teleporter::processClient(U32 deltaT)
+void Teleporter::idle(GameObject::IdleCallPath path)
 {
-   if(timeout > deltaT)
-      timeout -= deltaT;
-   else
-      timeout = 0;
-}
-
-void Teleporter::processServer(U32 deltaT)
-{
+   U32 deltaT = mCurrentMove.time;
    // Deal with our timeout...
-   if(timeout > deltaT) 
-   {
+   if(timeout > deltaT)
+   { 
       timeout -= deltaT;
       return;
    }
+   else
+      timeout = 0;
+
+   if(path != GameObject::ServerIdleMainLoop)
+      return;
 
    // Check for players within range
    // if so, blast them to dest

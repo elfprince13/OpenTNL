@@ -28,6 +28,7 @@
 #define _ITEM_H_
 
 #include "moveObject.h"
+#include "timer.h"
 
 namespace Zap
 {
@@ -47,10 +48,9 @@ protected:
    SafePtr<Ship> mMount;
    bool mIsMounted;
    bool mIsCollideable;
-   U32 mInterpTime;
 public:
-   void processServer(U32 deltaT);
-   void processClient(U32 deltaT);
+   void idle(GameObject::IdleCallPath path);
+
    void processArguments(S32 argc, const char **argv);
    
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
@@ -70,10 +70,11 @@ class PickupItem : public Item
 {
    typedef Item Parent;
    bool mIsVisible;
-   U32 mRepopDelay;
+   Timer mRepopTimer;
 public:
    PickupItem(Point p = Point(), float radius = 1);
-   void processServer(U32 deltaT);
+   void idle(GameObject::IdleCallPath path);
+
    bool collide(GameObject *otherObject);
    virtual bool pickup(Ship *theShip) = 0;
    virtual U32 getRepopDelay() = 0;

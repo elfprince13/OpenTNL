@@ -53,11 +53,17 @@ protected:
       float angle;      // actual angle of the ship
       Point vel;        // actual velocity of the ship
    };
+   enum {
+      InterpMaxVelocity = 900, // velocity to use to interpolate to proper position
+      InterpAcceleration = 1800,
+   };
 
    MoveState mMoveState[MoveStateCount];
+   bool mInterpolating;
 public:
    MoveObject(Point pos = Point(0,0), float radius = 1, float mass = 1);
 
+   void updateInterpolation();
    void updateExtent();
    Point getRenderPos() { return mMoveState[RenderState].pos; }
    Point getActualPos() { return mMoveState[ActualState].pos; }

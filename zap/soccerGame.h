@@ -66,14 +66,14 @@ class SoccerBallItem : public Item
 {
    typedef Item Parent;
    Point initialPos;
-   U32 sendHomeTime;
+   Timer mSendHomeTimer;
    StringTableEntry lastPlayerTouch;
 public:
    SoccerBallItem(Point pos = Point());
    void renderItem(Point pos);
    void sendHome();
    void damageObject(DamageInfo *theInfo);
-   void processServer(U32 deltaT);
+   void idle(GameObject::IdleCallPath path);
    void processArguments(S32 argc, const char **argv);
 
    bool collide(GameObject *hitObject);

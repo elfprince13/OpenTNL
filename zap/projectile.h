@@ -54,9 +54,8 @@ public:
    void unpackUpdate(GhostConnection *connection, BitStream *stream);
 
    void handleCollision(GameObject *theObject, Point collisionPoint);
-   void process(U32 deltaT);
-   void processServer(U32 deltaT);
-   void processClient(U32 deltaT);
+
+   void idle(GameObject::IdleCallPath path);
 
    virtual Point getRenderVel() { return velocity; }
    virtual Point getActualVel() { return velocity; }

@@ -184,19 +184,7 @@ void GameObject::render()
 {
 }
 
-void GameObject::processServerMove(Move *)
-{
-}
-
-void GameObject::processClientMove(Move *, bool replay)
-{
-}
-
-void GameObject::processClient(U32 deltaT)
-{
-}
-
-void GameObject::processServer(U32 deltaT)
+void GameObject::idle(IdleCallPath path)
 {
 }
 
@@ -205,6 +193,10 @@ void GameObject::writeControlState(BitStream *)
 }
 
 void GameObject::readControlState(BitStream *)
+{
+}
+
+void GameObject::controlMoveReplayComplete()
 {
 }
 

@@ -253,7 +253,6 @@ SoccerBallItem::SoccerBallItem(Point pos) : Item(pos, true, 30, 4)
    mObjectTypeMask |= CommandMapVisType;
    mNetFlags.set(Ghostable);
    initialPos = pos;
-   sendHomeTime = 0;
 }
 
 void SoccerBallItem::processArguments(S32 argc, const char **argv)
@@ -277,24 +276,18 @@ void SoccerBallItem::renderItem(Point pos)
    glPopMatrix();
 }
 
-void SoccerBallItem::processServer(U32 deltaT)
+void SoccerBallItem::idle(GameObject::IdleCallPath path)
 {
-   if(sendHomeTime)
+   if(mSendHomeTimer.update(mCurrentMove.time))
+      sendHome();
+   else if(mSendHomeTimer.getCurrent())
    {
-      F32 accelFraction = 1 - (0.98 * deltaT / 1000.0f);
+      F32 accelFraction = 1 - (0.98 * mCurrentMove.time * 0.001f);
 
       mMoveState[ActualState].vel *= accelFraction;
       mMoveState[RenderState].vel *= accelFraction;
-
-      if(sendHomeTime > deltaT)
-         sendHomeTime -= deltaT;
-      else
-      {
-         sendHomeTime = 0;
-         sendHome();
-      }
    }
-   Parent::processServer(deltaT);
+   Parent::idle(path);
 }
 
 void SoccerBallItem::damageObject(DamageInfo *theInfo)
@@ -331,11 +324,11 @@ bool SoccerBallItem::collide(GameObject *hitObject)
    {
       SoccerGoalObject *goal = dynamic_cast<SoccerGoalObject *>(hitObject);
 
-      if(goal && sendHomeTime == 0)
+      if(goal && !mSendHomeTimer.getCurrent())
       {
          SoccerGameType *g = (SoccerGameType *) getGame()->getGameType();
          g->scoreGoal(lastPlayerTouch, goal->getTeamIndex());
-         sendHomeTime = 1500;
+         mSendHomeTimer.reset(1500);
       }
    }
    return true;

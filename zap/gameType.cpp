@@ -53,13 +53,14 @@ void GameType::processArguments(S32 argc, const char **argv)
       mTeamScoreLimit = atoi(argv[1]);
 }
 
-void GameType::processClient(U32 deltaT)
+void GameType::idle(GameObject::IdleCallPath path)
 {
-   mGameTimer.update(deltaT);
-}
-
-void GameType::processServer(U32 deltaT)
-{
+   U32 deltaT = mCurrentMove.time;
+   if(isGhost())
+   {
+      mGameTimer.update(deltaT);
+      return;
+   }
    if(mScoreboardUpdateTimer.update(deltaT))
    {
       mScoreboardUpdateTimer.reset();

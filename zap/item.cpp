@@ -36,7 +36,6 @@ Item::Item(Point p, bool collideable, float radius, float mass) : MoveObject(p, 
 {
    mIsMounted = false;
    mIsCollideable = collideable;
-   mInterpTime = 0;
    mObjectTypeMask = MoveableType | ItemType | CommandMapVisType;
 }
 
@@ -91,7 +90,7 @@ void Item::dismount()
    setMaskBits(MountMask);
 }
 
-void Item::processServer(U32 deltaT)
+void Item::idle(GameObject::IdleCallPath path)
 {
    if(mIsMounted)
    {
@@ -101,62 +100,21 @@ void Item::processServer(U32 deltaT)
       {
          mMoveState[RenderState].pos = mMount->getRenderPos();
          mMoveState[ActualState].pos = mMount->getActualPos();
-
-         updateExtent();
       }
    }
    else
    {
-      float time = deltaT * 0.001f;
+      float time = mCurrentMove.time * 0.001f;
       move(time, ActualState, false);
-      mMoveState[RenderState] = mMoveState[ActualState];
-      setMaskBits(PositionMask);
-      updateExtent();
-   }
-}
-
-void Item::processClient(U32 deltaT)
-{
-   if(mIsMounted)
-   {
-      if(mMount.isValid())
+      if(path == GameObject::ServerIdleMainLoop)
       {
-         mMoveState[RenderState].pos = mMount->getRenderPos();
-         mMoveState[ActualState].pos = mMount->getActualPos();
-
-         updateExtent();
-      }
-   }
-   else
-   {
-      U32 timeUsed = deltaT;
-      if(mInterpTime)
-      {
-         if(mInterpTime < timeUsed)
-         {
-            timeUsed -= mInterpTime;
-            mInterpTime = 0;
-            mMoveState[RenderState] = mMoveState[ActualState];
-         }
-         else
-         {
-            Point totalDelta = mMoveState[ActualState].pos -
-                              mMoveState[RenderState].pos;
-
-            mMoveState[RenderState].pos +=
-                  totalDelta * (timeUsed / F32(mInterpTime));
-
-            mInterpTime -= timeUsed;
-            timeUsed = 0;
-         }
-      }
-      if(timeUsed)
-      {
-         move(timeUsed * 0.001f, ActualState, false);
          mMoveState[RenderState] = mMoveState[ActualState];
+         setMaskBits(PositionMask);
       }
-      updateExtent();
+      else
+         updateInterpolation();
    }
+   updateExtent();
 }
 
 U32 Item::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
@@ -217,12 +175,12 @@ void Item::unpackUpdate(GhostConnection *connection, BitStream *stream)
    {
       if(interpolate)
       {
-         mInterpTime = InterpMS;
-         move((mInterpTime + connection->getOneWayTime()) * 0.001f, ActualState, false);
+         mInterpolating = true;
+         move(connection->getOneWayTime() * 0.001f, ActualState, false);
       }
       else
       {
-         mInterpTime = 0;
+         mInterpolating = false;
          mMoveState[RenderState] = mMoveState[ActualState];
       }
       //processMove(&lastMove, mMoveState[ActualState]);
@@ -238,20 +196,15 @@ PickupItem::PickupItem(Point p, float radius)
    : Item(p, false, radius, 1)
 {
    mIsVisible = true;
-   mRepopDelay = 0;
 }
 
-void PickupItem::processServer(U32 deltaT)
+void PickupItem::idle(GameObject::IdleCallPath path)
 {
-   if(!mIsVisible)
+   Parent::idle(path);
+   if(mRepopTimer.update(mCurrentMove.time))
    {
-      if(deltaT > mRepopDelay)
-      {
-         mIsVisible = true;
-         addToDatabase();
-      }
-      else
-         mRepopDelay -= deltaT;
+      mIsVisible = true;
+      addToDatabase();
    }
 }
 
@@ -261,7 +214,7 @@ bool PickupItem::collide(GameObject *otherObject)
    {  
       if(pickup((Ship *) otherObject))
       {
-         mRepopDelay = getRepopDelay();
+         mRepopTimer.reset(getRepopDelay());
          mIsVisible = false;
          removeFromDatabase();
       }

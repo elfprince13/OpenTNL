@@ -105,8 +105,8 @@ public:
    virtual bool processLevelItem(S32 argc, const char **argv);
    void onAddedToGame(Game *theGame);
    void onGhostAvailable(GhostConnection *theConnection);
-   void processClient(U32 deltaT);
-   void processServer(U32 deltaT);
+
+   void idle(GameObject::IdleCallPath path);
 
    void setTeamScore(S32 teamIndex, S32 newScore);
    virtual void gameOverManGameOver();

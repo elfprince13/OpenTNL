@@ -72,7 +72,8 @@ void Projectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
 
    Rect newExtent(pos,pos);
    setExtent(newExtent);
-   process(connection->getOneWayTime());
+   mCurrentMove.time = connection->getOneWayTime();
+   idle(GameObject::ClientIdleMainRemote);
 
    SFXObject::play(0, pos, velocity);
 }
@@ -119,8 +120,9 @@ void Projectile::handleCollision(GameObject *hitObject, Point collisionPoint)
    }
 }
 
-void Projectile::process(U32 deltaT)
+void Projectile::idle(GameObject::IdleCallPath path)
 {
+   U32 deltaT = mCurrentMove.time;
    if(collided)
       return;
 
@@ -161,12 +163,10 @@ void Projectile::process(U32 deltaT)
 
    Rect newExtent(pos,pos);
    setExtent(newExtent);
-}
 
-void Projectile::processServer(U32 deltaT)
-{
-   process(deltaT);
-   if(alive)
+   if(path == GameObject::ClientIdleMainRemote)
+      liveTime += deltaT;
+   else if(alive)
    {
       if(liveTime <= deltaT)
       {
@@ -177,12 +177,6 @@ void Projectile::processServer(U32 deltaT)
       else
          liveTime -= deltaT;
    }
-}
-
-void Projectile::processClient(U32 deltaT)
-{
-   process(deltaT);
-   liveTime += deltaT;
 }
 
 void Projectile::render()

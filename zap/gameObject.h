@@ -29,7 +29,7 @@
 
 #include "point.h"
 #include "gameConnection.h"
-#include "../tnl/tnlNetObject.h"
+#include "tnlNetObject.h"
 #include "game.h"
 
 namespace Zap
@@ -73,6 +73,8 @@ class GameObject : public NetObject
    Rect extent;
 protected:
    U32 mObjectTypeMask;
+   Move mLastMove; ///< the move for the previous update
+   Move mCurrentMove; ///< The move for the current update
 public:
 
    GameObject();
@@ -103,13 +105,25 @@ public:
    virtual bool getCollisionPoly(Vector<Point> &polyPoints);
    virtual bool getCollisionCircle(U32 stateIndex, Point &point, float &radius);
 
-   virtual void processServerMove(Move *theMove);
-   virtual void processClientMove(Move *theMove, bool replay);
-   virtual void processServer(U32 deltaT);
-   virtual void processClient(U32 deltaT);
+   const Move &getCurrentMove() { return mCurrentMove; }
+   const Move &getLastMove() { return mLastMove; }
+   void setCurrentMove(const Move &theMove) { mCurrentMove = theMove; }
+   void setLastMove(const Move &theMove) { mLastMove = theMove; }
+
+   enum IdleCallPath {
+      ServerIdleMainLoop,
+      ServerIdleControlFromClient,
+      ClientIdleMainRemote,
+      ClientIdleControlMain,
+      ClientIdleControlReplay,
+   };
+
+   virtual void idle(IdleCallPath path);
 
    virtual void writeControlState(BitStream *stream);
    virtual void readControlState(BitStream *stream);
+
+   virtual void controlMoveReplayComplete();
 
    void writeCompressedVelocity(Point &vel, U32 max, BitStream *stream);
    void readCompressedVelocity(Point &vel, U32 max, BitStream *stream);

@@ -57,7 +57,6 @@ Ship::Ship(StringTableEntry playerName, Point p, F32 m) : MoveObject(p, Collisio
       mMoveState[i].angle = 0;
    }
    mHealth = 1.0;
-   interpTime = 0;
    mass = m;
    hasExploded = false;
    updateExtent();
@@ -106,14 +105,14 @@ void Ship::setActualPos(Point p)
 }
 
 // process a move.  This will advance the position of the ship, as well as adjust the velocity and angle.
-void Ship::processMove(Move *theMove, U32 stateIndex)
+void Ship::processMove(U32 stateIndex)
 {
-   U32 msTime = theMove->time;
+   U32 msTime = mCurrentMove.time;
 
    mMoveState[LastProcessState] = mMoveState[stateIndex];
 
-   F32 time = theMove->time * 0.001;
-   Point requestVel(theMove->right - theMove->left, theMove->down - theMove->up);
+   F32 time = mCurrentMove.time * 0.001;
+   Point requestVel(mCurrentMove.right - mCurrentMove.left, mCurrentMove.down - mCurrentMove.up);
    requestVel *= (mTurbo ? TurboMaxVelocity : MaxVelocity);
    F32 len = requestVel.len();
 
@@ -132,109 +131,116 @@ void Ship::processMove(Move *theMove, U32 stateIndex)
    else
       mMoveState[stateIndex].vel = requestVel;
 
-   mMoveState[stateIndex].angle = theMove->angle;
+   mMoveState[stateIndex].angle = mCurrentMove.angle;
    move(time, stateIndex, false);
 }
 
-void Ship::processServerMove(Move *theMove)
+void Ship::processWeaponFire()
 {
-   if(!hasExploded)
-      processMove(theMove, ActualState);
-   else
-      return;
-
-   mMoveState[RenderState] = mMoveState[ActualState];
-   setMaskBits(PositionMask);
-   
-   if(!theMove->isEqualMove(&lastMove))
+   mFireTimer.update(mCurrentMove.time);
+   if(mCurrentMove.fire)
    {
-      lastMove = *theMove;
-      setMaskBits(MoveMask);
-   }
-
-   mFireTimer.update(theMove->time);
-   if(theMove->fire)
-   {
-      if(mFireTimer.getCurrent() == 0)
+      if(mFireTimer.getCurrent() == 0 && mEnergy >= EnergyShootDrain)
       {
-         mEnergy -= 0.5f;
+         mEnergy -= EnergyShootDrain;
          mFireTimer.reset(FireDelay);
-         Point dir(sin(mMoveState[ActualState].angle), cos(mMoveState[ActualState].angle) );
-         Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir);
-         Projectile *proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this);
-         proj->addToGame(getGame());
+
+         if(!isGhost())
+         {
+            Point dir(sin(mMoveState[ActualState].angle), cos(mMoveState[ActualState].angle) );
+            Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir);
+            Projectile *proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this);
+            proj->addToGame(getGame());
+         }
       }
    }
-   bool shield = mShield, turbo = mTurbo;
-   mShield = theMove->shield;
-   mTurbo  = theMove->boost;
-   burnEnergy(theMove->time);
-
-   if(mTurbo != turbo || mShield != shield)
-      setMaskBits(PowersMask);
-
-   updateExtent();
 }
 
-void Ship::processClientMove(Move *theMove, bool replay)
+void Ship::controlMoveReplayComplete()
 {
-   if(!hasExploded)
-      processMove(theMove, ActualState);
+   Point delta = mMoveState[ActualState].pos - mMoveState[RenderState].pos;
+   F32 deltaLen = delta.len();
+
+   if(deltaLen > MaxControlObjectInterpDistance)
+   {
+      for(S32 i=0; i<TrailCount; i++)
+         mTrail[i].reset();
+
+      mMoveState[RenderState].pos = mMoveState[ActualState].pos;
+      mMoveState[RenderState].vel = mMoveState[ActualState].vel;
+      mInterpolating = false;
+   }
+   else if(deltaLen <= 0.5)
+   {
+      mMoveState[RenderState].pos = mMoveState[ActualState].pos;
+      mMoveState[RenderState].vel = mMoveState[ActualState].vel;
+      mInterpolating = false;
+   }
    else
+      mInterpolating = true;
+}
+
+void Ship::idle(GameObject::IdleCallPath path)
+{
+   if(hasExploded)
       return;
 
-   updateInterpolation(theMove->time);
-   lastMove = *theMove;
+   if(path == GameObject::ServerIdleMainLoop && isControlled())
+   {
+      processMove(RenderState);
+      setMaskBits(PositionMask);
+   }
+   else
+   {
+      processMove(ActualState);
+      if(path == GameObject::ServerIdleMainLoop || 
+         path == GameObject::ServerIdleControlFromClient)
+      {
+         mMoveState[RenderState] = mMoveState[ActualState];
+         setMaskBits(PositionMask);
 
-   mShield = theMove->shield;
-   mTurbo = theMove->boost;
-   burnEnergy(theMove->time);
+      }
+      else if(path == GameObject::ClientIdleControlMain ||
+              path == GameObject::ClientIdleMainRemote)
+      {
+         updateInterpolation();
+      }
+   }
+   updateExtent();
 
-   SFXObject::setListenerParams(mMoveState[RenderState].pos, mMoveState[RenderState].vel);
-   if(!replay)
+   if(path == GameObject::ServerIdleControlFromClient && 
+         !mCurrentMove.isEqualMove(&mLastMove))
+      setMaskBits(MoveMask);
+
+   mLastMove = mCurrentMove;
+
+   if(path == GameObject::ServerIdleControlFromClient ||
+      path == GameObject::ClientIdleControlMain ||
+      path == GameObject::ClientIdleControlReplay)
+   {
+      processWeaponFire();
+      processEnergy();
+   }
+
+   if(path == GameObject::ClientIdleControlMain ||
+      path == GameObject::ClientIdleMainRemote)
    {
       // Emit some particles
-      emitMovementSparks(theMove->time);
+      emitMovementSparks();
       for(U32 i=0; i<TrailCount; i++)
-         mTrail[i].tick(theMove->time);
+         mTrail[i].tick(mCurrentMove.time);
       updateTurboNoise();
    }
 }
 
-void Ship::processServer(U32 deltaT)
+void Ship::processEnergy()
 {
-   lastMove.time = deltaT;
-   if(isControlled())
-      processMove(&lastMove, RenderState);
-   else
-   {
-      processMove(&lastMove, ActualState);
-      mMoveState[RenderState] = mMoveState[ActualState];
-      setMaskBits(PositionMask);
-   }
-   updateExtent();
-}
+   bool shield = mShield, turbo = mTurbo;
 
-void Ship::processClient(U32 deltaT)
-{
-   lastMove.time = deltaT;
-   processMove(&lastMove, ActualState);
-   updateInterpolation(deltaT);
-   // Emit some particles
-   emitMovementSparks(deltaT);
+   mShield = mCurrentMove.shield;
+   mTurbo  = mCurrentMove.boost;
 
-   for(U32 i=0; i<TrailCount; i++)
-      mTrail[i].tick(deltaT);
-
-   // Update the turbo noise
-   updateTurboNoise();
-}
-
-void Ship::burnEnergy( U32 dT )
-{
-//   if(isGhost()) return;
-
-   F32 scaleFactor = dT * 0.001;
+   F32 scaleFactor = mCurrentMove.time * 0.001;
 
    // Update things based on available energy...
 
@@ -273,6 +279,9 @@ void Ship::burnEnergy( U32 dT )
 
    if(mEnergy >= EnergyMax)
       mEnergy = EnergyMax;
+
+   if(mTurbo != turbo || mShield != shield)
+      setMaskBits(PowersMask);
 }
 
 void Ship::damageObject(DamageInfo *theInfo)
@@ -281,9 +290,9 @@ void Ship::damageObject(DamageInfo *theInfo)
       return;
 
    // Factor in shields
-   if(mShield && mEnergy >= 20.f)
+   if(mShield && mEnergy >= EnergyShieldHitDrain)
    {
-      mEnergy -= 20.f;
+      mEnergy -= EnergyShieldHitDrain;
       return;
    }
 
@@ -319,67 +328,6 @@ void Ship::updateTurboNoise()
 }
 
 
-void Ship::updateInterpolation(U32 deltaT)
-{
-   mMoveState[RenderState].angle = mMoveState[ActualState].angle;
-
-   if(interpTime)
-   {
-      // first step is to constrain the render velocity to
-      // the vector of difference between the current position and
-      // the actual position.
-      // we can also clamp to zero, the actual velocity, or the
-      // render velocity, depending on which one is best.
-
-      Point deltaP = mMoveState[ActualState].pos - mMoveState[RenderState].pos;
-      F32 distance = deltaP.len();
-
-      if(!distance)
-         goto interpDone;
-
-      deltaP.normalize();
-      F32 vel = deltaP.dot(mMoveState[RenderState].vel);
-      F32 avel = deltaP.dot(mMoveState[ActualState].vel);
-
-      if(avel > vel)
-         vel = avel;
-      if(vel < 0)
-         vel = 0;
-
-      bool hit = true;
-      float time = deltaT * 0.001;
-      if(vel * time > distance)
-         goto interpDone;
-
-      float requestVel = distance / time;
-      if(requestVel > InterpMaxVelocity)
-      {
-         hit = false;
-         requestVel = InterpMaxVelocity;
-      }
-      F32 a = (requestVel - vel) / time;
-      if(a > InterpAcceleration)
-      {
-         a = InterpAcceleration;
-         hit = false;
-      }
-
-      if(hit)
-         goto interpDone;
-
-      vel += a * time;
-      mMoveState[RenderState].vel = deltaP * vel;
-      mMoveState[RenderState].pos += mMoveState[RenderState].vel * time;
-   }
-   else
-   {
-interpDone:
-      interpTime = 0;
-      mMoveState[RenderState] = mMoveState[ActualState];
-   }
-   updateExtent();
-}
-
 void Ship::writeControlState(BitStream *stream)
 {
    stream->write(mMoveState[ActualState].pos.x);
@@ -389,6 +337,7 @@ void Ship::writeControlState(BitStream *stream)
    stream->write(mMoveState[ActualState].vel.y);
    stream->writeRangedU32(mEnergy, 0, EnergyMax);
    stream->writeFlag(mCooldown);
+   stream->writeRangedU32(mFireTimer.getCurrent(), 0, FireDelay);
 }
 
 void Ship::readControlState(BitStream *stream)
@@ -400,17 +349,9 @@ void Ship::readControlState(BitStream *stream)
    stream->read(&mMoveState[ActualState].vel.y);
    mEnergy = stream->readRangedU32(0, EnergyMax);
    mCooldown = stream->readFlag();
+   U32 fireTimer = stream->readRangedU32(0, FireDelay);
+   mFireTimer.reset(fireTimer);
    
-   Point delta = mMoveState[ActualState].pos - mMoveState[RenderState].pos;
-   if(delta.len() > MaxControlObjectInterpDistance)
-   {
-      for(S32 i=0; i<TrailCount; i++)
-         mTrail[i].reset();
-
-      interpTime = 0;
-   }
-   else
-      interpTime = 1;
    logprintf("got a CU %g %g.", mMoveState[ActualState].pos.x, mMoveState[ActualState].pos.y);
 }
 
@@ -462,7 +403,7 @@ U32 Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *str
       }
       if(stream->writeFlag(updateMask & MoveMask))
       {
-         lastMove.pack(stream, NULL);
+         mCurrentMove.pack(stream, NULL);
       }
       if(stream->writeFlag(updateMask & PowersMask))
       {
@@ -513,8 +454,8 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
    }
    if(stream->readFlag())
    {
-      lastMove = Move();
-      lastMove.unpack(stream);
+      mCurrentMove = Move();
+      mCurrentMove.unpack(stream);
    }
    if(stream->readFlag())
    {
@@ -522,22 +463,22 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
       mShield = stream->readFlag();
    }
 
-   mMoveState[ActualState].angle = lastMove.angle;
+   mMoveState[ActualState].angle = mCurrentMove.angle;
 
    if(positionChanged)
    {
-      lastMove.time = connection->getOneWayTime();
-      processMove(&lastMove, ActualState);
+      mCurrentMove.time = connection->getOneWayTime();
+      processMove(ActualState);
 
       if(interpolate)
       {
-         interpTime = InterpMS;
+         mInterpolating = true;
          // if the actual velocity is in the direction of the actual position
          // then we'll set it into the render velocity
       }
       else
       {
-         interpTime = 0;
+         mInterpolating = false;
          mMoveState[RenderState] = mMoveState[ActualState];
 
          for(S32 i=0; i<TrailCount; i++)
@@ -638,8 +579,10 @@ void Ship::emitShipExplosion(Point pos)
    SparkManager::emitBurst(pos, Point(b,d), Color(1,1,0), Color(0,0.75,0));
 }
 
-void Ship::emitMovementSparks(U32 deltaT)
+void Ship::emitMovementSparks()
 {
+   U32 deltaT = mCurrentMove.time;
+
    // Do nothing if we're under 0.1 vel
    if(hasExploded || mMoveState[ActualState].vel.len() < 0.1)
       return;
@@ -731,7 +674,7 @@ void Ship::emitMovementSparks(U32 deltaT)
    }
 
    // Finally, do some particles
-   Point velDir(lastMove.right - lastMove.left, lastMove.down - lastMove.up);
+   Point velDir(mCurrentMove.right - mCurrentMove.left, mCurrentMove.down - mCurrentMove.up);
    F32 len = velDir.len();
 
    if(len > 0)
@@ -825,7 +768,7 @@ void Ship::render()
 //   }
 
    // draw thrusters
-   Point velDir(lastMove.right - lastMove.left, lastMove.down - lastMove.up);
+   Point velDir(mCurrentMove.right - mCurrentMove.left, mCurrentMove.down - mCurrentMove.up);
    F32 len = velDir.len();
    F32 thrusts[4];
    for(U32 i = 0; i < 4; i++)

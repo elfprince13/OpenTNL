@@ -41,6 +41,7 @@ MoveObject::MoveObject(Point pos, float radius, float mass)
    }
    mRadius = radius;
    mMass = mass;
+   mInterpolating = false;
 }
 
 static const float MoveObjectCollisionElasticity = 1.7f;
@@ -353,6 +354,67 @@ void MoveObject::computeCollisionResponseMoveObject(U32 stateIndex, MoveObject *
       SFXObject::play(SFXBounceObject, shipHit->mMoveState[stateIndex].pos, Point());
 }
 
+void MoveObject::updateInterpolation()
+{
+   U32 deltaT = mCurrentMove.time;
+   {
+      mMoveState[RenderState].angle = mMoveState[ActualState].angle;
 
+      if(mInterpolating)
+      {
+         // first step is to constrain the render velocity to
+         // the vector of difference between the current position and
+         // the actual position.
+         // we can also clamp to zero, the actual velocity, or the
+         // render velocity, depending on which one is best.
+
+         Point deltaP = mMoveState[ActualState].pos - mMoveState[RenderState].pos;
+         F32 distance = deltaP.len();
+
+         if(!distance)
+            goto interpDone;
+
+         deltaP.normalize();
+         F32 vel = deltaP.dot(mMoveState[RenderState].vel);
+         F32 avel = deltaP.dot(mMoveState[ActualState].vel);
+
+         if(avel > vel)
+            vel = avel;
+         if(vel < 0)
+            vel = 0;
+
+         bool hit = true;
+         float time = deltaT * 0.001;
+         if(vel * time > distance)
+            goto interpDone;
+
+         float requestVel = distance / time;
+         if(requestVel > InterpMaxVelocity)
+         {
+            hit = false;
+            requestVel = InterpMaxVelocity;
+         }
+         F32 a = (requestVel - vel) / time;
+         if(a > InterpAcceleration)
+         {
+            a = InterpAcceleration;
+            hit = false;
+         }
+
+         if(hit)
+            goto interpDone;
+
+         vel += a * time;
+         mMoveState[RenderState].vel = deltaP * vel;
+         mMoveState[RenderState].pos += mMoveState[RenderState].vel * time;
+      }
+      else
+      {
+   interpDone:
+         mInterpolating = false;
+         mMoveState[RenderState] = mMoveState[ActualState];
+      }
+   }
+}
 
 };

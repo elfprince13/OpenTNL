@@ -47,9 +47,7 @@ public:
       Acceleration = 2500, // points per second per second
       TurboMaxVelocity = 700, // points per second
       TurboAcceleration = 5000, // points per second per second
-      InterpMaxVelocity = 900, // velocity to use to interpolate to proper position
-      InterpAcceleration = 1800,
-      InterpMS = 15, // default interpolation time to new position
+
       CollisionRadius = 24,
       VisibilityRadius = 30,
       KillDeleteDelay = 1500,
@@ -61,6 +59,8 @@ public:
       EnergyRechargeRate = 6000, // How many percent/second
       EnergyTurboDrain = 15000,
       EnergyShieldDrain = 15000,
+      EnergyShieldHitDrain = 20000,
+      EnergyShootDrain = 500,
       EnergyCooldownThreshold = 15000,
    };
 
@@ -74,7 +74,6 @@ public:
       PowersMask        = BIT(6),
    };
 
-   U32 interpTime;
    Timer mFireTimer;
    F32 mHealth;
    S32 mEnergy;
@@ -90,8 +89,6 @@ public:
    F32 mass; // mass of ship
    bool hasExploded;
 
-   Move lastMove; // last client input move for this ship
-
    Vector<Point> posSegments;
    Vector<SafePtr<Item> > mMountedItems;
 
@@ -101,23 +98,23 @@ public:
    F32 getHealth() { return mHealth; }
 
    void onGhostRemove();
+
+
+   void idle(IdleCallPath path);
+
+   void processMove(U32 stateIndex);
+   void processWeaponFire();
+   void processEnergy();
    void updateTurboNoise();
-   void burnEnergy(U32 dT);
-   void emitMovementSparks(U32 deltaT);
+   void emitMovementSparks();
+
+   void controlMoveReplayComplete();
+
    void emitShipExplosion(Point pos);
-
-   void processServerMove(Move *theMove);
-   void processClientMove(Move *theMove, bool replay);
-   void processServer(U32 deltaT);
-   void processClient(U32 deltaT);
-   void updateInterpolation(U32 deltaT);
-
    void setActualPos(Point p);
 
    virtual void damageObject(DamageInfo *theInfo);
    void kill(DamageInfo *theInfo);
-
-   void processMove(Move *theMove, U32 stateIndex);
 
    void writeControlState(BitStream *stream);
    void readControlState(BitStream *stream);

@@ -281,8 +281,12 @@ void ServerGame::idle(U32 timeDelta)
    Game::checkConnectionToMaster(timeDelta);
    for(S32 i = 0; i < mGameObjects.size(); i++)
    {
-      mGameObjects[i]->processServer(timeDelta);
+      Move thisMove = mGameObjects[i]->getCurrentMove();
+      thisMove.time = timeDelta;
+      mGameObjects[i]->setCurrentMove(thisMove);
+      mGameObjects[i]->idle(GameObject::ServerIdleMainLoop);
    }
+
    processDeleteList(timeDelta);
    mNetInterface->processConnections();
 
@@ -369,19 +373,31 @@ void ClientGame::idle(U32 timeDelta)
    if(mConnectionToServer.isValid())
    {
       mConnectionToServer->addPendingMove(theMove);
+      GameObject *controlObject = mConnectionToServer->getControlObject();
 
       theMove->prepare();
 
       for(S32 i = 0; i < mGameObjects.size(); i++)
       {
-         if(mGameObjects[i] == mConnectionToServer->getControlObject())
-            mGameObjects[i]->processClientMove(theMove, false);
+         if(mGameObjects[i] == controlObject)
+         {
+            mGameObjects[i]->setCurrentMove(*theMove);
+            mGameObjects[i]->idle(GameObject::ClientIdleControlMain);
+         }
          else
-            mGameObjects[i]->processClient(timeDelta);
+         {
+            Move m = mGameObjects[i]->getCurrentMove();
+            m.time = timeDelta;
+            mGameObjects[i]->setCurrentMove(m);
+            mGameObjects[i]->idle(GameObject::ClientIdleMainRemote);
+         }
       }
+
+      if(controlObject)
+         SFXObject::setListenerParams(controlObject->getRenderPos(),controlObject->getRenderVel());   
    }
    processDeleteList(timeDelta);
-   SparkManager::tick((F32)timeDelta / 1000.f);
+   SparkManager::tick((F32)timeDelta * 0.001f);
    SFXObject::process();
 
    mNetInterface->processConnections();

@@ -81,10 +81,11 @@ public:
       glEnd();
    }
 
-   void processClient(U32 deltaT)
+   void idle(GameObject::IdleCallPath path)
    {
-      Parent::processClient(deltaT);
-      spin += 50.f * (F32)deltaT / 1000.f;
+      Parent::idle(path);
+      if(path == GameObject::ClientIdleMainRemote)
+         spin += 50.f * (F32)mCurrentMove.time * 0.001f;
    }
 
    void renderItem(Point pos)

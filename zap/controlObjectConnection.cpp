@@ -150,7 +150,10 @@ void ControlObjectConnection::readPacket(BitStream *bstream)
          // process the move, including crediting time to the client
          // and all that joy.
          if(controlObject.isValid())
-            controlObject->processServerMove(&theMove);
+         {
+            controlObject->setCurrentMove(theMove);
+            controlObject->idle(GameObject::ServerIdleControlFromClient);
+         }
          firstMoveIndex++;
       }
    }
@@ -174,8 +177,10 @@ void ControlObjectConnection::readPacket(BitStream *bstream)
             {
                Move theMove = pendingMoves[i];
                theMove.prepare();
-               controlObject->processClientMove(&theMove, true);
+               controlObject->setCurrentMove(theMove);
+               controlObject->idle(GameObject::ClientIdleControlReplay);
             }
+            controlObject->controlMoveReplayComplete();
          }
          else
             controlObject = NULL;
