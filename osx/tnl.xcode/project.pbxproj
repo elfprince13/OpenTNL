@@ -178,6 +178,7 @@
 		};
 		29B97323FDCFA39411CA2CEA = {
 			children = (
+				DB9525CF0636109800B8795E,
 				6656DD9B0635C8EF00E30126,
 				6692C11906247CF900D5ADFE,
 				1058C7A0FEA54F0111CA2CBB,
@@ -457,6 +458,7 @@
 		};
 		6649E0EE05FD022100B3DD8B = {
 			children = (
+				DB9525E3063610C200B8795E,
 				66BA0CE005FD17F600D882FA,
 				66BA0CE105FD17F600D882FA,
 				66BA0CE205FD17F600D882FA,
@@ -1798,7 +1800,7 @@
 				HEADER_SEARCH_PATHS = "../glut ../openal";
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "-lobjc";
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = ZAP;
 				SECTORDER_FLAGS = "";
@@ -2282,6 +2284,7 @@
 				6692C15F06247D2500D5ADFE,
 				6692C16106247D2700D5ADFE,
 				6656DD9C0635C8EF00E30126,
+				DB9525D00636109800B8795E,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3434,6 +3437,7 @@
 				66BA0CE505FD17F600D882FA,
 				66BA0CE605FD17F600D882FA,
 				66BA0CE705FD17F600D882FA,
+				DB9525E4063610C200B8795E,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3938,6 +3942,7 @@
 				6656DD850635C66F00E30126,
 				66BA0CF605FD182100D882FA,
 				8D11072F0486CEB800E47090,
+				DB9525D10636109800B8795E,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3963,6 +3968,51 @@
 			path = TNLTest.app;
 			refType = 3;
 			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+//8D0
+//8D1
+//8D2
+//8D3
+//8D4
+//DB0
+//DB1
+//DB2
+//DB3
+//DB4
+		DB9525CF0636109800B8795E = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = OpenGL.framework;
+			path = /System/Library/Frameworks/OpenGL.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		DB9525D00636109800B8795E = {
+			fileRef = DB9525CF0636109800B8795E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		DB9525D10636109800B8795E = {
+			fileRef = DB9525CF0636109800B8795E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		DB9525E3063610C200B8795E = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = certificate.cpp;
+			path = ../tnl/certificate.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		DB9525E4063610C200B8795E = {
+			fileRef = DB9525E3063610C200B8795E;
+			isa = PBXBuildFile;
+			settings = {
+			};
 		};
 	};
 	rootObject = 29B97313FDCFA39411CA2CEA;
