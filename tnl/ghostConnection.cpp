@@ -341,7 +341,7 @@ void GhostConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
    if(!doesGhostFrom())
       return;
    
-   if(!bstream->writeFlag(mGhosting))
+   if(!bstream->writeFlag(mGhosting && mScopeObject.isValid()))
       return;
       
    // fill a packet (or two) with ghosting data

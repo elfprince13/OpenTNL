@@ -134,6 +134,18 @@
 			<File
 				RelativePath="..\exe\level5.txt">
 			</File>
+			<File
+				RelativePath="..\exe\level6.txt">
+			</File>
+			<File
+				RelativePath="..\exe\level7.txt">
+			</File>
+			<File
+				RelativePath="..\exe\level8.txt">
+			</File>
+			<File
+				RelativePath="..\exe\level9.txt">
+			</File>
 		</Filter>
 		<Filter
 			Name="UI"

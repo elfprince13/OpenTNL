@@ -321,13 +321,13 @@ void HuntersFlagItem::setActualVel(Point v)
 
 bool HuntersFlagItem::collide(GameObject *hitObject)
 {
-   if(isGhost() || mIsMounted || !mIsCollideable)
+   if(mIsMounted || !mIsCollideable)
       return false;
 
    if(hitObject->getObjectTypeMask() & BarrierType)
       return true;
 
-   if(!(hitObject->getObjectTypeMask() & ShipType))
+   if(isGhost() || !(hitObject->getObjectTypeMask() & ShipType))
       return false;
 
    Ship *theShip = static_cast<Ship *>(hitObject);
