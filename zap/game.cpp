@@ -196,12 +196,6 @@ void ServerGame::processLevelLoadLine(int argc, const char **argv)
    }
 }
 
-void ServerGame::controlObjectForClientKilled(GameConnection *theConnection)
-{
-   if(mGameType.isValid())
-      mGameType->controlObjectForClientKilled(theConnection);
-}
-
 void ServerGame::addClient(GameConnection *theConnection)
 {
    if(mGameType.isValid())

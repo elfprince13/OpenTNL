@@ -100,7 +100,7 @@ void Projectile::handleCollision(GameObject *hitObject, Point collisionPoint)
       theInfo.collisionPoint = collisionPoint;
       theInfo.damageAmount = 1;
       theInfo.damageType = 0;
-      theInfo.damagingObject = this;
+      theInfo.damagingObject = mShooter;
       theInfo.impulseVector = velocity;
 
       hitObject->damageObject(&theInfo);

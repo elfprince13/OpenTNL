@@ -62,13 +62,12 @@ class Ship : public MoveObject
    U32 interpTime;
    U32 lastFireTime;
    F32 mHealth;
+   StringTableEntry mPlayerName;
 
    Color color; // color of the ship
    F32 mass; // mass of ship
    U32 timeUntilRemove; // when the ship is killed, it sticks around for a while to make sure that the kill message is propagated
    bool hasExploded;
-
-   StringTableEntry mPlayerName;
 
    Move lastMove; // last client input move for this ship
 
@@ -78,7 +77,6 @@ class Ship : public MoveObject
    void render();
    Ship(StringTableEntry playerName="", Point p = Point(0,0), Color c = Color(), F32 m = 1.0);
 
-   void kill();
    void emitMovementSparks();
    void emitShipExplosion(Point pos);
 
@@ -90,6 +88,7 @@ class Ship : public MoveObject
    void setActualPos(Point p);
 
    virtual void damageObject(DamageInfo *theInfo);
+   void kill(DamageInfo *theInfo);
 
    void processMove(Move *theMove, U32 stateIndex);
 

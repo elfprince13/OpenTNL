@@ -76,7 +76,9 @@ public:
    virtual void serverAddClient(GameConnection *theClient);
    virtual void serverRemoveClient(GameConnection *theClient);
 
-   virtual void controlObjectForClientKilled(GameConnection *theClient);
+   virtual void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
+   virtual void controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject);
+
    virtual void spawnShip(GameConnection *theClient);
 
    virtual void addClientGameMenuOptions(Vector<const char *> &menuOptions);

@@ -143,6 +143,8 @@ void GameType::serverAddClient(GameConnection *theClient)
    cref.name = theClient->playerName;
 
    cref.clientConnection = theClient;
+   cref.score = 0;
+
    countTeamPlayers();
 
    U32 minPlayers = mTeams[0].numPlayers;
@@ -164,9 +166,14 @@ void GameType::serverAddClient(GameConnection *theClient)
    spawnShip(theClient);
 }
 
-void GameType::controlObjectForClientKilled(GameConnection *theClient)
+void GameType::controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject)
 {
    spawnShip(theClient);
+}
+
+void GameType::controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject)
+{
+
 }
 
 void GameType::addClientGameMenuOptions(Vector<const char *> &menuOptions)
@@ -179,6 +186,27 @@ void GameType::processClientGameMenuOption(U32 index)
 {
    if(index == 0)
       c2sChangeTeams();
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sChangeTeams, (),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
+{
+   if(mTeams.size() <= 1)
+      return;
+
+   GameConnection *source = (GameConnection *) NetObject::getRPCSourceConnection();
+   S32 clientIndex = findClientIndexByConnection(source);
+
+   // destroy the old ship
+   GameObject *co = source->getControlObject();
+   controlObjectForClientRemoved(source, co);
+   if(co)
+      getGame()->deleteObject(co, 0);
+
+   U32 newTeamId = (mClientList[clientIndex].teamId + 1) % mTeams.size();
+   mClientList[clientIndex].teamId = newTeamId;
+   s2cClientJoinedTeam(mClientList[clientIndex].clientId, newTeamId);
+   spawnShip(source);
 }
 
 TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddClient, (U32 id, StringTableEntry name, bool isMyClient),
@@ -203,8 +231,9 @@ void GameType::serverRemoveClient(GameConnection *theClient)
    mClientList.erase(clientIndex);
 
    GameObject *theControlObject = theClient->getControlObject();
+   controlObjectForClientRemoved(theClient, theControlObject);
    if(theControlObject)
-      delete theControlObject;
+      getGame()->deleteObject(theControlObject, 0);
 
    s2cRemoveClient(theClient->mClientId);
 }
@@ -239,26 +268,6 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cClientJoinedTeam, (U32 clientId, U32 te
    S32 clientIndex = findClientIndexById(clientId);
    mClientList[clientIndex].teamId = teamIndex;
    gGameUserInterface.displayMessage(Color(0.6f, 0.6f, 0.8f), "%s joined team %s.", mClientList[clientIndex].name.getString(), mTeams[teamIndex].name.getString());
-}
-
-TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sChangeTeams, (),
-   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhostParent, 0)
-{
-   if(mTeams.size() <= 1)
-      return;
-
-   GameConnection *source = (GameConnection *) NetObject::getRPCSourceConnection();
-   S32 clientIndex = findClientIndexByConnection(source);
-
-   // destroy the old ship
-   GameObject *co = source->getControlObject();
-   if(co)
-      getGame()->deleteObject(co, 0);
-
-   U32 newTeamId = (mClientList[clientIndex].teamId + 1) % mTeams.size();
-   mClientList[clientIndex].teamId = newTeamId;
-   s2cClientJoinedTeam(mClientList[clientIndex].clientId, newTeamId);
-   spawnShip(source);
 }
 
 void GameType::onGhostAvailable(GhostConnection *theConnection)

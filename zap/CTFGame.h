@@ -42,6 +42,9 @@ public:
    void shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag);
    void renderInterfaceOverlay(bool scoreboardVisible);
    void updateClientScoreboard(S32 clientIndex);
+   void controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject);
+   void controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject);
+   U32 checkFlagDrop(GameObject *theObject);
 
    enum {
       MaxPing = 999,
@@ -54,9 +57,11 @@ public:
       CTFMsgReturnFlag,
       CTFMsgCaptureFlag,
       CTFMsgTakeFlag,
+      CTFMsgDropFlag,
    };
 
    TNL_DECLARE_RPC(s2cCTFMessage, (U32 messageIndex, U32 clientId, U32 teamIndex));
+   TNL_DECLARE_RPC(s2cKillMessage, (StringTableEntry victim, StringTableEntry killer));
    TNL_DECLARE_RPC(s2cScoreboardUpdate, (const Vector<RangedU32<0, MaxPing> > &pingTimes, const Vector<Int<9> > &scores));
    TNL_DECLARE_CLASS(CTFGameType);
 };

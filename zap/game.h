@@ -153,7 +153,6 @@ public:
    void removeClient(GameConnection *theConnection);
    ServerGame(const Address &theBindAddress, U32 maxPlayers, const char *hostName);
 
-   void controlObjectForClientKilled(GameConnection *theConnection);
    void loadLevel(const char *fileName);
    void processLevelLoadLine(int argc, const char **argv);
    bool isServer() { return true; }

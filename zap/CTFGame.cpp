@@ -195,6 +195,7 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
       {
          s2cCTFMessage(CTFMsgReturnFlag, cl.clientId, theFlag->getTeamIndex());
          theFlag->sendHome();
+         cl.score += 2;
       }
       else
       {
@@ -211,6 +212,7 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
                // score the flag for the client's team...
                mountedFlag->dismount();
                mountedFlag->sendHome();
+               cl.score += 5;
             }
          }
       }
@@ -222,11 +224,64 @@ void CTFGameType::shipTouchFlag(Ship *theShip, CTFFlagItem *theFlag)
    }
 }
 
+U32 CTFGameType::checkFlagDrop(GameObject *theObject)
+{
+   Ship *theShip = dynamic_cast<Ship *>(theObject);
+   if(!theShip)
+      return 0;
+
+   GameConnection *controlConnection = theShip->getControllingClient();
+   S32 clientIndex = findClientIndexByConnection(controlConnection);
+
+   if(clientIndex == -1)
+      return 0;
+
+   ClientRef &cl = mClientList[clientIndex];
+
+   U32 flagCount = 0;
+   // check if this client has an enemy flag mounted
+   for(S32 i = 0; i < theShip->mMountedItems.size();)
+   {
+      Item *theItem = theShip->mMountedItems[i];
+      CTFFlagItem *mountedFlag = dynamic_cast<CTFFlagItem *>(theItem);
+      if(mountedFlag)
+      {
+         s2cCTFMessage(CTFMsgDropFlag, cl.clientId, mountedFlag->getTeamIndex());
+         mountedFlag->dismount();
+         flagCount++;
+      }
+      else
+         i++;
+   }
+   return flagCount;
+}
+
+void CTFGameType::controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject)
+{
+   GameConnection *killer = killerObject ? killerObject->getControllingClient() : NULL;
+   S32 killerIndex = findClientIndexByConnection(killer);
+   S32 clientIndex = findClientIndexByConnection(theClient);
+
+   if(killerIndex != -1)
+   {
+      mClientList[killerIndex].score++;
+      s2cKillMessage(mClientList[clientIndex].name, mClientList[killerIndex].name);
+   }
+   checkFlagDrop(clientObject);
+   spawnShip(theClient);
+}
+
+void CTFGameType::controlObjectForClientRemoved(GameConnection *theClient, GameObject *clientObject)
+{
+   checkFlagDrop(clientObject);
+}
+
 static const char *CTFMessages[] = 
 {
   "%s returned the %s flag.",
   "%s captured the %s flag!",
   "%s took the %s flag!",
+  "%s dropped the %s flag!",
 };
 
 static U32 CTFFlagSounds[] = 
@@ -234,6 +289,7 @@ static U32 CTFFlagSounds[] =
    SFXFlagReturn,
    SFXFlagCapture,
    SFXFlagSnatch,
+   SFXFlagDrop,
 };
 
 TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cCTFMessage, (U32 messageIndex, U32 clientId, U32 teamIndex),
@@ -246,6 +302,13 @@ TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cCTFMessage, (U32 messageIndex, U32 c
                mClientList[clientIndex].name.getString(),
                mTeams[teamIndex].name.getString());
    SFXObject::play(CTFFlagSounds[messageIndex]);
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(CTFGameType, s2cKillMessage, (StringTableEntry victim, StringTableEntry killer),
+   NetClassGroupGameMask, RPCGuaranteedOrdered, RPCToGhost, 0)
+{
+   gGameUserInterface.displayMessage(Color(1.0f, 1.0f, 0.8f), 
+            "%s zapped %s", killer.getString(), victim.getString());
 }
 
 TNL_IMPLEMENT_NETOBJECT(CTFFlagItem);

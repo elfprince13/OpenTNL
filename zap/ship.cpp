@@ -34,6 +34,7 @@
 #include "sfx.h"
 #include "UI.h"
 #include "UIMenus.h"
+#include "gameType.h"
 
 #include <stdio.h>
 
@@ -153,7 +154,7 @@ void Ship::damageObject(DamageInfo *theInfo)
    if(mHealth <= 0)
    {
       mHealth = 0;
-      kill();
+      kill(theInfo);
    }
 }
 
@@ -443,7 +444,7 @@ F32 getAngleDiff(F32 a, F32 b)
    }
 }
 
-void Ship::kill()
+void Ship::kill(DamageInfo *theInfo)
 {
    if(isGhost())
       return;
@@ -456,7 +457,9 @@ void Ship::kill()
 
    if(controllingClient)
    {
-      gServerGame->controlObjectForClientKilled(controllingClient);
+      GameType *gt = getGame()->getGameType();
+      if(gt)
+         gt->controlObjectForClientKilled(controllingClient, this, theInfo->damagingObject);
    }
 }
 
@@ -577,8 +580,13 @@ void Ship::render()
       sprintf(buff, "%s", mPlayerName.getString());
 
       // Make it a nice pastel
-      glColor3f(color.r*1.2,color.g*1.2,color.b*1.2);
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glColor4f(1,1,1,0.55);
+      //glColor3f(color.r*1.2,color.g*1.2,color.b*1.2);
       UserInterface::drawString( UserInterface::getStringWidth(14, buff) * -0.5, 30, 14, buff );
+      glDisable(GL_BLEND);
+      glBlendFunc(GL_ONE, GL_ZERO);
    }
    
    F32 alpha = 1.0;
