@@ -29,7 +29,14 @@ extern "C" {
  #define ALCAPIENTRY __cdecl
 #endif
 
-
+// JMQ: hack for linux.  we really shouldn't be using the creative
+// headers with the linux lib.
+#if defined(__linux)
+#undef ALCAPIENTRY
+#define ALCAPIENTRY
+typedef ALCvoid ALCdevice;
+typedef ALCvoid ALCcontext;
+#endif
 
 #ifndef ALC_NO_PROTOTYPES
 

@@ -4,6 +4,13 @@
 #define ALUTAPI
 #define ALUTAPIENTRY __cdecl
 
+#if defined(__linux)
+#undef ALUTAPIENTRY
+#define ALUTAPIENTRY
+typedef ALCvoid ALCdevice;
+typedef ALCvoid ALCcontext;
+#endif
+
 #include "al.h"
 #include "alu.h"
 

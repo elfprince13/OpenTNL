@@ -45,6 +45,15 @@ extern "C" {
  #define AL_CALLBACK
 #endif
 
+// JMQ: hack for linux.  we really shouldn't be using the creative
+// headers with the linux lib.
+#if defined(__linux)
+#undef ALAPIENTRY
+#define ALAPIENTRY
+typedef ALCvoid ALCdevice;
+typedef ALCvoid ALCcontext;
+#endif
+
 #define OPENAL
 
 #ifndef AL_NO_PROTOTYPES

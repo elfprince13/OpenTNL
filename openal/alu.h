@@ -4,6 +4,13 @@
 #define ALUAPI
 #define ALUAPIENTRY __cdecl
 
+#if defined(__linux)
+#undef ALUAPIENTRY
+#define ALUAPIENTRY
+typedef ALCvoid ALCdevice;
+typedef ALCvoid ALCcontext;
+#endif
+
 #define BUFFERSIZE 48000
 #define FRACTIONBITS 14
 #define FRACTIONMASK ((1L<<FRACTIONBITS)-1)
