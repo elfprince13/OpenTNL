@@ -45,6 +45,11 @@ bool ReadJoystick(F32 axes[MaxJoystickAxes], U32 &buttonMask)
    return false;
 }
 
+const char *GetJoystickName()
+{
+   return "";
+}
+
 void ShutdownJoystick()
 {
 }

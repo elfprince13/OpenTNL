@@ -13,10 +13,6 @@ OBJECTS_SERVER=\
 	testGame.o\
 	server.o
 
-OBJECTS_CLIENT=\
-	testGame.o\
-	client.o
-
 OBJECTS_TNLTEST=\
 	testGame.o\
 	testWindow.o \
@@ -30,7 +26,6 @@ CFLAGS=
 default: $(OBJECTS_SERVER) $(OBJECTS_CLIENT)
 	@echo Building linux dedicated server...
 	$(CC) -o server $(OBJECTS_SERVER) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lstdc++ -lm
-	$(CC) -o client $(OBJECTS_CLIENT) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lstdc++ -lm
 
 tnltest: $(OBJECTS_TNLTEST)
 	@echo Building TNLTest gui...
