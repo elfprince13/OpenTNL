@@ -192,7 +192,6 @@ public:
    class RPC_##className##_##name : public TNL::RPCEvent { \
       public: \
       void (FN_CDECL className::*mFuncPtr) args; \
-      TNL::U32 pad; \
       RPC_##className##_##name() : TNL::RPCEvent(&RPC##className##name, guaranteeType, eventDirection) \
          { mFuncPtr = &className::name##_remote; } \
       TNL_DECLARE_CLASS( RPC_##className##_##name ); \

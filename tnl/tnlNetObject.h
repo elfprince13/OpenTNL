@@ -409,7 +409,6 @@ public:
    class RPCEV_##className##_##name : public TNL::NetObjectRPCEvent { \
       public: typedef void (FN_CDECL className::*RPCFuncPtr) args; \
       RPCFuncPtr mFuncPtr; \
-      TNL::U32 pad; \
       RPCEV_##className##_##name(TNL::NetObject *theObject = NULL) : TNL::NetObjectRPCEvent(theObject, &RPC##className##name, guaranteeType, eventDirection) \
          { mFuncPtr = &className::name##_remote; } \
       TNL_DECLARE_CLASS( RPCEV_##className##_##name ); \

@@ -160,7 +160,7 @@ namespace TNL {
 };
 extern void *TNL_gBasePtr;
 namespace TNL {
-#define SAVE_PARAMS TNL_gBasePtr = (void *) ((U8 *) __builtin_frame_address(0) + 8);
+#define SAVE_PARAMS TNL_gBasePtr = (void *) ((TNL::U8 *) __builtin_frame_address(0) + 8);
 
 #elif defined(TNL_SUPPORTS_GCC_INLINE_PPC_ASM )
 extern U32 gRegisterSaves[8 + 13 + 1];
