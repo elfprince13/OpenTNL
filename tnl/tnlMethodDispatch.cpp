@@ -436,6 +436,7 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
             rpcSTEOffsets[rpcNumSTEs] = (U8 *) &vector->array;
             rpcNumSTEs++;
             rpcCurrentSTEIndex += vector->elementCount;
+            argPtr += sizeof(U32);
             continue;
          }
          else
@@ -570,9 +571,9 @@ bool MethodArgList::unmarshall(BitStream *bstream, MarshalledCall *theEvent)
          *((U8 **) &arg) += gTypes[argList[i].argType].size;
       }
       if(argList[i].isVector || gTypes[argList[i].argType].size <= sizeof(U32))
-	argPtr += sizeof(U32);
+      	argPtr += sizeof(U32);
       else
-	argPtr += gTypes[argList[i].argType].size;
+      	argPtr += gTypes[argList[i].argType].size;
    }
    theEvent->mSTEs.setSize(rpcCurrentSTEIndex);
    for(U32 i = 0; i < rpcNumSTEs; i++)

@@ -39,7 +39,7 @@ class UserInterface
 public:
    static UserInterface *current;
 
-   static U32 windowWidth, windowHeight, canvasWidth, canvasHeight;
+   static S32 windowWidth, windowHeight, canvasWidth, canvasHeight;
 
    virtual void render();
    virtual void idle(U32 timeDelta);

@@ -40,10 +40,10 @@ void *glutStrokeRoman;
 namespace Zap
 {
 
-U32 UserInterface::canvasWidth = 800;
-U32 UserInterface::canvasHeight = 600;
-U32 UserInterface::windowWidth = 800;
-U32 UserInterface::windowHeight = 600;
+S32 UserInterface::canvasWidth = 800;
+S32 UserInterface::canvasHeight = 600;
+S32 UserInterface::windowWidth = 800;
+S32 UserInterface::windowHeight = 600;
 
 UserInterface *UserInterface::current = NULL;
 
@@ -78,7 +78,7 @@ U32 UserInterface::getStringWidth(S32 size, const char *string, U32 len)
 {
    S32 width = 0;
    if(!len)
-      len = strlen(string);
+      len = (U32) strlen(string);
    while(len--)
    {
       width += glutStrokeWidth(GLUT_STROKE_ROMAN, *string);
