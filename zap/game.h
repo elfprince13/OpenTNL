@@ -228,7 +228,7 @@ extern void hostGame(bool dedicated, Address bindAddress);
 extern void joinGame(Address remoteAddress, bool isFromMaster, bool local = false);
 extern void endGame();
 
-#define ZAP_GAME_STRING "ZAP 1.4.0 rc 5"
+#define ZAP_GAME_STRING "ZAP 1.4.0 rc 6"
 };
 
 #endif

@@ -156,6 +156,9 @@
 				RelativePath="..\exe\levels\rabbit2.txt">
 			</File>
 			<File
+				RelativePath="..\exe\levels\retrieve1.txt">
+			</File>
+			<File
 				RelativePath="..\exe\levels\soccer1.txt">
 			</File>
 			<File

@@ -85,7 +85,7 @@ public:
       Color color;
       Vector<Point> spawnPoints;
       U32 numPlayers;
-      U32 score;
+      S32 score;
       Team() { numPlayers = 0; score = 0; }
    };
    Vector<Team> mTeams;
@@ -108,7 +108,7 @@ public:
    };
 
    static Vector<RangedU32<0, MaxPing> > mPingTimes; ///< Static vector used for constructing update RPCs
-   static Vector<Int<24> > mScores;
+   static Vector<SignedInt<24> > mScores;
 
    GameType();
    void countTeamPlayers();
@@ -180,7 +180,7 @@ public:
    TNL_DECLARE_RPC(s2cSetTeamScore, (U32 teamIndex, U32 score));
 
    TNL_DECLARE_RPC(c2sRequestScoreboardUpdates, (bool updates));
-   TNL_DECLARE_RPC(s2cScoreboardUpdate, (const Vector<RangedU32<0, MaxPing> > &pingTimes, const Vector<Int<24> > &scores));
+   TNL_DECLARE_RPC(s2cScoreboardUpdate, (const Vector<RangedU32<0, MaxPing> > &pingTimes, const Vector<SignedInt<24> > &scores));
    virtual void updateClientScoreboard(ClientRef *theClient);
 
    TNL_DECLARE_RPC(c2sAdvanceWeapon, ());

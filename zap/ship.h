@@ -66,6 +66,7 @@ public:
       EnergyEngineerCost = 75000,
       EnergyShieldHitDrain = 20000,
       EnergyCooldownThreshold = 15000,
+      WeaponFireDecloakTime = 350,
       ShipModuleCount = 2,
       ShipWeaponCount = 3,
       SensorZoomTime = 300,
@@ -106,6 +107,7 @@ public:
    void selectWeapon(U32 weaponIndex);
 
    Timer mSensorZoomTimer;
+   Timer mWeaponFireDecloakTimer;
    Timer mCloakTimer;
 
    U32 mSparkElapsed;

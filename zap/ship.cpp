@@ -181,6 +181,7 @@ void Ship::selectWeapon(U32 weaponIdx)
 void Ship::processWeaponFire()
 {
    mFireTimer.update(mCurrentMove.time);
+   mWeaponFireDecloakTimer.update(mCurrentMove.time);
 
    U32 curWeapon = mWeapon[mActiveWeapon];
 
@@ -190,6 +191,7 @@ void Ship::processWeaponFire()
       {
          mEnergy -= gWeapons[curWeapon].drainEnergy;
          mFireTimer.reset(gWeapons[curWeapon].fireDelay);
+         mWeaponFireDecloakTimer.reset(WeaponFireDecloakTime);
 
          if(!isGhost())
          {
@@ -422,24 +424,29 @@ void Ship::processEnergy()
    // No cloak with nearby sensored people.
    if(mModuleActive[ModuleCloak])
    {
-      Rect cloakCheck(getActualPos(), getActualPos());
-      cloakCheck.expand(Point(CloakCheckRadius, CloakCheckRadius));
-
-      fillVector.clear();
-      findObjects(ShipType, fillVector, cloakCheck);
-
-      if(fillVector.size() > 0)
+      if(mWeaponFireDecloakTimer.getCurrent() != 0)
+         mModuleActive[ModuleCloak] = false;
+      else
       {
-         for(S32 i=0; i<fillVector.size(); i++)
+         Rect cloakCheck(getActualPos(), getActualPos());
+         cloakCheck.expand(Point(CloakCheckRadius, CloakCheckRadius));
+
+         fillVector.clear();
+         findObjects(ShipType, fillVector, cloakCheck);
+
+         if(fillVector.size() > 0)
          {
-            Ship *s = dynamic_cast<Ship*>(fillVector[i]);
-
-            if(!s) continue;
-
-            if(s->getTeam() != getTeam() && s->isSensorActive())
+            for(S32 i=0; i<fillVector.size(); i++)
             {
-               mModuleActive[ModuleCloak] = false;
-               break;
+               Ship *s = dynamic_cast<Ship*>(fillVector[i]);
+
+               if(!s) continue;
+
+               if(s->getTeam() != getTeam() && s->isSensorActive())
+               {
+                  mModuleActive[ModuleCloak] = false;
+                  break;
+               }
             }
          }
       }

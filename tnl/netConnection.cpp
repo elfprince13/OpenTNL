@@ -229,6 +229,7 @@ void NetConnection::readRawPacket(BitStream *bstream)
       TNLLogMessageV(LogNetConnection, ("NetConnection %s: RECVDROP - %d", mNetAddress.toString(), getLastSendSequence()));
       return;
    }
+   TNLLogMessageV(LogNetConnection, ("NetConnection %s: RECV- %d bytes", mNetAddress.toString(), bstream->getMaxReadBitPosition() >> 3));
 
    mErrorBuffer[0] = 0;
    if(readPacketHeader(bstream))
@@ -689,7 +690,7 @@ NetError NetConnection::sendPacket(BitStream *stream)
       return NoError;
    }
 
-   TNLLogMessageV(LogNetConnection, ("NetConnection %s: SEND - %d", mNetAddress.toString(), getLastSendSequence()));
+   TNLLogMessageV(LogNetConnection, ("NetConnection %s: SEND - %d bytes", mNetAddress.toString(), stream->getBytePosition()));
 
    // do nothing on send if this is a demo replay.
    if(isLocalConnection())

@@ -63,7 +63,8 @@ Address gMasterAddress;
 Address gConnectAddress;
 Address gBindAddress(IPProtocol, Address::Any, 28000);
 
-const char *gLevelList = "retrieve1.txt "
+const char *gLevelList = "football3.txt "
+                         "retrieve1.txt "
                          "level2.txt "
                          "football2.txt "
                          "level2.txt "
@@ -620,7 +621,6 @@ int main(int argc, char **argv)
    TNLLogEnable(LogNetInterface, true);
    TNLLogEnable(LogPlatform, true);
    TNLLogEnable(LogNetBase, true);
-   //TNLLogEnable(LogBlah, true);
 
    for(S32 i = 0; i < argc;i++)
       logprintf(argv[i]);

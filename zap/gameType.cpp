@@ -846,7 +846,7 @@ GAMETYPE_RPC_C2S(GameType, c2sAdvanceWeapon, ())
 }
 
 Vector<RangedU32<0, GameType::MaxPing> > GameType::mPingTimes; ///< Static vector used for constructing update RPCs
-Vector<Int<24> > GameType::mScores;
+Vector<SignedInt<24> > GameType::mScores;
 
 void GameType::updateClientScoreboard(ClientRef *cl)
 {
@@ -869,7 +869,7 @@ void GameType::updateClientScoreboard(ClientRef *cl)
 
 TNL_DECLARE_MEMBER_ENUM(GameType, MaxPing);
 
-GAMETYPE_RPC_S2C(GameType, s2cScoreboardUpdate, (const Vector<RangedU32<0, GameType::MaxPing> > &pingTimes, const Vector<Int<24> > &scores))
+GAMETYPE_RPC_S2C(GameType, s2cScoreboardUpdate, (const Vector<RangedU32<0, GameType::MaxPing> > &pingTimes, const Vector<SignedInt<24> > &scores))
 {
    for(S32 i = 0; i < mClientList.size(); i++)
    {
