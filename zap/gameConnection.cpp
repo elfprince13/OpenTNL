@@ -236,7 +236,8 @@ void GameConnection::onTimedOut()
 
 void GameConnection::onConnectTimedOut()
 {
-   gMainMenuUserInterface.activate();
+   if(this == gClientGame->getConnectionToServer())
+      gMainMenuUserInterface.activate();
 }
 
 };
