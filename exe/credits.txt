@@ -8,3 +8,7 @@ Programmer and Sound Effects
 Ben Garney
 Programmer
 Robert Blanchet
+Internal Testers
+Alex Swanson, Brian Ramage
+External Testers
+Clark Fagot, Joe Maruschak
