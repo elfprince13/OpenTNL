@@ -152,6 +152,9 @@ void SoccerGameType::controlObjectForClientKilled(GameConnection *theClient, Gam
 
 bool SoccerGameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
 {
+   if(damager == victim)
+      return true;
+
    GameConnection *c1 = (damager ? damager->getControllingClient() : NULL);
    GameConnection *c2 = (victim ? victim->getControllingClient() : NULL);
 

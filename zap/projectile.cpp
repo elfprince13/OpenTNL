@@ -180,7 +180,17 @@ void Projectile::idle(GameObject::IdleCallPath path)
 
       if(hitObject)
       {
-         if(mType == Bounce && hitObject->getObjectTypeMask() & BarrierType)
+         bool bounce = false;
+         U32 typeMask = hitObject->getObjectTypeMask();
+         if(mType == Bounce && (typeMask & BarrierType))
+            bounce = true;
+         else if(typeMask & ShipType)
+         {
+            Ship *s = (Ship *) hitObject;
+            if(s->isShieldActive())
+               bounce = true;
+         }
+         if(bounce)
          {
             // test out reflection
             velocity -= surfNormal * surfNormal.dot(velocity) * 2;
@@ -291,8 +301,7 @@ Mine::Mine(Point pos, Ship *planter)
    {
       mTeam = -1;
    }
-
-   mArmTimer.reset(ArmTime);
+   mArmed = false;
 }
 
 static Vector<GameObject*> fillVector;
@@ -302,18 +311,8 @@ void Mine::idle(IdleCallPath path)
    // Skip the grenade timing goofiness...
    Item::idle(path);
 
-   mArmTimer.update(mCurrentMove.time);
-
-   if(exploded || mArmTimer.getCurrent() != 0)
+   if(exploded || path != GameObject::ServerIdleMainLoop)
       return;
-
-   // If we need to, update timer...
-   mScanTimer.update(mCurrentMove.time);
-
-   if(mScanTimer.getCurrent() != 0)
-      return;
-
-   mScanTimer.reset(SensorFrequency);
 
    // And check for enemies in the area...
    Point pos = getActualPos();
@@ -321,18 +320,45 @@ void Mine::idle(IdleCallPath path)
    queryRect.expand(Point(SensorRadius, SensorRadius));
 
    fillVector.clear();
-   findObjects(MotionTriggerTypes, fillVector, queryRect);
+   findObjects(MotionTriggerTypes | MineType, fillVector, queryRect);
 
    // Found something!
-   for(S32 i=0; i<fillVector.size(); i++)
+   bool foundItem = false;
+   for(S32 i = 0; i < fillVector.size(); i++)
    {
-      if(fillVector[i]->getTeam() != mTeam)
+      F32 radius;
+      Point ipos;
+      if(fillVector[i]->getCollisionCircle(MoveObject::RenderState, ipos, radius))
       {
-         explode(pos);
-         break;
+         if((ipos - pos).len() < (radius + SensorRadius))
+         {
+            bool isMine = fillVector[i]->getObjectTypeMask() & MineType;
+            if(!isMine)
+            {
+               foundItem = true;
+               break;
+            }
+            else if(mArmed && fillVector[i] != this)
+            {
+               foundItem = true;
+               break;
+            }
+         }
       }
    }
-
+   if(foundItem)
+   {
+      if(mArmed)
+         explode(getActualPos());
+   }
+   else
+   {
+      if(!mArmed)
+      {
+         setMaskBits(ArmedMask);
+         mArmed = true;
+      }
+   }
 }
 
 void Mine::handleCollision(GameObject *theObject, Point colPoint)
@@ -354,17 +380,51 @@ U32  Mine::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *st
    U32 ret = Parent::packUpdate(connection, updateMask, stream);
    if(stream->writeFlag(updateMask & InitialMask))
       stream->write(mTeam);
-
+   stream->writeFlag(mArmed);
    return ret;
 }
 
 void Mine::unpackUpdate(GhostConnection *connection, BitStream *stream)
 {
+   bool initial = false;
    Parent::unpackUpdate(connection, stream);
 
    if(stream->readFlag())
    {
+      initial = true;
       stream->read(&mTeam);
+   }
+   bool wasArmed = mArmed;
+   mArmed = stream->readFlag();
+   if(initial && !mArmed)
+      SFXObject::play(SFXMineDeploy, getActualPos(), Point());
+   else if(!initial && !wasArmed && mArmed)
+      SFXObject::play(SFXMineArm, getActualPos(), Point());
+}
+
+void Mine::renderItem(Point pos)
+{
+   if(exploded)
+      return;
+
+   Ship *co = (Ship *) gClientGame->getConnectionToServer()->getControlObject();
+
+   if(!co)
+      return;
+   F32 mod = 0.3;
+   if(co->getTeam() == getTeam() || co->isSensorActive())
+   {
+      glColor3f(0.5,0.5,0.5);
+      drawCircle(pos, SensorRadius);
+      mod = 1.0;
+   }
+   glColor3f(mod,mod,mod);
+   drawCircle(pos, 10);
+
+   if(mArmed)
+   {
+      glColor3f(mod,0,0);
+      drawCircle(pos, 6);
    }
 }
 
@@ -462,6 +522,7 @@ void GrenadeProjectile::explode(Point pos)
       Color b(1,1,1);
 
       SparkManager::emitExplosion(getRenderPos(), 0.5, &b, 1);
+      SFXObject::play(SFXMineExplode, getActualPos(), Point());
    }
 
    disableCollision();
@@ -490,18 +551,10 @@ void GrenadeProjectile::renderItem(Point pos)
       return;
 
    glColor3f(1,1,1);
-   glBegin(GL_LINE_LOOP);
-   for(F32 theta = 0; theta <= 2 * 3.1415; theta += 0.4)
-      glVertex2f(pos.x + cos(theta) * 10.f, 
-                 pos.y + sin(theta) * 10.f);
-   glEnd();
+   drawCircle(pos, 10);
 
    glColor3f(1,0,0);
-   glBegin(GL_LINE_LOOP);
-   for(F32 theta = 0; theta <= 2 * 3.1415; theta += 0.4)
-      glVertex2f(pos.x + cos(theta) * 6.f, 
-                 pos.y + sin(theta) * 6.f);
-   glEnd();
+   drawCircle(pos, 6);
 }
 
 };

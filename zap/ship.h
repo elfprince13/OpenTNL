@@ -59,7 +59,7 @@ public:
       EnergyMax = 100000,
       EnergyRechargeRate = 6000, // How many percent/second
       EnergyBoostDrain = 15000,
-      EnergyShieldDrain = 15000,
+      EnergyShieldDrain = 27000,
       EnergyRepairDrain = 15000, 
       EnergySensorDrain = 8000,
       EnergyCloakDrain = 8000,

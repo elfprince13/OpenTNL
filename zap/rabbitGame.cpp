@@ -104,6 +104,9 @@ void RabbitGameType::spawnShip(GameConnection *theClient)
 
 bool RabbitGameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
 {
+   if(damager == victim)
+      return true;
+
    //if one of them isn't a ship, default to whatever the parent is
    if (!(damager->getObjectTypeMask() & ShipType) || !(victim->getObjectTypeMask() & ShipType))
       return Parent::objectCanDamageObject(damager, victim);

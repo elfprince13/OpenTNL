@@ -88,7 +88,8 @@ public:
 
    enum Constants
    {
-      ExplodeMask = BIT(8),
+      ExplodeMask = Item::FirstFreeMask,
+      FirstFreeMask = ExplodeMask << 1,
    };
 
    S32 ttl;
@@ -113,18 +114,16 @@ class Mine : public GrenadeProjectile
 
    enum Constants
    {
-      ArmTime          = 500,
-      SensorFrequency  = 200,
-      SensorRadius     = 150,
-      InnerBlastRadius = 125,
-      OuterBlastRadius = 175,
+      ArmedMask = GrenadeProjectile::FirstFreeMask,
+
+      SensorRadius     = 50,
+      InnerBlastRadius = 75,
+      OuterBlastRadius = 100 ,
    };
 
 public:
    Mine(Point pos = Point(), Ship *owner=NULL);
-
-   S32 mTeam;
-   Timer mArmTimer;
+   bool mArmed;
    Timer mScanTimer;
    SafePtr<GameConnection> mOwnerConnection;
 
@@ -133,6 +132,7 @@ public:
    void idle(IdleCallPath path);
    void handleCollision(GameObject *theObject, Point colPoint);
    void damageObject(DamageInfo *damageInfo);
+   void renderItem(Point p);
 
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);

@@ -468,9 +468,9 @@ void Ship::damageObject(DamageInfo *theInfo)
          return;
 
       // Factor in shields
-      if(isShieldActive() && mEnergy >= EnergyShieldHitDrain)
+      if(isShieldActive())// && mEnergy >= EnergyShieldHitDrain)
       {
-         mEnergy -= EnergyShieldHitDrain;
+         //mEnergy -= EnergyShieldHitDrain;
          return;
       }
    }
@@ -534,7 +534,7 @@ void Ship::writeControlState(BitStream *stream)
    stream->writeRangedU32(mEnergy, 0, EnergyMax);
    stream->writeFlag(mCooldown);
    stream->writeRangedU32(mFireTimer.getCurrent(), 0, MaxFireDelay);
-   stream->writeRangedU32(mActiveWeapon, 0, WeaponCount);
+   stream->writeRangedU32(mWeapon[mActiveWeapon], 0, WeaponCount);
 }
 
 void Ship::readControlState(BitStream *stream)
@@ -547,7 +547,8 @@ void Ship::readControlState(BitStream *stream)
    mCooldown = stream->readFlag();
    U32 fireTimer = stream->readRangedU32(0, MaxFireDelay);
    mFireTimer.reset(fireTimer);
-   mActiveWeapon = stream->readRangedU32(0, WeaponCount);
+   mActiveWeapon = 0;
+   mWeapon[mActiveWeapon] = stream->readRangedU32(0, WeaponCount);
 }
 
 U32  Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)

@@ -59,6 +59,9 @@ enum SFXProfiles {
    SFXUICommDown,
    SFXForceFieldUp,
    SFXForceFieldDown,
+   SFXMineDeploy,
+   SFXMineArm,
+   SFXMineExplode,
    NumSFXBuffers
 };
 
