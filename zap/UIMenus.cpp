@@ -54,6 +54,9 @@ void MenuUserInterface::render()
       glEnd();  
       glDisable(GL_BLEND); 
    }
+#ifdef TNL_OS_XBOX
+   glLineWidth(2);
+#endif
 
    glColor3f(1,1,1);
    drawCenteredString( 10, 30, menuTitle);
@@ -87,6 +90,9 @@ void MenuUserInterface::render()
       glColor3f(1,1,1);
       drawCenteredString(y, 25, menuItems[i].mText);
    }
+#ifdef TNL_OS_XBOX
+   glLineWidth(1);
+#endif
 }
 
 void MenuUserInterface::onSpecialKeyDown(U32 key)
@@ -106,6 +112,20 @@ void MenuUserInterface::onSpecialKeyDown(U32 key)
          selectionIndex = 0;
 
       UserInterface::playBoop();
+   }
+}
+
+void MenuUserInterface::onControllerButtonDown(U32 buttonIndex)
+{
+   if(buttonIndex == 0)
+   {
+      UserInterface::playBoop();
+      processSelection(menuItems[selectionIndex].mIndex);
+   }
+   else if(buttonIndex == 1)
+   {
+      UserInterface::playBoop();
+      onEscape();
    }
 }
 

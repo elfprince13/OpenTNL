@@ -115,7 +115,7 @@ static S32 initCount = 0;
 static bool init()
 {
    bool success = true;
-#ifdef TNL_OS_WIN32
+#if defined ( TNL_OS_WIN32 )
    if(!initCount)
    {
       WSADATA stWSAData;
@@ -123,6 +123,22 @@ static bool init()
 
       logprintf("Winsock initialization %s", success ? "succeeded." : "failed!");
    }
+#elif defined( TNL_OS_XBOX )
+      XNetStartupParams xnsp;
+      memset( &xnsp, 0, sizeof(xnsp) );
+      xnsp.cfgSizeOfStruct = sizeof(xnsp);
+      xnsp.cfgFlags = XNET_STARTUP_BYPASS_SECURITY;
+      INT iResult = XNetStartup( &xnsp );
+      if( iResult != NO_ERROR )
+         success = false;
+
+
+      WSADATA WsaData;
+      iResult = WSAStartup( 0x0101, &WsaData );
+      if( iResult != NO_ERROR )
+         success = false;
+
+      logprintf("Winsock initialization %s", success ? "succeeded." : "failed!");
 #endif
    initCount++;
    return success;

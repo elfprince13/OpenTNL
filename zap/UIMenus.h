@@ -64,6 +64,7 @@ public:
    void render();
    void onSpecialKeyDown(U32 key);
    void onKeyDown(U32 key);
+   void onControllerButtonDown(U32 buttonIndex);
    void onActivate() { selectionIndex = 0; }
 
    virtual void onEscape();

@@ -258,10 +258,12 @@ void Barrier::render(U32 layerIndex)
          }
       }
       glColor(f);
+      glLineWidth(2);
       glBegin(GL_LINES);
       for(S32 i = 0; i < mRenderLineSegments.size(); i++)
          glVertex2f(mRenderLineSegments[i].x, mRenderLineSegments[i].y);
       glEnd();
+      glLineWidth(1);
    }
 }
 

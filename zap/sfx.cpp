@@ -558,7 +558,7 @@ void SFXObject::shutdown()
 
 };
 
-#else
+#elif defined (ZAP_DEDICATED) 
 
 using namespace TNL;
 

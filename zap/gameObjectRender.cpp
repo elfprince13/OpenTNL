@@ -33,6 +33,12 @@
 namespace Zap
 {
 
+#ifdef TNL_OS_XBOX
+const float gShapeLineWidth = 2.0f;
+#else
+const float gShapeLineWidth = 1.0f;
+#endif
+
 void glVertex(Point p)
 {
    glVertex2f(p.x, p.y);
@@ -65,6 +71,7 @@ void fillCircle(Point pos, F32 radius)
 
 void renderShip(Color c, F32 alpha, F32 thrusts[], F32 health, F32 radius, bool cloakActive, bool shieldActive)
 {
+   glLineWidth(gShapeLineWidth);
    if(alpha != 1.0)
       glEnable(GL_BLEND);
    
@@ -217,6 +224,7 @@ void renderShip(Color c, F32 alpha, F32 thrusts[], F32 health, F32 radius, bool 
 
    if(alpha != 1.0)
       glDisable(GL_BLEND);
+   glLineWidth(1.0f);
 }
 
 void renderTeleporter(Point pos, U32 type, bool in, S32 time, F32 radiusFraction, F32 radius, F32 alpha)
@@ -341,7 +349,7 @@ void renderTeleporter(Point pos, U32 type, bool in, S32 time, F32 radiusFraction
 void renderTurret(Color c, Point anchor, Point normal, bool enabled, F32 health, F32 barrelAngle, F32 aimOffset)
 {
    glColor(c);
-
+   glLineWidth(gShapeLineWidth);
    Point cross(normal.y, -normal.x);
    Point aimCenter = anchor + normal * aimOffset;
 
@@ -361,7 +369,7 @@ void renderTurret(Color c, Point anchor, Point normal, bool enabled, F32 health,
    glVertex(aimCenter + aimDelta * 15);
    glVertex(aimCenter + aimDelta * 30);
    glEnd();
-   glLineWidth(1);
+   glLineWidth(gShapeLineWidth);
 
    if(enabled)
       glColor3f(1,1,1);
@@ -392,13 +400,14 @@ void renderTurret(Color c, Point anchor, Point normal, bool enabled, F32 health,
    glVertex(lsegStart + n);
    glVertex(lsegEnd + n);
    glEnd();
+   glLineWidth(1.0f);
 }
 
 void renderFlag(Point pos, Color c)
 {
    glPushMatrix();
    glTranslatef(pos.x, pos.y, 0);
-
+   glLineWidth(gShapeLineWidth);
    glColor3f(c.r, c.g, c.b);
    glBegin(GL_LINES);
    glVertex2f(-15, -15);
@@ -416,7 +425,7 @@ void renderFlag(Point pos, Color c)
    glVertex2f(-15, -15);
    glVertex2f(-15, 15);
    glEnd();
-
+   glLineWidth(1.0f);
    glPopMatrix();
 }
 
@@ -428,6 +437,7 @@ void renderCenteredString(Point pos, U32 size, const char *string)
 
 void renderLoadoutZone(Color theColor, Vector<Point> &bounds, Rect extent)
 {
+   glLineWidth(gShapeLineWidth);
    F32 alpha = 0.5;
    glColor(theColor * 0.5);
    glBegin(GL_POLYGON);
@@ -450,10 +460,12 @@ void renderLoadoutZone(Color theColor, Vector<Point> &bounds, Rect extent)
    glColor(theColor);
    renderCenteredString(Point(0,0), 25, "LOADOUT ZONE");
    glPopMatrix();
+   glLineWidth(1.0f);
 }
 
 void renderProjectile(Point pos, U32 type, U32 time)
 {                     
+   glLineWidth(gShapeLineWidth);
    ProjectileInfo *pi = gProjInfo + type;
 
    glColor(pi->projColors[0]);
@@ -491,10 +503,12 @@ void renderProjectile(Point pos, U32 type, U32 time)
    glEnd();
 
    glPopMatrix();
+   glLineWidth(1.0f);
 }
 
 void renderMine(Point pos, bool armed, bool visible)
 {
+   glLineWidth(gShapeLineWidth);
    F32 mod = 0.3;
    if(visible)
    {
@@ -510,20 +524,24 @@ void renderMine(Point pos, bool armed, bool visible)
       glColor3f(mod,0,0);
       drawCircle(pos, 6);
    }
+   glLineWidth(1.0f);
 }
 
 void renderGrenade(Point pos)
 {
+   glLineWidth(gShapeLineWidth);
    glColor3f(1,1,1);
    drawCircle(pos, 10);
 
    glColor3f(1,0,0);
    drawCircle(pos, 6);
+   glLineWidth(1.0f);
 }
 
 
 void renderRepairItem(Point pos)
 {
+   glLineWidth(gShapeLineWidth);
    glPushMatrix();
    glTranslatef(pos.x, pos.y, 0);
 
@@ -556,10 +574,12 @@ void renderRepairItem(Point pos)
    glEnd();
 
    glPopMatrix();
+   glLineWidth(1.0f);
 }
 
 void renderForceFieldProjector(Point pos, Point normal, Color c, bool enabled)
 {
+   glLineWidth(gShapeLineWidth);
    Point cross(normal.y, -normal.x);
    if(c.r < 0.7)
       c.r = 0.7;
@@ -577,10 +597,12 @@ void renderForceFieldProjector(Point pos, Point normal, Color c, bool enabled)
    glVertex(pos + normal * 15);
    glVertex(pos - cross * 12);
    glEnd();
+   glLineWidth(1.0f);
 }
 
 void renderForceField(Point start, Point end, Color c, bool fieldUp)
 {
+   glLineWidth(gShapeLineWidth);
    if(c.r < 0.5)
       c.r = 0.5;
    if(c.g < 0.5)
@@ -601,10 +623,12 @@ void renderForceField(Point start, Point end, Color c, bool fieldUp)
    glVertex(end - normal);
    glVertex(start - normal);
    glEnd();
+   glLineWidth(1.0f);
 }
 
 void renderGoalZone(Vector<Point> &bounds, Color c, bool isFlashing)
 {
+   glLineWidth(gShapeLineWidth);
    F32 alpha = 0.5;
    glColor(c * 0.5f);
    glBegin(GL_POLYGON);
@@ -620,6 +644,7 @@ void renderGoalZone(Vector<Point> &bounds, Color c, bool isFlashing)
    for(S32 i = 0; i < bounds.size(); i++)
       glVertex(bounds[i]);
    glEnd();
+   glLineWidth(1.0f);
 }
 
 };
