@@ -116,6 +116,7 @@ public:
    TestItem() : Item(Point(0,0), true, 60, 4)
    {
       mNetFlags.set(Ghostable);
+      mObjectTypeMask |= TestItemType;
    }
 
    void renderItem(Point pos)

@@ -77,8 +77,8 @@ Ship::Ship(StringTableEntry playerName, S32 team, Point p, F32 m) : MoveObject(p
    mModule[1] = ModuleShield;
 
    mWeapon[0] = WeaponPhaser;
-   mWeapon[1] = WeaponBounce;
-   mWeapon[2] = WeaponPhaser;
+   mWeapon[1] = WeaponMineLayer;
+   mWeapon[2] = WeaponBurst;
    
    mActiveWeapon = 0;
 
@@ -275,6 +275,7 @@ void Ship::idle(GameObject::IdleCallPath path)
       {
          // on the client, update the interpolation of this object
          // only if we are not replaying control moves.
+         mInterpolating = (getActualVel().lenSquared() < MoveObject::InterpMaxVelocity*MoveObject::InterpMaxVelocity);
          updateInterpolation();
       }
    }

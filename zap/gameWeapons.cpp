@@ -26,21 +26,23 @@
 
 #include "gameWeapons.h"
 #include "projectile.h"
+#include "ship.h"
 
 namespace Zap
 {
+
 
 // do not add a weapon with a fire delay > Ship::MaxFireDelay
 // or update the constant.
 
 ShipWeaponInfo gWeapons[] =
 {
-   {StringTableEntry("Phaser"),   100,  500,  500, 600, 1000, Projectile::Phaser },
+   {StringTableEntry("Phaser"),   100,  500,  500, 600,  1000, Projectile::Phaser },
    {StringTableEntry("Bouncer"),  100,  1800, 1800, 540, 1500, Projectile::Bounce },
-   {StringTableEntry("Triple"),   200,  2100, 2100, 550, 850, Projectile::Triple },
-   {StringTableEntry("Burst"),  700,  5000, 5000, 500, 1000, 0 },
-   {StringTableEntry(NULL), 0, 0, 0, 0, 0, 0  },
-   { StringTableEntry("Turret"), 0, 0, 0, 800, 800, Projectile::Turret },
+   {StringTableEntry("Triple"),   200,  2100, 2100, 550, 850,  Projectile::Triple },
+   {StringTableEntry("Burst"),    700,  5000, 5000, 500, 1000, 0 },
+   {StringTableEntry("Mine"),     900,  10000, 10000, 500, 1000, 0 },
+   {StringTableEntry("Turret"),   0, 0, 0, 800, 800, Projectile::Turret },
 };
 
 void createWeaponProjectiles(U32 weapon, Point &dir, Point &shooterPos, Point &shooterVel, F32 shooterRadius, GameObject *shooter)
@@ -66,6 +68,9 @@ void createWeaponProjectiles(U32 weapon, Point &dir, Point &shooterPos, Point &s
          break;
       case WeaponBurst:
          (new GrenadeProjectile(firePos, projVel, wi->projLiveTime, shooter))->addToGame(shooter->getGame());
+         break;
+      case WeaponMineLayer:
+         (new Mine(firePos, dynamic_cast<Ship*>(shooter)))->addToGame(shooter->getGame());
          break;
    }
 }

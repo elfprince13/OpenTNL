@@ -28,6 +28,7 @@
 #include "ship.h"
 #include "sparkManager.h"
 #include "sfx.h"
+#include "gameObject.h"
 
 #include "glutInclude.h"
 
@@ -58,6 +59,8 @@ TNL_IMPLEMENT_NETOBJECT(Projectile);
 
 Projectile::Projectile(U32 type, Point p, Point v, U32 t, GameObject *shooter)
 {
+   mObjectTypeMask |= Zap::GameObjectType::ProjectileType;
+
    mNetFlags.set(Ghostable);
    pos = p;
    velocity = v;
@@ -271,12 +274,107 @@ void Projectile::render()
    glPopMatrix();
 }
 
+//-----------------------------------------------------------------------------
+TNL_IMPLEMENT_NETOBJECT(Mine);
+
+Mine::Mine(Point pos, Ship *planter)
+ : GrenadeProjectile(pos, Point())
+{
+   mObjectTypeMask |= MineType;
+
+   if(planter)
+   {
+      mOwnerConnection = planter->getControllingClient();
+      mTeam            = planter->getTeam();
+   }
+   else
+   {
+      mTeam = -1;
+   }
+
+   mArmTimer.reset(ArmTime);
+}
+
+static Vector<GameObject*> fillVector;
+
+void Mine::idle(IdleCallPath path)
+{
+   // Skip the grenade timing goofiness...
+   Item::idle(path);
+
+   mArmTimer.update(mCurrentMove.time);
+
+   if(exploded || mArmTimer.getCurrent() != 0)
+      return;
+
+   // If we need to, update timer...
+   mScanTimer.update(mCurrentMove.time);
+
+   if(mScanTimer.getCurrent() != 0)
+      return;
+
+   mScanTimer.reset(SensorFrequency);
+
+   // And check for enemies in the area...
+   Point pos = getActualPos();
+   Rect queryRect(pos, pos);
+   queryRect.expand(Point(SensorRadius, SensorRadius));
+
+   fillVector.clear();
+   findObjects(MotionTriggerTypes, fillVector, queryRect);
+
+   // Found something!
+   for(S32 i=0; i<fillVector.size(); i++)
+   {
+      if(fillVector[i]->getTeam() != mTeam)
+      {
+         explode(pos);
+         break;
+      }
+   }
+
+}
+
+void Mine::handleCollision(GameObject *theObject, Point colPoint)
+{
+   explode(colPoint);
+
+   // No velocity for us.
+   mMoveState[0].vel.set(0,0);
+}
+
+void Mine::damageObject(DamageInfo *info)
+{
+   if(info->damageAmount > 0.f && !exploded)
+      explode(getActualPos());
+}
+
+U32  Mine::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
+{
+   U32 ret = Parent::packUpdate(connection, updateMask, stream);
+   if(stream->writeFlag(updateMask & InitialMask))
+      stream->write(mTeam);
+
+   return ret;
+}
+
+void Mine::unpackUpdate(GhostConnection *connection, BitStream *stream)
+{
+   Parent::unpackUpdate(connection, stream);
+
+   if(stream->readFlag())
+   {
+      stream->read(&mTeam);
+   }
+}
+
+//-----------------------------------------------------------------------------
 TNL_IMPLEMENT_NETOBJECT(GrenadeProjectile);
 
 GrenadeProjectile::GrenadeProjectile(Point pos, Point vel, U32 liveTime, GameObject *shooter)
  : Item(pos, true, 7.f, 1.f)
 {
-   mObjectTypeMask = MoveableType;
+   mObjectTypeMask = MoveableType | ProjectileType;
 
    mNetFlags.set(Ghostable);
 
@@ -319,7 +417,6 @@ void GrenadeProjectile::idle(IdleCallPath path)
 
 }
 
-
 U32  GrenadeProjectile::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
    U32 ret = Parent::packUpdate(connection, updateMask, stream);
@@ -355,8 +452,6 @@ void GrenadeProjectile::damageObject(DamageInfo *theInfo)
    setMaskBits(PositionMask);
 }
 
-static Vector<GameObject *> fillVector;
-
 void GrenadeProjectile::explode(Point pos)
 {
    if(exploded) return;
@@ -382,7 +477,7 @@ void GrenadeProjectile::explode(Point pos)
       info.damageAmount   = 0.5;
       info.damageType     = 1;
 
-      radiusDamage(pos, 200.f, ShipType | EngineeredType, &info);
+      radiusDamage(pos, 100.f, 250.f, DamagableTypes, info);
    }
 
    exploded = true;

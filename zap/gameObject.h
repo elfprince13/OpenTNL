@@ -51,10 +51,14 @@ enum GameObjectType
    EngineeredType    = BIT(7),
    ForceFieldType    = BIT(8),
    LoadoutZoneType   = BIT(9),
+   MineType          = BIT(10),
+   TestItemType      = BIT(11),
 
    DeletedType       = BIT(30),
    CommandMapVisType = BIT(31),
-   AllObjectTypes = 0xFFFFFFFF,
+   DamagableTypes    = ShipType | MoveableType | ProjectileType | ItemType | ResourceItemType | EngineeredType | MineType,
+   MotionTriggerTypes= ShipType | ResourceItemType | TestItemType,
+   AllObjectTypes    = 0xFFFFFFFF,
 };
 
 class GameObject;

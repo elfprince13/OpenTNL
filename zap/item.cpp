@@ -127,8 +127,12 @@ void Item::idle(GameObject::IdleCallPath path)
       move(time, ActualState, false);
       if(path == GameObject::ServerIdleMainLoop)
       {
+         // Only update if it's actually moving...
+         if(mMoveState[ActualState].vel.len() > 0.001f)
+            setMaskBits(PositionMask);
+
          mMoveState[RenderState] = mMoveState[ActualState];
-         setMaskBits(PositionMask);
+         
       }
       else
          updateInterpolation();
@@ -201,7 +205,6 @@ void Item::unpackUpdate(GhostConnection *connection, BitStream *stream)
          mInterpolating = false;
          mMoveState[RenderState] = mMoveState[ActualState];
       }
-      //processMove(&lastMove, mMoveState[ActualState]);
    }
 }
 

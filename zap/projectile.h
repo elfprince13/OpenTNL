@@ -27,6 +27,7 @@
 #ifndef _PROJECTILE_H_
 #define _PROJECTILE_H_
 
+#include "gameType.h"
 #include "gameObject.h"
 #include "item.h"
 
@@ -79,21 +80,6 @@ public:
    TNL_DECLARE_CLASS(Projectile);
 };
 
-/*
-class Mine : public GameObject
-{
-public:
-   Mine(Point pos, Ship *planter);
-
-   GameType::ClientRef mOwner;
-
-   void handleCollision(GameObject *theObject, Point colPoint);
-   bool collide(GameObject *hitObject);
-
-   void idle(IdleCallPath path);
-   void render();
-};
-*/
 class GrenadeProjectile : public Item
 {
    typedef Item Parent;
@@ -119,6 +105,39 @@ public:
    void unpackUpdate(GhostConnection *connection, BitStream *stream);
 
    TNL_DECLARE_CLASS(GrenadeProjectile);
+};
+
+class Mine : public GrenadeProjectile
+{
+   typedef GrenadeProjectile Parent;
+
+   enum Constants
+   {
+      ArmTime          = 500,
+      SensorFrequency  = 200,
+      SensorRadius     = 150,
+      InnerBlastRadius = 125,
+      OuterBlastRadius = 175,
+   };
+
+public:
+   Mine(Point pos = Point(), Ship *owner=NULL);
+
+   S32 mTeam;
+   Timer mArmTimer;
+   Timer mScanTimer;
+   SafePtr<GameConnection> mOwnerConnection;
+
+   bool collide(GameObject *otherObj) { return (otherObj->getObjectTypeMask() & (ProjectileType)); };
+
+   void idle(IdleCallPath path);
+   void handleCollision(GameObject *theObject, Point colPoint);
+   void damageObject(DamageInfo *damageInfo);
+
+   U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
+   void unpackUpdate(GhostConnection *connection, BitStream *stream);
+
+   TNL_DECLARE_CLASS(Mine);
 };
 
 };
