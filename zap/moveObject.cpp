@@ -389,10 +389,14 @@ void MoveObject::updateInterpolation()
             goto interpDone;
 
          float requestVel = distance / time;
-         if(requestVel > InterpMaxVelocity)
+         float interpMaxVel = InterpMaxVelocity;
+         float currentActualVelocity = mMoveState[ActualState].vel.len();
+         if(interpMaxVel < currentActualVelocity)
+            interpMaxVel = currentActualVelocity;
+         if(requestVel > interpMaxVel)
          {
             hit = false;
-            requestVel = InterpMaxVelocity;
+            requestVel = interpMaxVel;
          }
          F32 a = (requestVel - vel) / time;
          if(a > InterpAcceleration)
