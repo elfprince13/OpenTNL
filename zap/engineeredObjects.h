@@ -44,6 +44,7 @@ protected:
    S32 mTeam;
    Color mTeamColor;
    SafePtr<Item> mResource;
+   SafePtr<Ship> mOwner;
    Point mAnchorPoint;
    Point mAnchorNormal;
 
@@ -54,14 +55,14 @@ protected:
    };
    
 public:
-   SafePtr<Ship> mOwner;
-
    EngineeredObject(S32 team = -1, Point anchorPoint = Point(), Point anchorNormal = Point());
    void setResource(Item *resource);
    bool checkDeploymentPosition();
    void computeExtent();
+   virtual void onDestroyed();
 
    S32 getTeam() { return mTeam; }
+   void setOwner(Ship *owner) { mOwner = owner; }
 
    U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
    void unpackUpdate(GhostConnection *connection, BitStream *stream);
@@ -70,31 +71,49 @@ public:
    bool collide(GameObject *hitObject) { return true; }
 };
 
+class ForceField : public GameObject
+{
+   Point mStart, mEnd;
+   S32 mTeam;
+   Timer mDownTimer;
+   bool mFieldUp;
+
+public:
+   enum Constants
+   {
+      InitialMask = BIT(0),
+      StatusMask = BIT(1),
+
+      FieldDownTime = 1000,
+   };
+
+   ForceField(S32 team = -1, Point start = Point(), Point end = Point());
+   bool collide(GameObject *hitObject);
+   void idle(GameObject::IdleCallPath path);
+
+   U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
+   void unpackUpdate(GhostConnection *connection, BitStream *stream);
+
+   bool getCollisionPoly(Vector<Point> &polyPoints);
+   void render();
+
+   TNL_DECLARE_CLASS(ForceField);
+};
+
 class ForceFieldProjector : public EngineeredObject
 {
    typedef EngineeredObject Parent;
 
-   SafePtr<Barrier>  mField;
-   Timer             mFieldDown;
-   F32               mLength;
-
+   SafePtr<ForceField> mField;
 public:
    ForceFieldProjector(S32 team = -1, Point anchorPoint = Point(), Point anchorNormal = Point()) :
-      EngineeredObject(team, anchorPoint, anchorNormal) { mNetFlags.set(Ghostable); mLength = 0.1f; }
+      EngineeredObject(team, anchorPoint, anchorNormal) { mNetFlags.set(Ghostable); }
 
-   ~ForceFieldProjector();
-
-   enum Constants
-   {
-      FieldDownTime = 200,
-
-      FieldDownMask = BIT(2),
-   };
+   void onDestroyed();
+   void onAddedToGame(Game *theGame);
 
    bool getCollisionPoly(Vector<Point> &polyPoints);
    void render();
-   void idle(IdleCallPath path);
-
    TNL_DECLARE_CLASS(ForceFieldProjector);
 };
 

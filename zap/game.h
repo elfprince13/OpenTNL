@@ -139,6 +139,8 @@ public:
    GridDatabase *getGridDatabase() { return &mDatabase; }
 
    GameType *getGameType();
+   U32 getTeamCount();
+
    void setGameType(GameType *theGameType);
 
    void processDeleteList(U32 timeDelta);

@@ -70,7 +70,7 @@ void engClientCreateObject(GameConnection *connection, U32 object)
          deployedObject = new ForceFieldProjector(ship->getTeam(), deployPosition, collisionNormal);
          break;
    }
-   deployedObject->mOwner = ship;
+   deployedObject->setOwner(ship);
 
    deployedObject->computeExtent();
    if(!deployedObject || !deployedObject->checkDeploymentPosition())
@@ -110,10 +110,17 @@ void EngineeredObject::damageObject(DamageInfo *di)
    if(mHealth > 0.f)
       return;
 
+   onDestroyed();
+
    mResource->addToDatabase();
    mResource->setActualPos(mAnchorPoint + mAnchorNormal * mResource->getRadius());
 
    getGame()->deleteObject(this, 0);
+}
+
+void EngineeredObject::onDestroyed()
+{
+
 }
 
 void EngineeredObject::computeExtent()
@@ -217,19 +224,36 @@ void EngineeredObject::unpackUpdate(GhostConnection *connection, BitStream *stre
 
 TNL_IMPLEMENT_NETOBJECT(ForceFieldProjector);
 
-ForceFieldProjector::~ForceFieldProjector()
+void ForceFieldProjector::onDestroyed()
 {
    if(mField.isValid())
       getGame()->deleteObject(mField, 0);
 }
 
+void ForceFieldProjector::onAddedToGame(Game *theGame)
+{
+   if(!isGhost())
+   {
+      Point start = mAnchorPoint + mAnchorNormal * 15;
+      Point end = mAnchorPoint + mAnchorNormal * 500;
+
+      F32 t;
+      Point n;
+
+      if(findObjectLOS(BarrierType, 0, start, end, t, n))
+         end = start + (end - start) * t;
+
+      mField = new ForceField(mTeam, start, end);
+      mField->addToGame(theGame);
+   }
+}
+
 bool ForceFieldProjector::getCollisionPoly(Vector<Point> &polyPoints)
 {
    Point cross(mAnchorNormal.y, -mAnchorNormal.x);
-   polyPoints.push_back(mAnchorPoint + cross * 30);
-   polyPoints.push_back(mAnchorPoint + cross * 20 + mAnchorNormal * 15);
-   polyPoints.push_back(mAnchorPoint - cross * 20 + mAnchorNormal * 15);
-   polyPoints.push_back(mAnchorPoint - cross * 30);
+   polyPoints.push_back(mAnchorPoint + cross * 12);
+   polyPoints.push_back(mAnchorPoint + mAnchorNormal * 15);
+   polyPoints.push_back(mAnchorPoint - cross * 12);
    return true;
 }
 
@@ -244,67 +268,122 @@ void ForceFieldProjector::render()
    glEnd();
 }
 
-void ForceFieldProjector::idle(IdleCallPath path)
+TNL_IMPLEMENT_NETOBJECT(ForceField);
+
+ForceField::ForceField(S32 team, Point start, Point end)
+{
+   mTeam = team;
+   mStart = start;
+   mEnd = end;
+
+   Rect extent(mStart, mEnd);
+   extent.expand(Point(5,5));
+   setExtent(extent);
+
+   mFieldUp = true;
+   mObjectTypeMask = ForceFieldType | CommandMapVisType;
+   mNetFlags.set(Ghostable);
+}
+
+bool ForceField::collide(GameObject *hitObject)
+{
+   if(!mFieldUp)
+      return false;
+
+   if(!(hitObject->getObjectTypeMask() & ShipType))
+      return true;
+
+   Ship *s = (Ship *) hitObject;
+   if(s->mTeam == mTeam)
+   {
+      if(!isGhost())
+      {
+         mFieldUp = false;
+         mDownTimer.reset(FieldDownTime);
+         setMaskBits(StatusMask);
+      }
+      return false;
+   }
+   return true;
+}
+
+void ForceField::idle(GameObject::IdleCallPath path)
 {
    if(path == ServerIdleMainLoop)
    {
-      mFieldDown.update(mCurrentMove.time);
-
-      if(mFieldDown.getCurrent() == 0)
+      if(mDownTimer.update(mCurrentMove.time))
       {
-         // Choose a target...
-         Point pos = mAnchorPoint;
-
-         Rect queryRect(mAnchorPoint, mAnchorPoint + mAnchorNormal * 800.f * mLength);
-         queryRect.expand(Point(20, 20));
-
-         fillVector.clear();
-         findObjects(ShipType, fillVector, queryRect);
-
-         bool foundFriendly = false;
-
-         for(S32 i=0; i<fillVector.size(); i++)
-         {
-            Ship *potential = (Ship*)fillVector[i];
-
-            // Is it dead or cloaked?
-            if(potential->isCloakActive() || potential->hasExploded)
-               continue;
-
-            // Is it on our team?
-            if(potential->getTeam() != mTeam)
-               continue;
-
-            // Is it near our field?
-
-
-            foundFriendly = true;
-         }
-
-         if(foundFriendly)
-         {
-            // Destroy the barrier...
-            if(mField.isValid())
-            {
-               getGame()->deleteObject(mField, 15);
-            }
-         }
-         else
-         {
-            if(mField.isNull())
-            {
-               Point n;
-               if(!findObjectLOS(BarrierType, 0, mAnchorPoint + mAnchorNormal * 0.1, mAnchorPoint + mAnchorNormal * 800.f, mLength, n))
-                  mLength = 1.f;
-
-               mField = new Barrier(mAnchorPoint + mAnchorNormal * 20.f, mAnchorPoint + mAnchorNormal * 800.f * mLength);
-               mField->addToGame(getGame());
-            }
-         }
-
-         mFieldDown.reset(FieldDownTime);
+         mFieldUp = true;
+         setMaskBits(StatusMask);
       }
    }
+}
+
+U32 ForceField::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
+{
+   if(stream->writeFlag(updateMask & InitialMask))
+   {
+      stream->write(mStart.x);
+      stream->write(mStart.y);
+      stream->write(mEnd.x);
+      stream->write(mEnd.y);
+      stream->write(mTeam);
+   }
+   stream->writeFlag(mFieldUp);
+   return 0;
+}
+
+void ForceField::unpackUpdate(GhostConnection *connection, BitStream *stream)
+{
+   if(stream->readFlag())
+   {
+      stream->read(&mStart.x);
+      stream->read(&mStart.y);
+      stream->read(&mEnd.x);
+      stream->read(&mEnd.y);
+      stream->read(&mTeam);
+
+      Rect extent(mStart, mEnd);
+      extent.expand(Point(5,5));
+      setExtent(extent);
+   }
+   mFieldUp = stream->readFlag();
+}
+
+bool ForceField::getCollisionPoly(Vector<Point> &p)
+{
+   Point normal(mEnd.y - mStart.y, mStart.x - mEnd.x);
+   normal.normalize(2.5);
+
+   p.push_back(mStart + normal);
+   p.push_back(mEnd + normal);
+   p.push_back(mEnd - normal);
+   p.push_back(mStart - normal);
+   return true;
+}
+
+void ForceField::render()
+{
+   Color c = getGame()->getGameType()->mTeams[mTeam].color;
+
+   if(c.r < 0.5)
+      c.r = 0.5;
+   if(c.g < 0.5)
+      c.g = 0.5;
+   if(c.b < 0.5)
+      c.b = 0.5;
+
+   Vector<Point> p;
+   getCollisionPoly(p);
+
+   if(mFieldUp)
+      glColor3f(c.r, c.g, c.b);
+   else
+      glColor3f(c.r * 0.5, c.g * 0.5, c.b * 0.5);
+   glBegin(GL_LINE_LOOP);
+   for(S32 i = 0; i < p.size(); i++)
+      glVertex2f(p[i].x, p[i].y);
+   glEnd();
 }
 
 TNL_IMPLEMENT_NETOBJECT(Turret);

@@ -592,6 +592,7 @@ U32  Ship::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *st
    {
       connection->packStringTableEntry(stream, mPlayerName);
       stream->write(mass);
+      stream->writeRangedU32(mTeam + 1, 0, getGame()->getTeamCount());
 
       // now write all the mounts:
       for(S32 i = 0; i < mMountedItems.size(); i++)
@@ -674,6 +675,7 @@ void Ship::unpackUpdate(GhostConnection *connection, BitStream *stream)
          color = g->getClientColor(mPlayerName);
 
       stream->read(&mass);
+      mTeam = stream->readRangedU32(0, gClientGame->getTeamCount()) - 1;
 
       // read mounted items:
       while(stream->readFlag())

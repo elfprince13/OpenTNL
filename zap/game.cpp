@@ -77,6 +77,13 @@ GameType *Game::getGameType()
    return mGameType;
 }
 
+U32 Game::getTeamCount()
+{
+   if(mGameType.isValid())
+      return mGameType->mTeams.size();
+   return 0;
+}
+
 void Game::setGameType(GameType *theGameType)
 {
    mGameType = theGameType;

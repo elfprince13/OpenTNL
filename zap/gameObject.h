@@ -47,8 +47,9 @@ enum GameObjectType
    ItemType          = BIT(5),
    ResourceItemType  = BIT(6),
    EngineeredType    = BIT(7),
+   ForceFieldType    = BIT(8),
 
-   CommandMapVisType = 1 << 31,
+   CommandMapVisType = BIT(31),
    AllObjectTypes = 0xFFFFFFFF,
 };
 

@@ -158,7 +158,7 @@ void Projectile::idle(GameObject::IdleCallPath path)
       Point surfNormal;
       for(;;)
       {
-         hitObject = findObjectLOS(MoveableType | BarrierType | EngineeredType, MoveObject::RenderState, pos, endPos, collisionTime, surfNormal);
+         hitObject = findObjectLOS(MoveableType | BarrierType | EngineeredType | ForceFieldType, MoveObject::RenderState, pos, endPos, collisionTime, surfNormal);
          if(!hitObject || hitObject->collide(this))
             break;
          disableVector.push_back(hitObject);
