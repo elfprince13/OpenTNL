@@ -292,6 +292,14 @@ SOURCE=.\UIQueryServers.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\UICredits.cpp
+#End Source File
+#Begin Source File
+
+SOURCE=.\UiCredits.h
+#End Source File
+#Begin Source File
+
 SOURCE=.\winJoystick.cpp
 # End Source File
 # End Target

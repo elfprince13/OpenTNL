@@ -25,6 +25,7 @@ OBJECTS_ZAP=\
 	UIMenus.o\
 	UINameEntry.o\
 	UIQueryServers.o\
+	UICredits.o\
 	projectile.o\
 	quickChat.o\
 	ship.o\
