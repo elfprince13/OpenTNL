@@ -87,8 +87,8 @@ class SFXObject : public Object
    void playOnSource();
    void updateGain();
    void updateMovementParams();
-   SFXObject(U32 profileIndex, ByteBufferPtr samples, F32 gain, Point position, Point velocity);
 public:
+   SFXObject(U32 profileIndex, ByteBufferPtr samples, F32 gain, Point position, Point velocity);
    ~SFXObject();
 
    void setGain(F32 gain);

@@ -411,6 +411,10 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddClient, (StringTableEntryRef name, b
    cref.teamId = 0;
    cref.wantsScoreboardUpdates = false;
    cref.ping = 0;
+   cref.decoderState = create_lpc10_decoder_state();
+   init_lpc10_decoder_state(cref.decoderState);
+   cref.voiceSFX = new SFXObject(SFXVoice, NULL, 1, Point(), Point());
+
    mClientList.push_back(cref);
 
    if(isMyClient)
@@ -421,6 +425,8 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cAddClient, (StringTableEntryRef name, b
 void GameType::serverRemoveClient(GameConnection *theClient)
 {
    S32 clientIndex = findClientIndexByConnection(theClient);
+   destroy_lpc10_decoder_state(mClientList[clientIndex].decoderState);
+
    mClientList.erase(clientIndex);
 
    GameObject *theControlObject = theClient->getControlObject();
@@ -570,6 +576,42 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cKillMessage, (StringTableEntryRef victi
 {
    gGameUserInterface.displayMessage(Color(1.0f, 1.0f, 0.8f), 
             "%s zapped %s", killer.getString(), victim.getString());
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sVoiceChat, (ByteBufferRef voiceBuffer),
+   NetClassGroupGameMask, RPCUnguaranteed, RPCToGhostParent, 0)
+{
+   // in the naive implementation, we just broadcast this to everyone,
+   // including the sender...
+
+   GameConnection *source = (GameConnection *) getRPCSourceConnection();
+   S32 clientIndex = findClientIndexByConnection(source);
+   if(clientIndex != -1)
+      s2cVoiceChat(mClientList[clientIndex].name, voiceBuffer);
+}
+
+TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cVoiceChat, (StringTableEntryRef clientName, ByteBufferRef voiceBuffer),
+   NetClassGroupGameMask, RPCUnguaranteed, RPCToGhost, 0)
+{
+   S32 clientIndex = findClientIndexByName(clientName);
+   if(clientIndex != -1)
+   {
+      S16 frame[LPC10_SAMPLES_PER_FRAME];
+      int p = 0, decodeLen = 0;
+      ByteBufferPtr playBuffer = new ByteBuffer(0);
+
+      for(U32 i = 0; i < voiceBuffer.getBufferSize(); i += p)
+      {
+         int frameLen = vbr_lpc10_decode((unsigned char *) voiceBuffer.getBuffer() + i, frame, mClientList[clientIndex].decoderState, &p);
+         playBuffer->resize((decodeLen + frameLen) * 2);
+
+         memcpy(playBuffer->getBuffer() + decodeLen * 2, frame, frameLen * 2);
+         decodeLen += frameLen;
+      }
+
+      logprintf("Decoded buffer size %d", playBuffer->getBufferSize());
+      mClientList[clientIndex].voiceSFX->queueBuffer(playBuffer);
+   }
 }
 
 };

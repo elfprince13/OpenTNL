@@ -359,6 +359,8 @@ void SFXObject::queueBuffer(ByteBufferPtr p)
             mInitialBuffer->getBufferSize(), 8000);
       alSourceQueueBuffers(source, 1, &buffer);
    }
+   else
+      play();
 }
 
 void SFXObject::playOnSource()
@@ -415,8 +417,7 @@ void SFXObject::play()
    else
    {
       // see if it's on the play list:
-      S32 i;
-      for(i = 0; i < gPlayList.size(); i++)
+      for(S32 i = 0; i < gPlayList.size(); i++)
          if(this == gPlayList[i].getPointer())
             return;
       gPlayList.push_back(this);

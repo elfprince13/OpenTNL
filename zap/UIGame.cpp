@@ -515,8 +515,7 @@ void GameUserInterface::onKeyUp(U32 key)
    }
 }
 
-lpc10_encoder_state *encoderState = NULL;
-lpc10_decoder_state *decoderState = NULL;
+static lpc10_encoder_state *encoderState = NULL;
 
 void GameUserInterface::startRecordingAudio()
 {
@@ -524,9 +523,6 @@ void GameUserInterface::startRecordingAudio()
    {
       encoderState = create_lpc10_encoder_state();
       init_lpc10_encoder_state(encoderState);
-
-      decoderState = create_lpc10_decoder_state();
-      init_lpc10_decoder_state(decoderState);
 
       mUnusedAudio = new ByteBuffer(0);
       mRecordingAudio = true;
@@ -542,7 +538,6 @@ void GameUserInterface::stopRecordingAudio()
    {
       processRecordingAudio();
       destroy_lpc10_encoder_state(encoderState);
-      destroy_lpc10_decoder_state(decoderState);
 
       mRecordingAudio = false;
       SFXObject::stopRecording();
@@ -578,28 +573,12 @@ void GameUserInterface::processRecordingAudio()
       memcpy(mUnusedAudio->getBuffer(), mUnusedAudio->getBuffer() + useCount * 2, unusedCount * 2);
       mUnusedAudio->resize(unusedCount * 2);
 
+      ByteBuffer sendBuffer(codingBuffer, len);
       logprintf("Encoded %d samples in %d bytes", useCount, len);
 
-      S16 frame[LPC10_SAMPLES_PER_FRAME];
-      int p = 0, decodeLen = 0;
-      ByteBufferPtr playBuffer = new ByteBuffer(0);
-
-      for(U32 i = 0; i < len; i += p)
-      {
-         int frameLen = vbr_lpc10_decode(codingBuffer + i, frame, decoderState, &p);
-         playBuffer->resize((decodeLen + frameLen) * 2);
-
-         memcpy(playBuffer->getBuffer() + decodeLen * 2, frame, frameLen * 2);
-         decodeLen += frameLen;
-      }
-
-      logprintf("Decoded buffer size %d", playBuffer->getBufferSize());
-
-      if(mVoiceSfx.isValid())
-         mVoiceSfx->queueBuffer(playBuffer);
-      else
-         mVoiceSfx = SFXObject::playRecordedBuffer(playBuffer);
-
+      GameType *gt = gClientGame->getGameType();
+      if(gt)
+         gt->c2sVoiceChat(sendBuffer);
    }
 }
 

@@ -29,6 +29,8 @@
 
 #include "gameObject.h"
 #include "timer.h"
+#include "sfx.h"
+#include "lpc10.h"
 
 namespace Zap
 {
@@ -50,6 +52,8 @@ public:
 
       bool wantsScoreboardUpdates;
       SafePtr<GameConnection> clientConnection;
+      RefPtr<SFXObject> voiceSFX;
+      lpc10_decoder_state *decoderState;
       U32 ping;
       ClientRef() { ping = 0; score = 0; }
    };
@@ -140,6 +144,9 @@ public:
    TNL_DECLARE_RPC(s2cSetGameOver, (bool gameOver));
    TNL_DECLARE_RPC(s2cSetTimeRemaining, (U32 timeLeft));
    TNL_DECLARE_RPC(c2sRequestScoreboardUpdates, (bool updates));
+
+   TNL_DECLARE_RPC(c2sVoiceChat, (ByteBufferRef compressedVoice));
+   TNL_DECLARE_RPC(s2cVoiceChat, (StringTableEntryRef client, ByteBufferRef compressedVoice));
 
    TNL_DECLARE_CLASS(GameType);
 };
