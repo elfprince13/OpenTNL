@@ -39,6 +39,7 @@ namespace Zap
 static LPDIRECTSOUNDCAPTURE8 capture = NULL;
 static LPDIRECTSOUNDCAPTUREBUFFER captureBuffer = NULL;
 static bool recording = false;
+static bool captureInit = false;
 
 enum {
    BufferBytes = 16000,
@@ -51,12 +52,13 @@ bool SFXObject::startRecording()
    if(recording)
       return true;
 
-   if(!capture)
+   if(!captureInit)
    {
-      DirectSoundCaptureCreate8(NULL, &capture, NULL);   
-      if(!capture)
-         return false;
+      captureInit = true;
+	   DirectSoundCaptureCreate8(NULL, &capture, NULL);   
    }
+   if(!capture)
+      return false;
 
    if(!captureBuffer)
    {
@@ -76,7 +78,10 @@ bool SFXObject::startRecording()
       dscbd.lpDSCFXDesc = NULL;
        
       if (FAILED(hr = capture->CreateCaptureBuffer(&dscbd, &captureBuffer, NULL)))
+      {
+         captureBuffer = NULL;
          return false;
+      }
    }
    recording = true;
    lastReadOffset = 0;
@@ -138,6 +143,8 @@ void SFXObject::stopRecording()
    if(recording)
    {
       recording = false;
+      if(!captureBuffer)
+         return;
       captureBuffer->Stop();
       if(captureBuffer)
          captureBuffer->Release();

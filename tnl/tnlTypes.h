@@ -398,12 +398,12 @@ inline void writeU32ToBuffer(U32 value, U8 *buffer)
    buffer[3] = value;
 }
 
-inline U32 readU32FromBuffer(const U8 *buffer)
+inline U32 readU32FromBuffer(const U8 *buf)
 {
-   return (U32(buffer[0]) << 24) |
-          (U32(buffer[1]) << 16) |
-          (U32(buffer[2]) << 8 ) |
-          (U32(buffer[3]));
+   return (U32(buf[0]) << 24) |
+          (U32(buf[1]) << 16) |
+          (U32(buf[2]) << 8 ) |
+          U32(buf[3]);
 }
 
 inline void writeU16ToBuffer(U16 value, U8 *buffer)
@@ -415,7 +415,7 @@ inline void writeU16ToBuffer(U16 value, U8 *buffer)
 inline U16 readU16FromBuffer(const U8 *buffer)
 {
    return (U16(buffer[0]) << 8) |
-          (U16(buffer[1]));
+          U16(buffer[1]);
 }
 
 inline U32 fourByteAlign(U32 value)

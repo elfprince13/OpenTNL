@@ -36,6 +36,8 @@
 namespace Zap
 {
 
+extern U32 gSimulatedPing;
+extern F32 gSimulatedPacketLoss;
 extern bool gQuit;
 
 TNL_IMPLEMENT_NETCONNECTION(MasterServerConnection, NetClassGroupMaster, false);
@@ -159,6 +161,7 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionAccepted
       if(!name[0])
          name = "Playa";
 
+      conn->setSimulatedNetParams(gSimulatedPacketLoss, gSimulatedPing);
       conn->setPlayerName(name);
       gClientGame->setConnectionToServer(conn);
 

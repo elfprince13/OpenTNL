@@ -178,6 +178,10 @@ SOURCE=.\huffmanStringProcessor.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\journal.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\log.cpp
 # End Source File
 # Begin Source File
@@ -267,6 +271,18 @@ SOURCE=.\symmetricCipher.h
 # Begin Source File
 
 SOURCE=.\tnl.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\tnlJournal.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\tnlMethodDispatch.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\tnlMethodDispatch.h
 # End Source File
 # Begin Source File
 

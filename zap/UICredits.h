@@ -49,11 +49,12 @@ public:
 class CreditsScroller : public CreditsFX
 {
    //typedef CreditsFX Parent;
+public:
    enum Credits {
       MaxCreditLen = 32,
       CreditSpace  = 200,
    };
-
+private:
    struct ProjectInfo {
       char titleBuf[MaxCreditLen+1];
       char copyBuf[MaxCreditLen+1];

@@ -224,6 +224,12 @@ void NetConnection::writeRawPacket(BitStream *bstream, NetPacketType packetType)
 
 void NetConnection::readRawPacket(BitStream *bstream)
 {
+   if(mSimulatedPacketLoss && Random::readF() < mSimulatedPacketLoss)
+   {
+      TNLLogMessageV(LogNetConnection, ("NetConnection %s: RECVDROP - %d", mNetAddress.toString(), getLastSendSequence()));
+      return;
+   }
+
    mErrorBuffer[0] = 0;
    if(readPacketHeader(bstream))
    {

@@ -53,6 +53,8 @@ const char *gHostName = "ZAP Game";
 const char *gWindowTitle = "ZAP II - The Return";
 U32 gMaxPlayers = 128;
 U32 gJoystickType = 0;
+U32 gSimulatedPing = 0;
+F32 gSimulatedPacketLoss = 0;
 
 const char *gMasterAddressString = "IP:master.opentnl.org:29005";
 Address gMasterAddress;
@@ -326,6 +328,7 @@ void joinGame(Address remoteAddress, bool isFromMaster, bool local)
          name = "Playa";
 
       theConnection->setPlayerName(name);
+      theConnection->setSimulatedNetParams(gSimulatedPacketLoss, gSimulatedPing);
 
       if(local)
          theConnection->connectLocal(gClientGame->getNetInterface(), gServerGame->getNetInterface());
@@ -421,6 +424,16 @@ int main(int argc, char **argv)
          OptionsMenuUserInterface::joystickEnabled = true;
          if(hasAdditionalArg)
             gJoystickType = atoi(argv[i+1]);
+      }
+      else if(!stricmp(argv[i], "-loss"))
+      {
+         if(hasAdditionalArg)
+            gSimulatedPacketLoss = atof(argv[i+1]);
+      }
+      else if(!stricmp(argv[i], "-lag"))
+      {
+         if(hasAdditionalArg)
+            gSimulatedPing = atoi(argv[i+1]);
       }
       else if(!stricmp(argv[i], "-jsave"))
       {
