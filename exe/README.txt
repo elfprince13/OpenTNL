@@ -15,7 +15,7 @@ you can only score if it is at home!
 Soccer - Team game where the objective is to move the white circle
 (the ball) into the goal of the opponent's color.
 
-Football - Team game with a single flag and multiple "capture zone"
+Zone Control - Team game with a single flag and multiple "capture zone"
 areas.  The goal of the game is to escort a team member carrying the
 flag to each of the capture zones in the map.  When a capture zone
 is entered by the flag carrier, the zone turns to that team's color

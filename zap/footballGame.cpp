@@ -34,7 +34,7 @@ namespace Zap
 {
 class Ship;
 
-class FootballGameType : public GameType
+class ZoneControlGameType : public GameType
 {
    typedef GameType Parent;
 
@@ -44,16 +44,16 @@ public:
    void flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex);
    void addZone(GoalZone *z);
    void shipTouchZone(Ship *s, GoalZone *z);
-   const char *getGameTypeString() { return "Football"; }
+   const char *getGameTypeString() { return "Zone Control"; }
    const char *getInstructionString() { return "Carry the flag into each of the capture zones!"; }
 
-   TNL_DECLARE_CLASS(FootballGameType);
+   TNL_DECLARE_CLASS(ZoneControlGameType);
 };
 
-TNL_IMPLEMENT_NETOBJECT(FootballGameType);
+TNL_IMPLEMENT_NETOBJECT(ZoneControlGameType);
 
 
-void FootballGameType::shipTouchFlag(Ship *theShip, FlagItem *theFlag)
+void ZoneControlGameType::shipTouchFlag(Ship *theShip, FlagItem *theFlag)
 {
    GameConnection *controlConnection = theShip->getControllingClient();
    ClientRef *cl = controlConnection->getClientRef();
@@ -69,7 +69,7 @@ void FootballGameType::shipTouchFlag(Ship *theShip, FlagItem *theFlag)
    theFlag->mountToShip(theShip);
 }
 
-void FootballGameType::flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex)
+void ZoneControlGameType::flagDropped(const StringTableEntry &playerName, S32 flagTeamIndex)
 {
    static StringTableEntry dropString("%e0 dropped the flag!");
    Vector<StringTableEntry> e;
@@ -78,12 +78,12 @@ void FootballGameType::flagDropped(const StringTableEntry &playerName, S32 flagT
       mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagDrop, dropString, e);
 }
 
-void FootballGameType::addZone(GoalZone *z)
+void ZoneControlGameType::addZone(GoalZone *z)
 {
    mZones.push_back(z);
 }
 
-void FootballGameType::shipTouchZone(Ship *s, GoalZone *z)
+void ZoneControlGameType::shipTouchZone(Ship *s, GoalZone *z)
 {
    if(z->getTeam() == s->getTeam())
       return;
