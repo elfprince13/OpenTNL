@@ -69,7 +69,7 @@ public:
    TNL_DECLARE_JOURNAL_ENTRYPOINT(mouse, (S32 button, S32 state, S32 x, S32 y));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(specialkey, (S32 key, S32 x, S32 y));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(specialkeyup, (S32 key, S32 x, S32 y));
-   TNL_DECLARE_JOURNAL_ENTRYPOINT(idle, ());
+   TNL_DECLARE_JOURNAL_ENTRYPOINT(idle, (U32 timeDelta));
    TNL_DECLARE_JOURNAL_ENTRYPOINT(display, ());
 };
 
@@ -193,11 +193,6 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, specialkeyup, (S32 key, S32 x, S32 
 
 void idle()
 {
-   gZapJournal.idle();
-}
-
-TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, idle, ())
-{
    static S64 lastTimer = Platform::getHighPrecisionTimerValue();
    static F64 unusedFraction = 0;
 
@@ -211,19 +206,25 @@ TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, idle, ())
       lastTimer = currentTimer;
       unusedFraction = timeElapsed - integerTime;
 
-      if(UserInterface::current)
-         UserInterface::current->idle(integerTime);
-      if(gClientGame)
-         gClientGame->idle(integerTime);
-      if(gServerGame)
-         gServerGame->idle(integerTime);
-      if(gClientGame)
-         glutPostRedisplay();
+      gZapJournal.idle(integerTime);
    }
 
    // Sleep a bit so we don't saturate the system. For a non-dedicated server,
    // sleep(0) helps reduce the impact of OpenGL on windows.
    Platform::sleep((gClientGame ? 0 : 1));
+   gZapJournal.processNextJournalEntry();
+}
+
+TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(ZapJournal, idle, (U32 integerTime))
+{
+   if(UserInterface::current)
+      UserInterface::current->idle(integerTime);
+   if(gClientGame)
+      gClientGame->idle(integerTime);
+   if(gServerGame)
+      gServerGame->idle(integerTime);
+   if(gClientGame)
+      glutPostRedisplay();
 }
 
 void dedicatedServerLoop()
@@ -391,6 +392,16 @@ int main(int argc, char **argv)
          OptionsMenuUserInterface::joystickEnabled = true;
          if(hasAdditionalArg)
             gJoystickType = atoi(argv[i+1]);
+      }
+      else if(!stricmp(argv[i], "-jsave"))
+      {
+         if(hasAdditionalArg)
+            gZapJournal.record(argv[i+1]);
+      }
+      else if(!stricmp(argv[i], "-jplay"))
+      {
+         if(hasAdditionalArg)
+            gZapJournal.load(argv[i+1]);
       }
       else if(!stricmp(argv[i], "-gain"))
       {

@@ -42,26 +42,49 @@ namespace TNL
 
 class Journal : public Object
 {
-   FILE *journalFile;
-   BitStream readStream;
-   BitStream writeStream;
+   static FILE *mJournalFile;
+   static BitStream mReadStream;
+   static BitStream mWriteStream;
+   static Journal *mJournal;
+   static U32 mWritePosition;
 public:
+   enum Mode
+   {
+      Inactive,
+      Record,
+      Playback,
+   };
+protected:
+   static Mode mCurrentMode;
+   static bool mInsideEntrypoint;
+public:
+   Journal();
    void record(const char *fileName);
    void load(const char *fileName);
 
    void callEntry(const char *funcName, MarshalledCall *theCall);
    void processNextJournalEntry();
+
+   static Mode getCurrentMode() { return mCurrentMode; }
+   static Journal *get() { return mJournal; }
+   static void checkReadPosition();
+   static void syncWriteStream();
+   static BitStream *getReadStream() { return &mReadStream; }
+   static BitStream *getWriteStream() { return &mWriteStream; }
+   static bool isInEntrypoint() { return mInsideEntrypoint; }
 };
 
 struct JournalEntryRecord
 {
    const char *mFunctionName;
+   MethodArgList *mMethodArgList;
    JournalEntryRecord *mNext;
    static JournalEntryRecord *mList;
 
-   JournalEntryRecord(const char *functionName)
+   JournalEntryRecord(const char *functionName, MethodArgList *methodArgList)
    {
       mFunctionName = functionName;
+      mMethodArgList = methodArgList;
       mNext = mList;
       mList = this;
    }
@@ -82,8 +105,8 @@ struct JournalEntryRecord
             m.v1 = *((U32 *) &fptr); \
             if(sizeof(fptr) > sizeof(U32)) m.v2 = *(((U32 *) &fptr) + 1); \
          }; \
-         Journal_##className##_##func##_er(const char *name) : JournalEntryRecord(name) {} \
-      } gJournal_##className##_##func##_er(#func); \
+         Journal_##className##_##func##_er(const char *name, MethodArgList *methodArgList) : JournalEntryRecord(name, methodArgList) {} \
+      } gJournal_##className##_##func##_er(#func, &Journal_##className##_##func); \
       void FN_CDECL className::func args { \
          SAVE_PARAMS \
          MarshalledCall call(&Journal_##className##_##func); \
@@ -92,12 +115,50 @@ struct JournalEntryRecord
       } \
       void FN_CDECL className::func##_body args
 
+#define TNL_JOURNAL_WRITE_BLOCK(x) \
+{ \
+   if(TNL::Journal::getCurrentMode() == TNL::Journal::Record && TNL::Journal::isInEntrypoint()) \
+   { \
+   x \
+   } \
+   TNL::Journal::syncWriteStream(); \
+}
+
+class JournalReadChecker
+{
+public:
+   ~JournalReadChecker()
+   {
+      TNL::Journal::checkReadPosition();
+   }
+};
+
+#define TNL_JOURNAL_READ_BLOCK(x) \
+{ \
+   if(TNL::Journal::isInEntrypoint()) { \
+      TNL::JournalReadChecker dummy; \
+      if(TNL::Journal::getCurrentMode() == TNL::Journal::Playback) \
+      { \
+      x \
+      } \
+   } \
+}
+
+#define TNL_JOURNAL_READ(x) \
+   TNL::Journal::getReadStream()->read x
+
+#define TNL_JOURNAL_WRITE(x) \
+   TNL::Journal::getWriteStream()->write x
+
 #else
 #define TNL_DECLARE_JOURNAL_ENTRYPOINT(func, args) \
       void func args
 
 #define TNL_IMPLEMENT_JOURNAL_ENTRYPOINT(className, func, args) \
    void className::func args
+
+#define TNL_JOURNAL_WRITE_BLOCK(x)
+#define TNL_JOURNAL_READ_BLOCK(x)
 
 #endif
 };

@@ -26,6 +26,7 @@
 
 #include "tnlTypes.h"
 #include "tnl.h"
+#include "tnlJournal.h"
 
 #include <string.h>
 #if defined (TNL_OS_XBOX)
@@ -72,7 +73,20 @@ void Platform::forceQuit()
 
 U32 Platform::getRealMilliseconds()
 {
-   return GetTickCount();
+   U32 tickCount;
+   TNL_JOURNAL_READ_BLOCK
+   (
+      TNL_JOURNAL_READ( (&tickCount) );
+      return tickCount;
+   )
+
+   tickCount = GetTickCount();
+
+   TNL_JOURNAL_WRITE_BLOCK
+   (
+      TNL_JOURNAL_WRITE(tickCount);
+   )
+   return tickCount;
 }
 
 //--------------------------------------
@@ -126,7 +140,20 @@ void Platform::forceQuit()
 
 U32 Platform::getRealMilliseconds()
 {
-   return GetTickCount();
+   U32 tickCount;
+   TNL_JOURNAL_READ_BLOCK
+   (
+      TNL_JOURNAL_READ( (&tickCount) );
+      return tickCount;
+   )
+
+   tickCount = GetTickCount();
+
+   TNL_JOURNAL_WRITE_BLOCK
+   (
+      TNL_JOURNAL_WRITE( (tickCount) );
+   )
+   return tickCount;
 }
 
 class WinTimer
@@ -167,12 +194,40 @@ static WinTimer gTimer;
 
 S64 Platform::getHighPrecisionTimerValue()
 {
-   return gTimer.getCurrentTime();
+   S64 currentTime;
+   TNL_JOURNAL_READ_BLOCK
+   (
+      TNL_JOURNAL_READ( (&currentTime) );
+      return currentTime;
+   )
+
+   currentTime = gTimer.getCurrentTime();
+
+   TNL_JOURNAL_WRITE_BLOCK
+   (
+      TNL_JOURNAL_WRITE( (currentTime) );
+   )
+
+   return currentTime;
 }
 
 F64 Platform::getHighPrecisionMilliseconds(S64 timerDelta)
 {
-   return gTimer.convertToMS(timerDelta);
+   F64 timerValue;
+   TNL_JOURNAL_READ_BLOCK
+   (
+      TNL_JOURNAL_READ( (&timerValue) );
+      return timerValue;
+   )
+
+   timerValue = gTimer.convertToMS(timerDelta);
+
+   TNL_JOURNAL_WRITE_BLOCK
+   (
+      TNL_JOURNAL_WRITE( (timerValue) );
+   )
+
+   return timerValue;
 }
 
 void Platform::sleep(U32 msCount)

@@ -25,6 +25,7 @@
 //------------------------------------------------------------------------------------
 
 #include "tnl.h"
+#include "tnlJournal.h"
 
 #if defined ( TNL_OS_XBOX )
 
@@ -189,6 +190,10 @@ static void SocketToTNLAddress(const SOCKADDR *sockAddr, Address *address)
 
 Socket::Socket(const Address &bindAddress, U32 sendBufferSize, U32 recvBufferSize, bool acceptsBroadcast, bool nonblockingIO)
 {
+   TNL_JOURNAL_READ_BLOCK(
+         TNL_JOURNAL_READ( (&mPlatformSocket) );
+      return;
+   )
    init();
    mPlatformSocket = INVALID_SOCKET;
    mTransportProtocol = bindAddress.transport;
@@ -265,10 +270,17 @@ Socket::Socket(const Address &bindAddress, U32 sendBufferSize, U32 recvBufferSiz
          mPlatformSocket = INVALID_SOCKET;
       }
    }
+   TNL_JOURNAL_WRITE_BLOCK(
+      TNL_JOURNAL_WRITE( (mPlatformSocket) );
+   )
 }
 
 Socket::~Socket()
 {
+   TNL_JOURNAL_READ_BLOCK(
+      return;
+   )
+
    if(mPlatformSocket != INVALID_SOCKET)
       closesocket(mPlatformSocket);
    shutdown();
@@ -276,6 +288,10 @@ Socket::~Socket()
 
 NetError Socket::sendto(const Address &address, const U8 *buffer, S32 bufferSize)
 {
+   TNL_JOURNAL_READ_BLOCK(
+      return NoError;
+   )
+
    if(address.transport != mTransportProtocol)
       return InvalidPacketProtocol;
 
@@ -292,17 +308,51 @@ NetError Socket::sendto(const Address &address, const U8 *buffer, S32 bufferSize
 
 NetError Socket::recvfrom(Address *address, U8 *buffer, S32 bufferSize, S32 *outSize)
 {
+   TNL_JOURNAL_READ_BLOCK(
+      bool wouldBlock;
+      TNL_JOURNAL_READ( (&wouldBlock) );
+      if(wouldBlock)
+         return WouldBlock;
+      
+      TNL_JOURNAL_READ( (&address->transport) );
+      TNL_JOURNAL_READ( (&address->port) );
+      TNL_JOURNAL_READ( (&address->netNum[0]) );
+      TNL_JOURNAL_READ( (&address->netNum[1]) );
+      TNL_JOURNAL_READ( (&address->netNum[2]) );
+      TNL_JOURNAL_READ( (&address->netNum[3]) );
+      TNL_JOURNAL_READ( (outSize) );
+      TNL_JOURNAL_READ( (*outSize, buffer) );
+      return NoError;
+   )
+
    SOCKADDR sa;
    socklen_t addrLen = sizeof(sa);
    S32 bytesRead = SOCKET_ERROR;
 
    bytesRead = ::recvfrom(mPlatformSocket, (char *) buffer, bufferSize, 0, &sa, &addrLen);
    if(bytesRead == SOCKET_ERROR)
+   {
+      TNL_JOURNAL_WRITE_BLOCK(
+         TNL_JOURNAL_WRITE ( (true) );
+      )
       return WouldBlock;
+   }
 
    SocketToTNLAddress(&sa, address);
 
    *outSize = bytesRead;
+
+   TNL_JOURNAL_WRITE_BLOCK(
+      TNL_JOURNAL_WRITE( (false) );
+      TNL_JOURNAL_WRITE( (address->transport) );
+      TNL_JOURNAL_WRITE( (address->port) );
+      TNL_JOURNAL_WRITE( (address->netNum[0]) );
+      TNL_JOURNAL_WRITE( (address->netNum[1]) );
+      TNL_JOURNAL_WRITE( (address->netNum[2]) );
+      TNL_JOURNAL_WRITE( (address->netNum[3]) );
+      TNL_JOURNAL_WRITE( (*outSize) );
+      TNL_JOURNAL_WRITE( (*outSize, buffer) );
+   )
    return NoError;
 }
 

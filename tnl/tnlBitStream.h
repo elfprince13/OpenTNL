@@ -96,6 +96,9 @@ public:
    /// Sets the maximum read and write sizes for the BitStream.
    void setMaxSizes(U32 maxReadSize, U32 maxWriteSize = 0);
 
+   /// Sets the maximum read and write bit sizes for the BitStream.
+   void setMaxBitSizes(U32 maxReadBitSize, U32 maxWriteBitSize = 0);
+
    /// resets the read/write position to 0 and clears any error state.
    void reset();
 
@@ -112,6 +115,9 @@ public:
    void setBitPosition(const U32 newBitPosition);
    /// Advances the position in the stream by numBits.
    void advanceBitPosition(const S32 numBits);
+
+   /// Returns the maximum readable bit position
+   U32 getMaxReadBitPosition() const { return maxReadBitNum; }
 
    /// Pads the bits up to the next byte boundary with 0's.
    void zeroToByteBoundary();
@@ -207,6 +213,9 @@ public:
    /// @endcode
    bool readFlag();
 
+   bool write(bool value) { writeFlag(value); return !error; }
+   bool read(bool *value) { *value = readFlag(); return !error; }
+
    /// Writes a huffman compressed string into the stream.
    void writeString(const char *stringBuf, U8 maxLen=255);
    /// Reads a huffman compressed string from the stream.
@@ -227,6 +236,8 @@ public:
    DeclareTemplatizedReadWrite(S16);
    DeclareTemplatizedReadWrite(U32);
    DeclareTemplatizedReadWrite(S32);
+   DeclareTemplatizedReadWrite(S64);
+   DeclareTemplatizedReadWrite(U64);
    DeclareTemplatizedReadWrite(F32);
    DeclareTemplatizedReadWrite(F64);
 

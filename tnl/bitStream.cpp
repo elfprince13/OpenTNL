@@ -41,6 +41,12 @@ void BitStream::setMaxSizes(U32 maxReadSize, U32 maxWriteSize)
    maxWriteBitNum = maxWriteSize << 3;
 }
 
+void BitStream::setMaxBitSizes(U32 maxReadSize, U32 maxWriteSize)
+{
+   maxReadBitNum = maxReadSize;
+   maxWriteBitNum = maxWriteSize;
+}
+
 void BitStream::reset()
 {
    bitNum = 0;
