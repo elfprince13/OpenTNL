@@ -139,25 +139,25 @@ static void HIDGetElementsCFArrayHandler (const void * value, void * parameter)
 							switch (usage) /* look at usage to determine function */
 							{
 								case kHIDUsage_GD_X:
-                           theElement = gController.axis + AxisX;
+                           theElement = gController.axes + AxisX;
                            break;
 								case kHIDUsage_GD_Y:
-                           theElement = gController.axis + AxisY;
+                           theElement = gController.axes + AxisY;
                            break;
 								case kHIDUsage_GD_Z:
-                           theElement = gController.axis + AxisZ;
+                           theElement = gController.axes + AxisZ;
                            break;
 								case kHIDUsage_GD_Rx:
-                           theElement = gController.axis + AxisRx;
+                           theElement = gController.axes + AxisRx;
                            break;
 								case kHIDUsage_GD_Ry:
-                           theElement = gController.axis + AxisRy;
+                           theElement = gController.axes + AxisRy;
                            break;
 								case kHIDUsage_GD_Rz:
-                           theElement = gController.axis + AxisRz;
+                           theElement = gController.axes + AxisRz;
                            break;
 								case kHIDUsage_GD_Slider:
-                           theElement = gController.axis + AxisSlider0;
+                           theElement = gController.axes + AxisSlider0;
                            break;
 								case kHIDUsage_GD_Dial:
 								case kHIDUsage_GD_Wheel:
