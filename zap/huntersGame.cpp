@@ -120,8 +120,8 @@ void HuntersGameType::shipTouchNexus(Ship *theShip, HuntersNexusObject *theNexus
    for(U32 count = 1; count < theFlag->getFlagCount() + 1; count++)
       score += (count * 10);
 
-   S32 cIndex = findClientIndexByConnection(theShip->getControllingClient());
-   mClientList[cIndex].score += score;
+   ClientRef *cl = theShip->getControllingClient()->getClientRef();
+   cl->score += score;
 
    if(theFlag->getFlagCount() > 0)
       s2cHuntersMessage(HuntersMsgScore, theShip->mPlayerName.getString(), theFlag->getFlagCount());
@@ -202,8 +202,8 @@ void HuntersGameType::controlObjectForClientKilled(GameConnection *theClient, Ga
 void HuntersGameType::spawnShip(GameConnection *theClient)
 {
    Parent::spawnShip(theClient);
-   S32 clientIndex = findClientIndexByConnection(theClient);
-   setClientShipLoadout(clientIndex, theClient->getLoadout());
+   ClientRef *cl = theClient->getClientRef();
+   setClientShipLoadout(cl, theClient->getLoadout());
 
    HuntersFlagItem *newFlag = new HuntersFlagItem(theClient->getControlObject()->getActualPos());
    newFlag->addToGame(getGame());

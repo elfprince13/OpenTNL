@@ -219,17 +219,16 @@ TNL_IMPLEMENT_NETOBJECT(FootballZone);
 void FootballGameType::shipTouchFlag(Ship *theShip, FlagItem *theFlag)
 {
    GameConnection *controlConnection = theShip->getControllingClient();
-   S32 clientIndex = findClientIndexByConnection(controlConnection);
-   if(clientIndex == -1)
+   ClientRef *cl = controlConnection->getClientRef();
+   if(!cl)
       return;
 
    static StringTableEntry takeString("%e0 of team %e1 has the flag!");
    Vector<StringTableEntry> e;
-   ClientRef &cl = mClientList[clientIndex];
-   e.push_back(cl.name);
-   e.push_back(mTeams[cl.teamId].name);
+   e.push_back(cl->name);
+   e.push_back(mTeams[cl->teamId].name);
    for(S32 i = 0; i < mClientList.size(); i++)
-      mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagSnatch, takeString, e);
+      mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagSnatch, takeString, e);
    theFlag->mountToShip(theShip);
 }
 
@@ -239,7 +238,7 @@ void FootballGameType::flagDropped(const StringTableEntry &playerName, S32 flagT
    Vector<StringTableEntry> e;
    e.push_back(playerName);
    for(S32 i = 0; i < mClientList.size(); i++)
-      mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagDrop, dropString, e);
+      mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagDrop, dropString, e);
 }
 
 void FootballGameType::addZone(FootballZone *z)
@@ -268,7 +267,7 @@ void FootballGameType::shipTouchZone(Ship *s, FootballZone *z)
       e.push_back(mTeams[oldTeam].name);
 
       for(S32 i = 0; i < mClientList.size(); i++)
-         mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagSnatch, takeString, e);
+         mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagSnatch, takeString, e);
       setTeamScore(oldTeam, mTeams[oldTeam].score - 1);
    }
    else
@@ -277,7 +276,7 @@ void FootballGameType::shipTouchZone(Ship *s, FootballZone *z)
       Vector<StringTableEntry> e;
       e.push_back(s->mPlayerName);
       for(S32 i = 0; i < mClientList.size(); i++)
-         mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagSnatch, takeString, e);
+         mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagSnatch, takeString, e);
    }
    setTeamScore(s->getTeam(), mTeams[s->getTeam()].score + 1);
    z->setTeam(s->getTeam());
@@ -294,7 +293,7 @@ void FootballGameType::shipTouchZone(Ship *s, FootballZone *z)
    Vector<StringTableEntry> e;
    e.push_back(mTeams[s->getTeam()].name);
    for(S32 i = 0; i < mClientList.size(); i++)
-      mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagCapture, tdString, e);
+      mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagCapture, tdString, e);
 
    for(S32 i = 0; i < mZones.size(); i++)
       mZones[i]->setTeam(-1);

@@ -554,9 +554,8 @@ void ClientGame::renderCommander()
 
    if(gt)
    {
-      S32 playerId = gt->findClientIndexByName(u->mPlayerName);
-      S32 playerTeam = gt->mClientList[playerId].teamId;
-      Color teamColor = gt->mTeams[playerTeam].color;
+      S32 playerTeam = u->getTeam();
+      Color teamColor = gt->getTeamColor(playerTeam);
       
       F32 colorFactor = zoomFrac * 0.35;
 
@@ -570,8 +569,7 @@ void ClientGame::renderCommander()
          {
             Ship * so = (Ship*)(renderObjects[i]);
             // Get team of this object.
-            S32 ourClientId = gClientGame->getGameType()->findClientIndexByName(so->mPlayerName);
-            S32 ourTeam     = gClientGame->getGameType()->mClientList[ourClientId].teamId;
+            S32 ourTeam = so->getTeam();
 
             if(ourTeam == playerTeam)
             {

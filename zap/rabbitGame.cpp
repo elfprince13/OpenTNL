@@ -99,8 +99,8 @@ void RabbitGameType::processArguments(S32 argc, const char **argv)
 void RabbitGameType::spawnShip(GameConnection *theClient)
 {
    Parent::spawnShip(theClient);
-   S32 clientIndex = findClientIndexByConnection(theClient);
-   setClientShipLoadout(clientIndex, mHunterLoadout);
+   ClientRef *cl = theClient->getClientRef();
+   setClientShipLoadout(cl, mHunterLoadout);
 }
 
 bool RabbitGameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
@@ -145,14 +145,13 @@ bool RabbitGameType::shipHasFlag(Ship *ship)
 void RabbitGameType::onClientScore(Ship *ship, S32 howMuch)
 {
    GameConnection *controlConnection = ship->getControllingClient();
-   S32 clientIndex = findClientIndexByConnection(controlConnection);
+   ClientRef *cl = controlConnection->getClientRef();
 
-   if(clientIndex == -1)
+   if(!cl)
       return;
 
-   ClientRef &cl = mClientList[clientIndex];
-   cl.score += howMuch;
-   if (cl.score >= mScoreLimit)
+   cl->score += howMuch;
+   if (cl->score >= mScoreLimit)
       gameOverManGameOver();
 }
 
@@ -187,8 +186,8 @@ void RabbitGameType::onFlagGrabbed(Ship *ship, RabbitFlagItem *flag)
    s2cRabbitMessage(RabbitMsgGrab, ship->mPlayerName.getString());
 
    flag->mountToShip(ship);
-   S32 clientIndex = findClientIndexByConnection(ship->getControllingClient());
-   setClientShipLoadout(clientIndex, mRabbitLoadout);
+   ClientRef *cl = ship->getControllingClient()->getClientRef();
+   setClientShipLoadout(cl, mRabbitLoadout);
 }
 
 void RabbitGameType::onFlagHeld(Ship *ship)
@@ -217,7 +216,7 @@ void RabbitGameType::onFlagReturned()
 {
    static StringTableEntry returnString("The carrot has been returned!");
    for (S32 i = 0; i < mClientList.size(); i++)
-      mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagReturn, returnString, NULL);
+      mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagReturn, returnString, NULL);
 }
 
 //-----------------------------------------------------

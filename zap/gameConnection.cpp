@@ -76,6 +76,16 @@ GameConnection *GameConnection::getNextClient()
    return mNext;
 }
 
+void GameConnection::setClientRef(ClientRef *theRef)
+{
+   mClientRef = theRef;
+}
+
+ClientRef *GameConnection::getClientRef()
+{
+   return mClientRef;
+}
+
 TNL_IMPLEMENT_RPC(GameConnection, c2sRequestCommanderMap, (), NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 1)
 {
    mInCommanderMap = true;

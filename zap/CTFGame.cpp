@@ -41,26 +41,24 @@ TNL_IMPLEMENT_NETOBJECT(CTFGameType);
 void CTFGameType::shipTouchFlag(Ship *theShip, FlagItem *theFlag)
 {
    GameConnection *controlConnection = theShip->getControllingClient();
-   S32 clientIndex = findClientIndexByConnection(controlConnection);
+   ClientRef *cl = controlConnection->getClientRef();
 
-   if(clientIndex == -1)
+   if(!cl)
       return;
 
-   ClientRef &cl = mClientList[clientIndex];
-
-   if(cl.teamId == theFlag->getTeam())
+   if(cl->teamId == theFlag->getTeam())
    {
       if(!theFlag->isAtHome())
       {
          static StringTableEntry returnString("%e0 returned the %e1 flag.");
          Vector<StringTableEntry> e;
-         e.push_back(cl.name);
+         e.push_back(cl->name);
          e.push_back(mTeams[theFlag->getTeam()].name);
          for(S32 i = 0; i < mClientList.size(); i++)
-            mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagReturn, returnString, e);
+            mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagReturn, returnString, e);
 
          theFlag->sendHome();
-         cl.score += ReturnScore;
+         cl->score += ReturnScore;
       }
       else
       {
@@ -71,19 +69,19 @@ void CTFGameType::shipTouchFlag(Ship *theShip, FlagItem *theFlag)
             FlagItem *mountedFlag = dynamic_cast<FlagItem *>(theItem);
             if(mountedFlag)
             {
-               setTeamScore(cl.teamId, mTeams[cl.teamId].score + 1);
+               setTeamScore(cl->teamId, mTeams[cl->teamId].score + 1);
 
                static StringTableEntry capString("%e0 captured the %e1 flag!");
                Vector<StringTableEntry> e;
-               e.push_back(cl.name);
+               e.push_back(cl->name);
                e.push_back(mTeams[mountedFlag->getTeam()].name);
                for(S32 i = 0; i < mClientList.size(); i++)
-                  mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagCapture, capString, e);
+                  mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagCapture, capString, e);
 
                // score the flag for the client's team...
                mountedFlag->dismount();
                mountedFlag->sendHome();
-               cl.score += CapScore;
+               cl->score += CapScore;
             }
          }
       }
@@ -92,10 +90,10 @@ void CTFGameType::shipTouchFlag(Ship *theShip, FlagItem *theFlag)
    {
       static StringTableEntry takeString("%e0 took the %e1 flag!");
       Vector<StringTableEntry> e;
-      e.push_back(cl.name);
+      e.push_back(cl->name);
       e.push_back(mTeams[theFlag->getTeam()].name);
       for(S32 i = 0; i < mClientList.size(); i++)
-         mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagSnatch, takeString, e);
+         mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagSnatch, takeString, e);
       theFlag->mountToShip(theShip);
    }
 }
@@ -107,7 +105,7 @@ void CTFGameType::flagDropped(const StringTableEntry &playerName, S32 flagTeamIn
    e.push_back(playerName);
    e.push_back(mTeams[flagTeamIndex].name);
    for(S32 i = 0; i < mClientList.size(); i++)
-      mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagDrop, dropString, e);
+      mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagDrop, dropString, e);
 }
 
 };

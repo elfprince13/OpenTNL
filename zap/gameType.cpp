@@ -69,16 +69,16 @@ void GameType::idle(GameObject::IdleCallPath path)
       mScoreboardUpdateTimer.reset();
       for(S32 i = 0; i < mClientList.size(); i++)
       {
-         if(mClientList[i].clientConnection)
+         if(mClientList[i]->clientConnection)
          {
-            mClientList[i].ping = (U32) mClientList[i].clientConnection->getRoundTripTime();
-            if(mClientList[i].ping > MaxPing)
-               mClientList[i].ping = MaxPing;
+            mClientList[i]->ping = (U32) mClientList[i]->clientConnection->getRoundTripTime();
+            if(mClientList[i]->ping > MaxPing)
+               mClientList[i]->ping = MaxPing;
          }
       }
       for(S32 i = 0; i < mClientList.size(); i++)
-         if(mGameOver || mClientList[i].wantsScoreboardUpdates)
-            updateClientScoreboard(i);
+         if(mGameOver || mClientList[i]->wantsScoreboardUpdates)
+            updateClientScoreboard(mClientList[i]);
    }
 
    if(mGameTimeUpdateTimer.update(deltaT))
@@ -89,8 +89,8 @@ void GameType::idle(GameObject::IdleCallPath path)
 
    for(S32 i = 0; i < mClientList.size(); i++)
    {
-      if(mClientList[i].respawnTimer.update(deltaT))
-         spawnShip(mClientList[i].clientConnection);
+      if(mClientList[i]->respawnTimer.update(deltaT))
+         spawnShip(mClientList[i]->clientConnection);
    }
 
    if(mGameTimer.update(deltaT))
@@ -180,15 +180,15 @@ void GameType::renderInterfaceOverlay(bool scoreboardVisible)
          U32 fontSize = U32(maxHeight * 0.8f);
          for(S32 j = 0; j < mClientList.size(); j++)
          {
-            if(mClientList[j].teamId == i)
+            if(mClientList[j]->teamId == i)
             {
-               UserInterface::drawString(xl + 40, curRowY, fontSize, mClientList[j].name.getString());
+               UserInterface::drawString(xl + 40, curRowY, fontSize, mClientList[j]->name.getString());
 
                static char buff[255] = "";
-               dSprintf(buff, sizeof(buff), "%d", mClientList[j].score);
+               dSprintf(buff, sizeof(buff), "%d", mClientList[j]->score);
 
                UserInterface::drawString(xr - (120 + UserInterface::getStringWidth(fontSize, buff)), curRowY, fontSize, buff);
-               UserInterface::drawStringf(xr - 70, curRowY, fontSize, "%d", mClientList[j].ping);
+               UserInterface::drawStringf(xr - 70, curRowY, fontSize, "%d", mClientList[j]->ping);
                curRowY += maxHeight;
             }
          }
@@ -223,11 +223,11 @@ void GameType::renderTalkingClients()
    S32 y = 150;
    for(S32 i = 0; i < mClientList.size(); i++)
    {
-      if(mClientList[i].voiceSFX->isPlaying())
+      if(mClientList[i]->voiceSFX->isPlaying())
       {
-         Color teamColor = mTeams[mClientList[i].teamId].color;
+         Color teamColor = mTeams[mClientList[i]->teamId].color;
          glColor3f(teamColor.r, teamColor.g, teamColor.b);
-         UserInterface::drawString(10, y, 20, mClientList[i].name.getString());
+         UserInterface::drawString(10, y, 20, mClientList[i]->name.getString());
          y += 25;
       }
    }
@@ -278,12 +278,12 @@ void GameType::onGameOver()
    }
    else
    {
-      ClientRef &winningClient = mClientList[0];
+      ClientRef *winningClient = mClientList[0];
       for(S32 i = 1; i < mClientList.size(); i++)
       {
-         if(mClientList[i].score == winningClient.score)
+         if(mClientList[i]->score == winningClient->score)
             tied = true;
-         else if(mClientList[i].score > winningClient.score)
+         else if(mClientList[i]->score > winningClient->score)
          {
             winningClient = mClientList[i];
             tied = false;
@@ -292,18 +292,18 @@ void GameType::onGameOver()
       if(!tied)
       {
          e.push_back(emptyString);
-         e.push_back(winningClient.name);
+         e.push_back(winningClient->name);
       }
    }
    if(tied)
    {
       for(S32 i = 0; i < mClientList.size(); i++)
-         mClientList[i].clientConnection->s2cDisplayMessage(GameConnection::ColorNuclearGreen, SFXFlagDrop, tieMessage);
+         mClientList[i]->clientConnection->s2cDisplayMessage(GameConnection::ColorNuclearGreen, SFXFlagDrop, tieMessage);
    }
    else
    {
       for(S32 i = 0; i < mClientList.size(); i++)
-         mClientList[i].clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagCapture, winMessage, e);
+         mClientList[i]->clientConnection->s2cDisplayMessageE(GameConnection::ColorNuclearGreen, SFXFlagCapture, winMessage, e);
    }
 }
 
@@ -364,26 +364,18 @@ bool GameType::processLevelItem(S32 argc, const char **argv)
    return true;
 }
 
-S32 GameType::findClientIndexByConnection(GameConnection *theConnection)
+ClientRef *GameType::findClientRef(const StringTableEntry &name)
 {
    for(S32 clientIndex = 0; clientIndex < mClientList.size(); clientIndex++)
-      if(mClientList[clientIndex].clientConnection == theConnection)
-         return clientIndex;
-   return -1;
-}
-
-S32 GameType::findClientIndexByName(const StringTableEntry &name)
-{
-   for(S32 clientIndex = 0; clientIndex < mClientList.size(); clientIndex++)
-      if(mClientList[clientIndex].name == name)
-         return clientIndex;
-   return -1;
+      if(mClientList[clientIndex]->name == name)
+         return mClientList[clientIndex];
+   return NULL;
 }
 
 void GameType::spawnShip(GameConnection *theClient)
 {
-   S32 clientIndex = findClientIndexByConnection(theClient);
-   S32 teamIndex = mClientList[clientIndex].teamId;
+   ClientRef *cl = theClient->getClientRef();
+   S32 teamIndex = cl->teamId;
 
    TNLAssert(mTeams[teamIndex].spawnPoints.size(), "No spawn points!");
 
@@ -391,7 +383,7 @@ void GameType::spawnShip(GameConnection *theClient)
    S32 spawnIndex = Random::readI() % mTeams[teamIndex].spawnPoints.size();
    spawnPoint = mTeams[teamIndex].spawnPoints[spawnIndex];
 
-   Ship *newShip = new Ship(mClientList[clientIndex].name, teamIndex, spawnPoint);
+   Ship *newShip = new Ship(cl->name, teamIndex, spawnPoint);
    newShip->addToGame(getGame());
    theClient->setControlObject(newShip);
    newShip->setOwner(theClient);
@@ -404,18 +396,17 @@ void GameType::updateShipLoadout(GameObject *shipObject)
    GameConnection *gc = shipObject->getControllingClient();
    if(!gc)
       return;
-   S32 clientIndex = findClientIndexByConnection(gc);
-   if(clientIndex == -1)
+   ClientRef *cl = gc->getClientRef();
+   if(!cl)
       return;
-
-   setClientShipLoadout(clientIndex, gc->getLoadout());
+   setClientShipLoadout(cl, gc->getLoadout());
 }
 
-void GameType::setClientShipLoadout(S32 clientIndex, const Vector<U32> &loadout)
+void GameType::setClientShipLoadout(ClientRef *cl, const Vector<U32> &loadout)
 {
    if(loadout.size() != 5)
       return;
-   Ship *theShip = (Ship *) mClientList[clientIndex].clientConnection->getControlObject();
+   Ship *theShip = (Ship *) cl->clientConnection->getControlObject();
 
    if(theShip)
       theShip->setLoadout(loadout[0], loadout[1], loadout[2], loadout[3], loadout[4]);
@@ -450,12 +441,15 @@ void GameType::performScopeQuery(GhostConnection *connection)
       gc->objectInScope(scopeAlwaysList[i]);
    }
    // readyForRegularGhosts is set once all the RPCs from the GameType
-   // have been received and acknowledged by the client.
-   S32 clientIndex = findClientIndexByConnection(gc);
-   if(clientIndex != -1)
+   // have been received and acknowledged by the client
+   ClientRef *cl = gc->getClientRef();
+   if(cl)
    {
-      if(mClientList[clientIndex].readyForRegularGhosts && co)
+      if(cl->readyForRegularGhosts && co)
+      {
          performProxyScopeQuery(co, (GameConnection *) connection);
+         gc->objectInScope(co);
+      }
    }
 }
 
@@ -466,16 +460,16 @@ void GameType::performProxyScopeQuery(GameObject *scopeObject, GameConnection *c
 
    if(connection->isInCommanderMap() && mTeams.size() > 1)
    {
-      S32 teamId = mClientList[findClientIndexByConnection(connection)].teamId;
+      S32 teamId = connection->getClientRef()->teamId;
 
       for(S32 i = 0; i < mClientList.size(); i++)
       {
-         if(mClientList[i].teamId == teamId)
+         if(mClientList[i]->teamId == teamId)
          {
-            if(!mClientList[i].clientConnection)
+            if(!mClientList[i]->clientConnection)
                continue;
 
-            Ship *co = (Ship *) mClientList[i].clientConnection->getControlObject();
+            Ship *co = (Ship *) mClientList[i]->clientConnection->getControlObject();
             if(!co)
                continue;
 
@@ -531,19 +525,17 @@ void GameType::countTeamPlayers()
       mTeams[i].numPlayers = 0;
 
    for(S32 i = 0; i < mClientList.size(); i++)
-      mTeams[mClientList[i].teamId].numPlayers++;
+      mTeams[mClientList[i]->teamId].numPlayers++;
 }
 
 void GameType::serverAddClient(GameConnection *theClient)
 {
    theClient->setScopeObject(this);
 
-   ClientRef cref;
-   cref.name = theClient->getClientName();
+   ClientRef *cref = allocClientRef();
+   cref->name = theClient->getClientName();
 
-   cref.clientConnection = theClient;
-   cref.wantsScoreboardUpdates = false;
-
+   cref->clientConnection = theClient;
    countTeamPlayers();
 
    U32 minPlayers = mTeams[0].numPlayers;
@@ -557,11 +549,12 @@ void GameType::serverAddClient(GameConnection *theClient)
          minPlayers = mTeams[i].numPlayers;
       }
    }
-   cref.teamId = minTeamIndex;
+   cref->teamId = minTeamIndex;
    mClientList.push_back(cref);
+   theClient->setClientRef(cref);
 
-   s2cAddClient(cref.name, false);
-   s2cClientJoinedTeam(cref.name, cref.teamId);
+   s2cAddClient(cref->name, false);
+   s2cClientJoinedTeam(cref->name, cref->teamId);
    spawnShip(theClient);
 }
 
@@ -586,20 +579,20 @@ bool GameType::objectCanDamageObject(GameObject *damager, GameObject *victim)
 void GameType::controlObjectForClientKilled(GameConnection *theClient, GameObject *clientObject, GameObject *killerObject)
 {
    GameConnection *killer = killerObject ? killerObject->getOwner() : NULL;
-   S32 killerIndex = findClientIndexByConnection(killer);
-   S32 clientIndex = findClientIndexByConnection(theClient);
+   ClientRef *killerRef = killer->getClientRef();
+   ClientRef *clientRef = theClient->getClientRef();
 
-   if(killerIndex != -1)
+   if(killerRef)
    {
       // Punish team killers slightly
-      if(mTeams.size() > 1 && mClientList[killerIndex].teamId == mClientList[clientIndex].teamId)
-         mClientList[killerIndex].score -= 1;
+      if(mTeams.size() > 1 && killerRef->teamId == clientRef->teamId)
+         killerRef->score -= 1;
       else
-         mClientList[killerIndex].score += 1;
+         killerRef->score += 1;
 
-      s2cKillMessage(mClientList[clientIndex].name, mClientList[killerIndex].name);
+      s2cKillMessage(clientRef->name, killerRef->name);
    }
-   mClientList[clientIndex].respawnTimer.reset(RespawnDelay);
+   clientRef->respawnTimer.reset(RespawnDelay);
 }
 
 void GameType::addClientGameMenuOptions(Vector<const char *> &menuOptions)
@@ -640,7 +633,7 @@ GAMETYPE_RPC_C2S(GameType, c2sChangeTeams, ())
       return;
 
    GameConnection *source = (GameConnection *) NetObject::getRPCSourceConnection();
-   S32 clientIndex = findClientIndexByConnection(source);
+   ClientRef *cl = source->getClientRef();
 
    // destroy the old ship
    GameObject *co = source->getControlObject();
@@ -648,22 +641,20 @@ GAMETYPE_RPC_C2S(GameType, c2sChangeTeams, ())
    if(co)
       ((Ship *) co)->kill();
 
-   U32 newTeamId = (mClientList[clientIndex].teamId + 1) % mTeams.size();
-   mClientList[clientIndex].teamId = newTeamId;
-   s2cClientJoinedTeam(mClientList[clientIndex].name, newTeamId);
+   U32 newTeamId = (cl->teamId + 1) % mTeams.size();
+   cl->teamId = newTeamId;
+   s2cClientJoinedTeam(cl->name, newTeamId);
    spawnShip(source);
 }
 
 GAMETYPE_RPC_S2C(GameType, s2cAddClient, (StringTableEntryRef name, bool isMyClient))
 {
-   ClientRef cref;
-   cref.name = name;
-   cref.teamId = 0;
-   cref.wantsScoreboardUpdates = false;
-   cref.ping = 0;
-   cref.decoder = new LPC10VoiceDecoder();
+   ClientRef *cref = allocClientRef();
+   cref->name = name;
+   cref->teamId = 0;
+   cref->decoder = new LPC10VoiceDecoder();
 
-   cref.voiceSFX = new SFXObject(SFXVoice, NULL, 1, Point(), Point());
+   cref->voiceSFX = new SFXObject(SFXVoice, NULL, 1, Point(), Point());
 
    mClientList.push_back(cref);
    gGameUserInterface.displayMessage(Color(0.6f, 0.6f, 0.8f), "%s joined the game.", name.getString());
@@ -671,10 +662,15 @@ GAMETYPE_RPC_S2C(GameType, s2cAddClient, (StringTableEntryRef name, bool isMyCli
 
 void GameType::serverRemoveClient(GameConnection *theClient)
 {
-   S32 clientIndex = findClientIndexByConnection(theClient);
-
-   mClientList.erase(clientIndex);
-
+   ClientRef *cl = theClient->getClientRef();
+   for(S32 i = 0; i < mClientList.size(); i++)
+   {
+      if(mClientList[i] == cl)
+      {
+         mClientList.erase(i);
+         break;
+      }
+   }
    GameObject *theControlObject = theClient->getControlObject();
    if(theControlObject)
       ((Ship *) theControlObject)->kill();
@@ -684,10 +680,15 @@ void GameType::serverRemoveClient(GameConnection *theClient)
 
 GAMETYPE_RPC_S2C(GameType, s2cRemoveClient, (StringTableEntryRef name))
 {
-   S32 clientIndex = findClientIndexByName(name);
-
+   for(S32 i = 0; i < mClientList.size(); i++)
+   {
+      if(mClientList[i]->name == name)
+      {
+         mClientList.erase(i);
+         break;
+      }
+   }
    gGameUserInterface.displayMessage(Color(0.6f, 0.6f, 0.8f), "%s left the game.", name.getString());
-   mClientList.erase(clientIndex);
 }
 
 GAMETYPE_RPC_S2C(GameType, s2cAddTeam, (StringTableEntryRef teamName, F32 r, F32 g, F32 b))
@@ -707,9 +708,9 @@ GAMETYPE_RPC_S2C(GameType, s2cSetTeamScore, (U32 teamIndex, U32 score))
 
 GAMETYPE_RPC_S2C(GameType, s2cClientJoinedTeam, (StringTableEntryRef name, U32 teamIndex))
 {
-   S32 clientIndex = findClientIndexByName(name);
-   mClientList[clientIndex].teamId = teamIndex;
-   gGameUserInterface.displayMessage(Color(0.6f, 0.6f, 0.8f), "%s joined team %s.", mClientList[clientIndex].name.getString(), mTeams[teamIndex].name.getString());
+   ClientRef *cl = findClientRef(name);
+   cl->teamId = teamIndex;
+   gGameUserInterface.displayMessage(Color(0.6f, 0.6f, 0.8f), "%s joined team %s.", name.getString(), mTeams[teamIndex].name.getString());
 }
 
 void GameType::onGhostAvailable(GhostConnection *theConnection)
@@ -727,8 +728,8 @@ void GameType::onGhostAvailable(GhostConnection *theConnection)
    // add all the client and team information
    for(S32 i = 0; i < mClientList.size(); i++)
    {
-      s2cAddClient(mClientList[i].name, mClientList[i].clientConnection == theConnection);
-      s2cClientJoinedTeam(mClientList[i].name, mClientList[i].teamId);
+      s2cAddClient(mClientList[i]->name, mClientList[i]->clientConnection == theConnection);
+      s2cClientJoinedTeam(mClientList[i]->name, mClientList[i]->teamId);
    }
 
    // an empty list clears the barriers
@@ -754,10 +755,10 @@ GAMETYPE_RPC_S2C(GameType, s2cSyncMessagesComplete, (U32 sequence))
 GAMETYPE_RPC_C2S(GameType, c2sSyncMessagesComplete, (U32 sequence))
 {
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
-   S32 clientIndex = findClientIndexByConnection(source);
+   ClientRef *cl = source->getClientRef();
    if(sequence != source->getGhostingSequence())
       return;
-   mClientList[clientIndex].readyForRegularGhosts = true;
+   cl->readyForRegularGhosts = true;
 }
 
 GAMETYPE_RPC_S2C(GameType, s2cAddBarriers, (const Vector<F32> &barrier))
@@ -771,37 +772,37 @@ GAMETYPE_RPC_S2C(GameType, s2cAddBarriers, (const Vector<F32> &barrier))
 GAMETYPE_RPC_C2S(GameType, c2sSendChat, (bool global, const char *message))
 {
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
-   S32 clientIndex = findClientIndexByConnection(source);
+   ClientRef *cl = source->getClientRef();
 
    RefPtr<NetEvent> theEvent = TNL_RPC_CONSTRUCT_NETEVENT(this, 
       s2cDisplayChatMessage, (global, source->getClientName(), message));
 
-   sendChatDisplayEvent(clientIndex, global, theEvent);
+   sendChatDisplayEvent(cl, global, theEvent);
 }
 
 GAMETYPE_RPC_C2S(GameType, c2sSendChatSTE, (bool global, StringTableEntryRef message))
 {
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
-   S32 clientIndex = findClientIndexByConnection(source);
+   ClientRef *cl = source->getClientRef();
 
    RefPtr<NetEvent> theEvent = TNL_RPC_CONSTRUCT_NETEVENT(this, 
       s2cDisplayChatMessageSTE, (global, source->getClientName(), message));
 
-   sendChatDisplayEvent(clientIndex, global, theEvent);
+   sendChatDisplayEvent(cl, global, theEvent);
 }
 
-void GameType::sendChatDisplayEvent(S32 clientIndex, bool global, NetEvent *theEvent)
+void GameType::sendChatDisplayEvent(ClientRef *cl, bool global, NetEvent *theEvent)
 {
    S32 teamId = 0;
    
    if(!global)
-      teamId = mClientList[clientIndex].teamId;
+      teamId = cl->teamId;
 
    for(S32 i = 0; i < mClientList.size(); i++)
    {
-      if(global || mClientList[i].teamId == teamId)
-         if(mClientList[i].clientConnection)
-            mClientList[i].clientConnection->postNetEvent(theEvent);
+      if(global || mClientList[i]->teamId == teamId)
+         if(mClientList[i]->clientConnection)
+            mClientList[i]->clientConnection->postNetEvent(theEvent);
    }
 }
 
@@ -825,10 +826,10 @@ GAMETYPE_RPC_S2C(GameType, s2cDisplayChatMessageSTE, (bool global, StringTableEn
 GAMETYPE_RPC_C2S(GameType, c2sRequestScoreboardUpdates, (bool updates))
 {
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
-   S32 clientIndex = findClientIndexByConnection(source);
-   mClientList[clientIndex].wantsScoreboardUpdates = updates;
+   ClientRef *cl = source->getClientRef();
+   cl->wantsScoreboardUpdates = updates;
    if(updates)
-      updateClientScoreboard(clientIndex);
+      updateClientScoreboard(cl);
 }
 
 GAMETYPE_RPC_C2S(GameType, c2sAdvanceWeapon, ())
@@ -842,21 +843,21 @@ GAMETYPE_RPC_C2S(GameType, c2sAdvanceWeapon, ())
 Vector<RangedU32<0, GameType::MaxPing> > GameType::mPingTimes; ///< Static vector used for constructing update RPCs
 Vector<Int<24> > GameType::mScores;
 
-void GameType::updateClientScoreboard(S32 clientIndex)
+void GameType::updateClientScoreboard(ClientRef *cl)
 {
    mPingTimes.clear();
    mScores.clear();
 
    for(S32 i = 0; i < mClientList.size(); i++)
    {
-      if(mClientList[i].ping < MaxPing)
-         mPingTimes.push_back(mClientList[i].ping);
+      if(mClientList[i]->ping < MaxPing)
+         mPingTimes.push_back(mClientList[i]->ping);
       else
          mPingTimes.push_back(MaxPing);
-      mScores.push_back(mClientList[i].score);
+      mScores.push_back(mClientList[i]->score);
    }
 
-   NetObject::setRPCDestConnection(mClientList[clientIndex].clientConnection);
+   NetObject::setRPCDestConnection(cl->clientConnection);
    s2cScoreboardUpdate(mPingTimes, mScores);
    NetObject::setRPCDestConnection(NULL);
 }
@@ -870,8 +871,8 @@ GAMETYPE_RPC_S2C(GameType, s2cScoreboardUpdate, (const Vector<RangedU32<0, GameT
       if(i >= pingTimes.size())
          break;
 
-      mClientList[i].ping = pingTimes[i];
-      mClientList[i].score = scores[i];
+      mClientList[i]->ping = pingTimes[i];
+      mClientList[i]->score = scores[i];
    }
 }
 
@@ -888,14 +889,14 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sVoiceChat, (bool echo, ByteBufferRef vo
    // including the sender...
 
    GameConnection *source = (GameConnection *) getRPCSourceConnection();
-   S32 clientIndex = findClientIndexByConnection(source);
-   if(clientIndex != -1)
+   ClientRef *cl = source->getClientRef();
+   if(cl)
    {
-      RefPtr<NetEvent> event = TNL_RPC_CONSTRUCT_NETEVENT(this, s2cVoiceChat, (mClientList[clientIndex].name, voiceBuffer));
+      RefPtr<NetEvent> event = TNL_RPC_CONSTRUCT_NETEVENT(this, s2cVoiceChat, (cl->name, voiceBuffer));
       for(S32 i = 0; i < mClientList.size(); i++)
       {
-         if((i != clientIndex || echo) && mClientList[i].clientConnection)
-            mClientList[i].clientConnection->postNetEvent(event);
+         if((mClientList[i] != cl || echo) && mClientList[i]->clientConnection)
+            mClientList[i]->clientConnection->postNetEvent(event);
       }
    }
 }
@@ -903,13 +904,13 @@ TNL_IMPLEMENT_NETOBJECT_RPC(GameType, c2sVoiceChat, (bool echo, ByteBufferRef vo
 TNL_IMPLEMENT_NETOBJECT_RPC(GameType, s2cVoiceChat, (StringTableEntryRef clientName, ByteBufferRef voiceBuffer),
    NetClassGroupGameMask, RPCUnguaranteed, RPCToGhost, 0)
 {
-   S32 clientIndex = findClientIndexByName(clientName);
-   if(clientIndex != -1)
+   ClientRef *cl = findClientRef(clientName);
+   if(cl)
    {
-      ByteBufferPtr playBuffer = mClientList[clientIndex].decoder->decompressBuffer(voiceBuffer);
+      ByteBufferPtr playBuffer = cl->decoder->decompressBuffer(voiceBuffer);
 
       //logprintf("Decoded buffer size %d", playBuffer->getBufferSize());
-      mClientList[clientIndex].voiceSFX->queueBuffer(playBuffer);
+      cl->voiceSFX->queueBuffer(playBuffer);
    }
 }
 

@@ -67,10 +67,10 @@ TNL_IMPLEMENT_NETOBJECT_RPC(SoccerGameType, s2cSoccerScoreMessage, (U32 msgIndex
 
 void SoccerGameType::scoreGoal(StringTableEntry playerName, U32 goalTeamIndex)
 {
-   S32 index = findClientIndexByName(playerName);
+   ClientRef *cl = findClientRef(playerName);
    S32 scoringTeam = -1;
-   if(index != -1)
-      scoringTeam = mClientList[index].teamId;
+   if(cl)
+      scoringTeam = cl->teamId;
 
    if(scoringTeam == -1 || scoringTeam == goalTeamIndex)
    {
@@ -84,7 +84,7 @@ void SoccerGameType::scoreGoal(StringTableEntry playerName, U32 goalTeamIndex)
    }
    else
    {
-      mClientList[index].score += GoalScore;
+      cl->score += GoalScore;
       setTeamScore(scoringTeam, mTeams[scoringTeam].score + 1);
       s2cSoccerScoreMessage(SoccerMsgScoreGoal, playerName, goalTeamIndex);
    }

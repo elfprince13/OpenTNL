@@ -47,6 +47,8 @@ static char *gConnectStatesTable[] = {
       ""
 };
 
+class ClientRef;
+
 class GameConnection : public ControlObjectConnection
 {
    typedef ControlObjectConnection Parent;
@@ -59,6 +61,7 @@ class GameConnection : public ControlObjectConnection
    bool mInCommanderMap;
    StringTableEntry mClientName;
    Vector<U32> mLoadout;
+   SafePtr<ClientRef> mClientRef;
 
    void linkToClientList();
 public:
@@ -78,6 +81,9 @@ public:
    ~GameConnection();
 
    void setClientName(const char *string) { mClientName = string; }
+   void setClientRef(ClientRef *theRef);
+   ClientRef *getClientRef();
+
    StringTableEntryRef getClientName() { return mClientName; }
 
    bool isInCommanderMap() { return mInCommanderMap; }
