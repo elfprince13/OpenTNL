@@ -204,7 +204,7 @@ void ServerGame::cycleLevel()
       walk->resetGhosting();
 
    mCurrentLevelIndex++;
-   if(mCurrentLevelIndex >= mLevelList.size())
+   if(S32(mCurrentLevelIndex) >= mLevelList.size())
       mCurrentLevelIndex = 0;
    loadLevel(mLevelList[mCurrentLevelIndex].getString());
    if(!getGameType())

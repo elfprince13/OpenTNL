@@ -65,9 +65,14 @@ void GameType::idle(GameObject::IdleCallPath path)
    {
       mScoreboardUpdateTimer.reset();
       for(S32 i = 0; i < mClientList.size(); i++)
+      {
          if(mClientList[i].clientConnection)
+         {
             mClientList[i].ping = (U32) mClientList[i].clientConnection->getRoundTripTime();
-
+            if(mClientList[i].ping > MaxPing)
+               mClientList[i].ping = MaxPing;
+         }
+      }
       for(S32 i = 0; i < mClientList.size(); i++)
          if(mGameOver || mClientList[i].wantsScoreboardUpdates)
             updateClientScoreboard(i);

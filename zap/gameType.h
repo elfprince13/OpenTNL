@@ -75,7 +75,7 @@ public:
    Timer mScoreboardUpdateTimer;
    Timer mGameTimer;
    Timer mGameTimeUpdateTimer;
-   U32 mTeamScoreLimit;
+   S32 mTeamScoreLimit;
    bool mGameOver; // set to true when an end condition is met
 
    enum {
