@@ -28,6 +28,142 @@
 #include "tnl.h"
 #include "tnlLog.h"
 
+#ifdef TNL_OS_WIN32
+
+#include <dsound.h>
+#include <stdio.h>
+
+namespace Zap
+{
+
+static LPDIRECTSOUNDCAPTURE8 capture = NULL;
+static LPDIRECTSOUNDCAPTUREBUFFER captureBuffer = NULL;
+static bool recording = false;
+
+enum {
+   BufferBytes = 16000,
+};
+
+static U32 lastReadOffset = 0;
+
+bool SFXObject::startRecording()
+{
+   if(recording)
+      return true;
+
+   if(!capture)
+   {
+      DirectSoundCaptureCreate8(NULL, &capture, NULL);   
+      if(!capture)
+         return false;
+   }
+
+   if(!captureBuffer)
+   {
+      HRESULT hr;
+      DSCBUFFERDESC dscbd;
+
+      // wFormatTag, nChannels, nSamplesPerSec, mAvgBytesPerSec,
+      // nBlockAlign, wBitsPerSample, cbSize
+      WAVEFORMATEX wfx = { WAVE_FORMAT_PCM, 1, 8000, 16000, 2, 16, 0};
+       
+      dscbd.dwSize = sizeof(DSCBUFFERDESC);
+      dscbd.dwFlags = 0;
+      dscbd.dwBufferBytes = BufferBytes;
+      dscbd.dwReserved = 0;
+      dscbd.lpwfxFormat = &wfx;
+      dscbd.dwFXCount = 0;
+      dscbd.lpDSCFXDesc = NULL;
+       
+      if (FAILED(hr = capture->CreateCaptureBuffer(&dscbd, &captureBuffer, NULL)))
+         return false;
+   }
+   recording = true;
+   lastReadOffset = 0;
+   captureBuffer->Start(DSCBSTART_LOOPING);
+   return true;
+}
+
+void SFXObject::captureSamples(ByteBufferPtr buffer)
+{
+   if(!recording)
+   {
+      return;
+   }
+   else
+   {
+      DWORD capturePosition;
+      DWORD readPosition;
+
+      captureBuffer->GetCurrentPosition(&capturePosition, &readPosition);
+      S32 byteCount = readPosition - lastReadOffset;
+      if(byteCount < 0)
+         byteCount += BufferBytes;
+
+      void *buf1;
+      void *buf2;
+      DWORD count1;
+      DWORD count2;
+
+      printf("Capturing samples... %d ... %d\n", lastReadOffset, readPosition);
+
+      if(!byteCount)
+         return;
+
+      captureBuffer->Lock(lastReadOffset, byteCount, &buf1, &count1, &buf2, &count2, 0);
+
+      U32 sizeAdd = count1 + count2;
+      U32 start = buffer->getBufferSize();
+
+      buffer->resize(start + sizeAdd);
+
+      memcpy(buffer->getBuffer() + start, buf1, count1);
+      if(count2)
+         memcpy(buffer->getBuffer() + start + count1, buf2, count2);
+
+      captureBuffer->Unlock(buf1, count1, buf2, count2);
+
+      lastReadOffset += count1 + count2;
+      lastReadOffset %= BufferBytes;
+   }
+}
+
+void SFXObject::stopRecording()
+{
+   if(recording)
+   {
+      recording = false;
+      captureBuffer->Stop();
+      if(captureBuffer)
+         captureBuffer->Release();
+      captureBuffer = NULL;
+   }
+}
+
+};
+
+#else
+
+namespace Zap
+{
+
+bool SFXObject::startRecording()
+{
+   return false;
+}
+
+void SFXObject::captureSamples(ByteBufferPtr buffer)
+{
+}
+
+void SFXObject::stopRecording()
+{
+}
+
+};
+
+#endif
+
 #if defined (TNL_OS_WIN32) || defined (TNL_OS_LINUX) || defined (TNL_OS_MAC_OSX)
 
 #include "alInclude.h"
@@ -38,6 +174,7 @@ namespace Zap
 {
 
 static SFXProfile gSFXProfiles[] = {
+ {  "phaser.wav",          true,  1.0f,  false, 0,   0 }, 
  {  "phaser.wav",          false, 0.45f, false, 150, 600 },
  {  "phaser_impact.wav",   false, 0.7f,  false, 150, 600 },
  {  "ship_explode.wav",    false, 1.0,   false, 300, 1000 },
@@ -68,14 +205,17 @@ enum {
 
 static ALuint gSources[NumSources];
 static bool gSourceActive[NumSources];
+static bool gQueuedBuffers[NumSources] = { false, };
 Point SFXObject::mListenerPosition;
 Point SFXObject::mListenerVelocity;
 F32 SFXObject::mMaxDistance = 500;
 
 static ALuint gBuffers[NumSFXBuffers];
+static Vector<ALuint> gVoiceFreeBuffers;
+
 static Vector<SFXHandle> gPlayList;
 
-SFXObject::SFXObject(U32 profileIndex, F32 gain, Point position, Point velocity)
+SFXObject::SFXObject(U32 profileIndex, ByteBufferPtr ib, F32 gain, Point position, Point velocity)
 {
    mSFXIndex = profileIndex;
    mProfile = gSFXProfiles + profileIndex;
@@ -84,18 +224,26 @@ SFXObject::SFXObject(U32 profileIndex, F32 gain, Point position, Point velocity)
    mVelocity = velocity;
    mSourceIndex = -1;
    mPriority = 0;
+   mInitialBuffer = ib;
 }
 
 RefPtr<SFXObject> SFXObject::play(U32 profileIndex, F32 gain)
 {
-   RefPtr<SFXObject> ret = new SFXObject(profileIndex, gain, Point(), Point());
+   RefPtr<SFXObject> ret = new SFXObject(profileIndex, NULL, gain, Point(), Point());
    ret->play();
    return ret;
 }
 
 RefPtr<SFXObject> SFXObject::play(U32 profileIndex, Point position, Point velocity, F32 gain)
 {
-   RefPtr<SFXObject> ret = new SFXObject(profileIndex, gain, position, velocity);
+   RefPtr<SFXObject> ret = new SFXObject(profileIndex, NULL, gain, position, velocity);
+   ret->play();
+   return ret;
+}
+
+RefPtr<SFXObject> SFXObject::playRecordedBuffer(ByteBufferPtr p, F32 gain)
+{
+   RefPtr<SFXObject> ret = new SFXObject(0, p, gain, Point(), Point());
    ret->play();
    return ret;
 }
@@ -147,11 +295,83 @@ void SFXObject::updateMovementParams()
    }
 }
 
+
+static void unqueueBuffers(S32 sourceIndex)
+{
+   // free up any played buffers from this source.
+   if(sourceIndex != -1)
+   {
+      ALint processed;
+      alGetSourcei(gSources[sourceIndex], AL_BUFFERS_PROCESSED, &processed);
+      while(processed)
+      {
+         ALuint buffer;
+         alSourceUnqueueBuffers(gSources[sourceIndex], 1, &buffer);
+         logprintf("unqueued buffer %d\n", buffer);
+         processed--;
+         
+         // ok, this is a lame solution - but the way OpenAL should work is...
+         // you should only be able to unqueue buffers that you queued - duh!
+         // otherwise it's a bitch to manage sources that can either be streamed
+         // or already loaded.
+         U32 i;
+         for(i = 0 ; i < NumSFXBuffers; i++)
+            if(buffer == gBuffers[i])
+               break;
+         if(i == NumSFXBuffers)
+            gVoiceFreeBuffers.push_back(buffer);
+      }
+   }
+}
+
+void SFXObject::queueBuffer(ByteBufferPtr p)
+{
+   mInitialBuffer = p;
+   if(mSourceIndex != -1)
+   {
+      ALuint source = gSources[mSourceIndex];
+      ALuint buffer = gVoiceFreeBuffers.first();
+      gVoiceFreeBuffers.pop_front();
+
+      S16 max = 0;
+      S16 *ptr = (S16 *) p->getBuffer();
+      U32 count = p->getBufferSize() / 2;
+      while(count--)
+      {
+         if(max < *ptr)
+            max = *ptr;
+         ptr++;
+      }
+
+      logprintf("queued buffer %d - %d max %d len\n", buffer, max, mInitialBuffer->getBufferSize());
+      alBufferData(buffer, AL_FORMAT_MONO16, mInitialBuffer->getBuffer(),
+            mInitialBuffer->getBufferSize(), 8000);
+      alSourceQueueBuffers(source, 1, &buffer);
+   }
+}
+
 void SFXObject::playOnSource()
 {
    ALuint source = gSources[mSourceIndex];
    alSourceStop(source);
-   alSourcei(source, AL_BUFFER, gBuffers[mSFXIndex]);
+   unqueueBuffers(mSourceIndex);
+
+   if(mInitialBuffer.isValid())
+   {
+      ALuint buffer = gVoiceFreeBuffers.first();
+      gVoiceFreeBuffers.pop_front();
+
+      alBufferData(buffer, AL_FORMAT_MONO16, mInitialBuffer->getBuffer(),
+            mInitialBuffer->getBufferSize(), 8000);
+      alSourceQueueBuffers(source, 1, &buffer);
+      gQueuedBuffers[mSourceIndex] = true;
+   }
+   else
+   {
+      alSourcei(source, AL_BUFFER, gBuffers[mSFXIndex]);
+      gQueuedBuffers[mSourceIndex] = false;
+   }
+
    alSourcei(source, AL_LOOPING, mProfile->isLooping);
    alSourcef(source, AL_REFERENCE_DISTANCE,9000);
    alSourcef(source, AL_ROLLOFF_FACTOR,1);
@@ -232,6 +452,9 @@ void SFXObject::init()
    error = alGetError();
 
    alGenBuffers(NumSFXBuffers, gBuffers);
+   gVoiceFreeBuffers.setSize(32);
+   alGenBuffers(32, gVoiceFreeBuffers.address());
+
    error = alGetError();
 
    alDistanceModel(AL_NONE);
@@ -303,6 +526,8 @@ void SFXObject::process()
    for(S32 i = 0; i < gPlayList.size(); )
    {
       SFXHandle &s = gPlayList[i];
+      unqueueBuffers(s->mSourceIndex);
+
       if(s->mSourceIndex != -1 && !gSourceActive[s->mSourceIndex])
       {
          // this sound was playing; now it is stopped,

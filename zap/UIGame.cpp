@@ -30,10 +30,13 @@
 #include "UIGame.h"
 #include "UIMenus.h"
 #include "gameType.h"
+#include "lpc10.h"
+#include "tnlEndian.h"
 
 #include <stdarg.h>
 #include "glutInclude.h"
 #include <ctype.h>
+#include <stdio.h>
 
 namespace Zap
 {
@@ -55,6 +58,8 @@ GameUserInterface::GameUserInterface()
       mDisplayMessage[i][0] = 0;
 
    mVChat = new VChatHelper();
+   mRecordingAudio = false;
+   mMaxAudioSample = 0;
 }
 
 void GameUserInterface::displayMessage(Color theColor, const char *format, ...)
@@ -94,6 +99,14 @@ void GameUserInterface::idle(U32 timeDelta)
       {
          mChatBlink = !mChatBlink;
          mChatLastBlinkTime = 0;
+      }
+   }
+   if(mRecordingAudio)
+   {
+      if(mVoiceAudioTimer.update(timeDelta))
+      {
+         mVoiceAudioTimer.reset(VoiceAudioSampleTime);
+         processRecordingAudio();
       }
    }
 }
@@ -227,6 +240,18 @@ void GameUserInterface::render()
          drawString(5 + width + getStringWidth(20, mChatBuffer, mChatCursorPos), 100, 20, "_");
    }
 
+   if(mRecordingAudio)
+   {
+      glColor3f(1, 1 ,1);
+      glBegin(GL_POLYGON);
+      glVertex2f(10, 600);
+      glVertex2f(30, 600);
+      F32 y = 600 - F32(mMaxAudioSample) * 600 / F32(0x7FFF);
+      glVertex2f(30, y);
+      glVertex2f(10, y);
+      glEnd();
+   }
+
 #if 0
    // some code for outputting the position of the ship for finding good spawns
    GameConnection *con = gClientGame->getConnectionToServer();
@@ -289,6 +314,10 @@ void GameUserInterface::onControllerButtonDown(U32 buttonIndex)
 {
    switch(buttonIndex)
    {
+      case 0:
+         startRecordingAudio();
+         break;
+
       case 3:
       {
          mInScoreboardMode = true;
@@ -315,6 +344,9 @@ void GameUserInterface::onControllerButtonUp(U32 buttonIndex)
 {
    switch(buttonIndex)
    {
+      case 0:
+         stopRecordingAudio();
+         break;
       case 3:
       {
          mInScoreboardMode = false;
@@ -395,6 +427,9 @@ void GameUserInterface::onKeyDown(U32 key)
          case 'C':
             gClientGame->zoomCommanderMap();
             break;
+         case 'R':
+            startRecordingAudio();
+            break;
       }
    }
    else if(mCurrentMode == ChatMode)
@@ -468,11 +503,102 @@ void GameUserInterface::onKeyUp(U32 key)
          case 'F':
             mCurrentMove.shield = !mCurrentMove.shield;
             break;
+         case 'R':
+            stopRecordingAudio();
+            break;
       }
    }
    else if(mCurrentMode == ChatMode)
    {
 
+
+   }
+}
+
+lpc10_encoder_state *encoderState = NULL;
+lpc10_decoder_state *decoderState = NULL;
+
+void GameUserInterface::startRecordingAudio()
+{
+   if(!mRecordingAudio)
+   {
+      encoderState = create_lpc10_encoder_state();
+      init_lpc10_encoder_state(encoderState);
+
+      decoderState = create_lpc10_decoder_state();
+      init_lpc10_decoder_state(decoderState);
+
+      mUnusedAudio = new ByteBuffer(0);
+      mRecordingAudio = true;
+      mMaxAudioSample = 0;
+      mVoiceAudioTimer.reset(FirstVoiceAudioSampleTime);
+      SFXObject::startRecording();
+   }
+}
+
+void GameUserInterface::stopRecordingAudio()
+{
+   if(mRecordingAudio)
+   {
+      processRecordingAudio();
+      destroy_lpc10_encoder_state(encoderState);
+      destroy_lpc10_decoder_state(decoderState);
+
+      mRecordingAudio = false;
+      SFXObject::stopRecording();
+      mVoiceSfx = NULL;
+   }
+}
+
+void GameUserInterface::processRecordingAudio()
+{
+   SFXObject::captureSamples(mUnusedAudio);
+   U32 sampleCount = mUnusedAudio->getBufferSize() / 2;
+
+   S16 *samplePtr = (S16 *) mUnusedAudio->getBuffer();
+   mMaxAudioSample = 0;
+
+   for(U32 i = 0; i < sampleCount; i++)
+      if(samplePtr[i] > mMaxAudioSample)
+         mMaxAudioSample = samplePtr[i];
+
+   U32 useCount = U32(sampleCount / LPC10_SAMPLES_PER_FRAME) * LPC10_SAMPLES_PER_FRAME;
+   //U32 useCount = sampleCount - (sampleCount % LPC10_SAMPLES_PER_FRAME);
+
+   if(useCount)
+   {      
+      U32 unusedCount = sampleCount - useCount;
+
+      U8 codingBuffer[2048];
+      U32 len = 0;
+
+      for(U32 i = 0; i < useCount; i += LPC10_SAMPLES_PER_FRAME)
+         len += vbr_lpc10_encode(samplePtr + i, codingBuffer + len, encoderState);
+
+      memcpy(mUnusedAudio->getBuffer(), mUnusedAudio->getBuffer() + useCount * 2, unusedCount * 2);
+      mUnusedAudio->resize(unusedCount * 2);
+
+      logprintf("Encoded %d samples in %d bytes", useCount, len);
+
+      S16 frame[LPC10_SAMPLES_PER_FRAME];
+      int p = 0, decodeLen = 0;
+      ByteBufferPtr playBuffer = new ByteBuffer(0);
+
+      for(U32 i = 0; i < len; i += p)
+      {
+         int frameLen = vbr_lpc10_decode(codingBuffer + i, frame, decoderState, &p);
+         playBuffer->resize((decodeLen + frameLen) * 2);
+
+         memcpy(playBuffer->getBuffer() + decodeLen * 2, frame, frameLen * 2);
+         decodeLen += frameLen;
+      }
+
+      logprintf("Decoded buffer size %d", playBuffer->getBufferSize());
+
+      if(mVoiceSfx.isValid())
+         mVoiceSfx->queueBuffer(playBuffer);
+      else
+         mVoiceSfx = SFXObject::playRecordedBuffer(playBuffer);
 
    }
 }

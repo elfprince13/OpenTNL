@@ -31,6 +31,8 @@
 #include "point.h"
 #include "gameConnection.h"
 #include "quickChat.h"
+#include "timer.h"
+#include "sfx.h"
 
 namespace Zap
 {
@@ -65,21 +67,31 @@ class GameUserInterface : public UserInterface
    };
    enum {
       ChatBlinkTime = 100,
+      FirstVoiceAudioSampleTime = 250,
+      VoiceAudioSampleTime = 100,
    };
    Mode mCurrentMode;
    ChatType mCurrentChatType;
 
-   char  mChatBuffer[50];
-   U32   mChatCursorPos;
-   bool  mChatBlink;
-   U32   mChatLastBlinkTime;
-   bool  mInScoreboardMode;
-
+   char mChatBuffer[50];
+   U32 mChatCursorPos;
+   bool mChatBlink;
+   U32 mChatLastBlinkTime;
+   bool mInScoreboardMode;
+   bool mRecordingAudio;
+   S16 mMaxAudioSample;
+ 
    VChatHelper *mVChat;
+   Timer mVoiceAudioTimer;
+   RefPtr<SFXObject> mVoiceSfx;
+   ByteBufferPtr mUnusedAudio;
 public:
    GameUserInterface();
 
    void displayMessage(Color messageColor, const char *format, ...);
+   void processRecordingAudio();
+   void startRecordingAudio();
+   void stopRecordingAudio();
 
    void render();
    void idle(U32 timeDelta);

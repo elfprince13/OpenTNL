@@ -30,6 +30,7 @@
 #include "tnl.h"
 #include "tnlNetBase.h"
 #include "point.h"
+#include "tnlByteBuffer.h"
 
 using namespace TNL;
 
@@ -37,6 +38,7 @@ namespace Zap
 {
 
 enum SFXProfiles {
+   SFXVoice,
    SFXPhaser,
    SFXPhaserImpact,
    SFXShipExplode,
@@ -76,6 +78,7 @@ class SFXObject : public Object
    U32 mSFXIndex;
    Point mPosition;
    Point mVelocity;
+   ByteBufferPtr mInitialBuffer;
    SFXProfile *mProfile;
    F32 mGain;
    S32 mSourceIndex;
@@ -83,7 +86,7 @@ class SFXObject : public Object
    void playOnSource();
    void updateGain();
    void updateMovementParams();
-   SFXObject(U32 profileIndex, F32 gain, Point position, Point velocity);
+   SFXObject(U32 profileIndex, ByteBufferPtr samples, F32 gain, Point position, Point velocity);
 public:
    ~SFXObject();
 
@@ -91,14 +94,20 @@ public:
    void play();
    void stop();
    void setMovementParams(Point position, Point velocity);
+   void queueBuffer(ByteBufferPtr b);
+
+   static bool startRecording();
+   static void captureSamples(ByteBufferPtr sampleBuffer);
+   static void stopRecording();
 
    static void setMaxDistance(F32 maxDistance);
    static void init();
    static void shutdown();
    static void process();
    static void setListenerParams(Point position, Point velocity);
-   static RefPtr<SFXObject> play(U32 profileIndex, F32 gain = 1.0);
-   static RefPtr<SFXObject> play(U32 profileIndex, Point position, Point velocity, F32 gain = 1.0);
+   static RefPtr<SFXObject> play(U32 profileIndex, F32 gain = 1.0f);
+   static RefPtr<SFXObject> play(U32 profileIndex, Point position, Point velocity, F32 gain = 1.0f);
+   static RefPtr<SFXObject> playRecordedBuffer(ByteBufferPtr b, F32 gain = 1.0f);
 };
 
 typedef RefPtr<SFXObject> SFXHandle;

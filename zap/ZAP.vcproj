@@ -33,7 +33,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="dxguid.lib dinput8.lib dinput.lib ../openal/OpenAL32.lib ../openal/alut.lib wsock32.lib ../glut/glut32.lib"
+				AdditionalDependencies="dsound.lib dxguid.lib dinput8.lib dinput.lib ../openal/OpenAL32.lib ../openal/alut.lib wsock32.lib ../glut/glut32.lib"
 				OutputFile="../exe/ZAPd.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="../lib"
@@ -83,7 +83,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="dxguid.lib dinput8.lib dinput.lib ../openal/OpenAL32.lib ../openal/alut.lib wsock32.lib ../glut/glut32.lib"
+				AdditionalDependencies="dsound.lib dxguid.lib dinput8.lib dinput.lib ../openal/OpenAL32.lib ../openal/alut.lib wsock32.lib ../glut/glut32.lib"
 				OutputFile="../exe/ZAP.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
@@ -190,6 +190,15 @@
 		</File>
 		<File
 			RelativePath="..\exe\level4.txt">
+		</File>
+		<File
+			RelativePath=".\lpc10.h">
+		</File>
+		<File
+			RelativePath=".\lpc10dec.c">
+		</File>
+		<File
+			RelativePath=".\lpc10enc.c">
 		</File>
 		<File
 			RelativePath=".\main.cpp">

@@ -97,7 +97,7 @@ inline S16 convertHostToBEndian(S16 i)
 
 inline S16 convertBEndianToHost(S16 i)
 {
-   return S16(convertBEndianToHost(S16(i)));
+   return S16(convertBEndianToHost(U16(i)));
 }
 
 inline U32 convertHostToBEndian(U32 i)
