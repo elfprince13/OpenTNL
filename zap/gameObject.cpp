@@ -237,7 +237,7 @@ void GameObject::writeCompressedVelocity(Point &vel, U32 max, BitStream *stream)
    }
    else
    {
-      F32 theta = atan2(vel.x, vel.y);
+      F32 theta = atan2(vel.y, vel.x);
       stream->writeFloat(theta * FloatInverse2Pi, 10);
       stream->writeRangedU32(len, 0, max);
    }
@@ -259,7 +259,7 @@ void GameObject::readCompressedVelocity(Point &vel, U32 max, BitStream *stream)
    {
       F32 theta = stream->readFloat(10) * Float2Pi;
       F32 magnitude = stream->readRangedU32(0, max);
-      vel.set(sin(theta) * magnitude, cos(theta) * magnitude);
+      vel.set(cos(theta) * magnitude, sin(theta) * magnitude);
    }
 }
 
@@ -271,6 +271,16 @@ bool GameObject::onGhostAdd(GhostConnection *theConnection)
 {
    addToGame(gClientGame);
    return true;
+}
+
+void drawCircle(Point pos, F32 radius)
+{
+   glBegin(GL_LINE_LOOP);
+
+   for(F32 theta = 0; theta < 2 * 3.1415; theta += 0.2)
+      glVertex2f(pos.x + cos(theta) * radius, pos.y + sin(theta) * radius);
+
+   glEnd();
 }
 
 };

@@ -159,7 +159,7 @@ void ControlObjectConnection::readPacket(BitStream *bstream)
          theMove.unpack(bstream, true);
          // process the move, including crediting time to the client
          // and all that joy.
-         if(controlObject.isValid())
+         if(controlObject.isValid() && !(controlObject->getObjectTypeMask() & DeletedType))
          {
             controlObject->setCurrentMove(theMove);
             controlObject->idle(GameObject::ServerIdleControlFromClient);

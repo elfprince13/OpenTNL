@@ -266,17 +266,8 @@ void SoccerBallItem::processArguments(S32 argc, const char **argv)
 
 void SoccerBallItem::renderItem(Point pos)
 {
-   glPushMatrix();
-   glTranslatef(pos.x, pos.y, 0);
-
    glColor3f(1, 1, 1);
-   glBegin(GL_LINE_LOOP);
-
-   for(F32 theta = 0; theta < 2 * 3.1415; theta += 0.2)
-      glVertex2f(cos(theta) * mRadius, sin(theta) * mRadius);
-
-   glEnd();
-   glPopMatrix();
+   drawCircle(pos, mRadius);
 }
 
 void SoccerBallItem::idle(GameObject::IdleCallPath path)

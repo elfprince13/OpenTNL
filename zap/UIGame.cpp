@@ -315,7 +315,7 @@ void GameUserInterface::onMouseMoved(S32 x, S32 y)
    mMousePoint = Point(x - windowWidth / 2, y - windowHeight / 2);
    mMousePoint.x = mMousePoint.x * canvasWidth / windowWidth;
    mMousePoint.y = mMousePoint.y * canvasHeight / windowHeight;
-   mCurrentMove.angle = atan2(mMousePoint.x, mMousePoint.y);
+   mCurrentMove.angle = atan2(mMousePoint.y, mMousePoint.x);
 }
 
 void GameUserInterface::onMouseDown(S32 x, S32 y)
@@ -637,7 +637,7 @@ Move *GameUserInterface::getCurrentMove()
       Point moveDir(mCurrentMove.right - mCurrentMove.left,
                     mCurrentMove.up - mCurrentMove.down);
 
-      Point angleDir(sin(mCurrentMove.angle), cos(mCurrentMove.angle));
+      Point angleDir(cos(mCurrentMove.angle), sin(mCurrentMove.angle));
 
       Point rightAngleDir(-angleDir.y, angleDir.x);
       Point newMoveDir = angleDir * moveDir.y + rightAngleDir * moveDir.x;

@@ -288,6 +288,9 @@ void ServerGame::idle(U32 timeDelta)
    Game::checkConnectionToMaster(timeDelta);
    for(S32 i = 0; i < mGameObjects.size(); i++)
    {
+      if(mGameObjects[i]->getObjectTypeMask() & DeletedType)
+         continue;
+
       Move thisMove = mGameObjects[i]->getCurrentMove();
       thisMove.time = timeDelta;
       mGameObjects[i]->setCurrentMove(thisMove);
@@ -386,6 +389,9 @@ void ClientGame::idle(U32 timeDelta)
 
       for(S32 i = 0; i < mGameObjects.size(); i++)
       {
+         if(mGameObjects[i]->getObjectTypeMask() & DeletedType)
+            continue;
+
          if(mGameObjects[i] == controlObject)
          {
             mGameObjects[i]->setCurrentMove(*theMove);

@@ -388,21 +388,36 @@ void ForceField::render()
 
 TNL_IMPLEMENT_NETOBJECT(Turret);
 
+Turret::Turret(S32 team, Point anchorPoint, Point anchorNormal) :
+   EngineeredObject(team, anchorPoint, anchorNormal)
+{
+   mNetFlags.set(Ghostable);
+}
+
+
 bool Turret::getCollisionPoly(Vector<Point> &polyPoints)
 {
    Point cross(mAnchorNormal.y, -mAnchorNormal.x);
-   polyPoints.push_back(mAnchorPoint + cross * 30);
-   polyPoints.push_back(mAnchorPoint + cross * 20 + mAnchorNormal * 15);
-   polyPoints.push_back(mAnchorPoint - cross * 20 + mAnchorNormal * 15);
-   polyPoints.push_back(mAnchorPoint - cross * 30);
+   polyPoints.push_back(mAnchorPoint + cross * 25);
+   polyPoints.push_back(mAnchorPoint + cross * 10 + mAnchorNormal * 45);
+   polyPoints.push_back(mAnchorPoint - cross * 10 + mAnchorNormal * 45);
+   polyPoints.push_back(mAnchorPoint - cross * 25);
    return true;
+}
+
+void Turret::onAddedToGame(Game *theGame)
+{
+   mCurrentAngle = atan2(mAnchorNormal.y, mAnchorNormal.x);
+}
+
+
+inline void glVertex(Point p)
+{
+   glVertex2f(p.x, p.y);
 }
 
 void Turret::render()
 {
-   Vector<Point> p;
-   getCollisionPoly(p);
-   
    Color teamColor;
 
    if(gClientGame->getGameType())
@@ -411,105 +426,181 @@ void Turret::render()
       teamColor = Color(1,0,1);
 
    glColor3f(teamColor.r, teamColor.g, teamColor.b);
-   glBegin(GL_LINE_LOOP);
-   for(S32 i = 0; i < p.size(); i++)
-      glVertex2f(p[i].x, p[i].y);
+   drawCircle(mAnchorPoint + mAnchorNormal * 25, 20);
+
+   glColor3f(0,0,0);
+   Point cross(mAnchorNormal.y, -mAnchorNormal.x);
+
+   glBegin(GL_POLYGON);
+   glVertex(mAnchorPoint + cross * 25);
+   glVertex(mAnchorPoint + cross * 25 + mAnchorNormal * TurretAimOffset);
+   glVertex(mAnchorPoint - cross * 25 + mAnchorNormal * TurretAimOffset);
+   glVertex(mAnchorPoint - cross * 25);
    glEnd();
+   glColor3f(teamColor.r, teamColor.g, teamColor.b);
+   glBegin(GL_LINE_LOOP);
+   glVertex(mAnchorPoint + cross * 25);
+   glVertex(mAnchorPoint + cross * 25 + mAnchorNormal * TurretAimOffset);
+   glVertex(mAnchorPoint - cross * 25 + mAnchorNormal * TurretAimOffset);
+   glVertex(mAnchorPoint - cross * 25);
+   glEnd();
+   glLineWidth(3);
+
+   glBegin(GL_LINES);
+   Point aimCenter = mAnchorPoint + mAnchorNormal * TurretAimOffset;
+   Point aimDelta(cos(mCurrentAngle) * 25, sin(mCurrentAngle) * 25);
+   glVertex(aimCenter);
+   glVertex(aimCenter + aimDelta);
+   glEnd();
+   glLineWidth(1);
+}
+
+U32 Turret::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
+{
+   U32 ret = Parent::packUpdate(connection, updateMask, stream);
+   if(stream->writeFlag(updateMask & AimMask))
+      stream->write(mCurrentAngle);
+
+   return ret;
+}
+
+void Turret::unpackUpdate(GhostConnection *connection, BitStream *stream)
+{
+   Parent::unpackUpdate(connection, stream);
+   if(stream->readFlag())
+      stream->read(&mCurrentAngle);
 }
 
 void Turret::idle(IdleCallPath path)
 {
-   if(path == ServerIdleMainLoop)
+   if(path != ServerIdleMainLoop)
+      return;
+
+   mFireTimer.update(mCurrentMove.time);
+
+   // Choose best target:
+
+   Point aimPos = mAnchorPoint + mAnchorNormal * TurretAimOffset;
+   Point cross(mAnchorNormal.y, -mAnchorNormal.x);
+
+   Rect queryRect(aimPos, aimPos);
+   queryRect.unionPoint(aimPos + cross * TurretPerceptionDistance);
+   queryRect.unionPoint(aimPos - cross * TurretPerceptionDistance);
+   queryRect.unionPoint(aimPos + mAnchorNormal * TurretPerceptionDistance);
+   fillVector.clear();
+   findObjects(ShipType, fillVector, queryRect);
+
+   Ship * bestTarget = NULL;
+   F32 bestRange = 10000.f;
+   Point bestDelta;
+
+   Point delta;
+
+   F32 timeScale = F32(mCurrentMove.time) * 0.001f;
+
+   for(S32 i=0; i<fillVector.size(); i++)
    {
-      mFireTimer.update(mCurrentMove.time);
+      Ship *potential = (Ship*)fillVector[i];
 
-      if(mFireTimer.getCurrent() == 0)
+      // Is it dead or cloaked?
+      if(potential->isCloakActive() || potential->hasExploded)
+         continue;
+
+      // Is it on our team?
+      if(potential->getTeam() == mTeam)
+         continue;
+
+      // Calculate where we have to shoot to hit this...
+      const F32 projVel = TurretProjectileVelocity;
+      F32 shipVel = potential->getActualVel().len() * 0.8;
+
+      // If we can't hit 'em (or the math will break, move on), pretend we're trying
+      if(shipVel > projVel)
+         shipVel = projVel;
+
+      Point distVec  = potential->getActualPos() - aimPos;
+      F32 travelTime = distVec.len() / sqrt( projVel * projVel - shipVel*shipVel );
+      Point leadPos  = potential->getActualPos() + potential->getActualVel() * travelTime;
+
+      // Calculate distance
+      delta = (leadPos - aimPos);
+
+      // Check that we're facing it...
+      if(delta.dot(mAnchorNormal) <= 0.f)
+         continue;
+
+      // See if we can see it...
+      F32 t;
+      Point n;
+      if(findObjectLOS(BarrierType, 0, aimPos, potential->getActualPos(), t, n))
+         continue;
+
+      // See if we're gonna clobber our own stuff...
+      disableCollision();
+      Point delta2 = delta;
+      delta2.normalize(TurretRange);
+      GameObject *hitObject = findObjectLOS(ShipType | BarrierType | EngineeredType, 0, aimPos, aimPos + delta2, t, n);
+
+      if(hitObject)
       {
-         // Choose a target...
-         Point pos = mAnchorPoint;
-
-         Rect queryRect(pos, pos);
-         queryRect.expand(Point(800, 800));
-
-         fillVector.clear();
-         findObjects(ShipType, fillVector, queryRect);
-
-         Ship * bestTarget = NULL;
-         F32 bestRange = 10000.f;
-         Point bestDelta;
-
-         Point delta;
-
-         F32 timeScale = F32(mCurrentMove.time) / 1000.f;
-
-         for(S32 i=0; i<fillVector.size(); i++)
+         if(hitObject->getObjectTypeMask() & ShipType)
          {
-            Ship *potential = (Ship*)fillVector[i];
-
-            // Is it dead or cloaked?
-            if(potential->isCloakActive() || potential->hasExploded)
+            if(((Ship *) hitObject)->mTeam == mTeam)
                continue;
-
-            // Is it on our team?
-            if(potential->getTeam() == mTeam)
-               continue;
-
-            // Calculate where we have to shoot to hit this...
-            const F32 projVel = 600.f;
-            F32 shipVel = potential->getActualVel().len() * 0.8;
-
-            // If we can't hit 'em (or the math will break, move on), pretend we're trying
-            if(shipVel > projVel)
-               shipVel = projVel;
-
-            Point distVec  = potential->getActualPos() - pos;
-            F32 travelTime = distVec.len() / sqrt( projVel * projVel - shipVel*shipVel );
-            Point leadPos  = potential->getActualPos() + potential->getActualVel() * travelTime;
-
-            // Calculate distance
-            delta = (leadPos - pos);
-
-            // Check that we're facing it...
-            if(delta.dot(mAnchorNormal) <= 0.f)
-               continue;
-
-            // See if we can see it...
-            F32 t;
-            Point n;
-            if(findObjectLOS(BarrierType, 0, mAnchorPoint, potential->getActualPos(), t, n))
-               continue;
-
-            // See if we're gonna clobber our own stuff...
-            disableCollision();
-            Point delta2 = delta;
-            delta2.normalize(600.f * 1.f);
-            EngineeredObject *g = dynamic_cast<EngineeredObject*>(findObjectLOS(EngineeredType, 0, mAnchorPoint, mAnchorPoint + delta2, t, n));
-            enableCollision();
-
-            if(g && g->getTeam() == mTeam)
-               continue;
-
-            F32 dist = delta.len();
-
-            if(dist < bestRange)
-            {
-               bestDelta  = delta;
-               bestRange  = dist;
-               bestTarget = potential;
-            }
          }
-
-         if(bestTarget)
+         else if(hitObject->getObjectTypeMask() & EngineeredType)
          {
-            bestDelta.normalize();
-            Projectile *proj = new Projectile(pos + bestDelta * 30.f, bestDelta * 600.f, 500, mOwner);
-            proj->addToGame(gServerGame);
+            if(((EngineeredObject *) hitObject)->getTeam() == mTeam)
+               continue;
          }
+      }
 
-         mFireTimer.reset(90);
+      enableCollision();
+
+      F32 dist = delta.len();
+
+      if(dist < bestRange)
+      {
+         bestDelta  = delta;
+         bestRange  = dist;
+         bestTarget = potential;
       }
    }
 
+   if(!bestTarget)
+      return;
+
+   // ok, now change our aim to be towards the best target:
+   F32 destAngle = atan2(bestDelta.y, bestDelta.x);
+
+   F32 angleDelta = destAngle - mCurrentAngle;
+   if(angleDelta > FloatPi)
+      angleDelta -= Float2Pi;
+   if(angleDelta < -FloatPi)
+      angleDelta += Float2Pi;
+
+   bool canFire = false;
+   F32 maxTurn = TurretTurnRate * mCurrentMove.time * 0.001f;
+   if(angleDelta != 0)
+      setMaskBits(AimMask);
+
+   if(angleDelta > maxTurn)
+      mCurrentAngle += maxTurn;
+   else if(angleDelta < -maxTurn)
+      mCurrentAngle -= maxTurn;
+   else
+   {
+      mCurrentAngle = destAngle;
+
+      if(mFireTimer.getCurrent() == 0)
+      {
+         bestDelta.normalize();
+         Projectile *proj = new Projectile(aimPos + bestDelta * 30.f, bestDelta * 600.f, 1000, mOwner);
+         proj->addToGame(gServerGame);
+
+         mFireTimer.reset(TurretFireDelay);
+      }
+   }
 }
 
 };

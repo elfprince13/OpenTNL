@@ -153,7 +153,7 @@ void Ship::processMove(U32 stateIndex)
 
 Point Ship::getAimVector()
 {
-   return Point(sin(mMoveState[ActualState].angle), cos(mMoveState[ActualState].angle) );
+   return Point(cos(mMoveState[ActualState].angle), sin(mMoveState[ActualState].angle) );
 }
 
 void Ship::selectWeapon()
@@ -190,7 +190,7 @@ void Ship::processWeaponFire()
                case WeaponPhaser:
                   {
                      Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir);
-                     proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this);
+                     proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 1000, this);
                   }
                break;
                case WeaponGrenade:
@@ -202,7 +202,7 @@ void Ship::processWeaponFire()
                case WeaponBounce:
                   {
                      Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir);
-                     proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this, true);
+                     proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 1000, this, true);
                   }
                break;
                case WeaponTriple:
@@ -210,7 +210,7 @@ void Ship::processWeaponFire()
                      Point projVel = dir * 600 + dir * mMoveState[ActualState].vel.dot(dir);
 
                      // Middle shot
-                     proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 500, this);
+                     proj = new Projectile(mMoveState[ActualState].pos + dir * (CollisionRadius-1), projVel, 1000, this);
 
                      // We have to add the other two manually (they are left and right)
                      Point velPerp(projVel.y, -projVel.x);
@@ -897,7 +897,7 @@ void Ship::emitMovementSparks()
    corners[1].set(  0,  25);
    corners[2].set( 20, -15);
 
-   F32 th = mMoveState[RenderState].angle;
+   F32 th = FloatHalfPi - mMoveState[RenderState].angle;
 
    F32 sinTh = sin(th);
    F32 cosTh = cos(th);
@@ -984,7 +984,7 @@ void Ship::emitMovementSparks()
          velDir *= 1 / len;
 
       Point shipDirs[4];
-      shipDirs[0].set(sin(mMoveState[RenderState].angle), cos(mMoveState[RenderState].angle) );
+      shipDirs[0].set(cos(mMoveState[RenderState].angle), sin(mMoveState[RenderState].angle) );
       shipDirs[1].set(-shipDirs[0]);
       shipDirs[2].set(shipDirs[0].y, -shipDirs[0].x);
       shipDirs[3].set(-shipDirs[0].y, shipDirs[0].x);
@@ -1084,7 +1084,7 @@ void Ship::render()
          velDir *= 1 / len;
 
       Point shipDirs[4];
-      shipDirs[0].set(sin(mMoveState[RenderState].angle), cos(mMoveState[RenderState].angle) );
+      shipDirs[0].set(cos(mMoveState[RenderState].angle), sin(mMoveState[RenderState].angle) );
       shipDirs[1].set(-shipDirs[0]);
       shipDirs[2].set(shipDirs[0].y, -shipDirs[0].x);
       shipDirs[3].set(-shipDirs[0].y, shipDirs[0].x);
@@ -1109,8 +1109,11 @@ void Ship::render()
 
    // first render the thrusters
 
-   glRotatef(radiansToDegrees(mMoveState[RenderState].angle), 0, 0, -1.0);
-
+   // an angle of 0 means the ship is heading down the +X axis
+   // since we draw the ship pointing up the Y axis, we should rotate
+   // by the ship's angle, - 90 degrees
+   glRotatef(radiansToDegrees(mMoveState[RenderState].angle) - 90, 0, 0, 1.0);
+   
    if(isCloakActive())
    {
       glColor4f(0,0,0, 1 - alpha);

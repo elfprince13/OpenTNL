@@ -50,43 +50,55 @@ Projectile::Projectile(Point p, Point v, U32 t, Ship *shooter, bool bouncy)
 
 U32 Projectile::packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream)
 {
-   ((GameConnection *) connection)->writeCompressedPoint(pos, stream);
-   writeCompressedVelocity(velocity, CompressedVelocityMax, stream);
+   if(stream->writeFlag(updateMask & InitialMask))
+   {
+      ((GameConnection *) connection)->writeCompressedPoint(pos, stream);
+      writeCompressedVelocity(velocity, CompressedVelocityMax, stream);
 
-   stream->writeFlag(isBouncy);
+      stream->writeFlag(isBouncy);
 
-   S32 index = -1;
-   if(mShooter.isValid())
-      index = connection->getGhostIndex(mShooter);
-   if(stream->writeFlag(index != -1))
-      stream->writeInt(index, GhostConnection::GhostIdBitSize);
+      S32 index = -1;
+      if(mShooter.isValid())
+         index = connection->getGhostIndex(mShooter);
+      if(stream->writeFlag(index != -1))
+         stream->writeInt(index, GhostConnection::GhostIdBitSize);
+   }
    stream->writeFlag(collided);
-
+   stream->writeFlag(alive);
    return 0;
 }
 
 void Projectile::unpackUpdate(GhostConnection *connection, BitStream *stream)
 {
-   ((GameConnection *) connection)->readCompressedPoint(pos, stream);
-   readCompressedVelocity(velocity, CompressedVelocityMax, stream);
-
-   isBouncy = stream->readFlag();
+   bool initial = false;
 
    if(stream->readFlag())
-      mShooter = (Ship *) connection->resolveGhost(stream->readInt(GhostConnection::GhostIdBitSize));
+   {
+      ((GameConnection *) connection)->readCompressedPoint(pos, stream);
+      readCompressedVelocity(velocity, CompressedVelocityMax, stream);
 
-   collided = stream->readFlag();
-   if(collided)
-      explode(NULL, pos);
-   else
+      isBouncy = stream->readFlag();
+
+      if(stream->readFlag())
+         mShooter = (Ship *) connection->resolveGhost(stream->readInt(GhostConnection::GhostIdBitSize));
       pos += velocity * -0.020f;
+      Rect newExtent(pos,pos);
+      setExtent(newExtent);
+      initial = true;
+      SFXObject::play(SFXPhaser, pos, velocity);
+   }
+   bool preCollided = collided;
+   collided = stream->readFlag();
+   alive = stream->readFlag();
 
-   Rect newExtent(pos,pos);
-   setExtent(newExtent);
-   mCurrentMove.time = U32(connection->getOneWayTime());
-   idle(GameObject::ClientIdleMainRemote);
+   if(!preCollided && collided)
+      explode(NULL, pos);
 
-   SFXObject::play(0, pos, velocity);
+   if(!collided && initial)
+   {
+      mCurrentMove.time = U32(connection->getOneWayTime());
+      idle(GameObject::ClientIdleMainRemote);
+   }
 }
 
 enum {
@@ -138,7 +150,7 @@ void Projectile::explode(GameObject *hitObject, Point thePos)
 void Projectile::idle(GameObject::IdleCallPath path)
 {
    U32 deltaT = mCurrentMove.time;
-   if(!collided)
+   if(!collided && alive)
    {
       Point endPos = pos + velocity * deltaT * 0.001;
       static Vector<GameObject *> disableVector;
@@ -197,6 +209,7 @@ void Projectile::idle(GameObject::IdleCallPath path)
          deleteObject(500);
          liveTime = 0;
          alive = false;
+         setMaskBits(ExplodedMask);
       }
       else
          liveTime -= deltaT;
@@ -205,7 +218,7 @@ void Projectile::idle(GameObject::IdleCallPath path)
 
 void Projectile::render()
 {
-   if(collided)
+   if(collided || !alive)
       return;
 
    glColor3f(1,0,0.5);

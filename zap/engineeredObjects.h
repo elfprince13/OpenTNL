@@ -121,15 +121,30 @@ class Turret : public EngineeredObject
 {
    typedef EngineeredObject Parent;
 
+   enum {
+      TurretAimOffset = 25,
+      TurretRange = 600,
+      TurretPerceptionDistance = 800,
+      TurretProjectileVelocity = 600,
+      TurretTurnRate = 4,
+      TurretFireDelay = 150,
+
+      AimMask = EngineeredObject::NextFreeMask,
+   };
+
    Timer mFireTimer;
+   F32 mCurrentAngle;
 
 public:
-   Turret(S32 team = -1, Point anchorPoint = Point(), Point anchorNormal = Point()) :
-      EngineeredObject(team, anchorPoint, anchorNormal) { mNetFlags.set(Ghostable); }
+   Turret(S32 team = -1, Point anchorPoint = Point(), Point anchorNormal = Point(1, 0));
 
    bool getCollisionPoly(Vector<Point> &polyPoints);
    void render();
    void idle(IdleCallPath path);
+   void onAddedToGame(Game *theGame);
+
+   U32 packUpdate(GhostConnection *connection, U32 updateMask, BitStream *stream);
+   void unpackUpdate(GhostConnection *connection, BitStream *stream);
 
    TNL_DECLARE_CLASS(Turret);
 };

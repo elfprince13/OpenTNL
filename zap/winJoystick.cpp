@@ -209,7 +209,7 @@ static bool updateMoveInternal( Move *theMove, bool buttonPressed[12] )
    Point p(controls[2], controls[3]);
    if(p.len() > 0.1)
    {
-      theMove->angle = atan2(p.x, p.y);
+      theMove->angle = atan2(p.y, p.x);
       theMove->fire = true;
    }
    else

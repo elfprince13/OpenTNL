@@ -160,6 +160,8 @@ public:
    virtual void processArguments(S32 argc, const char**argv);
 };
 
+extern void drawCircle(Point pos, F32 radius);
+
 };
 
 #endif
