@@ -353,7 +353,7 @@ void GrenadeProjectile::explode(Point pos)
    // Check for players within range
    // if so, blast them to death
    Rect queryRect(pos, pos);
-   queryRect.expand(Point(100, 100));
+   queryRect.expand(Point(150, 150));
 
    fillVector.clear();
    findObjects(0xFFFFFFFF, fillVector, queryRect);
@@ -367,7 +367,7 @@ void GrenadeProjectile::explode(Point pos)
       info.collisionPoint  = fillVector[i]->getActualPos();
       info.collisionPoint -= info.impulseVector;
 
-      info.impulseVector  *= 500.f;
+      info.impulseVector  *= 2000.f;
 
       fillVector[i]->damageObject(&info);
    }      
