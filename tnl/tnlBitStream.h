@@ -132,6 +132,9 @@ public:
    /// Returns the maximum readable bit position
    U32 getMaxReadBitPosition() const { return maxReadBitNum; }
 
+   /// Returns the maximum writable bit position
+   U32 getMaxWriteBitPosition() const { return maxWriteBitNum; }
+
    /// Returns the number of bits that can be written into the BitStream without resizing
    U32 getBitSpaceAvailable() const { return maxWriteBitNum - bitNum; }
 

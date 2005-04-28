@@ -50,6 +50,7 @@ EventConnection::EventConnection()
    mLastAckedEventSeq = -1;
    mEventClassCount = 0;
    mEventClassBitSize = 0;
+   mPacketFillFraction = 1.0f;
 }
 
 EventConnection::~EventConnection()
@@ -239,9 +240,10 @@ void EventConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
 
    EventNote *packQueueHead = NULL, *packQueueTail = NULL;
 
+   F32 totalPacketSpaceFraction = 1.0f / bstream->getMaxWriteBitPosition();
    while(mUnorderedSendEventQueueHead)
    {
-      if(bstream->isFull())
+      if(bstream->isFull() || bstream->getBitPosition() * totalPacketSpaceFraction > mPacketFillFraction)
          break;
       // get the first event
       EventNote *ev = mUnorderedSendEventQueueHead;
