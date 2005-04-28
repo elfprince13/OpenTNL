@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="."
+				AdditionalIncludeDirectories="headers"
 				PreprocessorDefinitions="TNL_ENABLE_LOGGING;TNL_DEBUG;WIN32;_DEBUG;_LIB;"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="5"
@@ -121,190 +121,196 @@
 	</References>
 	<Files>
 		<File
-			RelativePath=".\aes.c">
+			RelativePath=".\ciphers\aes\aes.c">
 		</File>
 		<File
-			RelativePath=".\base64.c">
+			RelativePath=".\misc\base64\base64_decode.c">
 		</File>
 		<File
-			RelativePath=".\bits.c">
+			RelativePath=".\misc\base64\base64_encode.c">
 		</File>
 		<File
-			RelativePath=".\blowfish.c">
+			RelativePath=".\misc\burn_stack.c">
 		</File>
 		<File
-			RelativePath=".\cast5.c">
+			RelativePath=".\misc\crypt\crypt.c">
 		</File>
 		<File
-			RelativePath=".\cbc.c">
+			RelativePath=".\misc\crypt\crypt_argchk.c">
 		</File>
 		<File
-			RelativePath=".\cfb.c">
+			RelativePath=".\misc\crypt\crypt_cipher_descriptor.c">
 		</File>
 		<File
-			RelativePath=".\crypt.c">
+			RelativePath=".\misc\crypt\crypt_cipher_is_valid.c">
 		</File>
 		<File
-			RelativePath=".\ctr.c">
+			RelativePath=".\misc\crypt\crypt_find_cipher.c">
 		</File>
 		<File
-			RelativePath=".\des.c">
+			RelativePath=".\misc\crypt\crypt_find_cipher_any.c">
 		</File>
 		<File
-			RelativePath=".\dh.c">
+			RelativePath=".\misc\crypt\crypt_find_cipher_id.c">
 		</File>
 		<File
-			RelativePath=".\dsa.c">
+			RelativePath=".\misc\crypt\crypt_find_hash.c">
 		</File>
 		<File
-			RelativePath=".\ecb.c">
+			RelativePath=".\misc\crypt\crypt_find_hash_any.c">
 		</File>
 		<File
-			RelativePath=".\ecc.c">
+			RelativePath=".\misc\crypt\crypt_find_hash_id.c">
 		</File>
 		<File
-			RelativePath=".\gf.c">
+			RelativePath=".\misc\crypt\crypt_find_prng.c">
 		</File>
 		<File
-			RelativePath=".\hash.c">
+			RelativePath=".\misc\crypt\crypt_hash_descriptor.c">
 		</File>
 		<File
-			RelativePath=".\hmac.c">
+			RelativePath=".\misc\crypt\crypt_hash_is_valid.c">
 		</File>
 		<File
-			RelativePath=".\keyring.c">
+			RelativePath=".\misc\crypt\crypt_prng_descriptor.c">
 		</File>
 		<File
-			RelativePath=".\md2.c">
+			RelativePath=".\misc\crypt\crypt_prng_is_valid.c">
 		</File>
 		<File
-			RelativePath=".\md4.c">
+			RelativePath=".\misc\crypt\crypt_register_cipher.c">
 		</File>
 		<File
-			RelativePath=".\md5.c">
+			RelativePath=".\misc\crypt\crypt_register_hash.c">
 		</File>
 		<File
-			RelativePath=".\mem.c">
+			RelativePath=".\misc\crypt\crypt_register_prng.c">
 		</File>
 		<File
-			RelativePath=".\mpi.c">
+			RelativePath=".\misc\crypt\crypt_unregister_cipher.c">
 		</File>
 		<File
-			RelativePath=".\mycrypt.h">
+			RelativePath=".\misc\crypt\crypt_unregister_hash.c">
 		</File>
 		<File
-			RelativePath=".\mycrypt_argchk.h">
+			RelativePath=".\misc\crypt\crypt_unregister_prng.c">
 		</File>
 		<File
-			RelativePath=".\mycrypt_cfg.h">
+			RelativePath=".\modes\ctr\ctr_decrypt.c">
 		</File>
 		<File
-			RelativePath=".\mycrypt_cipher.h">
+			RelativePath=".\modes\ctr\ctr_done.c">
 		</File>
 		<File
-			RelativePath=".\mycrypt_custom.h">
+			RelativePath=".\modes\ctr\ctr_encrypt.c">
 		</File>
 		<File
-			RelativePath=".\mycrypt_gf.h">
+			RelativePath=".\modes\ctr\ctr_getiv.c">
 		</File>
 		<File
-			RelativePath=".\mycrypt_hash.h">
+			RelativePath=".\modes\ctr\ctr_setiv.c">
 		</File>
 		<File
-			RelativePath=".\mycrypt_kr.h">
+			RelativePath=".\modes\ctr\ctr_start.c">
 		</File>
 		<File
-			RelativePath=".\mycrypt_macros.h">
+			RelativePath=".\pk\ecc\ecc.c">
 		</File>
 		<File
-			RelativePath=".\mycrypt_misc.h">
+			RelativePath=".\misc\error_to_string.c">
 		</File>
 		<File
-			RelativePath=".\mycrypt_pk.h">
+			RelativePath=".\hashes\helper\hash_memory.c">
 		</File>
 		<File
-			RelativePath=".\mycrypt_prng.h">
+			RelativePath=".\hashes\helper\hash_memory_multi.c">
 		</File>
 		<File
-			RelativePath=".\noekeon.c">
+			RelativePath=".\misc\mpi\is_prime.c">
 		</File>
 		<File
-			RelativePath=".\ofb.c">
+			RelativePath=".\headers\ltc_tommath.h">
 		</File>
 		<File
-			RelativePath=".\omac.c">
+			RelativePath=".\hashes\md2.c">
 		</File>
 		<File
-			RelativePath=".\packet.c">
+			RelativePath=".\hashes\md4.c">
 		</File>
 		<File
-			RelativePath=".\prime.c">
+			RelativePath=".\hashes\md5.c">
 		</File>
 		<File
-			RelativePath=".\rc2.c">
+			RelativePath=".\misc\mpi\mpi.c">
 		</File>
 		<File
-			RelativePath=".\rc4.c">
+			RelativePath=".\misc\mpi\mpi_to_ltc_error.c">
 		</File>
 		<File
-			RelativePath=".\rc5.c">
+			RelativePath=".\pk\packet_store_header.c">
 		</File>
 		<File
-			RelativePath=".\rc6.c">
+			RelativePath=".\pk\packet_valid_header.c">
 		</File>
 		<File
-			RelativePath=".\rmd128.c">
+			RelativePath=".\misc\mpi\rand_prime.c">
 		</File>
 		<File
-			RelativePath=".\rmd160.c">
+			RelativePath=".\hashes\sha1.c">
 		</File>
 		<File
-			RelativePath=".\rsa.c">
+			RelativePath=".\hashes\sha2\sha256.c">
 		</File>
 		<File
-			RelativePath=".\safer+.c">
+			RelativePath=".\hashes\sha2\sha512.c">
 		</File>
 		<File
-			RelativePath=".\safer.c">
+			RelativePath=".\headers\tomcrypt.h">
 		</File>
 		<File
-			RelativePath=".\safer_tab.c">
+			RelativePath=".\headers\tomcrypt_argchk.h">
 		</File>
 		<File
-			RelativePath=".\sha1.c">
+			RelativePath=".\headers\tomcrypt_cfg.h">
 		</File>
 		<File
-			RelativePath=".\sha256.c">
+			RelativePath=".\headers\tomcrypt_cipher.h">
 		</File>
 		<File
-			RelativePath=".\sha512.c">
+			RelativePath=".\headers\tomcrypt_custom.h">
 		</File>
 		<File
-			RelativePath=".\skipjack.c">
+			RelativePath=".\headers\tomcrypt_hash.h">
 		</File>
 		<File
-			RelativePath=".\sprng.c">
+			RelativePath=".\headers\tomcrypt_mac.h">
 		</File>
 		<File
-			RelativePath=".\strings.c">
+			RelativePath=".\headers\tomcrypt_macros.h">
 		</File>
 		<File
-			RelativePath=".\tiger.c">
+			RelativePath=".\headers\tomcrypt_misc.h">
 		</File>
 		<File
-			RelativePath=".\tommath.h">
+			RelativePath=".\headers\tomcrypt_pk.h">
 		</File>
 		<File
-			RelativePath=".\twofish.c">
+			RelativePath=".\headers\tomcrypt_pkcs.h">
 		</File>
 		<File
-			RelativePath=".\twofish_tab.c">
+			RelativePath=".\headers\tomcrypt_prng.h">
 		</File>
 		<File
-			RelativePath=".\xtea.c">
+			RelativePath=".\headers\tommath_class.h">
 		</File>
 		<File
-			RelativePath=".\yarrow.c">
+			RelativePath=".\headers\tommath_superclass.h">
+		</File>
+		<File
+			RelativePath=".\prngs\yarrow.c">
+		</File>
+		<File
+			RelativePath=".\misc\zeromem.c">
 		</File>
 	</Files>
 	<Globals>
