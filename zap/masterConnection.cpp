@@ -141,7 +141,7 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cClientRequestedArrangedCon
    theSharedData->takeOwnership();
 
    conn->connectArranged(getInterface(), fullPossibleAddresses,
-      nonce, serverNonce, theSharedData,false);
+      nonce, serverNonce, theSharedData,false, false, false, true);
 }
 
 TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionAccepted, (U32 requestId, Vector<IPAddress> possibleAddresses, ByteBufferPtr connectionData))
@@ -174,7 +174,7 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionAccepted
       gClientGame->setConnectionToServer(conn);
 
       conn->connectArranged(getInterface(), fullPossibleAddresses,
-         nonce, serverNonce, theSharedData,true);
+         nonce, serverNonce, theSharedData,true, false, false, true);
    }
 }
 
@@ -190,7 +190,8 @@ TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cArrangedConnectionRejected
 
 TNL_IMPLEMENT_RPC_OVERRIDE(MasterServerConnection, m2cSetMOTD, (StringPtr motdString))
 {
-   gMainMenuUserInterface.setMOTD(motdString);
+   if(!mIsGameServer)
+      gMainMenuUserInterface.setMOTD(motdString);
 }
 
 void MasterServerConnection::writeConnectRequest(BitStream *bstream)

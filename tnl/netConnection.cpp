@@ -798,7 +798,7 @@ void NetConnection::connect(NetInterface *theInterface, const Address &address, 
    mInterface->startConnection(this);
 }
 
-void NetConnection::connectArranged(NetInterface *connectionInterface, const Vector<Address> &possibleAddresses, Nonce &nonce, Nonce &serverNonce, ByteBufferPtr sharedSecret, bool isInitiator, bool requestsKeyExchange, bool requestsCertificate)
+void NetConnection::connectArranged(NetInterface *connectionInterface, const Vector<Address> &possibleAddresses, Nonce &nonce, Nonce &serverNonce, ByteBufferPtr sharedSecret, bool isInitiator, bool requestsKeyExchange, bool requestsCertificate, bool useArrangedSecretAsSharedSecret)
 {
    mConnectionParameters.mRequestKeyExchange = requestsKeyExchange;
    mConnectionParameters.mRequestCertificate = requestsCertificate;
@@ -809,6 +809,9 @@ void NetConnection::connectArranged(NetInterface *connectionInterface, const Vec
    mConnectionParameters.mServerNonce = serverNonce;
    mConnectionParameters.mArrangedSecret = sharedSecret;
    mConnectionParameters.mArrangedSecret->takeOwnership();
+   mConnectionParameters.mUseArrangedSecretAsSharedSecret = useArrangedSecretAsSharedSecret;
+   if(useArrangedSecretAsSharedSecret)
+      mConnectionParameters.mSharedSecret = mConnectionParameters.mArrangedSecret;
 
    setInterface(connectionInterface);
    mInterface->startArrangedConnection(this);   

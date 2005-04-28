@@ -1075,11 +1075,18 @@ void NetInterface::handlePunch(const Address &theAddress, BitStream *stream)
       }
       else
          theParams.mPrivateKey = mPrivateKey;
+      theParams.mUsingCrypto = true;
       theParams.mSharedSecret = theParams.mPrivateKey->computeSharedSecretKey(theParams.mPublicKey);
+   }
+   else if(theParams.mUseArrangedSecretAsSharedSecret)
+      theParams.mUsingCrypto = true;
+
+   if(theParams.mUsingCrypto)
+   {
       //logprintf("shared secret (client) %s", theParams.mSharedSecret->encodeBase64()->getBuffer());
       Random::read(theParams.mSymmetricKey, SymmetricCipher::KeySize);
-      theParams.mUsingCrypto = true;
    }
+
    conn->setNetAddress(theAddress);
    TNLLogMessageV(LogNetInterface, ("Punch from %s matched nonces - connecting...", theAddress.toString()));
 
@@ -1107,9 +1114,15 @@ void NetInterface::sendArrangedConnectRequest(NetConnection *conn)
    theParams.mServerNonce.write(&out);
    if(out.writeFlag(theParams.mUsingCrypto))
    {
-      out.write(theParams.mPrivateKey->getPublicKey());
-      innerEncryptPos = out.getBytePosition();
-      out.setBytePosition(innerEncryptPos);
+      if(!theParams.mUseArrangedSecretAsSharedSecret)
+      {
+         // if this arranged connection doesn't already have the shared
+         // secret (from the arranged secret), send the public key
+         // to the remote host.
+         out.write(theParams.mPrivateKey->getPublicKey());
+         innerEncryptPos = out.getBytePosition();
+         out.setBytePosition(innerEncryptPos);
+      }
       out.write(SymmetricCipher::KeySize, theParams.mSymmetricKey);
    }
    out.writeFlag(theParams.mDebugObjectSizes);
@@ -1186,23 +1199,31 @@ void NetInterface::handleArrangedConnectRequest(const Address &theAddress, BitSt
 
    if(stream->readFlag())
    {
-      if(mPrivateKey.isNull())
-         return;
       theParams.mUsingCrypto = true;
-      theParams.mPublicKey = new AsymmetricKey(stream);
-      theParams.mPrivateKey = mPrivateKey;
+      if(!theParams.mUseArrangedSecretAsSharedSecret)
+      {
+         if(mPrivateKey.isNull())
+            return;
+         theParams.mPublicKey = new AsymmetricKey(stream);
+         theParams.mPrivateKey = mPrivateKey;
 
-      U32 decryptPos = stream->getBytePosition();
-      stream->setBytePosition(decryptPos);
-      theParams.mSharedSecret = theParams.mPrivateKey->computeSharedSecretKey(theParams.mPublicKey);
-      SymmetricCipher theCipher(theParams.mSharedSecret);
-      
-      if(!stream->decryptAndCheckHash(NetConnection::MessageSignatureBytes, decryptPos, &theCipher))
-         return;
-
+         U32 decryptPos = stream->getBytePosition();
+         stream->setBytePosition(decryptPos);
+         theParams.mSharedSecret = theParams.mPrivateKey->computeSharedSecretKey(theParams.mPublicKey);
+         SymmetricCipher theCipher(theParams.mSharedSecret);
+         
+         if(!stream->decryptAndCheckHash(NetConnection::MessageSignatureBytes, decryptPos, &theCipher))
+            return;
+      }
       // now read the first part of the connection's session (symmetric) key
       stream->read(SymmetricCipher::KeySize, theParams.mSymmetricKey);
+   }
+   if(theParams.mUsingCrypto)
+   {
+      // if this connection is using crypto, it is the connection
+      // receiver who computes the InitVector for the symmetric cipher.
       Random::read(theParams.mInitVector, SymmetricCipher::KeySize);
+      conn->setSymmetricCipher(new SymmetricCipher(theParams.mSymmetricKey, theParams.mInitVector));
    }
 
    U32 connectSequence;
@@ -1215,8 +1236,6 @@ void NetInterface::handleArrangedConnectRequest(const Address &theAddress, BitSt
 
    conn->setNetAddress(theAddress);
    conn->setInitialRecvSequence(connectSequence);
-   if(theParams.mUsingCrypto)
-      conn->setSymmetricCipher(new SymmetricCipher(theParams.mSymmetricKey, theParams.mInitVector));
 
    const char *errorString = NULL;
    if(!conn->readConnectRequest(stream, &errorString))

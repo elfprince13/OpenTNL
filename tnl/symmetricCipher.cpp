@@ -40,14 +40,34 @@ SymmetricCipher::SymmetricCipher(const U8 symmetricKey[SymmetricCipher::KeySize]
    mPadLen = 0;
 }
 
+static void copyWrapBuffer(U8 *destBuffer, U32 destSize, const U8 *srcBuffer, U32 srcSize)
+{
+   if(!srcSize)
+   {
+      memset(destBuffer, 0, destSize);
+      return;
+   }
+   U32 copyPos = 0;
+   while(copyPos < destSize)
+   {
+      U32 copyBytes = getMin(destSize - copyPos, srcSize);
+      memcpy(destBuffer + copyPos, srcBuffer, copyBytes);
+      copyPos += copyBytes;
+   }
+}
+
 SymmetricCipher::SymmetricCipher(const ByteBuffer *theByteBuffer)
 {
+   // if the buffer passed isn't exactly the right size,
+   // wrap copy it into the dest buffer and init vector.
    if(theByteBuffer->getBufferSize() != KeySize * 2)
    {
-      U8 buffer[KeySize];
-      memset(buffer, 0, KeySize);
+      U8 buffer[KeySize * 2];
+      memset(buffer, 0, KeySize * 2);
+      memcpy(buffer, theByteBuffer->getBuffer(), getMin(U32(KeySize * 2), theByteBuffer->getBufferSize()));
+
       rijndael_setup(buffer, KeySize, 0, (symmetric_key *) &mSymmetricKey);
-      memcpy(mInitVector, buffer, BlockSize);
+      memcpy(mInitVector, buffer + KeySize, BlockSize);
    }
    else
    {
