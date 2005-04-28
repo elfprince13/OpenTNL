@@ -236,23 +236,30 @@ Socket::Socket(const Address &bindAddress, U32 sendBufferSize, U32 recvBufferSiz
    }
    if(mPlatformSocket != INVALID_SOCKET)
    {
+      TNLLogMessageV(LogUDP, ("%s socket created.", socketType));
       S32 error = 0;
       SOCKADDR address;
       socklen_t addressSize = sizeof(address);
 
       TNLToSocketAddress(bindAddress, &address, &addressSize);
       error = bind(mPlatformSocket, &address, addressSize);
-
+      
       Address boundAddress;
-      addressSize = sizeof(address);
 
-      getsockname(mPlatformSocket, (PSOCKADDR) &address, &addressSize);
-      SocketToTNLAddress(&address, &boundAddress);
+      if(!error)
+      {
+         addressSize = sizeof(address);
+         getsockname(mPlatformSocket, (PSOCKADDR) &address, &addressSize);
+         SocketToTNLAddress(&address, &boundAddress);
+         TNLLogMessageV(LogUDP, ("%s socket bound to address: %s", socketType, boundAddress.toString()));
 
-      TNLLogMessageV(LogUDP, ("%s socket created - bound to address: %s", socketType, boundAddress.toString()));
+         // set the send and receive buffer sizes
+         error = setsockopt(mPlatformSocket, SOL_SOCKET, SO_RCVBUF, (char *) &recvBufferSize, sizeof(recvBufferSize));
+      }
+      else
+         TNLLogMessageV(LogUDP, ("%s socket error: unable to bind the socket to the specified address.", socketType));
+         
 
-      // set the send and receive buffer sizes
-      error = setsockopt(mPlatformSocket, SOL_SOCKET, SO_RCVBUF, (char *) &recvBufferSize, sizeof(recvBufferSize));
       if(!error)
       {
          TNLLogMessageV(LogUDP, ("%s socket receive buffer size set to %d.", socketType, recvBufferSize));

@@ -240,10 +240,10 @@ protected:
    void findAndRemovePendingConnection(const Address &address);
 
    /// Adds a connection to the internal connection list.
-   void addConnection(NetConnection *connection);
+   virtual void addConnection(NetConnection *connection);
 
    /// Remove a connection from the list.
-   void removeConnection(NetConnection *connection);
+   virtual void removeConnection(NetConnection *connection);
 
    /// Begins the connection handshaking process for a connection.  Called from NetConnection::connect()
    void startConnection(NetConnection *conn);
