@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../libtomcrypt"
+				AdditionalIncludeDirectories="../libtomcrypt/headers"
 				PreprocessorDefinitions="TNL_DEBUG;TNL_ENABLE_LOGGING;WIN32;_DEBUG;_LIB;"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="5"

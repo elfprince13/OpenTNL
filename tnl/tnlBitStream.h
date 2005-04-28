@@ -372,8 +372,14 @@ inline U32 BitStream::readRangedU32(U32 rangeStart, U32 rangeEnd)
    U32 rangeSize = rangeEnd - rangeStart + 1;
    U32 rangeBits = getNextBinLog2(rangeSize);
 
-   U32 val = U32(readInt(S32(rangeBits)));
-   return val + rangeStart;
+   U32 val = U32(readInt(S32(rangeBits))) + rangeStart;
+   if(val > rangeEnd)
+   {
+      TNLAssert(0, "Value out of range in readRangedU32");
+      error = true;
+      return rangeStart;
+   }
+   return val;
 }
 
 inline void BitStream::writeEnum(U32 enumValue, U32 enumRange)

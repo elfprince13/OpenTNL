@@ -25,7 +25,7 @@
 //------------------------------------------------------------------------------------
 
 
-#include <mycrypt.h>
+#include "tomcrypt.h"
 #include "tnl.h"
 #include "tnlRandom.h"
 #include "tnlJournal.h"
