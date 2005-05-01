@@ -67,7 +67,7 @@ protected:
       ResizePad = 1500,
    };
    U32  bitNum;               ///< The current bit position for reading/writing in the bit stream.
-   bool error;                ///< Flag set if a user operation attempts to read or write past the max read/write sizes.
+   bool mError;               ///< Flag set if a user operation attempts to read or write past the max read/write sizes.
    bool mCompressRelative;    ///< Flag set if the bit stream should compress points relative to a compression point.
    Point3F mCompressPoint;    ///< Reference point for relative point compression.
    U32  maxReadBitNum;        ///< Last valid read bit position.
@@ -113,7 +113,7 @@ public:
    void setStringTable(ConnectionStringTable *table) { mStringTable = table; }
 
    /// clears the error state from an attempted read or write overrun
-   void clearError() { error = false; }
+   void clearError() { mError = false; }
 
    /// Returns a pointer to the next byte in the BitStream from the current bit position
    U8*  getBytePtr();
@@ -237,8 +237,8 @@ public:
    /// @endcode
    bool readFlag();
 
-   bool write(bool value) { writeFlag(value); return !error; }
-   bool read(bool *value) { *value = readFlag(); return !error; }
+   bool write(bool value) { writeFlag(value); return !mError; }
+   bool read(bool *value) { *value = readFlag(); return !mError; }
 
    /// Writes a huffman compressed string into the stream.
    void writeString(const char *stringBuf, U8 maxLen=255);
@@ -281,7 +281,14 @@ public:
    /// Returns whether the BitStream writing has exceeded the write target size.
    bool isFull() { return bitNum > (getBufferSize() << 3); }
    /// Returns whether the stream has generated an error condition due to reading or writing past the end of the buffer.
-   bool isValid() { return !error; }
+   bool isValid() { return !mError; }
+
+   /// Sets the error condition on the bit stream.
+   void setError()
+   {
+      TNLAssert(0, "BitStream error set.");
+      mError = true;
+   }
 
    /// Hashes the BitStream, writing the hash digest into the end of the buffer, and then encrypts with the given cipher
    void hashAndEncrypt(U32 hashDigestSize, U32 encryptStartOffset, SymmetricCipher *theCipher);
@@ -339,8 +346,7 @@ inline bool BitStream::readFlag()
 {
    if(bitNum > maxReadBitNum)
    {
-      error = true;
-      TNLAssert(false, "Out of range read");
+      setError();
       return false;
    }
    S32 mask = 1 << (bitNum & 0x7);
@@ -378,8 +384,7 @@ inline U32 BitStream::readRangedU32(U32 rangeStart, U32 rangeEnd)
    U32 val = U32(readInt(S32(rangeBits))) + rangeStart;
    if(val > rangeEnd)
    {
-      TNLAssert(0, "Value out of range in readRangedU32");
-      error = true;
+      setError();
       return rangeStart;
    }
    return val;

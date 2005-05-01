@@ -33,8 +33,9 @@
 
 using namespace TNL;
 
+#define TNL_TEST_BANDWIDTH
 //#define TNLTest_SERVER
-#define TNL_TEST_RPC
+//#define TNL_TEST_RPC
 //#define TNL_TEST_PROTOCOL
 //#define TNL_TEST_RPC
 //#define TNL_TEST_NETINTERFACE
@@ -57,8 +58,77 @@ public:
    }
 } gDedicatedServerLogConsumer;
 
+#if defined(TNL_TEST_BANDWIDTH)
+class RPCTestConnection : public EventConnection
+{
+public:
+   static U32 totalRecvd;
+   TNL_DECLARE_RPC(rpcFoo, (ByteBufferPtr buffer));
+   TNL_DECLARE_RPC(rpcGotit, (U32 bytes));
+   TNL_DECLARE_NETCONNECTION(RPCTestConnection);
+   void onConnectionEstablished()
+   {
+      setFixedRateParameters(20, 20, 150000, 150000);
+   }
+};
 
-#if defined(TNLTest_SERVER)
+TNL_IMPLEMENT_NETCONNECTION(RPCTestConnection, NetClassGroupGame, true);
+
+U32 RPCTestConnection::totalRecvd = 0;
+
+TNL_IMPLEMENT_RPC(RPCTestConnection, rpcFoo, (ByteBufferPtr buffer), (buffer),
+                  NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
+{
+   rpcGotit(buffer->getBufferSize());
+}
+
+TNL_IMPLEMENT_RPC(RPCTestConnection, rpcGotit, (U32 bytes), (bytes), 
+                  NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0)
+{
+   totalRecvd += bytes;
+   rpcFoo(new ByteBuffer(bytes));
+}
+
+int main(int argc, const char **argv)
+{
+   TNLLogEnable(LogNetInterface, true);
+   NetInterface *clientInterface = new NetInterface(Address(IPProtocol, Address::Any, 25000));
+   NetInterface *serverInterface = new NetInterface(Address(IPProtocol, Address::Any, 25001));
+
+   serverInterface->setAllowsConnections(true);
+   serverInterface->setRequiresKeyExchange(true);
+
+   serverInterface->setPrivateKey(new AsymmetricKey(32));
+   RPCTestConnection *clientConnection = new RPCTestConnection;
+
+   Address addr("IP:127.0.0.1:25001");
+   clientConnection->connect(clientInterface, addr, true, false);
+   for(S32 i = 0; i < 400; i++)
+      clientConnection->rpcFoo(new ByteBuffer(Random::readI(15, 750)));
+
+   U32 startTime = Platform::getRealMilliseconds();
+   U32 currentTime = startTime;
+   for(;;)
+   {
+      U32 time = Platform::getRealMilliseconds();
+
+      if(time - currentTime > 1000)
+      {
+         currentTime = time;
+         logprintf("Rate: %d bytes per second, %d total bytes.", 
+            RPCTestConnection::totalRecvd * 1000 / (currentTime - startTime), RPCTestConnection::totalRecvd);
+      }
+
+      serverInterface->checkIncomingPackets();
+      serverInterface->processConnections();
+      clientInterface->checkIncomingPackets();
+      clientInterface->processConnections();
+      Platform::sleep(1);
+   }
+
+}
+
+#elif defined(TNLTest_SERVER)
 
 // The TNLTest_SERVER test is an example dedicated server for the
 // TNLTest application.

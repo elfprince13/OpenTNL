@@ -50,7 +50,7 @@ void BitStream::setMaxBitSizes(U32 maxReadSize, U32 maxWriteSize)
 void BitStream::reset()
 {
    bitNum = 0;
-   error = false;
+   mError = false;
    mCompressRelative = false;
    mStringBuffer[0] = 0;
    mStringTable = NULL;
@@ -82,7 +82,7 @@ bool BitStream::resizeBits(U32 newBits)
    U32 newSize = ((maxWriteBitNum + newBits + 7) >> 3) + ResizePad;
    if(!resize(newSize))
    {
-      error = true;
+      mError = true;
       return false;
    }
    maxReadBitNum = newSize << 3;
@@ -97,7 +97,11 @@ bool BitStream::writeBits(U32 bitCount, const void *bitPtr)
 
    if(bitCount + bitNum > maxWriteBitNum)
       if(!resizeBits(bitCount + bitNum - maxWriteBitNum))
+      {
+         // fill to the end, so the higher level code knows the BitStream is full.
+         bitNum = maxWriteBitNum;
          return false;
+      }
 
    U32 upShift  = bitNum & 0x7;
    U32 downShift= 8 - upShift;
@@ -166,7 +170,7 @@ bool BitStream::readBits(U32 bitCount, void *bitPtr)
       return true;
    if(bitCount + bitNum > maxReadBitNum)
    {
-      error = true;
+      setError();
       return false;
    }
 

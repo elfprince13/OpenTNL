@@ -543,6 +543,10 @@ void NetConnection::setIsAdaptive()
 void NetConnection::setFixedRateParameters(U32 minPacketSendPeriod, U32 minPacketRecvPeriod, U32 maxSendBandwidth, U32 maxRecvBandwidth)
 {
    mTypeFlags.clear(ConnectionAdaptive);
+   if(maxRecvBandwidth > MaxFixedBandwidth)
+      maxRecvBandwidth = MaxFixedBandwidth;
+   if(maxSendBandwidth > MaxFixedBandwidth)
+      maxSendBandwidth = MaxFixedBandwidth;
 
    mLocalRate.maxRecvBandwidth = maxRecvBandwidth;
    mLocalRate.maxSendBandwidth = maxSendBandwidth;

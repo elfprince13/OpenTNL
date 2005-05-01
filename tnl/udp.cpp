@@ -575,8 +575,9 @@ void Socket::getInterfaceAddresses(Vector<Address> *addressVector)
       {
          Address theAddress;
          SocketToTNLAddress((struct sockaddr *) sin, &theAddress);
-	 if(theAddress.netNum[0] != INADDR_ANY && theAddress.netNum[0] != 0x7F000001)
-	 {
+         theAddress.port = 0;
+         if(theAddress.netNum[0] != INADDR_ANY && theAddress.netNum[0] != 0x7F000001)
+	      {
             addressVector->push_back(theAddress);
          }
       }
