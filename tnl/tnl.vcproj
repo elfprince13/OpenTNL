@@ -73,7 +73,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="../libtomcrypt"
+				AdditionalIncludeDirectories="../libtomcrypt/headers"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;TNL_ENABLE_LOGGING"
 				StringPooling="TRUE"
 				ExceptionHandling="FALSE"
