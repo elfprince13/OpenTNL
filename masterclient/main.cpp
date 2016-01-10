@@ -408,12 +408,16 @@ int main(int argc, const char **argv)
       return 0;
    }
 
-   Address masterAddress(argv[1]);
    if(argc > 2)
       gIsServer = !stricmp(argv[2], "-server");
    U32 port = 0;
-   if(argc > 3)
-      port = atoi(argv[3]);
+	if(argc > 3)
+	port = atoi(argv[3]);
+	
+	char buf[256];
+	sprintf(buf, "ip:%s:%d", argv[1], port);
+	
+	Address masterAddress(buf);
 
    // Announce master status.
    logprintf("%s started - master is at %s.", gIsServer ? "Server" : "Client", masterAddress.toString());

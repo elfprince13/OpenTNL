@@ -432,6 +432,16 @@
 		E9DD314F1C42FDC700F2AE54 /* sober128tab.c in Sources */ = {isa = PBXBuildFile; fileRef = E9DD2FE21C42FDC700F2AE54 /* sober128tab.c */; };
 		E9DD31501C42FDC700F2AE54 /* sprng.c in Sources */ = {isa = PBXBuildFile; fileRef = E9DD2FE31C42FDC700F2AE54 /* sprng.c */; };
 		E9DD31511C42FDC700F2AE54 /* yarrow.c in Sources */ = {isa = PBXBuildFile; fileRef = E9DD2FE41C42FDC700F2AE54 /* yarrow.c */; };
+		E9DD31611C43030C00F2AE54 /* config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9DD315D1C43030C00F2AE54 /* config.cpp */; };
+		E9DD31621C43030C00F2AE54 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9DD315E1C43030C00F2AE54 /* main.cpp */; };
+		E9DD31661C43032F00F2AE54 /* libOpenTNL.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E963C8C81C41A1B900B95858 /* libOpenTNL.a */; };
+		E9DD316E1C4303B200F2AE54 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9DD316D1C4303B200F2AE54 /* main.cpp */; };
+		E9DD31741C4303F300F2AE54 /* libOpenTNL.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E963C8C81C41A1B900B95858 /* libOpenTNL.a */; };
+		E9DD317E1C43059B00F2AE54 /* masterInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9DD315F1C43030C00F2AE54 /* masterInterface.cpp */; };
+		E9DD31811C4305C700F2AE54 /* libmasterinterface.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DD31791C43058400F2AE54 /* libmasterinterface.a */; };
+		E9DD31841C4305D000F2AE54 /* libmasterinterface.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DD31791C43058400F2AE54 /* libmasterinterface.a */; };
+		E9DD31931C43091F00F2AE54 /* tnlping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9DD31921C43091F00F2AE54 /* tnlping.cpp */; };
+		E9DD31961C43093900F2AE54 /* libOpenTNL.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E963C8C81C41A1B900B95858 /* libOpenTNL.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -442,10 +452,82 @@
 			remoteGlobalIDString = E9DD2E301C42FD5F00F2AE54;
 			remoteInfo = libtomcrypt;
 		};
+		E9DD31641C43032900F2AE54 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E963C8C01C41A1B900B95858 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E963C8C71C41A1B900B95858;
+			remoteInfo = OpenTNL;
+		};
+		E9DD31721C4303EE00F2AE54 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E963C8C01C41A1B900B95858 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E963C8C71C41A1B900B95858;
+			remoteInfo = OpenTNL;
+		};
+		E9DD317F1C4305C100F2AE54 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E963C8C01C41A1B900B95858 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E9DD31781C43058400F2AE54;
+			remoteInfo = masterinterface;
+		};
+		E9DD31821C4305CB00F2AE54 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E963C8C01C41A1B900B95858 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E9DD31781C43058400F2AE54;
+			remoteInfo = masterinterface;
+		};
+		E9DD31851C4305D500F2AE54 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E963C8C01C41A1B900B95858 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E963C8C71C41A1B900B95858;
+			remoteInfo = OpenTNL;
+		};
+		E9DD31941C43093400F2AE54 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E963C8C01C41A1B900B95858 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E963C8C71C41A1B900B95858;
+			remoteInfo = OpenTNL;
+		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		E9DD31541C4302E600F2AE54 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		E9DD31691C4303B200F2AE54 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		E9DD31891C4308ED00F2AE54 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		E963C8C81C41A1B900B95858 /* libOpenTNL.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libOpenTNL.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		E963C8C81C41A1B900B95858 /* libOpenTNL.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libOpenTNL.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E963C8D61C41A1F300B95858 /* assert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = assert.cpp; sourceTree = "<group>"; };
 		E963C8D71C41A1F300B95858 /* asymmetricKey.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = asymmetricKey.cpp; sourceTree = "<group>"; };
 		E963C8D81C41A1F300B95858 /* bitStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = bitStream.cpp; sourceTree = "<group>"; };
@@ -873,6 +955,16 @@
 		E9DD2FE21C42FDC700F2AE54 /* sober128tab.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sober128tab.c; sourceTree = "<group>"; };
 		E9DD2FE31C42FDC700F2AE54 /* sprng.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sprng.c; sourceTree = "<group>"; };
 		E9DD2FE41C42FDC700F2AE54 /* yarrow.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = yarrow.c; sourceTree = "<group>"; };
+		E9DD31561C4302E600F2AE54 /* masterserver */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = masterserver; sourceTree = BUILT_PRODUCTS_DIR; };
+		E9DD315D1C43030C00F2AE54 /* config.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = config.cpp; path = master/config.cpp; sourceTree = SOURCE_ROOT; };
+		E9DD315E1C43030C00F2AE54 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = master/main.cpp; sourceTree = SOURCE_ROOT; };
+		E9DD315F1C43030C00F2AE54 /* masterInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = masterInterface.cpp; path = master/masterInterface.cpp; sourceTree = SOURCE_ROOT; };
+		E9DD31601C43030C00F2AE54 /* masterInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = masterInterface.h; path = master/masterInterface.h; sourceTree = SOURCE_ROOT; };
+		E9DD316B1C4303B200F2AE54 /* masterclient */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = masterclient; sourceTree = BUILT_PRODUCTS_DIR; };
+		E9DD316D1C4303B200F2AE54 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		E9DD31791C43058400F2AE54 /* libmasterinterface.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libmasterinterface.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E9DD318B1C4308ED00F2AE54 /* tnlping */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tnlping; sourceTree = BUILT_PRODUCTS_DIR; };
+		E9DD31921C43091F00F2AE54 /* tnlping.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tnlping.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -891,6 +983,39 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E9DD31531C4302E600F2AE54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9DD31841C4305D000F2AE54 /* libmasterinterface.a in Frameworks */,
+				E9DD31661C43032F00F2AE54 /* libOpenTNL.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E9DD31681C4303B200F2AE54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9DD31811C4305C700F2AE54 /* libmasterinterface.a in Frameworks */,
+				E9DD31741C4303F300F2AE54 /* libOpenTNL.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E9DD31761C43058400F2AE54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E9DD31881C4308ED00F2AE54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9DD31961C43093900F2AE54 /* libOpenTNL.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -901,6 +1026,10 @@
 				E963C8ED1C41A1F300B95858 /* tnl.changelog.txt */,
 				E963C8EF1C41A1F300B95858 /* tnl.overview.txt */,
 				E963C8CA1C41A1B900B95858 /* OpenTNL */,
+				E9DD31571C4302E600F2AE54 /* masterserver */,
+				E9DD316C1C4303B200F2AE54 /* masterclient */,
+				E9DD317D1C43059400F2AE54 /* masterinterface */,
+				E9DD318C1C4308ED00F2AE54 /* tnlping */,
 				E963C8C91C41A1B900B95858 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -908,8 +1037,12 @@
 		E963C8C91C41A1B900B95858 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E963C8C81C41A1B900B95858 /* libOpenTNL.dylib */,
+				E963C8C81C41A1B900B95858 /* libOpenTNL.a */,
 				E9DD2E311C42FD5F00F2AE54 /* libtomcrypt.a */,
+				E9DD31561C4302E600F2AE54 /* masterserver */,
+				E9DD316B1C4303B200F2AE54 /* masterclient */,
+				E9DD31791C43058400F2AE54 /* libmasterinterface.a */,
+				E9DD318B1C4308ED00F2AE54 /* tnlping */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1857,6 +1990,40 @@
 			path = prngs;
 			sourceTree = "<group>";
 		};
+		E9DD31571C4302E600F2AE54 /* masterserver */ = {
+			isa = PBXGroup;
+			children = (
+				E9DD315D1C43030C00F2AE54 /* config.cpp */,
+				E9DD315E1C43030C00F2AE54 /* main.cpp */,
+			);
+			path = masterserver;
+			sourceTree = "<group>";
+		};
+		E9DD316C1C4303B200F2AE54 /* masterclient */ = {
+			isa = PBXGroup;
+			children = (
+				E9DD316D1C4303B200F2AE54 /* main.cpp */,
+			);
+			path = masterclient;
+			sourceTree = "<group>";
+		};
+		E9DD317D1C43059400F2AE54 /* masterinterface */ = {
+			isa = PBXGroup;
+			children = (
+				E9DD315F1C43030C00F2AE54 /* masterInterface.cpp */,
+				E9DD31601C43030C00F2AE54 /* masterInterface.h */,
+			);
+			name = masterinterface;
+			sourceTree = "<group>";
+		};
+		E9DD318C1C4308ED00F2AE54 /* tnlping */ = {
+			isa = PBXGroup;
+			children = (
+				E9DD31921C43091F00F2AE54 /* tnlping.cpp */,
+			);
+			path = tnlping;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1921,6 +2088,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E9DD31771C43058400F2AE54 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -1939,7 +2113,7 @@
 			);
 			name = OpenTNL;
 			productName = OpenTNL;
-			productReference = E963C8C81C41A1B900B95858 /* libOpenTNL.dylib */;
+			productReference = E963C8C81C41A1B900B95858 /* libOpenTNL.a */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		E9DD2E301C42FD5F00F2AE54 /* tomcrypt */ = {
@@ -1959,6 +2133,80 @@
 			productReference = E9DD2E311C42FD5F00F2AE54 /* libtomcrypt.a */;
 			productType = "com.apple.product-type.library.static";
 		};
+		E9DD31551C4302E600F2AE54 /* masterserver */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E9DD315A1C4302E600F2AE54 /* Build configuration list for PBXNativeTarget "masterserver" */;
+			buildPhases = (
+				E9DD31521C4302E600F2AE54 /* Sources */,
+				E9DD31531C4302E600F2AE54 /* Frameworks */,
+				E9DD31541C4302E600F2AE54 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E9DD31831C4305CB00F2AE54 /* PBXTargetDependency */,
+				E9DD31651C43032900F2AE54 /* PBXTargetDependency */,
+			);
+			name = masterserver;
+			productName = masterserver;
+			productReference = E9DD31561C4302E600F2AE54 /* masterserver */;
+			productType = "com.apple.product-type.tool";
+		};
+		E9DD316A1C4303B200F2AE54 /* masterclient */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E9DD316F1C4303B200F2AE54 /* Build configuration list for PBXNativeTarget "masterclient" */;
+			buildPhases = (
+				E9DD31671C4303B200F2AE54 /* Sources */,
+				E9DD31681C4303B200F2AE54 /* Frameworks */,
+				E9DD31691C4303B200F2AE54 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E9DD31801C4305C100F2AE54 /* PBXTargetDependency */,
+				E9DD31731C4303EE00F2AE54 /* PBXTargetDependency */,
+			);
+			name = masterclient;
+			productName = masterclient;
+			productReference = E9DD316B1C4303B200F2AE54 /* masterclient */;
+			productType = "com.apple.product-type.tool";
+		};
+		E9DD31781C43058400F2AE54 /* masterinterface */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E9DD317A1C43058400F2AE54 /* Build configuration list for PBXNativeTarget "masterinterface" */;
+			buildPhases = (
+				E9DD31751C43058400F2AE54 /* Sources */,
+				E9DD31761C43058400F2AE54 /* Frameworks */,
+				E9DD31771C43058400F2AE54 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E9DD31861C4305D500F2AE54 /* PBXTargetDependency */,
+			);
+			name = masterinterface;
+			productName = masterinterface;
+			productReference = E9DD31791C43058400F2AE54 /* libmasterinterface.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		E9DD318A1C4308ED00F2AE54 /* tnlping */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E9DD318F1C4308ED00F2AE54 /* Build configuration list for PBXNativeTarget "tnlping" */;
+			buildPhases = (
+				E9DD31871C4308ED00F2AE54 /* Sources */,
+				E9DD31881C4308ED00F2AE54 /* Frameworks */,
+				E9DD31891C4308ED00F2AE54 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E9DD31951C43093400F2AE54 /* PBXTargetDependency */,
+			);
+			name = tnlping;
+			productName = tnlping;
+			productReference = E9DD318B1C4308ED00F2AE54 /* tnlping */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -1972,6 +2220,18 @@
 						CreatedOnToolsVersion = 7.2;
 					};
 					E9DD2E301C42FD5F00F2AE54 = {
+						CreatedOnToolsVersion = 7.2;
+					};
+					E9DD31551C4302E600F2AE54 = {
+						CreatedOnToolsVersion = 7.2;
+					};
+					E9DD316A1C4303B200F2AE54 = {
+						CreatedOnToolsVersion = 7.2;
+					};
+					E9DD31781C43058400F2AE54 = {
+						CreatedOnToolsVersion = 7.2;
+					};
+					E9DD318A1C4308ED00F2AE54 = {
 						CreatedOnToolsVersion = 7.2;
 					};
 				};
@@ -1990,6 +2250,10 @@
 			targets = (
 				E963C8C71C41A1B900B95858 /* OpenTNL */,
 				E9DD2E301C42FD5F00F2AE54 /* tomcrypt */,
+				E9DD31551C4302E600F2AE54 /* masterserver */,
+				E9DD316A1C4303B200F2AE54 /* masterclient */,
+				E9DD31781C43058400F2AE54 /* masterinterface */,
+				E9DD318A1C4308ED00F2AE54 /* tnlping */,
 			);
 		};
 /* End PBXProject section */
@@ -2386,6 +2650,39 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E9DD31521C4302E600F2AE54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9DD31621C43030C00F2AE54 /* main.cpp in Sources */,
+				E9DD31611C43030C00F2AE54 /* config.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E9DD31671C4303B200F2AE54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9DD316E1C4303B200F2AE54 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E9DD31751C43058400F2AE54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9DD317E1C43059B00F2AE54 /* masterInterface.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E9DD31871C4308ED00F2AE54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9DD31931C43091F00F2AE54 /* tnlping.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -2393,6 +2690,36 @@
 			isa = PBXTargetDependency;
 			target = E9DD2E301C42FD5F00F2AE54 /* tomcrypt */;
 			targetProxy = E9DD2E351C42FD7C00F2AE54 /* PBXContainerItemProxy */;
+		};
+		E9DD31651C43032900F2AE54 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E963C8C71C41A1B900B95858 /* OpenTNL */;
+			targetProxy = E9DD31641C43032900F2AE54 /* PBXContainerItemProxy */;
+		};
+		E9DD31731C4303EE00F2AE54 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E963C8C71C41A1B900B95858 /* OpenTNL */;
+			targetProxy = E9DD31721C4303EE00F2AE54 /* PBXContainerItemProxy */;
+		};
+		E9DD31801C4305C100F2AE54 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E9DD31781C43058400F2AE54 /* masterinterface */;
+			targetProxy = E9DD317F1C4305C100F2AE54 /* PBXContainerItemProxy */;
+		};
+		E9DD31831C4305CB00F2AE54 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E9DD31781C43058400F2AE54 /* masterinterface */;
+			targetProxy = E9DD31821C4305CB00F2AE54 /* PBXContainerItemProxy */;
+		};
+		E9DD31861C4305D500F2AE54 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E963C8C71C41A1B900B95858 /* OpenTNL */;
+			targetProxy = E9DD31851C4305D500F2AE54 /* PBXContainerItemProxy */;
+		};
+		E9DD31951C43093400F2AE54 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E963C8C71C41A1B900B95858 /* OpenTNL */;
+			targetProxy = E9DD31941C43093400F2AE54 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2479,17 +2806,21 @@
 		E963C8D41C41A1B900B95858 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				DYLIB_INSTALL_NAME_BASE = "";
+				EXECUTABLE_EXTENSION = a;
 				EXECUTABLE_PREFIX = lib;
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = libtomcrypt/src/headers;
+				LD_DYLIB_INSTALL_NAME = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/libtomcrypt-develop",
 				);
+				MACH_O_TYPE = staticlib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -2497,17 +2828,21 @@
 		E963C8D51C41A1B900B95858 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				DYLIB_INSTALL_NAME_BASE = "";
+				EXECUTABLE_EXTENSION = a;
 				EXECUTABLE_PREFIX = lib;
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = libtomcrypt/src/headers;
+				LD_DYLIB_INSTALL_NAME = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/libtomcrypt-develop",
 				);
+				MACH_O_TYPE = staticlib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -2526,6 +2861,68 @@
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
 				OTHER_CFLAGS = "-DLTC_SOURCE";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		E9DD315B1C4302E600F2AE54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = OpenTNL/;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		E9DD315C1C4302E600F2AE54 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = OpenTNL/;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		E9DD31701C4303B200F2AE54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = OpenTNL/;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		E9DD31711C4303B200F2AE54 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = OpenTNL/;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		E9DD317B1C43058400F2AE54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		E9DD317C1C43058400F2AE54 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		E9DD31901C4308ED00F2AE54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		E9DD31911C4308ED00F2AE54 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -2556,6 +2953,38 @@
 			buildConfigurations = (
 				E9DD2E331C42FD5F00F2AE54 /* Debug */,
 				E9DD2E341C42FD5F00F2AE54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		E9DD315A1C4302E600F2AE54 /* Build configuration list for PBXNativeTarget "masterserver" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E9DD315B1C4302E600F2AE54 /* Debug */,
+				E9DD315C1C4302E600F2AE54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		E9DD316F1C4303B200F2AE54 /* Build configuration list for PBXNativeTarget "masterclient" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E9DD31701C4303B200F2AE54 /* Debug */,
+				E9DD31711C4303B200F2AE54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		E9DD317A1C43058400F2AE54 /* Build configuration list for PBXNativeTarget "masterinterface" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E9DD317B1C43058400F2AE54 /* Debug */,
+				E9DD317C1C43058400F2AE54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		E9DD318F1C4308ED00F2AE54 /* Build configuration list for PBXNativeTarget "tnlping" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E9DD31901C4308ED00F2AE54 /* Debug */,
+				E9DD31911C4308ED00F2AE54 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 		};

@@ -21,3 +21,5 @@ xcuserdata
 *.xccheckout
 *.moved-aside
 *.xcuserstate
+
+master.cfg
