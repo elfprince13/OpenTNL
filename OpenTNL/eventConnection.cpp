@@ -50,7 +50,6 @@ EventConnection::EventConnection()
    mLastAckedEventSeq = -1;
    mEventClassCount = 0;
    mEventClassBitSize = 0;
-   mPacketFillFraction = 1.0f;
 }
 
 EventConnection::~EventConnection()
@@ -240,16 +239,15 @@ void EventConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
 
    EventNote *packQueueHead = NULL, *packQueueTail = NULL;
 
-   F32 totalPacketSpaceFraction = 1.0f / bstream->getMaxWriteBitPosition();
    while(mUnorderedSendEventQueueHead)
    {
-      if(bstream->isFull() || bstream->getBitPosition() * totalPacketSpaceFraction > mPacketFillFraction)
+      if(bstream->isFull())
          break;
       // get the first event
       EventNote *ev = mUnorderedSendEventQueueHead;
 
       bstream->writeFlag(true);
-      S32 start = bstream->getBitPosition();
+      size_t start = bstream->getBitPosition();
 
       if(mConnectionParameters.mDebugObjectSizes)
          bstream->advanceBitPosition(BitStreamPosBitSize);
@@ -260,8 +258,13 @@ void EventConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
       ev->mEvent->pack(this, bstream);
       TNLLogMessageV(LogEventConnection, ("EventConnection %s: WroteEvent %s - %d bits", getNetAddressString(), ev->mEvent->getDebugName(), bstream->getBitPosition() - start));
 
-      if(mConnectionParameters.mDebugObjectSizes)
-         bstream->writeIntAt(bstream->getBitPosition(), BitStreamPosBitSize, start);
+	   if(mConnectionParameters.mDebugObjectSizes){
+		   size_t pos = bstream->getBitPosition();
+		   U32 sPos = static_cast<U32>(pos);
+		   TNLAssert(sPos == pos, "Bit stream position was much too large, can't encode");
+		 bstream->writeIntAt(sPos, BitStreamPosBitSize, start);
+	   }
+	   
 
       if(bstream->getBitSpaceAvailable() < MinimumPaddingBits)
       {
@@ -296,7 +299,7 @@ void EventConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
 
       // get the first event
       EventNote *ev = mSendEventQueueHead;
-      S32 eventStart = bstream->getBitPosition();
+      ssize_t eventStart = bstream->getBitPosition();
 
       bstream->writeFlag(true);
 
@@ -307,7 +310,7 @@ void EventConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
       if(mConnectionParameters.mDebugObjectSizes)
          bstream->advanceBitPosition(BitStreamPosBitSize);
 
-      S32 start = bstream->getBitPosition();
+      ssize_t start = bstream->getBitPosition();
 
       S32 classId = ev->mEvent->getClassId(getNetClassGroup());
       bstream->writeInt(classId, mEventClassBitSize);
@@ -316,8 +319,13 @@ void EventConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
       ev->mEvent->getClassRep()->addInitialUpdate(bstream->getBitPosition() - start);
       TNLLogMessageV(LogEventConnection, ("EventConnection %s: WroteEvent %s - %d bits", getNetAddressString(), ev->mEvent->getDebugName(), bstream->getBitPosition() - start));
 
-      if(mConnectionParameters.mDebugObjectSizes)
-         bstream->writeIntAt(bstream->getBitPosition(), BitStreamPosBitSize, start - BitStreamPosBitSize);
+	   if(mConnectionParameters.mDebugObjectSizes){
+		   size_t pos = bstream->getBitPosition();
+		   U32 sPos = static_cast<U32>(pos);
+		   TNLAssert(sPos == pos, "Bit stream position was much too large, can't encode");
+		 bstream->writeIntAt(sPos, BitStreamPosBitSize, start - BitStreamPosBitSize);
+	   }
+	   
 
       if(bstream->getBitSpaceAvailable() < MinimumPaddingBits)
       {

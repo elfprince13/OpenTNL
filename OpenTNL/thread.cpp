@@ -125,23 +125,39 @@ Thread::~Thread()
 
 Semaphore::Semaphore(U32 initialCount, U32 maximumCount)
 {
-   sem_init(&mSemaphore, 0, initialCount);
+#ifdef TNL_OS_MAC_OSX
+	mSemaphore = dispatch_semaphore_create(initialCount);
+#else
+	sem_init(&mSemaphore, 0, initialCount);
+#endif
 }
 
 Semaphore::~Semaphore()
 {
+#ifdef TNL_OS_MAC_OSX
+	dispatch_release(mSemaphore);
+#else
    sem_destroy(&mSemaphore);
+#endif
 }
 
 void Semaphore::wait()
 {
+#ifdef TNL_OS_MAC_OSX
+	dispatch_semaphore_wait(mSemaphore, DISPATCH_TIME_FOREVER);
+#else
    sem_wait(&mSemaphore);
+#endif
 }
 
 void Semaphore::increment(U32 count)
 {
    for(U32 i = 0; i < count; i++)
+#ifdef TNL_OS_MAC_OSX
+	   dispatch_semaphore_signal(mSemaphore);
+#else
       sem_post(&mSemaphore);
+#endif
 }
 
 Mutex::Mutex()
@@ -208,7 +224,7 @@ Thread::Thread()
 
 void Thread::start()
 {
-   int val = pthread_create(&mThread, NULL, ThreadProc, this);
+   size_t val = pthread_create(&mThread, NULL, ThreadProc, this);
    mReturnValue = 0;
 }
 
@@ -223,7 +239,7 @@ ThreadQueue::ThreadQueueThread::ThreadQueueThread(ThreadQueue *q)
    mThreadQueue = q;
 }
 
-U32 ThreadQueue::ThreadQueueThread::run()
+size_t ThreadQueue::ThreadQueueThread::run()
 {
    mThreadQueue->threadStart();
 

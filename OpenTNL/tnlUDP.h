@@ -168,7 +168,7 @@ public:
    bool isValid();
 
    /// Sends a packet to the address through sourceSocket.
-   NetError sendto(const Address &address, const U8 *buffer, S32 bufferSize);
+   NetError sendto(const Address &address, const U8 *buffer, size_t bufferSize);
 
    /// Read an incoming packet.
    ///
@@ -176,7 +176,7 @@ public:
    /// @param   buffer          Buffer in to which to read the packet.
    /// @param   bufferSize      Size of the buffer (this prevents buffer overflows!).
    /// @param   bytesRead       Specifies the number of bytes which were actually in the packet.
-   NetError recvfrom(Address *address, U8 *buffer, S32 bufferSize, S32 *bytesRead);
+   NetError recvfrom(Address *address, U8 *buffer, size_t bufferSize, ssize_t *bytesRead);
 
    /// Returns the Address corresponding to this socket, as bound on the local machine.
    Address getBoundAddress();
@@ -186,7 +186,7 @@ public:
    static void getInterfaceAddresses(Vector<Address> *addressVector);
 
    NetError connect(const Address &theAddress);
-   NetError recv(U8 *buffer, S32 bufferSize, S32 *bytesRead);
+   NetError recv(U8 *buffer, size_t bufferSize, ssize_t *bytesRead);
    NetError send(const U8 *buffer, S32 bufferSize);
 };
 

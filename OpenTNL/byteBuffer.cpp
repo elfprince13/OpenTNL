@@ -25,7 +25,7 @@
 //------------------------------------------------------------------------------------
 
 #include "tnlByteBuffer.h"
-#include "tomcrypt.h"
+#include <tomcrypt.h>
 
 namespace TNL {
 
@@ -50,12 +50,12 @@ RefPtr<ByteBuffer> ByteBuffer::decodeBase64() const
 
 RefPtr<ByteBuffer> ByteBuffer::encodeBase16() const
 {
-   U32 outLen = getBufferSize() * 2 + 1;
+   size_t outLen = getBufferSize() * 2 + 1;
    ByteBuffer *ret = new ByteBuffer(outLen);
    const U8 *buffer = getBuffer();
    U8 *outBuffer = ret->getBuffer();
 
-   S32 size = getBufferSize();
+   size_t size = getBufferSize();
    for(S32 i = 0; i < size; i++)
    {
       U8 b = *buffer++;
@@ -76,7 +76,7 @@ RefPtr<ByteBuffer> ByteBuffer::encodeBase16() const
 
 RefPtr<ByteBuffer> ByteBuffer::decodeBase16() const
 {
-   U32 outLen = getBufferSize() >> 1;
+   size_t outLen = getBufferSize() >> 1;
    ByteBuffer *ret = new ByteBuffer(outLen);
    const U8 *src = getBuffer();
    U8 *dst = ret->getBuffer();
@@ -102,7 +102,7 @@ RefPtr<ByteBuffer> ByteBuffer::decodeBase16() const
    return ret;
 }
 
-RefPtr<ByteBuffer> ByteBuffer::computeMD5Hash(U32 len) const
+RefPtr<ByteBuffer> ByteBuffer::computeMD5Hash(size_t len) const
 {
    if(!len)
       len = getBufferSize();
@@ -115,7 +115,7 @@ RefPtr<ByteBuffer> ByteBuffer::computeMD5Hash(U32 len) const
    return ret;
 }
 
-U32 ByteBuffer::calculateCRC(U32 start, U32 end, U32 crcVal) const
+U32 ByteBuffer::calculateCRC(size_t start, size_t end, U32 crcVal) const
 {
    static U32 crcTable[256];
    static bool crcTableValid = false;
@@ -146,7 +146,7 @@ U32 ByteBuffer::calculateCRC(U32 start, U32 end, U32 crcVal) const
 
    // now calculate the crc
    const U8 * buf = getBuffer();
-   for(U32 i = start; i < end; i++)
+   for(size_t i = start; i < end; i++)
       crcVal = crcTable[(crcVal ^ buf[i]) & 0xff] ^ (crcVal >> 8);
    return(crcVal);
 }

@@ -50,8 +50,11 @@ void read(TNL::BitStream &s, TNL::ByteBufferPtr *val)
 }
 void write(TNL::BitStream &s, TNL::ByteBufferPtr &val)
 {
-   s.writeInt(val->getBufferSize(), ByteBufferSizeBitSize);
-   s.write(val->getBufferSize(), val->getBuffer());
+	size_t llen = val->getBufferSize();
+	TNL::U32 len = static_cast<TNL::U32>(llen);
+	TNLAssert(llen == len, "BitStream too long to pack")
+   s.writeInt(len, ByteBufferSizeBitSize);
+   s.write(len, val->getBuffer());
 }
 void read(TNL::BitStream &s, TNL::IPAddress *val)
 {

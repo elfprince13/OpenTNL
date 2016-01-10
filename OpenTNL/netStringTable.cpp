@@ -126,7 +126,7 @@ U32 hashString(const char* str)
    return ret;
 }
 
-U32 hashStringn(const char* str, S32 len)
+U32 hashStringn(const char* str, size_t len)
 {
    if (sgToLowerTableInit)
       initToLowerTable();
@@ -152,7 +152,7 @@ void init()
    mItemCount = 1;
 
    mNodeList = (Node **) malloc(InitialNodeListSize * sizeof(Node *));
-   for(U32 i = 1; i < InitialNodeListSize; i++)
+   for(size_t i = 1; i < InitialNodeListSize; i++)
       mNodeList[i] = (Node *) (( (i + 1) << 1) | 1); // see the doco in stringTable.h for how free list entries are coded
    
    mNodeList[InitialNodeListSize - 1] = NULL;
@@ -193,7 +193,7 @@ void validate()
    U32 nodeCount = 0;
    for(U32 i = 0; i < mNodeListSize; i++)
    {
-      if(mNodeList[i] && !(U32(mNodeList[i]) & 1))
+      if(mNodeList[i] && !(U64(mNodeList[i]) & 1))
         nodeCount++;
    }
    TNLAssert(nodeCount == mItemCount, "Error!!!");
@@ -224,7 +224,7 @@ void validate()
    }
 }
 
-StringTableEntryId insertn(const char* val, S32 len, const bool caseSens)
+StringTableEntryId insertn(const char* val, size_t len, const bool caseSens)
 {
    if(!val || !*val || len == 0)
       return 0;
@@ -258,7 +258,7 @@ StringTableEntryId insertn(const char* val, S32 len, const bool caseSens)
       U32 oldNodeListSize = mNodeListSize;
       mNodeListSize += InitialNodeListSize;
       mNodeList = (Node **) realloc(mNodeList, mNodeListSize * sizeof(Node *));
-      for(U32 i = oldNodeListSize; i < mNodeListSize; i++)
+      for(size_t i = oldNodeListSize; i < mNodeListSize; i++)
          mNodeList[i] = (Node *) (((i + 1) << 1) | 1);
       mNodeList[mNodeListSize - 1] = 0;
       mNodeListFreeEntry = (oldNodeListSize << 1) | 1;
@@ -307,7 +307,7 @@ StringTableEntryId lookup(const char* val, const bool  caseSens)
 }
 
 //--------------------------------------
-StringTableEntryId lookupn(const char* val, S32 len, const bool  caseSens)
+StringTableEntryId lookupn(const char* val, size_t len, const bool  caseSens)
 {
    StringTableEntryId *walk;
    Node *stringNode;

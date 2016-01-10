@@ -35,7 +35,11 @@
 #include <windows.h>
 #else
 #include <pthread.h>
+#if defined(TNL_OS_MAC_OSX)
+#include <dispatch/dispatch.h>
+#else
 #include <semaphore.h>
+#endif
 #endif
 
 namespace TNL
@@ -49,7 +53,11 @@ class Semaphore
 #ifdef TNL_OS_WIN32
    HANDLE mSemaphore;
 #else
+#ifdef TNL_OS_MAC_OSX
+	dispatch_semaphore_t    mSemaphore;
+#else
    sem_t mSemaphore;
+#endif
 #endif
 public:
    /// Semaphore constructor - initialCount specifies how many wait calls
@@ -112,7 +120,7 @@ protected:
 #endif
 public:
    /// run function called when thread is started.
-   virtual U32 run() = 0;
+   virtual size_t run() = 0;
    /// Thread constructor.
    Thread();
    /// Thread destructor.
@@ -155,7 +163,7 @@ class ThreadQueue : public Object
       ThreadQueue *mThreadQueue;
       public:
       ThreadQueueThread(ThreadQueue *);
-      U32 run();
+      size_t run();
    };
    friend class ThreadQueueThread;
    /// list of worker threads on this ThreadQueue

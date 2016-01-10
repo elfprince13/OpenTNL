@@ -126,7 +126,6 @@ private:
    };
 
 protected:
-   F32 mPacketFillFraction;   ///< Percentage of each packet to fill with NetEvents.  Defaults to 1.0
    U32 mEventClassCount;      ///< Number of NetEvent classes supported by this connection
    U32 mEventClassBitSize;    ///< Bit field width of NetEvent class count.
    U32 mEventClassVersion;    ///< The highest version number of events on this connection.
@@ -147,12 +146,6 @@ protected:
    /// a boundary between versions.
    bool readConnectAccept(BitStream *stream, const char **errorString);
 public:
-   /// Sets the amount of each packet that should be filled with NetEvents (if there are any).
-   /// Defaults to 1.0 meaning that if there are enough events, it will fill the entire packet with
-   /// event data.  This can be lowered during normal simulation to allow the GhostConnection to have
-   /// some space to send ghost updates.
-   inline void setPacketFillFraction(F32 fraction) { mPacketFillFraction = fraction; }
-
    /// returns the highest event version number supported on this connection.
    U32 getEventClassVersion() { return mEventClassVersion; }
 

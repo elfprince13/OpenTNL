@@ -220,7 +220,7 @@ void NetConnection::writeRawPacket(BitStream *bstream, NetPacketType packetType)
       note->sendTime = mInterface->getCurrentTime();
 
       writePacketRateInfo(bstream, note);
-      S32 start = bstream->getBitPosition();
+      size_t start = bstream->getBitPosition();
       bstream->setStringTable(mStringTable);
 
       TNLLogMessageV(LogNetConnection, ("NetConnection %s: START %s", mNetAddress.toString(), getClassName()) );
@@ -543,10 +543,6 @@ void NetConnection::setIsAdaptive()
 void NetConnection::setFixedRateParameters(U32 minPacketSendPeriod, U32 minPacketRecvPeriod, U32 maxSendBandwidth, U32 maxRecvBandwidth)
 {
    mTypeFlags.clear(ConnectionAdaptive);
-   if(maxRecvBandwidth > MaxFixedBandwidth)
-      maxRecvBandwidth = MaxFixedBandwidth;
-   if(maxSendBandwidth > MaxFixedBandwidth)
-      maxSendBandwidth = MaxFixedBandwidth;
 
    mLocalRate.maxRecvBandwidth = maxRecvBandwidth;
    mLocalRate.maxSendBandwidth = maxSendBandwidth;
@@ -717,7 +713,7 @@ NetError NetConnection::sendPacket(BitStream *stream)
    {
       // short circuit connection to the other side.
       // handle the packet, then force a notify.
-      U32 size = stream->getBytePosition();
+      size_t size = stream->getBytePosition();
 
       stream->reset();
       stream->setMaxSizes(size, 0);
@@ -802,7 +798,7 @@ void NetConnection::connect(NetInterface *theInterface, const Address &address, 
    mInterface->startConnection(this);
 }
 
-void NetConnection::connectArranged(NetInterface *connectionInterface, const Vector<Address> &possibleAddresses, Nonce &nonce, Nonce &serverNonce, ByteBufferPtr sharedSecret, bool isInitiator, bool requestsKeyExchange, bool requestsCertificate, bool useArrangedSecretAsSharedSecret)
+void NetConnection::connectArranged(NetInterface *connectionInterface, const Vector<Address> &possibleAddresses, Nonce &nonce, Nonce &serverNonce, ByteBufferPtr sharedSecret, bool isInitiator, bool requestsKeyExchange, bool requestsCertificate)
 {
    mConnectionParameters.mRequestKeyExchange = requestsKeyExchange;
    mConnectionParameters.mRequestCertificate = requestsCertificate;
@@ -813,9 +809,6 @@ void NetConnection::connectArranged(NetInterface *connectionInterface, const Vec
    mConnectionParameters.mServerNonce = serverNonce;
    mConnectionParameters.mArrangedSecret = sharedSecret;
    mConnectionParameters.mArrangedSecret->takeOwnership();
-   mConnectionParameters.mUseArrangedSecretAsSharedSecret = useArrangedSecretAsSharedSecret;
-   if(useArrangedSecretAsSharedSecret)
-      mConnectionParameters.mSharedSecret = mConnectionParameters.mArrangedSecret;
 
    setInterface(connectionInterface);
    mInterface->startArrangedConnection(this);   

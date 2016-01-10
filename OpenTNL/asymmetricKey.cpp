@@ -26,7 +26,7 @@
 
 #include "tnlAsymmetricKey.h"
 #include "tnlRandom.h"
-#include "tomcrypt.h"
+#include <tomcrypt.h>
 #include "tnlLog.h"
 
 #define crypto_key            ecc_key
@@ -103,7 +103,7 @@ void AsymmetricKey::load(const ByteBuffer &theBuffer)
 
    mHasPrivateKey = bufferPtr[0] == KeyTypePrivate;
 
-   U32 bufferSize = theBuffer.getBufferSize();
+   size_t bufferSize = theBuffer.getBufferSize();
    if(bufferSize < sizeof(U32) + 1)
       return;
 

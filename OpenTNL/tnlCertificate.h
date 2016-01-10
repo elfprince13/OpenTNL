@@ -60,7 +60,7 @@ protected:
    ByteBufferPtr mPayload;                ///< The certificate payload, including the identity of the holder and the Certificate Authority
    ByteBufferPtr mSignature;              ///< The digital signature of this certificate by the signatory
    bool mIsValid;                         ///< flag to signify whether this certificate has a valid form
-   U32 mSignatureByteSize;                ///< Number of bytes of the ByteBuffer signed by the CA
+   size_t mSignatureByteSize;                ///< Number of bytes of the ByteBuffer signed by the CA
 public:
    enum {
       MaxPayloadSize = 512,

@@ -32,7 +32,7 @@
 
 namespace TNL {
 
-DataChunker::DataChunker(S32 size)
+DataChunker::DataChunker(size_t size)
 {
    chunkSize          = size;
    curBlock           = new DataBlock(size);
@@ -45,7 +45,7 @@ DataChunker::~DataChunker()
    freeBlocks();
 }
 
-void *DataChunker::alloc(S32 size)
+void *DataChunker::alloc(size_t size)
 {
    TNLAssert(size <= chunkSize, "Data chunk too large.");
    if(!curBlock || size + curBlock->curIndex > chunkSize)
@@ -60,7 +60,7 @@ void *DataChunker::alloc(S32 size)
    return ret;
 }
 
-DataChunker::DataBlock::DataBlock(S32 size)
+DataChunker::DataBlock::DataBlock(size_t size)
 {
    data = new U8[size];
 }

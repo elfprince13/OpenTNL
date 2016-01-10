@@ -407,34 +407,34 @@ public:
     TNL_DECLARE_NETCONNECTION(SimpleEventConnection);
 
     // declare the client to server message
-    TNL_DECLARE_RPC(rpcMessageClientToServer, (StringPtr theMessageString));
+    TNL_DECLARE_RPC(rpcMessageClientToServer, (const char *theMessageString));
 
     // declare the server to client message
-    TNL_DECLARE_RPC(rpcMessageServerToClient, (StringPtr theMessageString));
+    TNL_DECLARE_RPC(rpcMessageServerToClient, (const char *theMessageString));
 };
 @endcode
 
-The first macro invoked, TNL_DECLARE_NETCONNECTION declares members necessary to make this class work as a connection in TNL.  The RPC methods are then declared using the TNL_DECLARE_RPC macro.  The first parameter to the macro is the name of the RPC method, which can be invoked like any other member function on the object.  The second argument is a parenthesized argument list to the RPC.  Although these functions are both declared to take only a single string, RPC method parameter lists can contain all the basic TNL types, as well as StringTableEntry, ByteBufferPtr and Vector objects.  
+The first macro invoked, TNL_DECLARE_NETCONNECTION declares members necessary to make this class work as a connection in TNL.  The RPC methods are then declared using the TNL_DECLARE_RPC macro.  The first parameter to the macro is the name of the RPC method, which can be invoked like any other member function on the object.  The second argument is a parenthesized argument list to the RPC.  Although these functions are both declared to take only a single string, RPC method parameter lists can contain all the basic TNL types, as well as StringTableEntry, ByteBuffer and Vector objects.  
 
 Next, define the implementation of the SimpleEventConnection class:
 
 @code
 TNL_IMPLEMENT_NETCONNECTION(SimpleEventConnection, NetClassGroupGame, true);
 
-TNL_IMPLEMENT_RPC(SimpleEventConnection, rpcMessageClientToServer, (StringPtr messageString), (messageString),
+TNL_IMPLEMENT_RPC(SimpleEventConnection, rpcMessageClientToServer, (const char *messageString), 
 NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirClientToServer, 0)
 {
     // display the message the client sent
-    printf("Got message from client: %s\n", messageString.getString());
+    printf("Got message from client: %s\n", messageString);
     // send a hello world back to the client.
     rpcMessageServerToClient("Hello, World!");
 }
 
-TNL_IMPLEMENT_RPC(SimpleEventConnection, rpcMessageServerToClient, (StringPtr messageString), (messageString),
+TNL_IMPLEMENT_RPC(SimpleEventConnection, rpcMessageServerToClient, (const char *messageString), 
 NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirServerToClient, 0)
 {
     // display the message the server sent
-    printf("Got a message from server: %s\n", messageString.getString());
+    printf("Got a message from server: %s\n", messageString);
 
     // once the client has heard back from the server, it should quit.
     gQuit = true;

@@ -36,6 +36,8 @@
 #include "tnlPlatform.h"
 #endif
 
+#include <algorithm>
+
 #define VectorBlockSize 16
 
 namespace TNL {
@@ -84,15 +86,27 @@ template<class T> class Vector
    typedef T&       reference;
    typedef const T& const_reference;
 
+	typedef T*       iterator;
+	typedef const T* const_iterator;
    typedef S32      difference_type;
    typedef U32      size_type;
 
    typedef difference_type (QSORT_CALLBACK *compare_func)(T *a, T *b);
 
    Vector<T>& operator=(const Vector<T>& p);
+	
+	iterator       begin();
+	const_iterator begin() const;
+	iterator       end();
+	const_iterator end() const;
 
    S32 size() const;
    bool empty() const;
+
+   T&       front();
+   const T& front() const;
+   T&       back();
+   const T& back() const;
 
    void push_front(const T&);
    void push_back(const T&);
@@ -281,6 +295,26 @@ template<class T> inline Vector<T>& Vector<T>::operator=(const Vector<T>& p)
    mElementCount = p.mElementCount;
    return *this;
 }
+	
+	template<class T> inline typename Vector<T>::iterator Vector<T>::begin()
+	{
+		return mArray;
+	}
+	
+	template<class T> inline typename Vector<T>::const_iterator Vector<T>::begin() const
+	{
+		return mArray;
+	}
+	
+	template<class T> inline typename Vector<T>::iterator Vector<T>::end()
+	{
+		return mArray + mElementCount;
+	}
+	
+	template<class T> inline typename Vector<T>::const_iterator Vector<T>::end() const
+	{
+		return mArray +mElementCount;
+	}
 
 template<class T> inline S32 Vector<T>::size() const
 {
@@ -290,6 +324,26 @@ template<class T> inline S32 Vector<T>::size() const
 template<class T> inline bool Vector<T>::empty() const
 {
    return (mElementCount == 0);
+}
+
+template<class T> inline T& Vector<T>::front()
+{
+   return *begin();
+}
+
+template<class T> inline const T& Vector<T>::front() const
+{
+   return *begin();
+}
+
+template<class T> inline T& Vector<T>::back()
+{
+   return *end();
+}
+
+template<class T> inline const T& Vector<T>::back() const
+{
+   return *end();
 }
 
 template<class T> inline void Vector<T>::push_front(const T &x)

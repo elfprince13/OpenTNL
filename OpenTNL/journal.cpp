@@ -137,19 +137,19 @@ void Journal::syncWriteStream()
    if(mWriteStream.getBytePosition() == 0)
       return;
 
-   U32 totalBits = (mWritePosition << 3) + mWriteStream.getBitPosition();
+   size_t totalBits = (mWritePosition << 3) + mWriteStream.getBitPosition();
    
    // seek back to the beginning
    fseek(mJournalFile, 0, SEEK_SET);
 
    // write the new total bits
-   U32 writeBits = convertHostToLEndian(totalBits);
+   size_t writeBits = convertHostToLEndian(totalBits);
    fwrite(&writeBits, 1, sizeof(U32), mJournalFile);
 
    // seek to the writing position
    fseek(mJournalFile, mWritePosition, SEEK_SET);
 
-   U32 bytesToWrite = mWriteStream.getBytePosition();
+   size_t bytesToWrite = mWriteStream.getBytePosition();
    // write the bytes to the file
    fwrite(mWriteStream.getBuffer(), 1, bytesToWrite, mJournalFile);
    fflush(mJournalFile);
@@ -186,7 +186,7 @@ void Journal::load(const char *fileName)
       return;
 
    fseek(theJournal, 0, SEEK_END);
-   U32 fileSize = ftell(theJournal);
+   size_t fileSize = ftell(theJournal);
    fseek(theJournal, 0, SEEK_SET);
 
    mReadStream.resize(fileSize);

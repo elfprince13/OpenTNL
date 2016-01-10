@@ -86,7 +86,7 @@ void LogConsumer::logString(const char *string)
 void logprintf(const char *format, ...)
 {
    char buffer[4096];
-   U32 bufferStart = 0;
+   size_t bufferStart = 0;
    if(LogType::current)
    {
       strcpy(buffer, LogType::current->typeName);

@@ -327,7 +327,7 @@ void Platform::forceQuit()
 }
 
 
-U32 x86UNIXGetTickCount();
+size_t x86UNIXGetTickCount();
 //--------------------------------------
 
 U32 Platform::getRealMilliseconds()
@@ -336,9 +336,9 @@ U32 Platform::getRealMilliseconds()
 }
 
 static bool   sg_initialized = false;
-static U32 sg_secsOffset  = 0;
+static size_t sg_secsOffset  = 0;
 
-U32 x86UNIXGetTickCount()
+size_t x86UNIXGetTickCount()
 {
    // TODO: What happens when crossing a day boundary?
    //
@@ -353,7 +353,7 @@ U32 x86UNIXGetTickCount()
 
    ::gettimeofday(&t, NULL);
 
-   U32 secs  = t.tv_sec - sg_secsOffset;
+   size_t secs  = t.tv_sec - sg_secsOffset;
    U32 uSecs = t.tv_usec;
 
    // Make granularity 1 ms
@@ -447,10 +447,10 @@ S32 dSprintf(char *buffer, U32 bufferSize, const char *format, ...)
 }
 
 
-S32 dVsprintf(char *buffer, U32 bufferSize, const char *format, va_list arglist)
+S32 dVsprintf(char *buffer, size_t bufferSize, const char *format, va_list arglist)
 {
 #ifdef TNL_COMPILER_VISUALC
-   S32 len = _vsnprintf(buffer, bufferSize, format, arglist);
+   S32 len = _vsnprintf(buffer, bufferSize, format, (va_list) arglist);
 #else
    S32 len = vsnprintf(buffer, bufferSize, format, arglist);
 #endif
@@ -472,9 +472,9 @@ int stricmp(const char *str1, const char *str2)
    return (toupper(*str1) > toupper(*str2)) ? 1 : ((toupper(*str1) < toupper(*str2)) ? -1 : 0);
 }
 
-int strnicmp(const char *str1, const char *str2, unsigned int len)
+int strnicmp(const char *str1, const char *str2, size_t len)
 {
-   for(unsigned int i = 0; i < len; i++)
+   for(size_t i = 0; i < len; i++)
    {
       if(toupper(str1[i]) == toupper(str2[i]))
          continue;

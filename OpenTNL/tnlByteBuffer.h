@@ -45,7 +45,7 @@ protected:
    U8 *mDataPtr;
 
    /// Length of buffer.
-   U32  mBufSize;
+   size_t  mBufSize;
 
    /// Do we own the memory we are using? (If so, we should free it.)
    bool mOwnsMemory;
@@ -61,7 +61,7 @@ public:
    // Chorus:
 
    /// Create a ByteBuffer from a chunk of memory.
-   ByteBuffer(U8 *dataPtr, U32 bufferSize)
+   ByteBuffer(U8 *dataPtr, size_t bufferSize)
    {
       mBufSize = bufferSize;
       mDataPtr = dataPtr;
@@ -69,7 +69,7 @@ public:
    }
 
    /// Create a ByteBuffer of the specified size.
-   ByteBuffer(U32 bufferSize = DefaultBufferSize)
+   ByteBuffer(size_t bufferSize = DefaultBufferSize)
    {
       mBufSize = bufferSize;
       mDataPtr = (U8 *) malloc(bufferSize);
@@ -91,7 +91,7 @@ public:
    }
 
    /// Set the ByteBuffer to point to a new chunk of memory.
-   void setBuffer(U8 *dataPtr, U32 bufferSize)
+   void setBuffer(U8 *dataPtr, size_t bufferSize)
    {
       if(mOwnsMemory)
       {
@@ -104,7 +104,7 @@ public:
 
    /// Set the ByteBuffer to point to a new chunk of memory, indicating whether
    /// it should own the chunk or not.
-   void setBuffer(U8 *dataPtr, U32 bufferSize, bool newOwnsMemory)
+   void setBuffer(U8 *dataPtr, size_t bufferSize, bool newOwnsMemory)
    {
       setBuffer(dataPtr, bufferSize);
       mOwnsMemory = newOwnsMemory;
@@ -113,7 +113,7 @@ public:
    /// Attempts to resize the buffer.
    ///
    /// @returns True if it owns its own memory, false otherwise.
-   bool resize(U32 newBufferSize)
+   bool resize(size_t newBufferSize)
    {
       if(mBufSize >= newBufferSize)
          mBufSize = newBufferSize;
@@ -128,9 +128,9 @@ public:
 
    /// Appends the specified buffer to the end of the byte buffer.
    /// returns false if it does not own its own memory.
-   bool appendBuffer(const U8 *dataBuffer, U32 bufferSize)
+   bool appendBuffer(const U8 *dataBuffer, size_t bufferSize)
    {
-      U32 start = mBufSize;
+      size_t start = mBufSize;
       if(!resize(mBufSize + bufferSize))
          return false;
       memcpy(mDataPtr + start, dataBuffer, bufferSize);
@@ -162,7 +162,7 @@ public:
       return mOwnsMemory;
    }
 
-   U32 getBufferSize() const
+   size_t getBufferSize() const
    {
       return mBufSize;
    }
@@ -189,7 +189,7 @@ public:
    RefPtr<ByteBuffer> decodeBase64() const;
 
    /// Computes an MD5 hash and returns it in a ByteBuffer
-   RefPtr<ByteBuffer> computeMD5Hash(U32 len = 0) const;
+   RefPtr<ByteBuffer> computeMD5Hash(size_t len = 0) const;
 
    /// Converts to ascii-hex, returning the encoded buffer.
    RefPtr<ByteBuffer> encodeBase16() const;
@@ -197,7 +197,7 @@ public:
    RefPtr<ByteBuffer> decodeBase16() const;
 
    /// Returns a 32 bit CRC for the buffer.
-   U32 calculateCRC(U32 start = 0, U32 end = 0xFFFFFFFF, U32 crcVal = 0xFFFFFFFF) const;
+   U32 calculateCRC(size_t start = 0, size_t end = 0xFFFFFFFF, U32 crcVal = 0xFFFFFFFF) const;
 };
 
 typedef RefPtr<ByteBuffer> ByteBufferPtr;

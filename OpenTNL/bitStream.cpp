@@ -29,19 +29,19 @@
 #include "tnlNetBase.h"
 #include "tnlHuffmanStringProcessor.h"
 #include "tnlSymmetricCipher.h"
-#include "tomcrypt.h"
+#include <tomcrypt.h>
 
 #include <math.h>
 
 namespace TNL {
 
-void BitStream::setMaxSizes(U32 maxReadSize, U32 maxWriteSize)
+void BitStream::setMaxSizes(size_t maxReadSize, size_t maxWriteSize)
 {
    maxReadBitNum = maxReadSize << 3;
    maxWriteBitNum = maxWriteSize << 3;
 }
 
-void BitStream::setMaxBitSizes(U32 maxReadSize, U32 maxWriteSize)
+void BitStream::setMaxBitSizes(size_t maxReadSize, size_t maxWriteSize)
 {
    maxReadBitNum = maxReadSize;
    maxWriteBitNum = maxWriteSize;
@@ -50,7 +50,7 @@ void BitStream::setMaxBitSizes(U32 maxReadSize, U32 maxWriteSize)
 void BitStream::reset()
 {
    bitNum = 0;
-   mError = false;
+   error = false;
    mCompressRelative = false;
    mStringBuffer[0] = 0;
    mStringTable = NULL;
@@ -77,12 +77,12 @@ U32 BitStream::readClassId(U32 classType, U32 classGroup)
    return ret;
 }
 
-bool BitStream::resizeBits(U32 newBits)
+bool BitStream::resizeBits(size_t newBits)
 {
-   U32 newSize = ((maxWriteBitNum + newBits + 7) >> 3) + ResizePad;
+   size_t newSize = ((maxWriteBitNum + newBits + 7) >> 3) + ResizePad;
    if(!resize(newSize))
    {
-      mError = true;
+      error = true;
       return false;
    }
    maxReadBitNum = newSize << 3;
@@ -90,18 +90,14 @@ bool BitStream::resizeBits(U32 newBits)
    return true;
 }
 
-bool BitStream::writeBits(U32 bitCount, const void *bitPtr)
+bool BitStream::writeBits(size_t bitCount, const void *bitPtr)
 {
    if(!bitCount)
       return true;
 
    if(bitCount + bitNum > maxWriteBitNum)
       if(!resizeBits(bitCount + bitNum - maxWriteBitNum))
-      {
-         // fill to the end, so the higher level code knows the BitStream is full.
-         bitNum = maxWriteBitNum;
          return false;
-      }
 
    U32 upShift  = bitNum & 0x7;
    U32 downShift= 8 - upShift;
@@ -164,18 +160,18 @@ bool BitStream::writeBits(U32 bitCount, const void *bitPtr)
    return true;
 }
 
-bool BitStream::readBits(U32 bitCount, void *bitPtr)
+bool BitStream::readBits(size_t bitCount, void *bitPtr)
 {
    if(!bitCount)
       return true;
    if(bitCount + bitNum > maxReadBitNum)
    {
-      setError();
+      error = true;
       return false;
    }
 
    U8 *sourcePtr = getBuffer() + (bitNum >> 3);
-   U32 byteCount = (bitCount + 7) >> 3;
+   size_t byteCount = (bitCount + 7) >> 3;
 
    U8 *destPtr = (U8 *) bitPtr;
 
@@ -243,12 +239,15 @@ bool BitStream::writeFlag(bool val)
 
 bool BitStream::write(const ByteBuffer *theBuffer)
 {
-   U32 size = theBuffer->getBufferSize();
-   if(size > 1023)
+	size_t sizeL = theBuffer->getBufferSize(); // We're explicitly checking the size here, so this is fine
+   if(sizeL > 1023)
       return false;
+   else {
+	   U32 size = static_cast<U32>(sizeL);
+	   writeInt(size, 10);
+	   return write(size, theBuffer->getBuffer());
+   }
 
-   writeInt(size, 10);
-   return write(size, theBuffer->getBuffer());
 }
 
 bool BitStream::read(ByteBuffer *theBuffer)
@@ -528,9 +527,9 @@ void BitStream::writeStringTableEntry(const StringTableEntry &ste)
 }
 //------------------------------------------------------------------------------
 
-void BitStream::hashAndEncrypt(U32 hashDigestSize, U32 encryptStartOffset, SymmetricCipher *theCipher)
+void BitStream::hashAndEncrypt(size_t hashDigestSize, size_t encryptStartOffset, SymmetricCipher *theCipher)
 {
-   U32 digestStart = getBytePosition();
+   size_t digestStart = getBytePosition();
    setBytePosition(digestStart);
    hash_state hashState;
 
@@ -549,9 +548,9 @@ void BitStream::hashAndEncrypt(U32 hashDigestSize, U32 encryptStartOffset, Symme
                       getBytePosition() - encryptStartOffset);   
 }
 
-bool BitStream::decryptAndCheckHash(U32 hashDigestSize, U32 decryptStartOffset, SymmetricCipher *theCipher)
+bool BitStream::decryptAndCheckHash(size_t hashDigestSize, size_t decryptStartOffset, SymmetricCipher *theCipher)
 {
-   U32 bufferSize = getBufferSize();
+   size_t bufferSize = getBufferSize();
    U8 *buffer = getBuffer();
 
    if(bufferSize < decryptStartOffset + hashDigestSize)
@@ -584,7 +583,7 @@ NetError PacketStream::sendto(Socket &outgoingSocket, const Address &addr)
 NetError PacketStream::recvfrom(Socket &incomingSocket, Address *recvAddress)
 {
    NetError error;
-   S32 dataSize;
+   ssize_t dataSize;
    error = incomingSocket.recvfrom(recvAddress, buffer, sizeof(buffer), &dataSize);
    setBuffer(buffer, dataSize);
    setMaxSizes(dataSize, 0);

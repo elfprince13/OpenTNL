@@ -66,17 +66,17 @@ protected:
    enum {
       ResizePad = 1500,
    };
-   U32  bitNum;               ///< The current bit position for reading/writing in the bit stream.
-   bool mError;               ///< Flag set if a user operation attempts to read or write past the max read/write sizes.
+   size_t  bitNum;               ///< The current bit position for reading/writing in the bit stream.
+   bool error;                ///< Flag set if a user operation attempts to read or write past the max read/write sizes.
    bool mCompressRelative;    ///< Flag set if the bit stream should compress points relative to a compression point.
    Point3F mCompressPoint;    ///< Reference point for relative point compression.
-   U32  maxReadBitNum;        ///< Last valid read bit position.
-   U32  maxWriteBitNum;       ///< Last valid write bit position.
+   size_t  maxReadBitNum;        ///< Last valid read bit position.
+   size_t  maxWriteBitNum;       ///< Last valid write bit position.
    ConnectionStringTable *mStringTable; ///< String table used to compress StringTableEntries over the network.
    /// String buffer holds the last string written into the stream for substring compression.
    char mStringBuffer[256];
 
-   bool resizeBits(U32 numBitsNeeded);
+   bool resizeBits(size_t numBitsNeeded);
 public:
 
    /// @name Constructors
@@ -87,10 +87,10 @@ public:
    /// @{
 
    /// Default to maximum write size being the size of the buffer.
-   BitStream(U8 *bufPtr, U32 bufSize) : ByteBuffer(bufPtr, bufSize) { setMaxSizes(bufSize, bufSize); reset(); }
+   BitStream(U8 *bufPtr, size_t bufSize) : ByteBuffer(bufPtr, bufSize) { setMaxSizes(bufSize, bufSize); reset(); }
 
    /// Optionally, specify a maximum write size.
-   BitStream(U8 *bufPtr, U32 bufSize, U32 maxWriteSize) 
+   BitStream(U8 *bufPtr, size_t bufSize, size_t maxWriteSize)
       : ByteBuffer(bufPtr, bufSize) { setMaxSizes(bufSize, maxWriteSize); reset(); }
 
    /// Creates a resizable BitStream
@@ -98,10 +98,10 @@ public:
    /// @}
 
    /// Sets the maximum read and write sizes for the BitStream.
-   void setMaxSizes(U32 maxReadSize, U32 maxWriteSize = 0);
+   void setMaxSizes(size_t maxReadSize, size_t maxWriteSize = 0);
 
    /// Sets the maximum read and write bit sizes for the BitStream.
-   void setMaxBitSizes(U32 maxReadBitSize, U32 maxWriteBitSize = 0);
+   void setMaxBitSizes(size_t maxReadBitSize, size_t maxWriteBitSize = 0);
 
    /// resets the read/write position to 0 and clears any error state.
    void reset();
@@ -113,30 +113,27 @@ public:
    void setStringTable(ConnectionStringTable *table) { mStringTable = table; }
 
    /// clears the error state from an attempted read or write overrun
-   void clearError() { mError = false; }
+   void clearError() { error = false; }
 
    /// Returns a pointer to the next byte in the BitStream from the current bit position
    U8*  getBytePtr();
 
    /// Returns the current position in the stream rounded up to the next byte.
-   U32 getBytePosition() const;
+   size_t getBytePosition() const;
    /// Returns the current bit position in the stream
-   U32 getBitPosition() const;
+   size_t getBitPosition() const;
    /// Sets the position in the stream to the first bit of byte newPosition.
-   void setBytePosition(const U32 newPosition);
+   void setBytePosition(const size_t newPosition);
    /// Sets the position in the stream to newBitPosition.
-   void setBitPosition(const U32 newBitPosition);
+   void setBitPosition(const size_t newBitPosition);
    /// Advances the position in the stream by numBits.
-   void advanceBitPosition(const S32 numBits);
+   void advanceBitPosition(const size_t numBits);
 
    /// Returns the maximum readable bit position
-   U32 getMaxReadBitPosition() const { return maxReadBitNum; }
-
-   /// Returns the maximum writable bit position
-   U32 getMaxWriteBitPosition() const { return maxWriteBitNum; }
+   size_t getMaxReadBitPosition() const { return maxReadBitNum; }
 
    /// Returns the number of bits that can be written into the BitStream without resizing
-   U32 getBitSpaceAvailable() const { return maxWriteBitNum - bitNum; }
+   size_t getBitSpaceAvailable() const { return maxWriteBitNum - bitNum; }
 
    /// Pads the bits up to the next byte boundary with 0's.
    void zeroToByteBoundary();
@@ -147,7 +144,7 @@ public:
    U32  readInt(U8 bitCount);
 
    /// Writes an unsigned integer value between 0 and 2^(bitCount -1) into the stream at the specified position, without changing the current write position.
-   void writeIntAt(U32 value, U8 bitCount, U32 bitPosition);
+   void writeIntAt(U32 value, U8 bitCount, size_t bitPosition);
 
    /// Writes a signed integer value between -2^(bitCount-1) and 2^(bitCount-1) - 1.
    void writeSignedInt(S32 value, U8 bitCount);
@@ -203,9 +200,9 @@ public:
    void readPointCompressed(Point3F *p, F32 scale);
 
    /// Writes bitCount bits into the stream from bitPtr.
-   bool writeBits(U32 bitCount, const void *bitPtr);
+   bool writeBits(size_t bitCount, const void *bitPtr);
    /// Reads bitCount bits from the stream into bitPtr.
-   bool readBits(U32 bitCount, void *bitPtr);
+   bool readBits(size_t bitCount, void *bitPtr);
 
    /// Writes a ByteBuffer into the stream.  The ByteBuffer can be no larger than 1024 bytes in size.
    bool write(const ByteBuffer *theBuffer);
@@ -237,8 +234,8 @@ public:
    /// @endcode
    bool readFlag();
 
-   bool write(bool value) { writeFlag(value); return !mError; }
-   bool read(bool *value) { *value = readFlag(); return !mError; }
+   bool write(bool value) { writeFlag(value); return !error; }
+   bool read(bool *value) { *value = readFlag(); return !error; }
 
    /// Writes a huffman compressed string into the stream.
    void writeString(const char *stringBuf, U8 maxLen=255);
@@ -252,9 +249,9 @@ public:
    void readStringTableEntry(StringTableEntry *ste);
 
    /// Writes byte data into the stream.
-   bool write(const U32 in_numBytes, const void* in_pBuffer);
+   bool write(const size_t in_numBytes, const void* in_pBuffer);
    /// Reads byte data from the stream.
-   bool read(const U32 in_numBytes,  void* out_pBuffer);
+   bool read(const size_t in_numBytes,  void* out_pBuffer);
 
    /// @name Various types that the BitStream can read and write...
    /// @{
@@ -265,7 +262,9 @@ public:
    DeclareTemplatizedReadWrite(U16);
    DeclareTemplatizedReadWrite(S16);
    DeclareTemplatizedReadWrite(U32);
-   DeclareTemplatizedReadWrite(S32);
+	DeclareTemplatizedReadWrite(S32);
+	DeclareTemplatizedReadWrite(size_t);
+	DeclareTemplatizedReadWrite(ssize_t);
    DeclareTemplatizedReadWrite(S64);
    DeclareTemplatizedReadWrite(U64);
    DeclareTemplatizedReadWrite(F32);
@@ -281,47 +280,40 @@ public:
    /// Returns whether the BitStream writing has exceeded the write target size.
    bool isFull() { return bitNum > (getBufferSize() << 3); }
    /// Returns whether the stream has generated an error condition due to reading or writing past the end of the buffer.
-   bool isValid() { return !mError; }
-
-   /// Sets the error condition on the bit stream.
-   void setError()
-   {
-      TNLAssert(0, "BitStream error set.");
-      mError = true;
-   }
+   bool isValid() { return !error; }
 
    /// Hashes the BitStream, writing the hash digest into the end of the buffer, and then encrypts with the given cipher
-   void hashAndEncrypt(U32 hashDigestSize, U32 encryptStartOffset, SymmetricCipher *theCipher);
+   void hashAndEncrypt(size_t hashDigestSize, size_t encryptStartOffset, SymmetricCipher *theCipher);
 
    /// Decrypts the BitStream, then checks the hash digest at the end of the buffer to validate the contents
-   bool decryptAndCheckHash(U32 hashDigestSize, U32 decryptStartOffset, SymmetricCipher *theCipher);
+   bool decryptAndCheckHash(size_t hashDigestSize, size_t decryptStartOffset, SymmetricCipher *theCipher);
 };
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
 
-inline U32 BitStream::getBytePosition() const
+inline size_t BitStream::getBytePosition() const
 {
    return (bitNum + 7) >> 3;
 }
 
-inline U32 BitStream::getBitPosition() const
+inline size_t BitStream::getBitPosition() const
 {
    return bitNum;
 }
 
-inline void BitStream::setBytePosition(const U32 newPosition)
+inline void BitStream::setBytePosition(const size_t newPosition)
 {
    bitNum = newPosition << 3;
 }
 
-inline void BitStream::setBitPosition(const U32 newBitPosition)
+inline void BitStream::setBitPosition(const size_t newBitPosition)
 {
    bitNum = newBitPosition;
 }
 
-inline void BitStream::advanceBitPosition(const S32 numBits)
+inline void BitStream::advanceBitPosition(const size_t numBits)
 {
    setBitPosition(getBitPosition() + numBits);
 }
@@ -332,12 +324,12 @@ inline void BitStream::zeroToByteBoundary()
       writeInt(0, 8 - (bitNum & 0x7));
 }
 
-inline bool BitStream::write(const U32 in_numBytes, const void* in_pBuffer)
+inline bool BitStream::write(const size_t in_numBytes, const void* in_pBuffer)
 {
    return writeBits(in_numBytes << 3, in_pBuffer);
 }
 
-inline bool BitStream::read(const U32 in_numBytes,  void* out_pBuffer)
+inline bool BitStream::read(const size_t in_numBytes,  void* out_pBuffer)
 {
    return readBits(in_numBytes << 3, out_pBuffer);
 }
@@ -346,7 +338,8 @@ inline bool BitStream::readFlag()
 {
    if(bitNum > maxReadBitNum)
    {
-      setError();
+      error = true;
+      TNLAssert(false, "Out of range read");
       return false;
    }
    S32 mask = 1 << (bitNum & 0x7);
@@ -355,9 +348,9 @@ inline bool BitStream::readFlag()
    return ret;
 }
 
-inline void BitStream::writeIntAt(U32 value, U8 bitCount, U32 bitPosition)
+inline void BitStream::writeIntAt(U32 value, U8 bitCount, size_t bitPosition)
 {
-   U32 curPos = getBitPosition();
+   size_t curPos = getBitPosition();
    setBitPosition(bitPosition);
    writeInt(value, bitCount);
    setBitPosition(curPos);
@@ -381,13 +374,8 @@ inline U32 BitStream::readRangedU32(U32 rangeStart, U32 rangeEnd)
    U32 rangeSize = rangeEnd - rangeStart + 1;
    U32 rangeBits = getNextBinLog2(rangeSize);
 
-   U32 val = U32(readInt(S32(rangeBits))) + rangeStart;
-   if(val > rangeEnd)
-   {
-      setError();
-      return rangeStart;
-   }
-   return val;
+   U32 val = U32(readInt(S32(rangeBits)));
+   return val + rangeStart;
 }
 
 inline void BitStream::writeEnum(U32 enumValue, U32 enumRange)

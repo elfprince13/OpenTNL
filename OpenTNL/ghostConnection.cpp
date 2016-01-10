@@ -314,9 +314,9 @@ void GhostConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
 		if(walk->flags & (GhostInfo::KillingGhost | GhostInfo::Ghosting))
 		   continue;
 
-      U32 updateStart = bstream->getBitPosition();
+      size_t updateStart = bstream->getBitPosition();
       U32 updateMask = walk->updateMask;
-      U32 retMask;
+      U32 retMask = 0;
 		   
       bstream->writeFlag(true);
       bstream->writeInt(walk->index, sendSize);
@@ -326,7 +326,7 @@ void GhostConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
          if(mConnectionParameters.mDebugObjectSizes)
             bstream->advanceBitPosition(BitStreamPosBitSize);
 
-         S32 startPos = bstream->getBitPosition();
+         size_t startPos = bstream->getBitPosition();
 
          if(walk->flags & GhostInfo::NotYetGhosted)
          {
@@ -346,8 +346,13 @@ void GhostConnection::writePacket(BitStream *bstream, PacketNotify *pnotify)
          else
             walk->obj->getClassRep()->addPartialUpdate(bstream->getBitPosition() - startPos);
 
-         if(mConnectionParameters.mDebugObjectSizes)
-            bstream->writeIntAt(bstream->getBitPosition(), BitStreamPosBitSize, startPos - BitStreamPosBitSize);
+		  if(mConnectionParameters.mDebugObjectSizes){
+			  size_t bpL = bstream->getBitPosition();
+			  U32 bp = static_cast<U32>(bpL);
+			  TNLAssert(bp == bpL, "This stream position is too long");
+			bstream->writeIntAt(bp, BitStreamPosBitSize, startPos - BitStreamPosBitSize);
+		  }
+		  
 
          TNLLogMessageV(LogGhostConnection, ("GhostConnection %s GHOST %d", walk->obj->getClassName(), bstream->getBitPosition() - 16 - startPos));
 

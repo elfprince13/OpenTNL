@@ -61,8 +61,8 @@ public:
    SymmetricCipher(const ByteBuffer *theByteBuffer);
 
    void setupCounter(U32 counterValue1, U32 counterValue2, U32 counterValue3, U32 counterValue4);
-   void encrypt(const U8 *plainText, U8 *cipherText, U32 len);
-   void decrypt(const U8 *cipherText, U8 *plainText, U32 len);
+   void encrypt(const U8 *plainText, U8 *cipherText, size_t len);
+   void decrypt(const U8 *cipherText, U8 *plainText, size_t len);
 };
 
 };

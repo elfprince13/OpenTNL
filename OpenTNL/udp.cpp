@@ -236,30 +236,23 @@ Socket::Socket(const Address &bindAddress, U32 sendBufferSize, U32 recvBufferSiz
    }
    if(mPlatformSocket != INVALID_SOCKET)
    {
-      TNLLogMessageV(LogUDP, ("%s socket created.", socketType));
       S32 error = 0;
       SOCKADDR address;
       socklen_t addressSize = sizeof(address);
 
       TNLToSocketAddress(bindAddress, &address, &addressSize);
       error = bind(mPlatformSocket, &address, addressSize);
-      
+
       Address boundAddress;
+      addressSize = sizeof(address);
 
-      if(!error)
-      {
-         addressSize = sizeof(address);
-         getsockname(mPlatformSocket, (PSOCKADDR) &address, &addressSize);
-         SocketToTNLAddress(&address, &boundAddress);
-         TNLLogMessageV(LogUDP, ("%s socket bound to address: %s", socketType, boundAddress.toString()));
+      getsockname(mPlatformSocket, (PSOCKADDR) &address, &addressSize);
+      SocketToTNLAddress(&address, &boundAddress);
 
-         // set the send and receive buffer sizes
-         error = setsockopt(mPlatformSocket, SOL_SOCKET, SO_RCVBUF, (char *) &recvBufferSize, sizeof(recvBufferSize));
-      }
-      else
-         TNLLogMessageV(LogUDP, ("%s socket error: unable to bind the socket to the specified address.", socketType));
-         
+      TNLLogMessageV(LogUDP, ("%s socket created - bound to address: %s", socketType, boundAddress.toString()));
 
+      // set the send and receive buffer sizes
+      error = setsockopt(mPlatformSocket, SOL_SOCKET, SO_RCVBUF, (char *) &recvBufferSize, sizeof(recvBufferSize));
       if(!error)
       {
          TNLLogMessageV(LogUDP, ("%s socket receive buffer size set to %d.", socketType, recvBufferSize));
@@ -288,10 +281,10 @@ Socket::Socket(const Address &bindAddress, U32 sendBufferSize, U32 recvBufferSiz
       {
 #if defined ( TNL_OS_WIN32 ) || defined ( TNL_OS_XBOX )
          DWORD notblock = nonblockingIO;
-         S32 error = ioctlsocket(mPlatformSocket, FIONBIO, &notblock);
+         error = ioctlsocket(mPlatformSocket, FIONBIO, &notblock);
 #else
          U32 notblock = nonblockingIO;
-         S32 error = ioctl(mPlatformSocket, FIONBIO, &notblock);
+         error = ioctl(mPlatformSocket, FIONBIO, &notblock);
 #endif
       }
       else
@@ -328,7 +321,7 @@ Socket::~Socket()
    shutdown();
 }
 
-NetError Socket::sendto(const Address &address, const U8 *buffer, S32 bufferSize)
+NetError Socket::sendto(const Address &address, const U8 *buffer, size_t bufferSize)
 {
    TNL_JOURNAL_READ_BLOCK(Socket::sendto,
       return NoError;
@@ -351,7 +344,7 @@ NetError Socket::sendto(const Address &address, const U8 *buffer, S32 bufferSize
       return NoError;
 }
 
-NetError Socket::recvfrom(Address *address, U8 *buffer, S32 bufferSize, S32 *outSize)
+NetError Socket::recvfrom(Address *address, U8 *buffer, size_t bufferSize, ssize_t *outSize)
 {
    TNL_JOURNAL_READ_BLOCK(Socket::recvfrom,
       bool wouldBlock;
@@ -372,7 +365,7 @@ NetError Socket::recvfrom(Address *address, U8 *buffer, S32 bufferSize, S32 *out
 
    SOCKADDR sa;
    socklen_t addrLen = sizeof(sa);
-   S32 bytesRead = SOCKET_ERROR;
+   size_t bytesRead = SOCKET_ERROR;
 
    bytesRead = ::recvfrom(mPlatformSocket, (char *) buffer, bufferSize, 0, &sa, &addrLen);
    if(bytesRead == SOCKET_ERROR)
@@ -419,7 +412,7 @@ NetError Socket::send(const U8 *buffer, S32 bufferSize)
    return NoError;
 }
 
-NetError Socket::recv(U8 *buffer, S32 bufferSize, S32 *bytesRead)
+NetError Socket::recv(U8 *buffer, size_t bufferSize, ssize_t *bytesRead)
 {
    *bytesRead = ::recv(mPlatformSocket, (char *) buffer, bufferSize, 0);
    if(*bytesRead == -1)
@@ -575,9 +568,8 @@ void Socket::getInterfaceAddresses(Vector<Address> *addressVector)
       {
          Address theAddress;
          SocketToTNLAddress((struct sockaddr *) sin, &theAddress);
-         theAddress.port = 0;
-         if(theAddress.netNum[0] != INADDR_ANY && theAddress.netNum[0] != 0x7F000001)
-	      {
+	 if(theAddress.netNum[0] != INADDR_ANY && theAddress.netNum[0] != 0x7F000001)
+	 {
             addressVector->push_back(theAddress);
          }
       }

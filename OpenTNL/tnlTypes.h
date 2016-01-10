@@ -284,7 +284,6 @@ typedef unsigned long long  U64;  ///< Compiler independent unsigned 64-bit inte
 // Identify the target CPU and assembly language options
 //----------------------------------------------------------------------------------
 
-#if defined(_M_IX86) || defined(i386)
 #  define TNL_CPU_STRING "Intel x86"
 #  define TNL_CPU_X86
 #  define TNL_LITTLE_ENDIAN
@@ -295,8 +294,8 @@ typedef unsigned long long  U64;  ///< Compiler independent unsigned 64-bit inte
 #      define TNL_GCC_2
 #    elif __GNUC__ == 3
 #      define TNL_GCC_3
-#    else
-#      error "TNL: Unsupported version of GCC (see tnlMethodDispatch.cpp)"
+	//#    else
+	//#      error "TNL: Unsupported version of GCC (see tnlMethodDispatch.cpp)"
 #    endif
 #    define TNL_SUPPORTS_GCC_INLINE_X86_ASM
 #  elif defined (__MWERKS__)
@@ -305,16 +304,6 @@ typedef unsigned long long  U64;  ///< Compiler independent unsigned 64-bit inte
 #    define TNL_SUPPORTS_VC_INLINE_X86_ASM
 #  endif
 
-#elif defined(__ppc__) || defined(__powerpc__) || defined (PPC)
-#  define TNL_CPU_STRING "PowerPC"
-#  define TNL_CPU_PPC
-#  define TNL_BIG_ENDIAN
-#  ifdef __GNUC__
-#    define TNL_SUPPORTS_GCC_INLINE_PPC_ASM
-#  endif
-#else
-#  error "TNL: Unsupported Target CPU"
-#endif
 
 
 /// @}

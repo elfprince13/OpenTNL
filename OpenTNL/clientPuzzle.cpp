@@ -28,7 +28,7 @@
 #include "tnlClientPuzzle.h"
 #include "tnlRandom.h"
 
-#include "tomcrypt.h"
+#include <tomcrypt.h>
 
 namespace TNL {
 

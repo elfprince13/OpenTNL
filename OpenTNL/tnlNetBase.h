@@ -196,10 +196,10 @@ protected:
    U32 mClassId[NetClassGroupCount];   ///< The id for this class in each class group.
    char *mClassName;                   ///< The unmangled name of the class.
 
-   U32 mInitialUpdateBitsUsed; ///< Number of bits used on initial updates of objects of this class.
-   U32 mPartialUpdateBitsUsed; ///< Number of bits used on partial updates of objects of this class.
-   U32 mInitialUpdateCount; ///< Number of objects of this class constructed over a connection.
-   U32 mPartialUpdateCount; ///< Number of objects of this class updated over a connection.
+   size_t mInitialUpdateBitsUsed; ///< Number of bits used on initial updates of objects of this class.
+   size_t mPartialUpdateBitsUsed; ///< Number of bits used on partial updates of objects of this class.
+   size_t mInitialUpdateCount; ///< Number of objects of this class constructed over a connection.
+   size_t mPartialUpdateCount; ///< Number of objects of this class updated over a connection.
 
    /// Next declared NetClassRep.
    ///
@@ -233,14 +233,14 @@ public:
    const char *getClassName() const;               ///< Returns the string class name.
 
    /// Records bits used in the initial update of objects of this class.
-   void addInitialUpdate(U32 bitCount)
+   void addInitialUpdate(size_t bitCount)
    {
       mInitialUpdateCount++;
       mInitialUpdateBitsUsed += bitCount;
    }
 
    /// Records bits used in a partial update of an object of this class.
-   void addPartialUpdate(U32 bitCount)
+   void addPartialUpdate(size_t bitCount)
    {
       mPartialUpdateCount++;
       mPartialUpdateBitsUsed += bitCount;

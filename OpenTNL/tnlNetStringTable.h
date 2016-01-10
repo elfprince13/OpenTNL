@@ -34,7 +34,7 @@
 namespace TNL {
 
 
-typedef U32 StringTableEntryId;
+typedef U64 StringTableEntryId;
 
 //--------------------------------------
 /// A global table for the hashing and tracking of network strings.
@@ -52,7 +52,7 @@ namespace StringTable
    /// @param  string   String to check in the table (and add).
    /// @param  len      Length of the string in bytes.
    /// @param  caseSens Determines whether case matters.
-   StringTableEntryId insertn(const char *string, S32 len, bool caseSens = true);
+   StringTableEntryId insertn(const char *string, size_t len, bool caseSens = true);
 
    /// Determines if a string is in the string table, and returns the id of the string, or 0 if the string is not in the table.
    ///
@@ -65,13 +65,13 @@ namespace StringTable
    /// @param  string   String to check in the table (but not add).
    /// @param  len      Length of string in bytes.
    /// @param  caseSens Determines whether case matters.
-   StringTableEntryId lookupn(const char *string, S32 len, bool caseSens = true);
+   StringTableEntryId lookupn(const char *string, size_t len, bool caseSens = true);
 
    /// Hash a string into a U32.
    U32 hashString(const char* in_pString);
 
    /// Hash a string of given length into a U32.
-   U32 hashStringn(const char* in_pString, S32 len);
+   U32 hashStringn(const char* in_pString, size_t len);
 
    void incRef(StringTableEntryId index);   
    void decRef(StringTableEntryId index);
@@ -124,7 +124,7 @@ public:
       mIndex = StringTable::insert(string, caseSensitive);
    }
 
-   inline void setn(const char *string, U32 len, bool caseSensitive = true)
+   inline void setn(const char *string, size_t len, bool caseSensitive = true)
    {
       decRef();
       mIndex = StringTable::insertn(string, len, caseSensitive);
@@ -168,7 +168,7 @@ public:
          StringTable::incRef(mIndex);
    }
 
-   inline U32 getIndex() const 
+   inline size_t getIndex() const
    { 
       return mIndex;
    }

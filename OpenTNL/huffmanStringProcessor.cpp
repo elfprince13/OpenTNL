@@ -166,7 +166,7 @@ void HuffmanStringProcessor::generateCodes(BitStream& rBS, S32 index, S32 depth)
    } else {
       HuffNode& rNode = mHuffNodes[index];
 
-      S32 pos = rBS.getBitPosition();
+      ssize_t pos = rBS.getBitPosition();
 
       rBS.writeFlag(false);
       generateCodes(rBS, rNode.index0, depth + 1);
@@ -236,8 +236,9 @@ bool HuffmanStringProcessor::writeHuffBuffer(BitStream* pStream, const char* out
    if (mTablesBuilt == false)
       buildTables();
 
-   U32 len = out_pBuffer ? strlen(out_pBuffer) : 0;
-   TNLAssertV(len <= 255, ("String \"%s\" TOO long for writeString", out_pBuffer));
+   size_t llen = out_pBuffer ? strlen(out_pBuffer) : 0;
+   TNLAssertV(llen <= 255, ("String \"%s\" TOO long for writeString", out_pBuffer));
+	U32 len = static_cast<U32>(llen);
    if (len > maxLen)
       len = maxLen;
 

@@ -62,18 +62,18 @@ class DataChunker
       DataBlock *next;        ///< linked list pointer to the next DataBlock for this chunker
       U8 *data;               ///< allocated pointer for the base of this page
       S32 curIndex;           ///< current allocation point within this DataBlock
-      DataBlock(S32 size);
+      DataBlock(size_t size);
       ~DataBlock();
    };
    DataBlock *curBlock;       ///< current page we're allocating data from.  If the
                               ///< data size request is greater than the memory space currently
                               ///< available in the current page, a new page will be allocated.
-   S32 chunkSize;             ///< The size allocated for each page in the DataChunker
+   size_t chunkSize;             ///< The size allocated for each page in the DataChunker
   public:
-   void *alloc(S32 size);     ///< allocate a pointer to memory of size bytes from the DataChunker
+   void *alloc(size_t size);     ///< allocate a pointer to memory of size bytes from the DataChunker
    void freeBlocks();         ///< free all pages currently allocated in the DataChunker
 
-   DataChunker(S32 size=ChunkSize); ///< Construct a DataChunker with a page size of size bytes.
+   DataChunker(size_t size=ChunkSize); ///< Construct a DataChunker with a page size of size bytes.
    ~DataChunker();
 
    /// Swaps the memory allocated in one data chunker for another.  This can be used to implement
