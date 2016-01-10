@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "9EF3AE76145447BD37D84078B09C89F89E62BCED",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "9EF3AE76145447BD37D84078B09C89F89E62BCED" : 0,
+    "DB62E427E9E33CC74109CB26409CD0E370E8E251" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "2D0A54C1-45E3-4633-BC55-21D9866E67D8",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "9EF3AE76145447BD37D84078B09C89F89E62BCED" : "tnl\/",
+    "DB62E427E9E33CC74109CB26409CD0E370E8E251" : "tnl\/libtomcrypt\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "OpenTNL",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "OpenTNL.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "\/Users\/thomas\/Downloads\/tnl-git-wd\/tnl.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "9EF3AE76145447BD37D84078B09C89F89E62BCED"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/libtom\/libtomcrypt.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "DB62E427E9E33CC74109CB26409CD0E370E8E251"
+    }
+  ]
+}
