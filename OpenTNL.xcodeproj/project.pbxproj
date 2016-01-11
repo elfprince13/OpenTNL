@@ -442,6 +442,23 @@
 		E9DD31841C4305D000F2AE54 /* libmasterinterface.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DD31791C43058400F2AE54 /* libmasterinterface.a */; };
 		E9DD31931C43091F00F2AE54 /* tnlping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9DD31921C43091F00F2AE54 /* tnlping.cpp */; };
 		E9DD31961C43093900F2AE54 /* libOpenTNL.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E963C8C81C41A1B900B95858 /* libOpenTNL.a */; };
+		E9DD31A71C43303B00F2AE54 /* client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9DD31A01C43303B00F2AE54 /* client.cpp */; };
+		E9DD31A81C43303B00F2AE54 /* server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9DD31A21C43303B00F2AE54 /* server.cpp */; };
+		E9DD31A91C43303B00F2AE54 /* testGame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9DD31A31C43303B00F2AE54 /* testGame.cpp */; };
+		E9DD31AA1C43303B00F2AE54 /* testGame.h in Headers */ = {isa = PBXBuildFile; fileRef = E9DD31A41C43303B00F2AE54 /* testGame.h */; };
+		E9DD31AB1C43303B00F2AE54 /* testGameRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9DD31A51C43303B00F2AE54 /* testGameRender.cpp */; };
+		E9DD31AC1C43303B00F2AE54 /* testWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9DD31A61C43303B00F2AE54 /* testWindow.cpp */; };
+		E9DD31AF1C43306D00F2AE54 /* libOpenTNL.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E963C8C81C41A1B900B95858 /* libOpenTNL.a */; };
+		E9DD31C81C43321300F2AE54 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = E9DD31C51C43321300F2AE54 /* main.mm */; };
+		E9DD31C91C43321300F2AE54 /* MyOpenGLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = E9DD31C71C43321300F2AE54 /* MyOpenGLView.mm */; };
+		E9DD31CC1C43322000F2AE54 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = E9DD31CA1C43322000F2AE54 /* MainMenu.nib */; };
+		E9DD31D11C4339ED00F2AE54 /* libtestgame.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DD319B1C43302A00F2AE54 /* libtestgame.a */; };
+		E9DD31D31C4360B600F2AE54 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DD31D21C4360B600F2AE54 /* OpenGL.framework */; };
+		E9DD31D51C4360BB00F2AE54 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DD31D41C4360BB00F2AE54 /* GLUT.framework */; };
+		E9DD31D71C4360CA00F2AE54 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DD31D61C4360CA00F2AE54 /* AppKit.framework */; };
+		E9DD31D81C4360E100F2AE54 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DD31D21C4360B600F2AE54 /* OpenGL.framework */; };
+		E9DD31E31C43663500F2AE54 /* libtommath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DD31E11C43662A00F2AE54 /* libtommath.a */; };
+		E9DD31E71C44075300F2AE54 /* libtomcrypt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DD2E311C42FD5F00F2AE54 /* libtomcrypt.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -493,6 +510,34 @@
 			proxyType = 1;
 			remoteGlobalIDString = E963C8C71C41A1B900B95858;
 			remoteInfo = OpenTNL;
+		};
+		E9DD31AD1C43306200F2AE54 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E963C8C01C41A1B900B95858 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E963C8C71C41A1B900B95858;
+			remoteInfo = OpenTNL;
+		};
+		E9DD31CD1C4339E500F2AE54 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E963C8C01C41A1B900B95858 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E963C8C71C41A1B900B95858;
+			remoteInfo = OpenTNL;
+		};
+		E9DD31CF1C4339E500F2AE54 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E963C8C01C41A1B900B95858 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E9DD319A1C43302A00F2AE54;
+			remoteInfo = testgame;
+		};
+		E9DD31E51C44074C00F2AE54 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E963C8C01C41A1B900B95858 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E9DD2E301C42FD5F00F2AE54;
+			remoteInfo = tomcrypt;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -965,6 +1010,24 @@
 		E9DD31791C43058400F2AE54 /* libmasterinterface.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libmasterinterface.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9DD318B1C4308ED00F2AE54 /* tnlping */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tnlping; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9DD31921C43091F00F2AE54 /* tnlping.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tnlping.cpp; sourceTree = "<group>"; };
+		E9DD319B1C43302A00F2AE54 /* libtestgame.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtestgame.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E9DD31A01C43303B00F2AE54 /* client.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = client.cpp; sourceTree = "<group>"; };
+		E9DD31A11C43303B00F2AE54 /* mondrian.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; path = mondrian.ico; sourceTree = "<group>"; };
+		E9DD31A21C43303B00F2AE54 /* server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = server.cpp; sourceTree = "<group>"; };
+		E9DD31A31C43303B00F2AE54 /* testGame.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testGame.cpp; sourceTree = "<group>"; };
+		E9DD31A41C43303B00F2AE54 /* testGame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testGame.h; sourceTree = "<group>"; };
+		E9DD31A51C43303B00F2AE54 /* testGameRender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testGameRender.cpp; sourceTree = "<group>"; };
+		E9DD31A61C43303B00F2AE54 /* testWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testWindow.cpp; sourceTree = "<group>"; };
+		E9DD31B41C4331D700F2AE54 /* testgame-app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "testgame-app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E9DD31C11C4331D700F2AE54 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E9DD31C51C43321300F2AE54 /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = main.mm; path = examples/osx/main.mm; sourceTree = SOURCE_ROOT; };
+		E9DD31C61C43321300F2AE54 /* MyOpenGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MyOpenGLView.h; path = examples/osx/MyOpenGLView.h; sourceTree = SOURCE_ROOT; };
+		E9DD31C71C43321300F2AE54 /* MyOpenGLView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = MyOpenGLView.mm; path = examples/osx/MyOpenGLView.mm; sourceTree = SOURCE_ROOT; };
+		E9DD31CB1C43322000F2AE54 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = examples/osx/English.lproj/MainMenu.nib; sourceTree = SOURCE_ROOT; };
+		E9DD31D21C4360B600F2AE54 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		E9DD31D41C4360BB00F2AE54 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+		E9DD31D61C4360CA00F2AE54 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		E9DD31E11C43662A00F2AE54 /* libtommath.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtommath.a; path = libtommath/libtommath.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -980,6 +1043,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9DD31E31C43663500F2AE54 /* libtommath.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1016,12 +1080,37 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E9DD31981C43302A00F2AE54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9DD31D51C4360BB00F2AE54 /* GLUT.framework in Frameworks */,
+				E9DD31D31C4360B600F2AE54 /* OpenGL.framework in Frameworks */,
+				E9DD31AF1C43306D00F2AE54 /* libOpenTNL.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E9DD31B11C4331D700F2AE54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9DD31E71C44075300F2AE54 /* libtomcrypt.a in Frameworks */,
+				E9DD31D81C4360E100F2AE54 /* OpenGL.framework in Frameworks */,
+				E9DD31D71C4360CA00F2AE54 /* AppKit.framework in Frameworks */,
+				E9DD31D11C4339ED00F2AE54 /* libtestgame.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		E963C8BF1C41A1B900B95858 = {
 			isa = PBXGroup;
 			children = (
+				E9DD31E11C43662A00F2AE54 /* libtommath.a */,
+				E9DD31D61C4360CA00F2AE54 /* AppKit.framework */,
+				E9DD31D41C4360BB00F2AE54 /* GLUT.framework */,
+				E9DD31D21C4360B600F2AE54 /* OpenGL.framework */,
 				E9DD2E381C42FDC700F2AE54 /* tomcrypt */,
 				E963C8ED1C41A1F300B95858 /* tnl.changelog.txt */,
 				E963C8EF1C41A1F300B95858 /* tnl.overview.txt */,
@@ -1030,6 +1119,8 @@
 				E9DD316C1C4303B200F2AE54 /* masterclient */,
 				E9DD317D1C43059400F2AE54 /* masterinterface */,
 				E9DD318C1C4308ED00F2AE54 /* tnlping */,
+				E9DD319F1C43303B00F2AE54 /* testgamelib */,
+				E9DD31B51C4331D700F2AE54 /* testgame-app */,
 				E963C8C91C41A1B900B95858 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -1043,6 +1134,8 @@
 				E9DD316B1C4303B200F2AE54 /* masterclient */,
 				E9DD31791C43058400F2AE54 /* libmasterinterface.a */,
 				E9DD318B1C4308ED00F2AE54 /* tnlping */,
+				E9DD319B1C43302A00F2AE54 /* libtestgame.a */,
+				E9DD31B41C4331D700F2AE54 /* testgame-app.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2024,6 +2117,33 @@
 			path = tnlping;
 			sourceTree = "<group>";
 		};
+		E9DD319F1C43303B00F2AE54 /* testgamelib */ = {
+			isa = PBXGroup;
+			children = (
+				E9DD31A01C43303B00F2AE54 /* client.cpp */,
+				E9DD31A11C43303B00F2AE54 /* mondrian.ico */,
+				E9DD31A21C43303B00F2AE54 /* server.cpp */,
+				E9DD31A31C43303B00F2AE54 /* testGame.cpp */,
+				E9DD31A41C43303B00F2AE54 /* testGame.h */,
+				E9DD31A51C43303B00F2AE54 /* testGameRender.cpp */,
+				E9DD31A61C43303B00F2AE54 /* testWindow.cpp */,
+			);
+			name = testgamelib;
+			path = examples/test;
+			sourceTree = "<group>";
+		};
+		E9DD31B51C4331D700F2AE54 /* testgame-app */ = {
+			isa = PBXGroup;
+			children = (
+				E9DD31CA1C43322000F2AE54 /* MainMenu.nib */,
+				E9DD31C51C43321300F2AE54 /* main.mm */,
+				E9DD31C61C43321300F2AE54 /* MyOpenGLView.h */,
+				E9DD31C71C43321300F2AE54 /* MyOpenGLView.mm */,
+				E9DD31C11C4331D700F2AE54 /* Info.plist */,
+			);
+			path = "testgame-app";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -2092,6 +2212,14 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E9DD31991C43302A00F2AE54 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9DD31AA1C43303B00F2AE54 /* testGame.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2207,6 +2335,44 @@
 			productReference = E9DD318B1C4308ED00F2AE54 /* tnlping */;
 			productType = "com.apple.product-type.tool";
 		};
+		E9DD319A1C43302A00F2AE54 /* testgame */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E9DD319C1C43302A00F2AE54 /* Build configuration list for PBXNativeTarget "testgame" */;
+			buildPhases = (
+				E9DD31971C43302A00F2AE54 /* Sources */,
+				E9DD31981C43302A00F2AE54 /* Frameworks */,
+				E9DD31991C43302A00F2AE54 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E9DD31AE1C43306200F2AE54 /* PBXTargetDependency */,
+			);
+			name = testgame;
+			productName = testgame;
+			productReference = E9DD319B1C43302A00F2AE54 /* libtestgame.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		E9DD31B31C4331D700F2AE54 /* testgame-app */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E9DD31C21C4331D700F2AE54 /* Build configuration list for PBXNativeTarget "testgame-app" */;
+			buildPhases = (
+				E9DD31B01C4331D700F2AE54 /* Sources */,
+				E9DD31B11C4331D700F2AE54 /* Frameworks */,
+				E9DD31B21C4331D700F2AE54 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E9DD31E61C44074C00F2AE54 /* PBXTargetDependency */,
+				E9DD31CE1C4339E500F2AE54 /* PBXTargetDependency */,
+				E9DD31D01C4339E500F2AE54 /* PBXTargetDependency */,
+			);
+			name = "testgame-app";
+			productName = "testgame-app";
+			productReference = E9DD31B41C4331D700F2AE54 /* testgame-app.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -2234,6 +2400,12 @@
 					E9DD318A1C4308ED00F2AE54 = {
 						CreatedOnToolsVersion = 7.2;
 					};
+					E9DD319A1C43302A00F2AE54 = {
+						CreatedOnToolsVersion = 7.2;
+					};
+					E9DD31B31C4331D700F2AE54 = {
+						CreatedOnToolsVersion = 7.2;
+					};
 				};
 			};
 			buildConfigurationList = E963C8C31C41A1B900B95858 /* Build configuration list for PBXProject "OpenTNL" */;
@@ -2242,6 +2414,8 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
+				English,
 			);
 			mainGroup = E963C8BF1C41A1B900B95858;
 			productRefGroup = E963C8C91C41A1B900B95858 /* Products */;
@@ -2254,9 +2428,22 @@
 				E9DD316A1C4303B200F2AE54 /* masterclient */,
 				E9DD31781C43058400F2AE54 /* masterinterface */,
 				E9DD318A1C4308ED00F2AE54 /* tnlping */,
+				E9DD319A1C43302A00F2AE54 /* testgame */,
+				E9DD31B31C4331D700F2AE54 /* testgame-app */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E9DD31B21C4331D700F2AE54 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9DD31CC1C43322000F2AE54 /* MainMenu.nib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		E963C8C41C41A1B900B95858 /* Sources */ = {
@@ -2683,6 +2870,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E9DD31971C43302A00F2AE54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9DD31A91C43303B00F2AE54 /* testGame.cpp in Sources */,
+				E9DD31AB1C43303B00F2AE54 /* testGameRender.cpp in Sources */,
+				E9DD31A81C43303B00F2AE54 /* server.cpp in Sources */,
+				E9DD31A71C43303B00F2AE54 /* client.cpp in Sources */,
+				E9DD31AC1C43303B00F2AE54 /* testWindow.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E9DD31B01C4331D700F2AE54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9DD31C81C43321300F2AE54 /* main.mm in Sources */,
+				E9DD31C91C43321300F2AE54 /* MyOpenGLView.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -2721,7 +2929,38 @@
 			target = E963C8C71C41A1B900B95858 /* OpenTNL */;
 			targetProxy = E9DD31941C43093400F2AE54 /* PBXContainerItemProxy */;
 		};
+		E9DD31AE1C43306200F2AE54 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E963C8C71C41A1B900B95858 /* OpenTNL */;
+			targetProxy = E9DD31AD1C43306200F2AE54 /* PBXContainerItemProxy */;
+		};
+		E9DD31CE1C4339E500F2AE54 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E963C8C71C41A1B900B95858 /* OpenTNL */;
+			targetProxy = E9DD31CD1C4339E500F2AE54 /* PBXContainerItemProxy */;
+		};
+		E9DD31D01C4339E500F2AE54 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E9DD319A1C43302A00F2AE54 /* testgame */;
+			targetProxy = E9DD31CF1C4339E500F2AE54 /* PBXContainerItemProxy */;
+		};
+		E9DD31E61C44074C00F2AE54 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E9DD2E301C42FD5F00F2AE54 /* tomcrypt */;
+			targetProxy = E9DD31E51C44074C00F2AE54 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		E9DD31CA1C43322000F2AE54 /* MainMenu.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E9DD31CB1C43322000F2AE54 /* English */,
+			);
+			name = MainMenu.nib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		E963C8D11C41A1B900B95858 /* Debug */ = {
@@ -2851,8 +3090,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
-				OTHER_CFLAGS = "-DLTC_SOURCE";
+				HEADER_SEARCH_PATHS = libtommath/;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/libtommath",
+				);
+				OTHER_CFLAGS = (
+					"-DLTC_SOURCE",
+					"-DLTM_DESC",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SEPARATE_STRIP = YES;
+				STRIP_INSTALLED_PRODUCT = YES;
 			};
 			name = Debug;
 		};
@@ -2860,8 +3109,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
-				OTHER_CFLAGS = "-DLTC_SOURCE";
+				HEADER_SEARCH_PATHS = libtommath/;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/libtommath",
+				);
+				OTHER_CFLAGS = (
+					"-DLTC_SOURCE",
+					"-DLTM_DESC",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SEPARATE_STRIP = YES;
+				STRIP_INSTALLED_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -2927,6 +3186,60 @@
 			};
 			name = Release;
 		};
+		E9DD319D1C43302A00F2AE54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = OpenTNL/;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		E9DD319E1C43302A00F2AE54 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = OpenTNL/;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		E9DD31C31C4331D700F2AE54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = OpenTNL/;
+				INFOPLIST_FILE = "testgame-app/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/libtommath",
+				);
+				OTHER_CFLAGS = "-DLTM_DESC";
+				PRODUCT_BUNDLE_IDENTIFIER = "net.cemetech.sfgp.testgame-app";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		E9DD31C41C4331D700F2AE54 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = OpenTNL/;
+				INFOPLIST_FILE = "testgame-app/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/libtommath",
+				);
+				OTHER_CFLAGS = "-DLTM_DESC";
+				PRODUCT_BUNDLE_IDENTIFIER = "net.cemetech.sfgp.testgame-app";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2985,6 +3298,22 @@
 			buildConfigurations = (
 				E9DD31901C4308ED00F2AE54 /* Debug */,
 				E9DD31911C4308ED00F2AE54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		E9DD319C1C43302A00F2AE54 /* Build configuration list for PBXNativeTarget "testgame" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E9DD319D1C43302A00F2AE54 /* Debug */,
+				E9DD319E1C43302A00F2AE54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		E9DD31C21C4331D700F2AE54 /* Build configuration list for PBXNativeTarget "testgame-app" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E9DD31C31C4331D700F2AE54 /* Debug */,
+				E9DD31C41C4331D700F2AE54 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 		};

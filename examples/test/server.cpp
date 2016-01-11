@@ -26,10 +26,10 @@
 
 #include "testGame.h"
 #include <stdio.h>
-#include "../tnl/tnlSymmetricCipher.h"
-#include "../tnl/tnlAsymmetricKey.h"
-#include "../tnl/tnlCertificate.h"
-#include "../tnl/tnlBitStream.h"
+#include <tnlSymmetricCipher.h>
+#include <tnlAsymmetricKey.h>
+#include <tnlCertificate.h>
+#include <tnlBitStream.h>
 
 using namespace TNL;
 

@@ -73,7 +73,7 @@ TestGameLog *theLog;
 
    theLog = new TestGameLog(self);
    [self restartAsClient:self];   
-	return self = [super initWithFrame:frame pixelFormat: [fmt autorelease]];
+	return self = [super initWithFrame:frame pixelFormat: fmt];
 }
 
 - (void) tick

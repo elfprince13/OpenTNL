@@ -26,7 +26,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+extern "C" {
+	// For some bizarre reason this didn't work with #include
+	extern void init_LTM(void);
+}
+
 int main(int argc, const char *argv[])
 {
+	init_LTM();
     return NSApplicationMain(argc, argv);
 }

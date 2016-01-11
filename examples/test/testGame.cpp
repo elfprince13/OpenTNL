@@ -27,11 +27,11 @@
 #include <math.h>
 
 #include "testGame.h"
-#include "../tnl/tnlBitStream.h"
-#include "../tnl/tnlNetConnection.h"
-#include "../tnl/tnlRandom.h"
-#include "../tnl/tnlSymmetricCipher.h"
-#include "../tnl/tnlAsymmetricKey.h"
+#include <tnlBitStream.h>
+#include <tnlNetConnection.h>
+#include <tnlRandom.h>
+#include <tnlSymmetricCipher.h>
+#include <tnlAsymmetricKey.h>
 
 namespace TNLTest {
 

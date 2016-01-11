@@ -30,9 +30,9 @@
 #include <math.h>
 #include <time.h>
 #include "testGame.h"
-#include "../tnl/tnlLog.h"
+#include <tnlLog.h>
 
-#include "../glut/glutInclude.h"
+#include <GLUT/GLUT.h>
 
 static const char *localBroadcastAddress = "IP:broadcast:28999";
 static const char *localHostAddress = "IP:localhost:28999";
