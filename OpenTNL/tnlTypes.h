@@ -373,25 +373,15 @@ inline U32 getNextPow2(U32 value)
 }
 
 
-/// @defgroup MinMaxFuncs Many version of min and max
+/// @defgroup MinMaxFuncs min and max
 ///
-/// We can't use template functions because MSVC6 chokes.
-///
-/// So we have these...
+/// Utility functions: templated definitions of min and max.
 /// @{
 
-#define DeclareTemplatizedMinMax(type) \
- inline type getMin(type a, type b) { return a > b ? b : a; } \
- inline type getMax(type a, type b) { return a > b ? a : b; }
-
-DeclareTemplatizedMinMax(U32)
-DeclareTemplatizedMinMax(S32)
-DeclareTemplatizedMinMax(U16)
-DeclareTemplatizedMinMax(S16)
-DeclareTemplatizedMinMax(U8)
-DeclareTemplatizedMinMax(S8)
-DeclareTemplatizedMinMax(F32)
-DeclareTemplatizedMinMax(F64)
+template<typename T>
+	inline T getMin(T a, T b){ return a > b ? b : a; }
+template<typename T>
+	inline T getMax(T a, T b){ return a > b ? a : b; }
 
 /// @}
 

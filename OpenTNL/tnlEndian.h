@@ -46,38 +46,23 @@ inline	T endianSwap(T u)
 //------------------------------------------------------------------------------
 // Endian conversions
 #ifdef TNL_LITTLE_ENDIAN
-
-#define TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(type) \
-   inline type convertHostToLEndian(type i) { return i; } \
-   inline type convertLEndianToHost(type i) { return i; } \
-   inline type convertHostToBEndian(type i) { return endianSwap(i); } \
-   inline type convertBEndianToHost(type i) { return endianSwap(i); }
+	
+template<typename T> inline T convertHostToLEndian(T i){ return i; }
+template<typename T> inline T convertLEndianToHost(T i){ return i; }
+template<typename T> inline T convertHostToBEndian(T i){ return endianSwap(i); }
+template<typename T> inline T convertBEndianToHost(T i){ return endianSwap(i); }
 
 #elif defined(TNL_BIG_ENDIAN)
 
-#define TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(type) \
-   inline type convertHostToLEndian(type i) { return endianSwap(i); } \
-   inline type convertLEndianToHost(type i) { return endianSwap(i); } \
-   inline type convertHostToBEndian(type i) { return i; } \
-   inline type convertBEndianToHost(type i) { return i; }
+template<typename T> inline T convertHostToLEndian(T i){ return endianSwap(i); }
+template<typename T> inline T convertLEndianToHost(T i){ return endianSwap(i); }
+template<typename T> inline T convertHostToBEndian(T i){ return i; }
+template<typename T> inline T convertBEndianToHost(T i){ return i; }
 
 #else
 #error "Endian define not set!"
 #endif
 
-
-TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(U8)
-TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(S8)
-TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(U16)
-TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(S16)
-TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(U32)
-	TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(S32)
-	TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(size_t)
-	TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(ssize_t)
-TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(U64)
-TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(S64)
-TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(F32)
-TNL_DECLARE_TEMPLATIZED_ENDIAN_CONV(F64)
 
 };
 
