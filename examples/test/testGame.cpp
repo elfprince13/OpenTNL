@@ -288,24 +288,19 @@ TNL::NetEvent * Player::rpcPlayerIsInScope_construct (TNL::Float<6> x, TNL::Floa
 }
 
 */
-TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerIsInScope,
-   (TNL::Float<6> x, TNL::Float<6> y), (x, y),
-   TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCToGhost, 0)
+	
+TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerIsInScope, (TNL::Float<6> x, TNL::Float<6> y))
 {
    TNL::F32 fx = x, fy = y;
    TNL::logprintf("A player is now in scope at %g, %g", fx, fy);
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerWillMove,
-                            (TNL::StringPtr testString), (testString), 
-   TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCToGhostParent, 0)
+TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerWillMove, (TNL::StringPtr testString))
 {
    TNL::logprintf("Expecting a player move from the connection: %s", testString.getString());
 }
 
-TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerDidMove,
-   (TNL::Float<6> x, TNL::Float<6> y), (x, y),
-   TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCToGhost, 0)
+TNL_IMPLEMENT_NETOBJECT_RPC(Player, rpcPlayerDidMove, (TNL::Float<6> x, TNL::Float<6> y))
 {
    TNL::F32 fx = x, fy = y;
    TNL::logprintf("A player moved to %g, %g", fx, fy);

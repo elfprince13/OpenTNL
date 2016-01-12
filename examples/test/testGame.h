@@ -67,7 +67,7 @@ struct Position
 /// a Player instance constructed for it upon joining the game.
 /// Client users click on the game window, which generates an event to the server to 
 /// move that client's player to the desired point.
-class Player : public TNL::NetObject
+TNL_INSTANTIATE_NETOBJECT(Player)
 {
    typedef TNL::NetObject Parent;
 public:
@@ -142,23 +142,19 @@ public:
    void addToGame(TestGame *theGame);
 
    /// rpcPlayerWillMove is used in TNLTest to demonstrate ghost->parent NetObject RPCs.
-   TNL_DECLARE_RPC(rpcPlayerWillMove,  (TNL::StringPtr testString));
+   TNL_DECLARE_NETOBJECT_RPC(Player, rpcPlayerWillMove, TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCToGhostParent, 0,  TNL::StringPtr);
 
    /// rpcPlayerDidMove is used in TNLTest to demostrate a broadcast RPC from the server
    /// to all of the ghosts on clients scoping this object.  It also demonstrates the
    /// usage of the Float<> template argument, in this case using 6 bits for each X and
    /// Y position.  Float arguments to RPCs are between 0 and 1.
-   TNL_DECLARE_RPC(rpcPlayerDidMove,   (TNL::Float<6> x, TNL::Float<6> y));
+   TNL_DECLARE_NETOBJECT_RPC(Player, rpcPlayerDidMove, TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCToGhost, 0, TNL::Float<6>, TNL::Float<6>);
 
    /// rpcPlayerIsInScope is the RPC method called by onGhostAvailable to demonstrate
    /// targeted NetObject RPCs.  onGhostAvailable uses the TNL_RPC_CONSTRUCT_NETEVENT
    /// macro to construct a NetEvent from the RPC invocation and then posts it only
    /// to the client for which the object just came into scope.
-   TNL_DECLARE_RPC(rpcPlayerIsInScope, (TNL::Float<6> x, TNL::Float<6> y));
-
-   /// This macro invocation declares the Player class to be known
-   /// to the TNL class management system.
-   TNL_DECLARE_CLASS(Player);
+   TNL_DECLARE_NETOBJECT_RPC(Player, rpcPlayerIsInScope, TNL::NetClassGroupGameMask, TNL::RPCGuaranteedOrdered, TNL::RPCToGhost, 0, TNL::Float<6>, TNL::Float<6> );
 };
 
 /// The Building class is an example of a NetObject that is ScopeAlways.
