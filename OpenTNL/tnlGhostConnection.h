@@ -214,13 +214,13 @@ public:
    void detachObject(GhostInfo *info);                      ///< Notifies the GhostConnection that the specified GhostInfo should no longer be scoped to the client.
 
    /// RPC from server to client before the GhostAlwaysObjects are transmitted
-   TNL_DECLARE_RPC(GhostConnection, rpcStartGhosting, NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0, U32);
+   TNL_DECLARE_RPC(rpcStartGhosting, (U32 sequence));
 
    /// RPC from client to server sent when the client receives the rpcGhostAlwaysActivated
-   TNL_DECLARE_RPC(GhostConnection, rpcReadyForNormalGhosts, NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0, U32);
+   TNL_DECLARE_RPC(rpcReadyForNormalGhosts, (U32 sequence));
 
    /// RPC from server to client sent to notify that ghosting should stop
-   TNL_DECLARE_RPC(GhostConnection, rpcEndGhosting, NetClassGroupGameMask, RPCGuaranteedOrdered, RPCDirAny, 0);
+   TNL_DECLARE_RPC(rpcEndGhosting, ());
 };
 
 //----------------------------------------------------------------------------

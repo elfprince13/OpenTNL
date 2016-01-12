@@ -194,7 +194,6 @@ class BitStream;
 ///
 /// @note the TNL_IMPLEMENT_NETEVENT groupMask specifies which "group" of EventConnections
 /// the event can be sent over.  See TNL::Object for a further discussion of this.
-	
 class NetEvent : public Object
 {
    friend class EventConnection;
@@ -270,23 +269,12 @@ public:
    }
 };
 
-	
 
-template<typename Derived, const char * DerivedName, NetClassMask netClassMask, S32 netClassVersion>
-class DerivedNetEvent : public NetEvent {
-public:
-	static TNL::NetClassRepInstance<Derived> dynClassRep;
-	virtual TNL::NetClassRep* getClassRep() const { return &dynClassRep; }
-};
-	
-template<typename Derived, const char * DerivedName, NetClassMask netClassMask, S32 netClassVersion>
-	TNL::NetClassRepInstance<Derived> DerivedNetEvent<Derived, DerivedName, netClassMask, netClassVersion>::dynClassRep
-	= TNL::NetClassRepInstance<Derived>(DerivedName, netClassMask, TNL::NetClassTypeEvent, netClassVersion);
-
-
-/// The TNL_INSTANTIATE_NETEVENT macro is used for subclasses of NetEvent to be sent between client and server
-#define TNL_INSTANTIATE_NETEVENT(className,groupMask,classVersion) DerivedNetEvent<className, #className, groupMask, classVersion>
-
+/// The IMPLEMENT_NETEVENT macro is used for implementing events
+/// that can be sent from server to client or from client to server
+#define TNL_IMPLEMENT_NETEVENT(className,groupMask,classVersion) \
+   TNL::NetClassRep* className::getClassRep() const { return &className::dynClassRep; } \
+   TNL::NetClassRepInstance<className> className::dynClassRep(#className,groupMask, TNL::NetClassTypeEvent, classVersion)
 
 };
 

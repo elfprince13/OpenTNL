@@ -87,7 +87,6 @@ enum NetClassGroup {
 /// Mask values used to indicate which NetClassGroup(s) a NetObject or NetEvent
 /// can be transmitted through.
 enum NetClassMask {
-	NetClassGroupNoneMask = 0,
    NetClassGroupGameMask      = 1 << NetClassGroupGame,
    NetClassGroupCommunityMask = 1 << NetClassGroupCommunity,
    NetClassGroupMasterMask    = 1 << NetClassGroupMaster,
@@ -305,7 +304,7 @@ inline U32 NetClassRep::getClassGroupCRC(NetClassGroup classGroup)
 //------------------------------------------------------------------------------
 
 /// NetClassRepInstance - one of these templates is instantiated for each
-/// class that inherites from DerivedObject
+/// class that is declared via the IMPLEMENT_* macros below.
 ///
 /// There will be an instance for each networkable class.
 template <class T>
@@ -335,8 +334,7 @@ public:
    /// Each NetClassRepInstance overrides the virtual create() function to construct its object instances.
    Object *create() const
    {
-	   T * ret = new T;
-      return reinterpret_cast<Object *>(ret);
+      return new T;
    }
 };
 
@@ -395,7 +393,7 @@ class Object
    friend class RefObjectRef;
 public:
    /// Returns the NetClassRep associated with this object.
-	virtual NetClassRep* getClassRep() const;
+   virtual NetClassRep* getClassRep() const;
 
    Object();
    virtual ~Object();
@@ -442,18 +440,6 @@ public:
    }
    /// @}
 };
-	
-	// There's some weird stuff here that we should resolve with cross-delegation
-template<typename Derived, const char * DerivedName, NetClassMask netClassMask, NetClassType netClassType, S32 netClassVersion>  class DerivedObject : public Object {
-public:
-	static TNL::NetClassRepInstance<Derived> dynClassRep;
-	virtual TNL::NetClassRep* getClassRep() const { return &dynClassRep; }
-};
-	
-template<typename Derived, const char * DerivedName, NetClassMask netClassMask, NetClassType netClassType, S32 netClassVersion>
-	TNL::NetClassRepInstance<Derived> DerivedObject<Derived, DerivedName, netClassMask, netClassType, netClassVersion>::dynClassRep
-	= TNL::NetClassRepInstance<Derived>(DerivedName, netClassMask, netClassType, netClassVersion);
-
 
 inline U32 Object::getClassId(NetClassGroup classGroup) const
 {
@@ -647,10 +633,23 @@ public:
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
+// Macros for declaring and implementing Object subclasses
+// the TNL_DECLARE_CLASS(className) macro needs to be placed
+// in the class declaraction for each network aware class.
+//
+// Different TNL_IMPLEMENT_* macros can be used depending on
+// which NetClassType the class belongs to.
 
-#define TNL_INSTANTIATE_CLASS(className) \
-static constexpr const char g##className##Str [] = #className; \
-class className : public DerivedObject<className, g##className##Str , TNL::NetClassGroupNoneMask, TNL::NetClassTypeNone, 0>
+/// The TNL_DECLARE_CLASS macro should be called within the declaration of any network class
+#define TNL_DECLARE_CLASS(className) \
+   static TNL::NetClassRepInstance<className> dynClassRep;      \
+   virtual TNL::NetClassRep* getClassRep() const
+
+/// The TNL_IMPLEMENT_CLASS macro should be used for classes that will be auto-constructed
+/// by name only.
+#define TNL_IMPLEMENT_CLASS(className) \
+   TNL::NetClassRep* className::getClassRep() const { return &className::dynClassRep; } \
+   TNL::NetClassRepInstance<className> className::dynClassRep(#className, 0, TNL::NetClassTypeNone, 0)
 
 
 };
