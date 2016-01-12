@@ -197,8 +197,8 @@ struct GhostInfo;
 /// the documentation on NetClassRep for more details.
 ///
 /// @nosubgrouping
-
-class NetObject : public Object
+	
+class NetObject	: public Object
 {
    friend class GhostConnection;
    friend class GhostAlwaysObjectEvent;
@@ -342,6 +342,16 @@ public:
    void postRPCEvent(NetObjectRPCEvent *theEvent);
 
 };
+	
+template<typename Derived, const char* DerivedName> class DerivedNetObject : public NetObject {
+public:
+	static TNL::NetClassRepInstance<Derived> dynClassRep;
+	virtual TNL::NetClassRep* getClassRep() const { return &dynClassRep; }
+};
+	
+	template<typename Derived, const char * DerivedName>
+	TNL::NetClassRepInstance<Derived> DerivedNetObject<Derived, DerivedName>::dynClassRep
+	= TNL::NetClassRepInstance<Derived>(DerivedName, TNL::NetClassGroupGameMask, TNL::NetClassTypeObject, 0);
 
 inline bool NetObject::isGhost() const
 {
@@ -364,11 +374,9 @@ inline U32 NetObject::getHashId() const
    return *((U32 *) &ret);
 }
 
-/// The TNL_IMPLEMENT_NETOBJECT macro should be used for all subclasses of NetObject that
+/// The TNL_INSTANTIATE_NETOBJECT macro should be used for all subclasses of NetObject that
 /// will be transmitted with the ghosting system.
-#define TNL_IMPLEMENT_NETOBJECT(className) \
-   TNL::NetClassRep* className::getClassRep() const { return &className::dynClassRep; } \
-   TNL::NetClassRepInstance<className> className::dynClassRep(#className, TNL::NetClassGroupGameMask, TNL::NetClassTypeObject, 0)
+#define TNL_INSTANTIATE_NETOBJECT(className) DerivedNetObject<className, #className>
 
 /// Direction that a NetObject RPC method call should travel.
 enum NetObjectRPCDirection {
@@ -382,7 +390,8 @@ enum NetObjectRPCDirection {
 /// is broadcast to all connections that have that NetObject in scope.
 /// When an RPC method is called on a ghost (on the client), it is
 /// handled by the originating server object.
-class NetObjectRPCEvent : public RPCEvent
+class NetObjectRPCEvent
+	: public RPCEvent
 {
 public:
    /// Destination object of the RPC invocation

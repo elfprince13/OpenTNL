@@ -75,15 +75,7 @@ struct NetConnectionRep
    static NetConnection *create(const char *name);
 };
 
-#define TNL_DECLARE_NETCONNECTION(className) \
-   TNL_DECLARE_CLASS(className); \
-   TNL::NetClassGroup getNetClassGroup() const
-
-#define TNL_IMPLEMENT_NETCONNECTION(className, classGroup, canRemoteCreate) \
-   TNL::NetClassRep* className::getClassRep() const { return &className::dynClassRep; } \
-   TNL::NetClassRepInstance<className> className::dynClassRep(#className, 0, TNL::NetClassTypeNone, 0); \
-   TNL::NetClassGroup className::getNetClassGroup() const { return classGroup; } \
-   static TNL::NetConnectionRep g##className##Rep(&className::dynClassRep, canRemoteCreate)
+#define TNL_INSTANTIATE_NETCONNECTION(className, classGroup, canRemoteCreate) DerivedNetConnection<className, #className, classGroup, canRemoteCreate)
 
 
 /// All data associated with the negotiation of the connection
@@ -451,7 +443,7 @@ public:
 
 public:
    /// Returns the class group of objects that can be transmitted over this NetConnection.
-   virtual NetClassGroup getNetClassGroup() const { return NetClassGroupInvalid; }
+	virtual NetClassGroup getNetClassGroup() const { return NetClassGroupInvalid; }
 
    /// Sets the ping/timeout characteristics for a fixed-rate connection.  Total timeout is msPerPing * pingRetryCount.
    void setPingTimeouts(U32 msPerPing, U32 pingRetryCount)
@@ -595,5 +587,21 @@ public:
 static const U32 MinimumPaddingBits = 128;       ///< Padding space that is required at the end of each packet for bit flag writes and such.
 
 };
+
+template<typename Derived, const char * DerivedName, TNL::NetClassGroup netClassGroup, bool canRemoteCreate>
+class DerivedNetConnection : public TNL::NetConnection {
+public:
+	virtual TNL::NetClassGroup getNetClassGroup() const { return netClassGroup; }
+	static const TNL::NetConnectionRep gDerivedRep;
+	static TNL::NetClassRepInstance<Derived> dynClassRep;
+	virtual  TNL::NetClassRep* getClassRep() const { return &dynClassRep; }
+};
+
+template<typename Derived, const char * DerivedName, TNL::NetClassGroup netClassGroup, bool canRemoteCreate>
+TNL::NetClassRepInstance<Derived> DerivedNetConnection<Derived, DerivedName, netClassGroup, canRemoteCreate>::dynClassRep
+= TNL::NetClassRepInstance<Derived>(DerivedName, TNL::NetClassGroupNoneMask, TNL::NetClassTypeNone, 0);
+
+template<typename Derived, const char * DerivedName, TNL::NetClassGroup netClassGroup, bool canRemoteCreate>
+const TNL::NetConnectionRep DerivedNetConnection<Derived, DerivedName, netClassGroup, canRemoteCreate>::gDerivedRep = TNL::NetConnectionRep(&Derived::dynClassRep, canRemoteCreate);
 
 #endif
