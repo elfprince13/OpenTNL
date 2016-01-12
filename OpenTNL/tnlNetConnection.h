@@ -75,7 +75,9 @@ struct NetConnectionRep
    static NetConnection *create(const char *name);
 };
 
-#define TNL_INSTANTIATE_NETCONNECTION(className, classGroup, canRemoteCreate) DerivedNetConnection<className, #className, classGroup, canRemoteCreate)
+#define TNL_INSTANTIATE_NETCONNECTION(className, classGroup, canRemoteCreate) \
+	static constexpr const char g##className##Str [] = #className; \
+	class className : public TNL::DerivedNetConnection<className, g##className##Str, classGroup, canRemoteCreate)
 
 
 /// All data associated with the negotiation of the connection

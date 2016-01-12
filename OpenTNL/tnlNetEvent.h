@@ -285,7 +285,9 @@ template<typename Derived, const char * DerivedName, NetClassMask netClassMask, 
 
 
 /// The TNL_INSTANTIATE_NETEVENT macro is used for subclasses of NetEvent to be sent between client and server
-#define TNL_INSTANTIATE_NETEVENT(className,groupMask,classVersion) DerivedNetEvent<className, #className, groupMask, classVersion>
+#define TNL_INSTANTIATE_NETEVENT(className,groupMask,classVersion) \
+static constexpr const char g##className##Str [] = #className; \
+class className : public TNL::DerivedNetEvent<className, g##className##Str, groupMask, classVersion>
 
 
 };

@@ -165,8 +165,8 @@ public:
 
 };
 
-template<class Owner, const char * ImplStr, typename RemoteF, RemoteF remoteF,  NetClassMask netClassMask, S32 rpcVersion, RPCGuaranteeType gType, RPCDirection dir, typename ...ArgTs> class RPCEventImpl
-: public RPCEvent {
+template<class Owner, const char * ImplStr, typename RemoteF, RemoteF remoteF,  NetClassMask netClassMask, S32 rpcVersion, RPCGuaranteeType gType, RPCDirection dir, typename ...ArgTs>
+class RPCEventImpl : public RPCEvent {
 public:
 	typedef RPCEventImpl<Owner, ImplStr, RemoteF, remoteF, netClassMask, rpcVersion, gType, dir, ArgTs...> SelfType;
 	TNL::FunctorDecl<void (Owner::*) (ArgTs... args) > mFunctorDecl;
@@ -194,17 +194,16 @@ public:
 };
 
 template<class Owner, const char * ImplStr, typename RemoteF, RemoteF remoteF,  NetClassMask netClassMask, S32 rpcVersion, RPCGuaranteeType gType, RPCDirection dir, typename ...ArgTs>
-	TNL::NetClassRepInstance<RPCEventImpl<Owner, ImplStr, RemoteF, remoteF, netClassMask, rpcVersion, gType, dir, ArgTs...> > RPCEventImpl<Owner, ImplStr, RemoteF, remoteF, netClassMask, rpcVersion, gType, dir, ArgTs...>::dynClassRep
-= TNL::NetClassRepInstance<RPCEventImpl<Owner, ImplStr, RemoteF, remoteF, netClassMask, rpcVersion, gType, dir, ArgTs...> >(ImplStr, netClassMask, TNL::NetClassTypeEvent, rpcVersion);
+	TNL::NetClassRepInstance<RPCEventImpl<Owner, ImplStr, RemoteF, remoteF, netClassMask, rpcVersion, gType, dir, ArgTs...> >
+	RPCEventImpl<Owner, ImplStr, RemoteF, remoteF, netClassMask, rpcVersion, gType, dir, ArgTs...>::dynClassRep
+	= TNL::NetClassRepInstance<RPCEventImpl<Owner, ImplStr, RemoteF, remoteF, netClassMask, rpcVersion, gType, dir, ArgTs...> >(ImplStr, netClassMask, TNL::NetClassTypeEvent, rpcVersion);
 
 template<class Owner, const char * ImplStr, typename RemoteF, RemoteF remoteF,  TNL::NetClassMask netClassMask, TNL::S32 rpcVersion, TNL::RPCGuaranteeType gType, TNL::RPCDirection dir, typename ...ArgTs>
-class RPCDispatch{
-	
+class RPCDispatch {
 public:
 	Owner *owner;
 	RPCDispatch(Owner *o) : owner(o) {}
 	
-	// This really could be static, or in a different class, but this should allow for more concise syntax.
 	void operator()(ArgTs... args){
 		auto *theEvent = TNL::RPCEventImpl<Owner, ImplStr, RemoteF, remoteF, netClassMask, rpcVersion, gType, dir, ArgTs...>::construct(args ...);
 		owner->postNetEvent(theEvent);

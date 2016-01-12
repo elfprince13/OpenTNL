@@ -376,7 +376,9 @@ inline U32 NetObject::getHashId() const
 
 /// The TNL_INSTANTIATE_NETOBJECT macro should be used for all subclasses of NetObject that
 /// will be transmitted with the ghosting system.
-#define TNL_INSTANTIATE_NETOBJECT(className) DerivedNetObject<className, #className>
+#define TNL_INSTANTIATE_NETOBJECT(className) \
+	static constexpr const char g##className##Str [] = #className; \
+	class className : public TNL::DerivedNetObject<className, g##className##Str>
 
 /// Direction that a NetObject RPC method call should travel.
 enum NetObjectRPCDirection {
@@ -407,23 +409,65 @@ public:
    void unpack(EventConnection *ps, BitStream *bstream);
    void process(EventConnection *ps);
 };
+	
+template<class Owner, const char * ImplStr, typename RemoteF, RemoteF remoteF,  NetClassMask netClassMask, S32 rpcVersion, RPCGuaranteeType gType, NetObjectRPCDirection dir, typename ...ArgTs>
+class NetObjectRPCEventImpl : public NetObjectRPCEvent {
+	public:
+		typedef NetObjectRPCEventImpl<Owner, ImplStr, RemoteF, remoteF, netClassMask, rpcVersion, gType, dir, ArgTs...> SelfType;
+		TNL::FunctorDecl<void (Owner::*) (ArgTs... args) > mFunctorDecl;
+		NetObjectRPCEventImpl(TNL::NetObject *theObject = NULL) : NetObjectRPCEvent(theObject, gType, dir), mFunctorDecl(remoteF) {
+			this->mFunctor = &mFunctorDecl;
+		}
+		
+		static NetObjectRPCEventImpl* construct(ArgTs ...args){
+			auto *theEvent = new SelfType;
+			theEvent->mFunctorDecl.set(args ...);
+			return theEvent;
+		}
+		
+		static void test(EventConnection *ps, ArgTs ...args){
+			auto *theEvent = construct(args...);
+			TNL::PacketStream bstream;
+			theEvent->pack(ps, &bstream);
+			bstream.setBytePosition(0);
+			theEvent->unpack(ps, &bstream);
+			theEvent->process(ps);
+		}
+		bool checkClassType(TNL::Object *theObject) { return dynamic_cast<Owner *>(theObject) != NULL; }
+		static TNL::NetClassRepInstance<SelfType> dynClassRep;
+		virtual TNL::NetClassRep* getClassRep()  { return &dynClassRep; }
+};
+	
+template<class Owner, const char * ImplStr, typename RemoteF, RemoteF remoteF,  NetClassMask netClassMask, S32 rpcVersion, RPCGuaranteeType gType, NetObjectRPCDirection dir, typename ...ArgTs>
+	TNL::NetClassRepInstance<NetObjectRPCEventImpl<Owner, ImplStr, RemoteF, remoteF, netClassMask, rpcVersion, gType, dir, ArgTs...> >
+	NetObjectRPCEventImpl<Owner, ImplStr, RemoteF, remoteF, netClassMask, rpcVersion, gType, dir, ArgTs...>::dynClassRep
+	= TNL::NetClassRepInstance<NetObjectRPCEventImpl<Owner, ImplStr, RemoteF, remoteF, netClassMask, rpcVersion, gType, dir, ArgTs...> >(ImplStr, netClassMask, TNL::NetClassTypeEvent, rpcVersion);
+	
+template<class Owner, const char * ImplStr, typename RemoteF, RemoteF remoteF,  TNL::NetClassMask netClassMask, TNL::S32 rpcVersion, TNL::RPCGuaranteeType gType, NetObjectRPCDirection dir, typename ...ArgTs>
+class NetObjectRPCDispatch{
+public:
+	Owner *owner;
+	NetObjectRPCDispatch(Owner *o) : owner(o) {}
+	
+	void operator()(ArgTs... args){
+		auto *theEvent = TNL::RPCEventImpl<Owner, ImplStr, RemoteF, remoteF, netClassMask, rpcVersion, gType, dir, ArgTs...>::construct(args ...);
+		owner->postRPCEvent(theEvent);
+	}
+};
 
 /// Macro used to declare the implementation of an RPC method on a NetObject subclass.
 ///
 /// The macro should be used in place of a member function parameter declaration,
 /// with the body code (to be executed on the remote side of the RPC) immediately
 /// following the TNL_IMPLEMENT_NETOBJECT_RPC macro call.
-#define TNL_IMPLEMENT_NETOBJECT_RPC(className, name, args, argNames, groupMask, guaranteeType, eventDirection, rpcVersion) \
-class RPCEV_##className##_##name : public TNL::NetObjectRPCEvent { \
-public: \
-   TNL::FunctorDecl<void (className::*)args> mFunctorDecl;\
-   RPCEV_##className##_##name(TNL::NetObject *theObject = NULL) : TNL::NetObjectRPCEvent(theObject, guaranteeType, eventDirection), mFunctorDecl(&className::name##_remote) { mFunctor = &mFunctorDecl; } \
-   TNL_DECLARE_CLASS( RPCEV_##className##_##name ); \
-   bool checkClassType(TNL::Object *theObject) { return dynamic_cast<className *>(theObject) != NULL; } }; \
-   TNL_IMPLEMENT_NETEVENT( RPCEV_##className##_##name, groupMask, rpcVersion ); \
-   void className::name args { RPCEV_##className##_##name *theEvent = new RPCEV_##className##_##name(this); theEvent->mFunctorDecl.set argNames ; postRPCEvent(theEvent); } \
-   TNL::NetEvent * className::name##_construct args { RPCEV_##className##_##name *theEvent = new RPCEV_##className##_##name(this); theEvent->mFunctorDecl.set argNames ; return theEvent; } \
-   void className::name##_remote args
+	
+#define TNL_DECLARE_NETOBJECT_RPC(class, name, groupMask, guaranteeType, eventDirection, rpcVersion, ...) \
+virtual void name##_remote (__VA_ARGS__);\
+static constexpr const char RPCEV_##class##_##name##Str[] = "RPCEV_" #class "_" #name; \
+TNL::NetObjectRPCDispatch<class, RPCEV_##class##_##name##Str, decltype(& class :: name##_remote), & class :: name##_remote, groupMask, rpcVersion, guaranteeType, eventDirection, ##__VA_ARGS__> name;
+	
+#define TNL_IMPLEMENT_NETOBJECT_RPC(className, name, args) \
+void className::name##_remote args
 
 };
 

@@ -650,7 +650,7 @@ public:
 
 #define TNL_INSTANTIATE_CLASS(className) \
 static constexpr const char g##className##Str [] = #className; \
-class className : public DerivedObject<className, g##className##Str , TNL::NetClassGroupNoneMask, TNL::NetClassTypeNone, 0>
+class className : public TNL::DerivedObject<className, g##className##Str , TNL::NetClassGroupNoneMask, TNL::NetClassTypeNone, 0>
 
 
 };
