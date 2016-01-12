@@ -451,7 +451,7 @@
 		E9DD31AF1C43306D00F2AE54 /* libOpenTNL.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E963C8C81C41A1B900B95858 /* libOpenTNL.a */; };
 		E9DD31C81C43321300F2AE54 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = E9DD31C51C43321300F2AE54 /* main.mm */; };
 		E9DD31C91C43321300F2AE54 /* MyOpenGLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = E9DD31C71C43321300F2AE54 /* MyOpenGLView.mm */; };
-		E9DD31CC1C43322000F2AE54 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = E9DD31CA1C43322000F2AE54 /* MainMenu.nib */; };
+		E9DD31CC1C43322000F2AE54 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = E9DD31CA1C43322000F2AE54 /* MainMenu.xib */; };
 		E9DD31D11C4339ED00F2AE54 /* libtestgame.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DD319B1C43302A00F2AE54 /* libtestgame.a */; };
 		E9DD31D31C4360B600F2AE54 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DD31D21C4360B600F2AE54 /* OpenGL.framework */; };
 		E9DD31D51C4360BB00F2AE54 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DD31D41C4360BB00F2AE54 /* GLUT.framework */; };
@@ -1023,7 +1023,7 @@
 		E9DD31C51C43321300F2AE54 /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = main.mm; path = examples/osx/main.mm; sourceTree = SOURCE_ROOT; };
 		E9DD31C61C43321300F2AE54 /* MyOpenGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MyOpenGLView.h; path = examples/osx/MyOpenGLView.h; sourceTree = SOURCE_ROOT; };
 		E9DD31C71C43321300F2AE54 /* MyOpenGLView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = MyOpenGLView.mm; path = examples/osx/MyOpenGLView.mm; sourceTree = SOURCE_ROOT; };
-		E9DD31CB1C43322000F2AE54 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = examples/osx/English.lproj/MainMenu.nib; sourceTree = SOURCE_ROOT; };
+		E9DD31CB1C43322000F2AE54 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = examples/osx/English.lproj/MainMenu.xib; sourceTree = SOURCE_ROOT; };
 		E9DD31D21C4360B600F2AE54 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		E9DD31D41C4360BB00F2AE54 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		E9DD31D61C4360CA00F2AE54 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -2135,7 +2135,7 @@
 		E9DD31B51C4331D700F2AE54 /* testgame-app */ = {
 			isa = PBXGroup;
 			children = (
-				E9DD31CA1C43322000F2AE54 /* MainMenu.nib */,
+				E9DD31CA1C43322000F2AE54 /* MainMenu.xib */,
 				E9DD31C51C43321300F2AE54 /* main.mm */,
 				E9DD31C61C43321300F2AE54 /* MyOpenGLView.h */,
 				E9DD31C71C43321300F2AE54 /* MyOpenGLView.mm */,
@@ -2439,7 +2439,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E9DD31CC1C43322000F2AE54 /* MainMenu.nib in Resources */,
+				E9DD31CC1C43322000F2AE54 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2952,12 +2952,12 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		E9DD31CA1C43322000F2AE54 /* MainMenu.nib */ = {
+		E9DD31CA1C43322000F2AE54 /* MainMenu.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
 				E9DD31CB1C43322000F2AE54 /* English */,
 			);
-			name = MainMenu.nib;
+			name = MainMenu.xib;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
